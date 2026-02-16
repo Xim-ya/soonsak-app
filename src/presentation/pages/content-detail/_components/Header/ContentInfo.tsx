@@ -60,9 +60,7 @@ export const ContentInfo = React.memo(() => {
     handleSubmitRating,
     handleCloseRatingSheet,
     handleCloseDialog,
-    executeFavoriteToggle,
-    executeRatingAction,
-    getPendingActionType,
+    loginSuccessCallback,
   } = useContentInfoActions({
     contentId,
     contentType: type,
@@ -80,11 +78,6 @@ export const ContentInfo = React.memo(() => {
 
   // 결말 포함 칩 표시 여부
   const showEndingChip = primaryVideo?.includesEnding;
-
-  // 로그인 성공 콜백 결정
-  const pendingActionType = getPendingActionType();
-  const loginSuccessCallback =
-    pendingActionType === 'favorite' ? executeFavoriteToggle : executeRatingAction;
 
   return (
     <Container>
