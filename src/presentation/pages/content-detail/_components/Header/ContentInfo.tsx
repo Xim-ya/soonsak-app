@@ -124,9 +124,7 @@ export const ContentInfo = React.memo(() => {
       {isVideosLoading ? (
         <SkeletonView width={250} height={20} borderRadius={4} />
       ) : (
-        <ContentTitle numberOfLines={1}>
-          {primaryVideo?.title || '비디오를 불러오는 중...'}
-        </ContentTitle>
+        <ContentTitle>{primaryVideo?.title || '비디오를 불러오는 중...'}</ContentTitle>
       )}
       <Gap size={8} />
 
@@ -194,10 +192,12 @@ const ChipRow = styled.View({
 
 const Title = styled.Text({
   ...textStyles.headline1,
+  textAlign: 'center',
 });
 
 const ContentTitle = styled.Text({
   ...textStyles.body3,
+  textAlign: 'center',
 });
 
 const SubTextView = styled.View({
