@@ -46,16 +46,6 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
     setLoginDialogVisible(false);
   }, []);
 
-  const handleKakaoLogin = useCallback(() => {
-    handleLogin('kakao');
-    setLoginDialogVisible(false);
-  }, [handleLogin]);
-
-  const handleOtherLogin = useCallback(() => {
-    navigation.navigate(routePages.login, { canGoBack: true });
-    setLoginDialogVisible(false);
-  }, [navigation]);
-
   // TODO: 테스트용 로그아웃 - 개발 완료 후 제거
   const handleLogoutPress = useCallback(() => {
     signOut();
