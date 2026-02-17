@@ -159,8 +159,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     const shouldSync =
       user &&
       expoPushToken &&
-      (lastSyncedRef.current?.token !== expoPushToken ||
-        lastSyncedRef.current?.userId !== user.id);
+      (lastSyncedRef.current?.token !== expoPushToken || lastSyncedRef.current?.userId !== user.id);
 
     if (!shouldSync) return;
 
