@@ -46,7 +46,7 @@ interface PushNotificationProviderProps {
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
   const { status, user, signOut } = useAuth();
   const { expoPushToken, notification, permissionStatus, error } = usePushNotifications();
-  const lastSyncedTokenRef = useRef<string | null>(null);
+  const lastSyncedRef = useRef<{ userId: string; token: string } | null>(null);
 
   // Killed 상태에서 시작 시 사용할 signOut 캡처
   const signOutRef = useRef(signOut);
@@ -149,19 +149,25 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
   // 로그인 상태 + 토큰 변경 시 서버 동기화
   useEffect(() => {
-    // 동기화 조건: 인증됨 + 유저 존재 + 토큰 존재 + 이전과 다른 토큰
+    // 로그아웃 시 ref 초기화
+    if (status !== 'authenticated') {
+      lastSyncedRef.current = null;
+      return;
+    }
+
+    // 동기화 조건: 유저 존재 + 토큰 존재 + (토큰 또는 유저가 변경됨)
     const shouldSync =
-      status === 'authenticated' &&
       user &&
       expoPushToken &&
-      lastSyncedTokenRef.current !== expoPushToken;
+      (lastSyncedRef.current?.token !== expoPushToken ||
+        lastSyncedRef.current?.userId !== user.id);
 
     if (!shouldSync) return;
 
     const syncToken = async () => {
       try {
         await pushTokenApi.syncToken(user.id, expoPushToken);
-        lastSyncedTokenRef.current = expoPushToken;
+        lastSyncedRef.current = { userId: user.id, token: expoPushToken };
         if (__DEV__) {
           console.log('[PushNotificationProvider] 토큰 동기화 완료');
         }
