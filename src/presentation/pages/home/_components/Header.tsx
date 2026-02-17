@@ -61,6 +61,9 @@ export function Header() {
             onSnapToItem={onSnapToItem}
             autoPlay={true}
             autoPlayInterval={1300}
+            onConfigurePanGesture={(panGesture) => {
+              panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
+            }}
             renderItem={({ item }) => (
               <BackdropImage
                 key={item.id}
