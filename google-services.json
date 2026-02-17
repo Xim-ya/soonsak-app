@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "779487343277",
+    "project_id": "soonsak-reboot-aim",
+    "storage_bucket": "soonsak-reboot-aim.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:779487343277:android:4ca76594dcf84677e7cc24",
+        "android_client_info": {
+          "package_name": "com.soonsak.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuF8xfwsQrjfX9VFi_ki4YG0cRpIZiHok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
