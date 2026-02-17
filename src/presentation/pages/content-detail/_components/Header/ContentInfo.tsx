@@ -60,9 +60,7 @@ export const ContentInfo = React.memo(() => {
     handleSubmitRating,
     handleCloseRatingSheet,
     handleCloseDialog,
-    executeFavoriteToggle,
-    executeRatingAction,
-    getPendingActionType,
+    loginSuccessCallback,
   } = useContentInfoActions({
     contentId,
     contentType: type,
@@ -80,11 +78,6 @@ export const ContentInfo = React.memo(() => {
 
   // 결말 포함 칩 표시 여부
   const showEndingChip = primaryVideo?.includesEnding;
-
-  // 로그인 성공 콜백 결정
-  const pendingActionType = getPendingActionType();
-  const loginSuccessCallback =
-    pendingActionType === 'favorite' ? executeFavoriteToggle : executeRatingAction;
 
   return (
     <Container>
@@ -131,9 +124,7 @@ export const ContentInfo = React.memo(() => {
       {isVideosLoading ? (
         <SkeletonView width={250} height={20} borderRadius={4} />
       ) : (
-        <ContentTitle numberOfLines={1}>
-          {primaryVideo?.title || '비디오를 불러오는 중...'}
-        </ContentTitle>
+        <ContentTitle>{primaryVideo?.title || '비디오를 불러오는 중...'}</ContentTitle>
       )}
       <Gap size={8} />
 
@@ -201,10 +192,12 @@ const ChipRow = styled.View({
 
 const Title = styled.Text({
   ...textStyles.headline1,
+  textAlign: 'center',
 });
 
 const ContentTitle = styled.Text({
   ...textStyles.body3,
+  textAlign: 'center',
 });
 
 const SubTextView = styled.View({

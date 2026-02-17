@@ -1,5 +1,5 @@
 import React from 'react';
-import { FlatList, Dimensions } from 'react-native';
+import { FlatList } from 'react-native';
 import styled from '@emotion/native';
 import textStyles from '@/shared/styles/textStyles';
 import colors from '@/shared/styles/colors';
@@ -9,11 +9,12 @@ import { useCredits } from '../_hooks/useCredits';
 import { CreditPersonModel } from '../_types/creditModel.cd';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { AppSize } from '@/shared/utils/appSize';
 
 function CaseView() {
   const { id, type } = useContentDetailRoute();
   const { data: creditList, isLoading, error } = useCredits(id, type);
-  const { width: screenWidth } = Dimensions.get('window');
+  const screenWidth = AppSize.screenWidth;
   const pageWidth = screenWidth * 0.93; // viewportFraction: 0.93과 동일
 
   // 에러 발생 시 아무것도 렌더링하지 않음
