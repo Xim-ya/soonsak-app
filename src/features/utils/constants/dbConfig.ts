@@ -72,3 +72,18 @@ export const PUSH_DATABASE = {
     UPDATED_AT: 'updated_at',
   },
 } as const;
+
+export const DEVICE_DATABASE = {
+  TABLES: {
+    DEVICES: 'devices',
+  },
+  COLUMNS: {
+    ID: 'id',
+    DEVICE_ID: 'device_id',
+    PLATFORM: 'platform',
+    USER_ID: 'user_id',
+    LINKED_AT: 'linked_at',
+    CREATED_AT: 'created_at',
+    UPDATED_AT: 'updated_at',
+  },
+} as const;
