@@ -28,6 +28,9 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
+      entitlements: {
+        'aps-environment': 'development',
+      },
     },
     android: {
       adaptiveIcon: {

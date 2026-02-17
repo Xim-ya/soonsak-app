@@ -15,6 +15,8 @@ import { PushNotificationProvider } from '@/shared/providers/PushNotificationPro
 import { ContentFilterProvider } from '@/shared/context/ContentFilterContext';
 import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
 import { isAppError } from '@/shared/errors';
+import { linkingConfig } from '@/features/push-notifications';
+import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
@@ -118,7 +120,7 @@ function AppContent() {
       <StatusBar style="light" />
       <AuthProvider>
         <PushNotificationProvider>
-          <NavigationContainer theme={navigationTheme}>
+          <NavigationContainer ref={navigationRef} theme={navigationTheme} linking={linkingConfig}>
             <StackNavigator />
           </NavigationContainer>
         </PushNotificationProvider>

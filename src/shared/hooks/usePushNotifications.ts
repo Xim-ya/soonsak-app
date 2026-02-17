@@ -101,7 +101,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
   const [error, setError] = useState<string | null>(null);
 
   const notificationListener = useRef<Notifications.EventSubscription>(undefined);
-  const responseListener = useRef<Notifications.EventSubscription>(undefined);
+  // 알림 탭 응답은 PushNotificationProvider에서 처리 (중복 방지)
 
   // 권한 요청 함수
   const requestPermissions = useCallback(async (): Promise<boolean> => {
@@ -157,7 +157,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
     initialize();
 
-    // Foreground 알림 수신 리스너
+    // Foreground 알림 수신 리스너 (알림 표시용)
     notificationListener.current = Notifications.addNotificationReceivedListener((notif) => {
       if (mounted) {
         setNotification(notif);
@@ -167,34 +167,13 @@ export function usePushNotifications(): UsePushNotificationsResult {
       }
     });
 
-    // 알림 탭 응답 리스너 (모든 앱 상태에서 동작)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
-      if (__DEV__) {
-        console.log('[PushNotifications] 알림 탭:', response.notification.request.content);
-      }
-      // TODO: 네비게이션 처리 로직 추가
-      // const data = response.notification.request.content.data;
-      // if (data?.screen) { navigation.navigate(data.screen); }
-    });
+    // 알림 탭 응답은 PushNotificationProvider에서 처리 (인증 체크 포함)
 
     return () => {
       mounted = false;
       notificationListener.current?.remove();
-      responseListener.current?.remove();
     };
   }, [requestPermissions]);
-
-  // 앱이 killed 상태에서 시작된 경우 마지막 알림 확인
-  useEffect(() => {
-    const checkLastNotification = async () => {
-      const lastResponse = await Notifications.getLastNotificationResponseAsync();
-      if (lastResponse && __DEV__) {
-        console.log('[PushNotifications] 앱 시작 시 마지막 알림:', lastResponse);
-        // TODO: 네비게이션 처리 로직 추가
-      }
-    };
-    checkLastNotification();
-  }, []);
 
   return {
     expoPushToken,
