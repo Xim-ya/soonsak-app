@@ -1,0 +1,206 @@
+/**
+ * usePushNotifications - Expo 푸시 알림 관리 훅
+ *
+ * Expo Push Token 획득, 권한 요청, 알림 수신 리스너를 관리합니다.
+ * - 실제 디바이스에서만 동작 (에뮬레이터 지원 안 함)
+ * - Android 13+에서는 POST_NOTIFICATIONS 런타임 권한 필요
+ * - SDK 53+에서는 Development Build 필수 (Expo Go 지원 안 함)
+ *
+ * @example
+ * const { expoPushToken, notification, requestPermissions } = usePushNotifications();
+ *
+ * // 토큰이 있으면 서버에 등록
+ * useEffect(() => {
+ *   if (expoPushToken && user) {
+ *     syncPushToken(user.id, expoPushToken);
+ *   }
+ * }, [expoPushToken, user]);
+ */
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Platform } from 'react-native';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+
+// 전역 알림 핸들러 설정 (Foreground 알림 표시 방식)
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
+/** 시뮬레이터 여부 확인 */
+const isSimulator = !Device.isDevice;
+
+/** 푸시 알림 훅 반환 타입 */
+export interface UsePushNotificationsResult {
+  /** Expo Push Token (ExponentPushToken[...] 형식) */
+  expoPushToken: string | null;
+  /** 현재 수신된 알림 (Foreground) */
+  notification: Notifications.Notification | null;
+  /** 권한 상태 */
+  permissionStatus: Notifications.PermissionStatus | null;
+  /** 푸시 알림 권한 요청 */
+  requestPermissions: () => Promise<boolean>;
+  /** 에러 메시지 */
+  error: string | null;
+}
+
+/**
+ * Expo Push Token 획득 함수
+ *
+ * Android에서는 알림 채널을 먼저 생성하고, 권한을 확인한 후 토큰을 획득합니다.
+ */
+async function getExpoPushToken(): Promise<string | null> {
+  // 시뮬레이터에서는 푸시 토큰 획득 불가 (iOS 제한)
+  if (isSimulator) {
+    if (__DEV__) {
+      console.log('[PushNotifications] 시뮬레이터에서는 푸시 토큰을 획득할 수 없습니다.');
+    }
+    return null;
+  }
+
+  // Android: 알림 채널 생성 (Android 8.0+ 필수)
+  if (Platform.OS === 'android') {
+    await Notifications.setNotificationChannelAsync('default', {
+      name: '기본 알림',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#00C853',
+    });
+  }
+
+  // Project ID 획득
+  const projectId =
+    Constants?.expoConfig?.extra?.['eas']?.projectId ?? Constants?.easConfig?.projectId;
+
+  if (!projectId) {
+    console.error('[PushNotifications] EAS Project ID를 찾을 수 없습니다.');
+    return null;
+  }
+
+  // 토큰 획득
+  try {
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+  } catch (error) {
+    console.error('[PushNotifications] 토큰 획득 실패:', error);
+    return null;
+  }
+}
+
+export function usePushNotifications(): UsePushNotificationsResult {
+  const [expoPushToken, setExpoPushToken] = useState<string | null>(null);
+  const [notification, setNotification] = useState<Notifications.Notification | null>(null);
+  const [permissionStatus, setPermissionStatus] = useState<Notifications.PermissionStatus | null>(
+    null,
+  );
+  const [error, setError] = useState<string | null>(null);
+
+  const notificationListener = useRef<Notifications.EventSubscription>(undefined);
+  const responseListener = useRef<Notifications.EventSubscription>(undefined);
+
+  // 권한 요청 함수
+  const requestPermissions = useCallback(async (): Promise<boolean> => {
+    try {
+      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+
+      if (existingStatus === 'granted') {
+        setPermissionStatus(existingStatus);
+        return true;
+      }
+
+      const { status } = await Notifications.requestPermissionsAsync();
+      setPermissionStatus(status);
+
+      if (status !== 'granted') {
+        setError('푸시 알림 권한이 거부되었습니다.');
+        return false;
+      }
+
+      return true;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '권한 요청 실패';
+      setError(message);
+      return false;
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    if (__DEV__) {
+      console.log('[PushNotifications] 훅 초기화, isSimulator:', isSimulator);
+    }
+
+    // 초기화 함수
+    const initialize = async () => {
+      // 시뮬레이터에서는 토큰 획득 스킵
+      if (isSimulator) return;
+
+      // 1. 권한 확인 및 요청
+      const granted = await requestPermissions();
+      if (!granted || !mounted) return;
+
+      // 2. 토큰 획득
+      const token = await getExpoPushToken();
+      if (mounted && token) {
+        setExpoPushToken(token);
+        if (__DEV__) {
+          console.log('[PushNotifications] Expo Push Token:', token);
+        }
+      }
+    };
+
+    initialize();
+
+    // Foreground 알림 수신 리스너
+    notificationListener.current = Notifications.addNotificationReceivedListener((notif) => {
+      if (mounted) {
+        setNotification(notif);
+        if (__DEV__) {
+          console.log('[PushNotifications] Foreground 알림 수신:', notif.request.content.title);
+        }
+      }
+    });
+
+    // 알림 탭 응답 리스너 (모든 앱 상태에서 동작)
+    responseListener.current = Notifications.addNotificationResponseReceivedListener((response) => {
+      if (__DEV__) {
+        console.log('[PushNotifications] 알림 탭:', response.notification.request.content);
+      }
+      // TODO: 네비게이션 처리 로직 추가
+      // const data = response.notification.request.content.data;
+      // if (data?.screen) { navigation.navigate(data.screen); }
+    });
+
+    return () => {
+      mounted = false;
+      notificationListener.current?.remove();
+      responseListener.current?.remove();
+    };
+  }, [requestPermissions]);
+
+  // 앱이 killed 상태에서 시작된 경우 마지막 알림 확인
+  useEffect(() => {
+    const checkLastNotification = async () => {
+      const lastResponse = await Notifications.getLastNotificationResponseAsync();
+      if (lastResponse && __DEV__) {
+        console.log('[PushNotifications] 앱 시작 시 마지막 알림:', lastResponse);
+        // TODO: 네비게이션 처리 로직 추가
+      }
+    };
+    checkLastNotification();
+  }, []);
+
+  return {
+    expoPushToken,
+    notification,
+    permissionStatus,
+    requestPermissions,
+    error,
+  };
+}

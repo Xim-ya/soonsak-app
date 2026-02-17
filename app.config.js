@@ -36,11 +36,24 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: 'com.soonsak.app',
+      googleServicesFile: './google-services.json',
     },
     web: {
       favicon: './assets/favicon.png',
     },
-    plugins: ['expo-font', 'expo-web-browser', 'expo-apple-authentication'],
+    plugins: [
+      'expo-font',
+      'expo-web-browser',
+      'expo-apple-authentication',
+      [
+        'expo-notifications',
+        {
+          icon: './assets/notification_icon.png',
+          color: '#00C853',
+          defaultChannel: 'default',
+        },
+      ],
+    ],
     extra: {
       eas: {
         projectId: EAS_PROJECT_ID,

@@ -107,3 +107,7 @@ jspm_packages/
 # Claude Code configuration files
 .mcp.json
 CLAUDE.md
+
+# Firebase
+google-services.json
+*-firebase-adminsdk-*.json

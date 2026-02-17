@@ -11,6 +11,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
 import { enableScreens } from 'react-native-screens';
 import { AuthProvider } from '@/shared/providers/AuthProvider';
+import { PushNotificationProvider } from '@/shared/providers/PushNotificationProvider';
 import { ContentFilterProvider } from '@/shared/context/ContentFilterContext';
 import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
 import { isAppError } from '@/shared/errors';
@@ -116,9 +117,11 @@ function AppContent() {
     <>
       <StatusBar style="light" />
       <AuthProvider>
-        <NavigationContainer theme={navigationTheme}>
-          <StackNavigator />
-        </NavigationContainer>
+        <PushNotificationProvider>
+          <NavigationContainer theme={navigationTheme}>
+            <StackNavigator />
+          </NavigationContainer>
+        </PushNotificationProvider>
       </AuthProvider>
     </>
   );
