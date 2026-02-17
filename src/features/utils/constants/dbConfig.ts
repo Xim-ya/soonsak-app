@@ -56,3 +56,19 @@ export const AUTH_DATABASE = {
     LAST_LOGIN_AT: 'last_login_at',
   },
 } as const;
+
+export const PUSH_DATABASE = {
+  TABLES: {
+    PUSH_TOKENS: 'push_tokens',
+  },
+  COLUMNS: {
+    ID: 'id',
+    USER_ID: 'user_id',
+    TOKEN: 'token',
+    PLATFORM: 'platform',
+    DEVICE_ID: 'device_id',
+    IS_ACTIVE: 'is_active',
+    CREATED_AT: 'created_at',
+    UPDATED_AT: 'updated_at',
+  },
+} as const;

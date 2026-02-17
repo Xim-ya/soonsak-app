@@ -6,22 +6,16 @@
  * - 평점 상태 및 등록
  * - 로그인 다이얼로그 상태
  * - 평점 바텀시트 상태
- * - 로그인 후 pending 액션 처리
+ * - 로그인 성공 콜백 제공
  *
  * Toss Frontend Fundamentals - 응집도 원칙:
  * 같은 목적의 코드(찜/평점 액션)를 한 곳에 뭉쳐서 관리합니다.
  */
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useMemo } from 'react';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useFavoriteStatus, useToggleFavorite } from '@/features/favorites';
 import { useRatingStatus, useSetRating } from '@/features/ratings';
-import {
-  usePendingFavoriteAction,
-  usePendingRatingAction,
-  usePendingActionActions,
-  getPendingFavoriteAction,
-} from '@/shared/stores/pendingActionStore';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
 
 interface UseContentInfoActionsParams {
@@ -51,18 +45,13 @@ interface UseContentInfoActionsReturn {
   readonly handleCloseRatingSheet: () => void;
   /** 로그인 다이얼로그 닫기 */
   readonly handleCloseDialog: () => void;
-  /** 찜 토글 실행 (카카오 로그인 성공 콜백용) */
-  readonly executeFavoriteToggle: () => void;
-  /** 평점 액션 실행 (카카오 로그인 성공 콜백용) */
-  readonly executeRatingAction: () => void;
-  /** pending 액션 타입 조회 (로그인 성공 콜백 결정용) */
-  readonly getPendingActionType: () => 'favorite' | 'rating' | null;
+  /** 로그인 성공 시 실행할 콜백 (LoginPromptDialog에 전달) */
+  readonly loginSuccessCallback: (() => void) | undefined;
 }
 
 export function useContentInfoActions({
   contentId,
   contentType,
-  contentTitle,
 }: UseContentInfoActionsParams): UseContentInfoActionsReturn {
   // 인증 상태
   const { status } = useAuth();
@@ -79,11 +68,8 @@ export function useContentInfoActions({
   const hasRating = ratingStatus?.hasRating ?? false;
   const currentRating = ratingStatus?.rating ?? null;
 
-  // Pending 액션 상태 (Zustand)
-  const pendingFavorite = usePendingFavoriteAction();
-  const pendingRating = usePendingRatingAction();
-  const { setFavoriteAction, clearFavoriteAction, setRatingAction, clearRatingAction } =
-    usePendingActionActions();
+  // 로컬 상태: 어떤 액션이 pending인지 추적
+  const [pendingAction, setPendingAction] = useState<'favorite' | 'rating' | null>(null);
 
   // 로그인 다이얼로그 상태
   const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
@@ -91,59 +77,25 @@ export function useContentInfoActions({
   // 평점 바텀시트 상태
   const [isRatingSheetVisible, setRatingSheetVisible] = useState(false);
 
-  // 로그인 상태 변화 감지 - "다른 방법으로 로그인" 후 돌아왔을 때 pending 액션 실행
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    // 찜 pending 액션 처리
-    if (pendingFavorite && pendingFavorite.contentId === contentId) {
-      clearFavoriteAction();
-      toggleFavorite({
-        contentId: pendingFavorite.contentId,
-        contentType: pendingFavorite.contentType,
-      });
-    }
-
-    // 평점 pending 액션 처리 (바텀시트 열기)
-    if (pendingRating && pendingRating.contentId === contentId) {
-      clearRatingAction();
-      setRatingSheetVisible(true);
-    }
-  }, [
-    isLoggedIn,
-    contentId,
-    pendingFavorite,
-    pendingRating,
-    toggleFavorite,
-    clearFavoriteAction,
-    clearRatingAction,
-  ]);
-
-  // 찜 토글 실행 함수 (카카오 로그인 성공 시 콜백)
-  const executeFavoriteToggle = useCallback(() => {
-    clearFavoriteAction();
-    toggleFavorite({ contentId, contentType });
-  }, [contentId, contentType, toggleFavorite, clearFavoriteAction]);
-
   // 찜 버튼 클릭 핸들러
   const handleFavoritePress = useCallback(() => {
     if (!isLoggedIn) {
-      setFavoriteAction({ contentId, contentType });
+      setPendingAction('favorite');
       setLoginDialogVisible(true);
       return;
     }
     toggleFavorite({ contentId, contentType });
-  }, [isLoggedIn, contentId, contentType, toggleFavorite, setFavoriteAction]);
+  }, [isLoggedIn, contentId, contentType, toggleFavorite]);
 
   // 평점 버튼 클릭 핸들러
   const handleRatingPress = useCallback(() => {
     if (!isLoggedIn) {
-      setRatingAction({ contentId, contentType, contentTitle });
+      setPendingAction('rating');
       setLoginDialogVisible(true);
       return;
     }
     setRatingSheetVisible(true);
-  }, [isLoggedIn, contentId, contentType, contentTitle, setRatingAction]);
+  }, [isLoggedIn]);
 
   // 평점 등록 핸들러
   const handleSubmitRating = useCallback(
@@ -158,23 +110,28 @@ export function useContentInfoActions({
     setRatingSheetVisible(false);
   }, []);
 
-  // 평점 등록 실행 함수 (카카오 로그인 성공 시 콜백)
-  const executeRatingAction = useCallback(() => {
-    clearRatingAction();
-    setRatingSheetVisible(true);
-  }, [clearRatingAction]);
-
   // 로그인 다이얼로그 닫기
   const handleCloseDialog = useCallback(() => {
     setLoginDialogVisible(false);
+    setPendingAction(null);
   }, []);
 
-  // pending 액션 타입 조회 (로그인 성공 콜백 결정용)
-  const getPendingActionType = useCallback((): 'favorite' | 'rating' | null => {
-    if (getPendingFavoriteAction()) return 'favorite';
-    if (pendingRating) return 'rating';
-    return null;
-  }, [pendingRating]);
+  // 로그인 성공 시 실행할 콜백 (pending 액션에 따라 결정)
+  const loginSuccessCallback = useMemo(() => {
+    if (pendingAction === 'favorite') {
+      return () => {
+        toggleFavorite({ contentId, contentType });
+        setPendingAction(null);
+      };
+    }
+    if (pendingAction === 'rating') {
+      return () => {
+        setRatingSheetVisible(true);
+        setPendingAction(null);
+      };
+    }
+    return undefined;
+  }, [pendingAction, contentId, contentType, toggleFavorite]);
 
   return {
     isFavorited,
@@ -187,8 +144,6 @@ export function useContentInfoActions({
     handleSubmitRating,
     handleCloseRatingSheet,
     handleCloseDialog,
-    executeFavoriteToggle,
-    executeRatingAction,
-    getPendingActionType,
+    loginSuccessCallback,
   };
 }

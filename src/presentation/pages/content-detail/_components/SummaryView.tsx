@@ -9,6 +9,12 @@ export const SummaryView = () => {
   const { id, type } = useContentDetailRoute();
   const { data: contentDetail, isLoading } = useContentDetail(id, type);
 
+  // 로딩 중이 아니고 줄거리가 없거나 빈 문자열이면 렌더링하지 않음
+  const hasOverview = contentDetail?.overview && contentDetail.overview.trim() !== '';
+  if (!isLoading && !hasOverview) {
+    return null;
+  }
+
   return (
     <Container>
       <Title>줄거리</Title>

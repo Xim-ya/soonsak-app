@@ -33,14 +33,19 @@ export type UserContentListTabIndex = 0 | 1 | 2; // 0: 찜했어요, 1: 평가�
  * - 잘못된 파라미터 전달 시 컴파일 에러 발생
  */
 export type RootStackParamList = {
-  [routePages.login]: { canGoBack?: boolean } | undefined; // 로그인 - canGoBack 선택적 파라미터
+  [routePages.login]:
+    | {
+        canGoBack?: boolean;
+        onLoginSuccess?: () => void; // 로그인 성공 후 실행할 콜백 (찜/평점 등)
+      }
+    | undefined; // 로그인 - canGoBack, onLoginSuccess 선택적 파라미터
   [routePages.mainTabs]: undefined; // 탭 네비게이터 - 파라미터 없음
   [routePages.contentDetail]: {
     id: number; // 콘텐츠 ID
-    title: string | null; // 콘텐츠 제목
+    title?: string | null; // 콘텐츠 제목 (선택)
     type: ContentType; // 콘텐츠 타입 (movie | series | unknown)
     videoId?: string; // 특정 비디오 ID (선택 - 없으면 primary 비디오 사용)
-  }; // 콘텐츠 상세 - id, title, type 필수, videoId 선택
+  }; // 콘텐츠 상세 - id, type 필수, title, videoId 선택
   [routePages.player]: {
     videoId: string;
     title: string;

@@ -50,10 +50,7 @@ export const WATCH_PROGRESS_POLICY = {
  * - 최소 1% 이상 또는 10초 이상 시청해야 표시
  * - 95% 이상 또는 남은 10초 이하면 완료로 간주하여 미표시
  */
-export function shouldShowProgressBar(
-  progressSeconds: number,
-  durationSeconds: number,
-): boolean {
+export function shouldShowProgressBar(progressSeconds: number, durationSeconds: number): boolean {
   const hasValidDuration = durationSeconds > 0 && progressSeconds > 0;
   if (!hasValidDuration) return false;
 
@@ -74,10 +71,7 @@ export function shouldShowProgressBar(
 /**
  * 진행률 퍼센트 계산 (0~100)
  */
-export function calculateProgressPercent(
-  progressSeconds: number,
-  durationSeconds: number,
-): number {
+export function calculateProgressPercent(progressSeconds: number, durationSeconds: number): number {
   if (durationSeconds <= 0) return 0;
   return Math.min((progressSeconds / durationSeconds) * 100, 100);
 }

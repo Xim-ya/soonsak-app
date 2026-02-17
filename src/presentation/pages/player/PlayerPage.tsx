@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { Dimensions, ActivityIndicator, Platform, Alert } from 'react-native';
+import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { ActivityIndicator, Platform, Alert, StatusBar, Dimensions } from 'react-native';
 import { YoutubeView, useYouTubePlayer, useYouTubeEvent } from 'react-native-youtube-bridge';
 import WebView from 'react-native-webview';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import colors from '@/shared/styles/colors';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { useWatchProgressSync } from '@/features/watch-history';
+import { AppSize } from '@/shared/utils/appSize';
 import { PlayerWatchProviderView } from './_components/PlayerWatchProviderView';
 import { usePlayerReady, useResumePlayback, useFallbackPlayer } from './_hooks';
 
@@ -26,7 +28,42 @@ export const PlayerPage = () => {
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
 
-  const screenWidth = Dimensions.get('window').width;
+  const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
+  const isAndroid = Platform.OS === 'android';
+
+  // 화면 회전 시 dimensions 업데이트
+  useEffect(() => {
+    const subscription = Dimensions.addEventListener('change', ({ window }) => {
+      setScreenDimensions(window);
+    });
+    return () => subscription?.remove();
+  }, []);
+
+  // Android: 가로 모드 강제 전체화면 / iOS: portrait 유지
+  useFocusEffect(
+    useCallback(() => {
+      if (isAndroid) {
+        // Android: 가로 모드 + 상태바 숨김
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE).catch(() => {});
+        StatusBar.setHidden(true);
+      } else {
+        // iOS: portrait 유지
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {});
+      }
+
+      return () => {
+        // 페이지 이탈 시 portrait 복구
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
+          .catch(() => {})
+          .finally(() => {
+            AppSize.forceRefreshDimensions();
+          });
+        if (isAndroid) {
+          StatusBar.setHidden(false);
+        }
+      };
+    }, [isAndroid]),
+  );
 
   const player = useYouTubePlayer(videoId, {
     autoplay: true,
@@ -119,16 +156,20 @@ export const PlayerPage = () => {
   // 에러 이벤트
   useYouTubeEvent(player, 'error', handleError);
 
-  // 16:9 비율로 계산된 높이
-  const playerWidth = screenWidth;
-  const playerHeight = (playerWidth * 9) / 16;
+  // Android: 전체 화면 / iOS: 16:9 비율
+  const playerWidth = screenDimensions.width;
+  const playerHeight = isAndroid ? screenDimensions.height : (screenDimensions.width * 9) / 16;
 
   // Fallback: YouTube 모바일 사이트를 WebView로 직접 로드
   if (isFallbackMode) {
     const mobileYouTubeUrl = `https://m.youtube.com/watch?v=${videoId}`;
 
     return (
-      <BasePage backgroundColor={colors.black} statusBarStyle="light-content">
+      <BasePage
+        backgroundColor={colors.black}
+        statusBarStyle="light-content"
+        touchableWithoutFeedback={false}
+      >
         <BackButtonAppBar title={title} backgroundColor={colors.black} />
         <FallbackContainer>
           <WebView
@@ -165,8 +206,46 @@ export const PlayerPage = () => {
     );
   }
 
+  // Android 전체화면 모드
+  if (isAndroid) {
+    return (
+      <FullscreenContainer>
+        {!isPlayerReady && (
+          <LoadingContainer>
+            <ActivityIndicator size="small" color={colors.white} />
+          </LoadingContainer>
+        )}
+        <YoutubeView
+          player={player}
+          height={playerHeight}
+          width={playerWidth}
+          style={{
+            opacity: isPlayerReady ? 1 : 0,
+            backgroundColor: colors.black,
+          }}
+          webViewStyle={{
+            backgroundColor: colors.black,
+          }}
+          webViewProps={{
+            allowsInlineMediaPlayback: true,
+            mediaPlaybackRequiresUserAction: false,
+            allowsFullscreenVideo: true,
+            mixedContentMode: 'always',
+            domStorageEnabled: true,
+          }}
+          useInlineHtml={false}
+        />
+      </FullscreenContainer>
+    );
+  }
+
+  // iOS 모드
   return (
-    <BasePage backgroundColor={colors.black} statusBarStyle="light-content">
+    <BasePage
+      backgroundColor={colors.black}
+      statusBarStyle="light-content"
+      touchableWithoutFeedback={false}
+    >
       <BackButtonAppBar
         title={title}
         backgroundColor="rgba(0,0,0,0.8)"
@@ -222,6 +301,13 @@ export const PlayerPage = () => {
 };
 
 /* Styled Components */
+const FullscreenContainer = styled.View({
+  flex: 1,
+  backgroundColor: colors.black,
+  justifyContent: 'center',
+  alignItems: 'center',
+});
+
 const Container = styled.View({
   flex: 1,
   backgroundColor: colors.black,

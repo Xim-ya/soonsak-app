@@ -15,6 +15,7 @@ import SettingsPage from '../../../presentation/pages/settings/SettingsPage';
 import UserContentListPage from '../../../presentation/pages/user-content-list/UserContentListPage';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
+import { AuthGuard } from '../guards/AuthGuard';
 import colors from '@/shared/styles/colors';
 import { useAuth } from '@/shared/providers/AuthProvider';
 
@@ -75,6 +76,7 @@ export default function StackNavigator() {
       <Stack.Screen name={routePages.mainTabs} options={{ headerShown: false }}>
         {() => (
           <>
+            <AuthGuard />
             <ProfileSetupNavigator />
             <TabNavigator />
           </>
