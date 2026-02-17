@@ -163,7 +163,10 @@ async function signInWithOAuthBrowser(provider: OAuthProvider): Promise<AuthResu
     }
 
     // 웹 브라우저로 OAuth 페이지 열기
-    const result = await WebBrowser.openAuthSessionAsync(oauthData.url, OAUTH_REDIRECT_URL);
+    // preferEphemeralSession: iOS에서 "앱이 supabase.co를 사용하여 로그인" 팝업 제거
+    const result = await WebBrowser.openAuthSessionAsync(oauthData.url, OAUTH_REDIRECT_URL, {
+      preferEphemeralSession: true,
+    });
 
     if (__DEV__) {
       console.log(`[AuthApi] ${provider} OAuth result:`, result.type);

@@ -32,6 +32,10 @@ module.exports = {
       entitlements: {
         'aps-environment': APP_VARIANT === 'production' ? 'production' : 'development',
       },
+      infoPlist: {
+        CFBundleName: '순삭',
+        CFBundleDisplayName: '순삭',
+      },
     },
     android: {
       adaptiveIcon: {
