@@ -1,6 +1,7 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import React, { useMemo } from 'react';
 import styled from '@emotion/native';
+import type { SharedValue } from 'react-native-reanimated';
 
 import { useTabScrollListener } from '../_hooks/useTabScrollListener';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
@@ -21,8 +22,8 @@ import textStyles from '@/shared/styles/textStyles';
  *
  * TMDB 추천 + 장르 기반으로 관련 콘텐츠를 18개까지 3열 그리드로 표시합니다.
  */
-function RelatedContentTabView({ onScrollChange }: { onScrollChange: (offset: number) => void }) {
-  useTabScrollListener(onScrollChange);
+function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> }) {
+  useTabScrollListener(appBarOpacity);
 
   const { id: contentId, type: contentType } = useContentDetailRoute();
   const { data: contentDetail, isLoading: isDetailLoading } = useContentDetail(

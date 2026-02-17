@@ -1,5 +1,6 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import React, { useState, useCallback } from 'react';
+import type { SharedValue } from 'react-native-reanimated';
 import { useTabScrollListener } from '../_hooks/useTabScrollListener';
 import { VideoMetricsView } from './VideoMetricsView';
 import { SummaryView } from './SummaryView';
@@ -11,8 +12,8 @@ import { FeaturedCommentView } from './FeaturedCommentView';
 import { CommentsBottomSheet } from './CommentsBottomSheet';
 
 // 메모이제이션된 탭 컴포넌트
-function VideoTabView({ onScrollChange }: { onScrollChange: (offset: number) => void }) {
-  useTabScrollListener(onScrollChange);
+function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> }) {
+  useTabScrollListener(appBarOpacity);
 
   // 댓글 바텀시트 상태
   const [isCommentsVisible, setIsCommentsVisible] = useState(false);
