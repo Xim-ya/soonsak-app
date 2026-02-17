@@ -6,8 +6,6 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 
-const screenWidth = AppSize.screenWidth;
-
 interface TabItemProps {
   name: string;
   label: string;
@@ -37,6 +35,8 @@ export const TabBar = <T extends string>({
   onTabPress,
   tabProps,
 }: TabBarProps<T>) => {
+  // 컴포넌트 내부에서 읽어 AppSize 갱신 반영
+  const screenWidth = AppSize.screenWidth;
   const tabWidth = screenWidth / tabNames.length;
   const indicatorWidth = tabWidth * 0.38;
 

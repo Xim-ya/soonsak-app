@@ -34,13 +34,20 @@ export const PlayerPage = () => {
   useFocusEffect(
     useCallback(() => {
       if (Platform.OS === 'ios') {
-        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).catch(() => {
+          // 방향 잠금 실패 시 무시 (앱 동작에 영향 없음)
+        });
       }
       return () => {
         if (Platform.OS === 'ios') {
-          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).then(() => {
-            AppSize.forceRefreshDimensions();
-          });
+          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
+            .then(() => {
+              AppSize.forceRefreshDimensions();
+            })
+            .catch(() => {
+              // 방향 잠금 실패해도 dimensions 갱신 시도
+              AppSize.forceRefreshDimensions();
+            });
         }
       };
     }, []),
