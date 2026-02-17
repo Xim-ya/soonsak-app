@@ -40,14 +40,9 @@ export const PlayerPage = () => {
       }
       return () => {
         if (Platform.OS === 'ios') {
-          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP)
-            .then(() => {
-              AppSize.forceRefreshDimensions();
-            })
-            .catch(() => {
-              // 방향 잠금 실패해도 dimensions 갱신 시도
-              AppSize.forceRefreshDimensions();
-            });
+          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).finally(() => {
+            AppSize.forceRefreshDimensions();
+          });
         }
       };
     }, []),
