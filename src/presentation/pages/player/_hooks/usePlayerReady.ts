@@ -13,6 +13,7 @@ import { Platform } from 'react-native';
 import type { useYouTubePlayer } from 'react-native-youtube-bridge';
 import { contentApi } from '@/features/content/api/contentApi';
 import { useAddWatchHistory } from '@/features/watch-history';
+import { useAuth } from '@/shared/providers/AuthProvider';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
 
 interface UsePlayerReadyParams {
@@ -40,6 +41,8 @@ export function usePlayerReady({
   const hasIncrementedPlayCount = useRef(false);
   const unmuteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
+  const { user } = useAuth();
+  const isLoggedIn = user !== null;
   const { mutate: addWatchHistory } = useAddWatchHistory();
 
   const handleReady = () => {
@@ -55,11 +58,14 @@ export function usePlayerReady({
       hasIncrementedPlayCount.current = true;
       contentApi.incrementPlayCount(contentId, contentType);
 
-      addWatchHistory({
-        contentId,
-        contentType,
-        videoId,
-      });
+      // 로그인 상태에서만 시청 기록 저장
+      if (isLoggedIn) {
+        addWatchHistory({
+          contentId,
+          contentType,
+          videoId,
+        });
+      }
     }
 
     // iOS에서 음소거 상태로 자동 재생 후 음소거 해제

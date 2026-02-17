@@ -47,7 +47,7 @@ interface LoginPromptDialogProps {
   /** 닫기 버튼 또는 배경 터치 시 호출 */
   readonly onClose: () => void;
   /** 로그인 성공 시 호출 (찜 토글 등 후속 액션 실행용) */
-  readonly onLoginSuccess?: () => void;
+  readonly onLoginSuccess?: (() => void) | undefined;
 }
 
 function LoginPromptDialog({
@@ -76,11 +76,12 @@ function LoginPromptDialog({
 
   // 다른 방법으로 로그인 핸들러
   const handleOtherLogin = useCallback(() => {
-    navigation.navigate(routePages.login);
+    navigation.navigate(routePages.login, {
+      canGoBack: true,
+      ...(onLoginSuccess && { onLoginSuccess }), // undefined가 아닐 때만 전달
+    });
     onClose();
-    // 다른 방법 로그인은 화면 이동 후 로그인하므로 콜백 실행 불가
-    // 이 경우는 useEffect로 로그인 상태 변화 감지 필요
-  }, [navigation, onClose]);
+  }, [navigation, onClose, onLoginSuccess]);
 
   return (
     <Modal
