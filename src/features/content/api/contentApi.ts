@@ -84,13 +84,36 @@ function applyContentFilters<T extends FilterableQuery>(
 
 export const contentApi = {
   /**
-   * 최근 업로드된 콘텐츠 조회
+   * 최근 업로드된 콘텐츠 조회 (페이지네이션 지원)
+   * @param page 페이지 번호 (0부터 시작)
+   * @param pageSize 페이지당 항목 수 (기본값: 12)
    */
-  getRecentUploadedContents: async (): Promise<ContentDto[]> => {
+  getRecentUploadedContents: async (
+    page: number = 0,
+    pageSize: number = 12,
+  ): Promise<{ contents: ContentDto[]; hasMore: boolean; totalCount: number }> => {
+    // 전체 카운트 조회
+    const { count, error: countError } = await supabaseClient
+      .from(CONTENT_DATABASE.TABLES.CONTENTS)
+      .select('*', { count: 'exact', head: true });
+
+    if (countError) {
+      console.error('콘텐츠 수 조회 실패:', countError);
+      throw new Error(`Failed to count contents: ${countError.message}`);
+    }
+
+    const totalCount = count ?? 0;
+    if (totalCount === 0) {
+      return { contents: [], hasMore: false, totalCount: 0 };
+    }
+
+    // 페이지네이션된 데이터 조회
+    const offset = page * pageSize;
     const { data, error } = await supabaseClient
       .from(CONTENT_DATABASE.TABLES.CONTENTS)
       .select('*')
-      .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false });
+      .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false })
+      .range(offset, offset + pageSize - 1);
 
     if (error) {
       console.error('콘텐츠 조회 실패:', error);
@@ -98,8 +121,9 @@ export const contentApi = {
     }
 
     const contents: ContentDto[] = mapWithField<ContentDto[]>(data ?? []);
+    const hasMore = (page + 1) * pageSize < totalCount;
 
-    return contents ?? [];
+    return { contents, hasMore, totalCount };
   },
 
   /**

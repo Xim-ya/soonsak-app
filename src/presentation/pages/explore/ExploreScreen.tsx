@@ -6,13 +6,13 @@
  */
 
 import { useCallback } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from '@/shared/styles/colors';
-import { RootStackParamList } from '@/shared/navigation/types';
+import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import type { ExploreContentModel } from './_types/exploreTypes';
@@ -25,7 +25,9 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function ExploreScreen() {
   const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<RouteProp<TabParamList, 'Explore'>>();
   const insets = useSafeAreaInsets();
+  const initialTab = route.params?.initialTab ?? 'all';
 
   const {
     filter,
@@ -58,6 +60,7 @@ export default function ExploreScreen() {
 
       <TabsContainer paddingTop={insets.top}>
         <Tabs.Container
+          initialTabName={initialTab}
           renderHeader={() => <ExploreHeader />}
           renderTabBar={(props) => (
             <ExploreTabBar
