@@ -6,10 +6,14 @@ import Explorepage from '../../../presentation/pages/explore/ExploreScreen';
 import SoonsakPage from '../../../presentation/pages/soonsak/SoonsakPage';
 import MyPage from '../../../presentation/pages/my/MyPage';
 import { TabParamList } from '../types';
+import colors from '@/shared/styles/colors';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 export default function TabNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -20,6 +24,13 @@ export default function TabNavigator() {
         tabBarIcon: ({ color, size }) => {
           const Icon = TabConfig[route.name as TabRoutes].icon;
           return <Icon width={size} height={size} fill={color} />;
+        },
+        tabBarStyle: {
+          backgroundColor: colors.black,
+          borderTopColor: colors.gray05,
+          // Android에서 하단 시스템 네비게이션 바 영역 확보
+          paddingBottom: insets.bottom,
+          height: 56 + insets.bottom,
         },
       })}
     >
