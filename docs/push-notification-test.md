@@ -189,7 +189,7 @@ curl -s -X POST 'https://hhgnrkejmkprfypwjhmz.supabase.co/functions/v1/send-push
   }'
 ```
 
-### 2.5 Settings (설정) - 인증 필요
+### 2.5 Settings (설정)
 
 **설정 화면으로 이동:**
 
@@ -473,8 +473,6 @@ curl -s -X POST 'https://hhgnrkejmkprfypwjhmz.supabase.co/functions/v1/send-push
 
 | 케이스 | 예상 동작 | 확인 |
 |--------|----------|------|
-| 로그인 상태 + Settings | 설정 화면으로 이동 | ☐ |
-| 비로그인 + Settings | 로그인 → 로그인 성공 → 설정 화면 | ☐ |
 | 로그인 상태 + UserContentList | 내 콘텐츠 목록으로 이동 | ☐ |
 | 비로그인 + UserContentList | 로그인 → 로그인 성공 → 내 콘텐츠 목록 | ☐ |
 
