@@ -11,6 +11,8 @@ import { useAuth } from '@/shared/providers/AuthProvider';
 import { onboardingStorage } from '@/features/auth/utils/onboardingStorage';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { handlePendingNavigation, pendingNavigationStore } from '@/features/push-notifications';
+import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { LoginBackground } from './_components/LoginBackground';
 import { LoginIntroText } from './_components/LoginIntroText';
 import { SocialLoginButtonGroup } from './_components/SocialLoginButtonGroup';
@@ -50,6 +52,15 @@ export default function LoginPage() {
   // 이전 인증 상태 추적 (로그인 성공 감지용)
   const prevStatusRef = useRef<AuthState['status']>(status);
 
+  // 로그인 화면 unmount 시 pending navigation 초기화
+  // (제스처 뒤로가기, 하드웨어 버튼 등 모든 이탈 케이스 커버)
+  // 로그인 성공 시에는 handlePendingNavigation에서 이미 clear됨
+  useEffect(() => {
+    return () => {
+      pendingNavigationStore.clear();
+    };
+  }, []);
+
   // 메인 화면으로 이동 (온보딩 완료 표시 후)
   const navigateToMain = useCallback(async () => {
     await onboardingStorage.markCompleted();
@@ -72,6 +83,11 @@ export default function LoginPage() {
     const justAuthenticated = prevStatus !== 'authenticated' && status === 'authenticated';
 
     if (justAuthenticated) {
+      // 푸시 알림/딥링크로 인한 pending navigation이 있으면 해당 화면으로 이동
+      if (navigationRef.isReady() && handlePendingNavigation(navigationRef)) {
+        return;
+      }
+
       // 로그인 성공 콜백 실행 (찜/평점 등)
       onLoginSuccess?.();
 
@@ -86,6 +102,7 @@ export default function LoginPage() {
   }, [status, canGoBack, navigation, navigateToMain, onLoginSuccess]);
 
   // 비회원 둘러보기 처리
+  // (pending clear는 unmount useEffect에서 처리)
   const handleGuestPress = useCallback(() => {
     if (canGoBack) {
       navigation.goBack();
@@ -95,6 +112,7 @@ export default function LoginPage() {
   }, [canGoBack, navigation, navigateToMain]);
 
   // 뒤로가기 처리
+  // (pending clear는 unmount useEffect에서 처리)
   const handleGoBack = useCallback(() => {
     navigation.goBack();
   }, [navigation]);

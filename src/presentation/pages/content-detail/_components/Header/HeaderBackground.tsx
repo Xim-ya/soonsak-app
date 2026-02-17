@@ -4,7 +4,10 @@ import styled from '@emotion/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
-import { DarkedLinearShadow, LinearAlign } from '@/presentation/components/shadow/DarkedLinearShadow';
+import {
+  DarkedLinearShadow,
+  LinearAlign,
+} from '@/presentation/components/shadow/DarkedLinearShadow';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
 import DarkChip from '@/presentation/components/chip/DarkChip';
