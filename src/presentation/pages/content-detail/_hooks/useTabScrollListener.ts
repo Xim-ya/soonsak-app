@@ -1,49 +1,42 @@
-import { useCallback, useRef } from 'react';
 import { useCurrentTabScrollY } from 'react-native-collapsible-tab-view';
-import { runOnJS, useAnimatedReaction } from 'react-native-reanimated';
+import { useAnimatedReaction, type SharedValue } from 'react-native-reanimated';
+
+/** opacity 변화가 시작되는 스크롤 오프셋 */
+export const OPACITY_START_OFFSET = 200;
+/** opacity가 1에 도달하는 스크롤 오프셋 */
+export const OPACITY_END_OFFSET = 269;
 
 /**
- * 탭 스크롤 이벤트를 감지하여 AppBar 투명도 제어를 위한 커스텀 훅
+ * 탭 스크롤 이벤트를 감지하여 AppBar 투명도를 직접 제어하는 커스텀 훅
  *
  * 주요 기능:
  * - react-native-collapsible-tab-view의 스크롤 Y 값 실시간 감지
- * - 스크롤 오프셋 269px 기준으로 AppBar 투명도 변경 시점 결정
- * - 성능 최적화: 불필요한 콜백 호출 방지 (상태 변경시만 호출)
- * - 디버깅용 로그 출력 (10px 이상 변경시만)
+ * - UI 스레드(worklet)에서 직접 opacity 계산 (JS 스레드 전환 없음)
+ * - 스크롤 오프셋 200px~269px 구간에서 비례적 opacity 변화
  *
- * @param onScrollChange - 스크롤 오프셋이 269px 기준점을 넘나들 때 호출되는 콜백 함수
+ * @param appBarOpacity - AppBar 투명도를 제어하는 SharedValue
  */
-const useTabScrollListener = (onScrollChange: (offset: number) => void) => {
+const useTabScrollListener = (appBarOpacity: SharedValue<number>) => {
   const scrollY = useCurrentTabScrollY();
-  const lastLoggedOffset = useRef(0);
-  const lastOpacityChange = useRef(0);
 
-  // 메모이제이션된 로그 함수
-  const logScrollOffset = useCallback(
-    (offset: number) => {
-      // 로그 출력 최적화 (10픽셀 이상 변경시만)
-      if (Math.abs(offset - lastLoggedOffset.current) >= 10) {
-        lastLoggedOffset.current = offset;
-      }
-
-      // opacity 변경이 필요한 경우만 콜백 호출 (성능 최적화)
-      const shouldShowAppBar = offset >= 269.0;
-      const lastShouldShow = lastOpacityChange.current >= 269.0;
-      if (shouldShowAppBar !== lastShouldShow) {
-        lastOpacityChange.current = offset;
-        onScrollChange(offset);
-      }
-    },
-    [onScrollChange],
-  );
-
-  // 스크롤 변화 감지 - 쓰로틀링 적용
   useAnimatedReaction(
     () => scrollY.value,
-    (currentValue) => {
-      runOnJS(logScrollOffset)(currentValue);
+    (offset) => {
+      'worklet';
+      let targetOpacity: number;
+
+      if (offset <= OPACITY_START_OFFSET) {
+        targetOpacity = 0;
+      } else if (offset >= OPACITY_END_OFFSET) {
+        targetOpacity = 1;
+      } else {
+        targetOpacity =
+          (offset - OPACITY_START_OFFSET) / (OPACITY_END_OFFSET - OPACITY_START_OFFSET);
+      }
+
+      appBarOpacity.value = targetOpacity;
     },
-    [], // dependency 배열 최적화
+    [appBarOpacity],
   );
 };
 

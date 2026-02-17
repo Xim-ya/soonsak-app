@@ -3930,6 +3930,11 @@ expo-modules-core@3.0.29:
   dependencies:
     invariant "^2.2.4"
 
+expo-screen-orientation@^9.0.8:
+  version "9.0.8"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-9.0.8.tgz#15b8f85bd4d183831943fc5a21e3020e17432867"
+  integrity sha512-qRoPi3E893o3vQHT4h1NKo51+7g2hjRSbDeg1fsSo/u2pOW5s6FCeoacLvD+xofOP33cH2MkE4ua54aWWO7Icw==
+
 expo-notifications@~0.32.16:
   version "0.32.16"
   resolved "https://registry.yarnpkg.com/expo-notifications/-/expo-notifications-0.32.16.tgz#1a1304b89efedd7cdeba92de39b21f09fb2db2c7"
@@ -6222,10 +6227,10 @@ react-native-awesome-gallery@^0.4.3:
   resolved "https://registry.npmjs.org/react-native-awesome-gallery/-/react-native-awesome-gallery-0.4.3.tgz"
   integrity sha512-Q1dONPP5i8S/fSqxZKnSs3SMaGNp+89e97i6pzkHMcylRXttsN8m3BaVco9WxZEKhvBFRFw+Ay0Ft0u9Q6h2qA==
 
-react-native-collapsible-tab-view@^8.0.1:
-  version "8.0.1"
-  resolved "https://registry.npmjs.org/react-native-collapsible-tab-view/-/react-native-collapsible-tab-view-8.0.1.tgz"
-  integrity sha512-/MRimYn4FB4Dzmypy0J976FVZeX9OEOyFR3fogO68YDHyleSEEgVI2ecrcbtJ4jC8LPT0weDhJPtUQtWtzlQ8A==
+react-native-collapsible-tab-view@7.0.1:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/react-native-collapsible-tab-view/-/react-native-collapsible-tab-view-7.0.1.tgz#8a62439bf65f99e627358dbaf6eac3dc95589fd2"
+  integrity sha512-vAYG8vnu59fnnaqd59Vr1kNZ+VViMVnGvfoBB0SGgp0PXsMgBSax+9AavM/DZUjSpycfkA7teZx9XtYdt2ytSA==
   dependencies:
     use-deep-compare "^1.1.0"
 

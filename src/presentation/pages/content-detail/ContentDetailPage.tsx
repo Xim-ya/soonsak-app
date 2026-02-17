@@ -9,7 +9,7 @@ import { Header } from './_components';
 import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
-import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
+import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
 import { useCallback } from 'react';
 import { TabBar } from './_components/TabBar';
@@ -26,7 +26,7 @@ import { useFavoriteAction } from './_hooks/useFavoriteAction';
 
 export default function ContentDetailPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
-  const { id, type, videoId } = route.params;
+  const { id, type, title, videoId } = route.params;
   const insets = useSafeAreaInsets();
   const appBarOpacity = useSharedValue(0);
 
@@ -56,21 +56,6 @@ export default function ContentDetailPage() {
     handleCloseDialog,
   } = useFavoriteAction({ contentId, contentType });
 
-  // 스크롤 오프셋 변화 처리 - 메모이제이션으로 리렌더링 최적화
-  const handleScrollChange = useCallback(
-    (offset: number) => {
-      // y offset이 269 이상이면 opacity 1.0, 미만이면 0.0
-      const targetOpacity = offset >= 269.0 ? 1.0 : 0.0;
-      // 현재 opacity와 다를 때만 애니메이션 실행 (성능 최적화)
-      if (Math.abs(appBarOpacity.value - targetOpacity) > 0.01) {
-        appBarOpacity.value = withTiming(targetOpacity, {
-          duration: 400,
-        });
-      }
-    },
-    [appBarOpacity],
-  );
-
   return (
     <ContentDetailProvider contentId={contentId} contentType={contentType} videoId={videoId}>
       <BasePage
@@ -91,7 +76,12 @@ export default function ContentDetailPage() {
           }, [appBarOpacity])}
           safeAreaHeight={insets.top}
         />
-        <AnimatedAppBar insets={insets} opacity={appBarOpacity} onMorePress={handleMorePress} />
+        <AnimatedAppBar
+          insets={insets}
+          opacity={appBarOpacity}
+          title={title || undefined}
+          onMorePress={handleMorePress}
+        />
         <TabsContainer paddingTop={insets.top}>
           <Tabs.Container
             renderHeader={() => <Header />}
@@ -103,10 +93,10 @@ export default function ContentDetailPage() {
             width={AppSize.screenWidth}
           >
             <Tabs.Tab name="영상" label="videoInfo">
-              <ContentTabView onScrollChange={handleScrollChange} />
+              <ContentTabView appBarOpacity={appBarOpacity} />
             </Tabs.Tab>
             <Tabs.Tab name="관련 콘텐츠" label="relatedContent">
-              <RelatedContentTabView onScrollChange={handleScrollChange} />
+              <RelatedContentTabView appBarOpacity={appBarOpacity} />
             </Tabs.Tab>
           </Tabs.Container>
         </TabsContainer>
