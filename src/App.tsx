@@ -11,9 +11,12 @@ import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
 import { enableScreens } from 'react-native-screens';
 import { AuthProvider } from '@/shared/providers/AuthProvider';
+import { PushNotificationProvider } from '@/shared/providers/PushNotificationProvider';
 import { ContentFilterProvider } from '@/shared/context/ContentFilterContext';
 import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
 import { isAppError } from '@/shared/errors';
+import { linkingConfig } from '@/features/push-notifications';
+import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
@@ -116,9 +119,11 @@ function AppContent() {
     <>
       <StatusBar style="light" />
       <AuthProvider>
-        <NavigationContainer theme={navigationTheme}>
-          <StackNavigator />
-        </NavigationContainer>
+        <PushNotificationProvider>
+          <NavigationContainer ref={navigationRef} theme={navigationTheme} linking={linkingConfig}>
+            <StackNavigator />
+          </NavigationContainer>
+        </PushNotificationProvider>
       </AuthProvider>
     </>
   );
