@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/native';
-import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
-import { Dimensions, ActivityIndicator, Platform, Alert } from 'react-native';
+import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
+import { ActivityIndicator, Platform, Alert } from 'react-native';
 import { YoutubeView, useYouTubePlayer, useYouTubeEvent } from 'react-native-youtube-bridge';
 import WebView from 'react-native-webview';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import colors from '@/shared/styles/colors';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { useWatchProgressSync } from '@/features/watch-history';
+import { AppSize } from '@/shared/utils/appSize';
 import { PlayerWatchProviderView } from './_components/PlayerWatchProviderView';
 import { usePlayerReady, useResumePlayback, useFallbackPlayer } from './_hooks';
 
@@ -26,7 +28,23 @@ export const PlayerPage = () => {
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
 
-  const screenWidth = Dimensions.get('window').width;
+  const screenWidth = AppSize.screenWidth;
+
+  // iOS 전체화면 회전 복구: 페이지 진입/이탈 시 portrait 잠금
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'ios') {
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
+      }
+      return () => {
+        if (Platform.OS === 'ios') {
+          ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).then(() => {
+            AppSize.forceRefreshDimensions();
+          });
+        }
+      };
+    }, []),
+  );
 
   const player = useYouTubePlayer(videoId, {
     autoplay: true,

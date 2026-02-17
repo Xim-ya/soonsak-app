@@ -1,11 +1,35 @@
-import { TouchableOpacity, Dimensions } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, interpolate, SharedValue } from 'react-native-reanimated';
 import { TabBarProps } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { AppSize } from '@/shared/utils/appSize';
 
-const { width: screenWidth } = Dimensions.get('window');
+const screenWidth = AppSize.screenWidth;
+
+interface TabItemProps {
+  name: string;
+  label: string;
+  index: number;
+  indexDecimal: SharedValue<number>;
+  onPress: () => void;
+}
+
+const TabItem = ({ name, label, index, indexDecimal, onPress }: TabItemProps) => {
+  const textStyle = useAnimatedStyle(() => {
+    const isActive = Math.round(indexDecimal.value) === index;
+    return {
+      color: isActive ? colors.white : colors.gray04,
+    };
+  });
+
+  return (
+    <Tab key={name} onPress={onPress} activeOpacity={0.7}>
+      <AnimatedTabText style={textStyle}>{label}</AnimatedTabText>
+    </Tab>
+  );
+};
 
 export const TabBar = <T extends string>({
   tabNames,
@@ -32,22 +56,18 @@ export const TabBar = <T extends string>({
     <TabBarContainer>
       <TabsContainer>
         {tabNames.map((name, index) => {
-          const tabProp = (tabProps as any)?.[name];
-          const label = tabProp?.label || name;
+          const tabProp = tabProps?.[name as keyof typeof tabProps];
+          const label = (tabProp as { label?: string })?.label || name;
 
           return (
-            <Tab key={name} onPress={() => onTabPress(name)} activeOpacity={0.7}>
-              <AnimatedTabText
-                style={useAnimatedStyle(() => {
-                  const isActive = Math.round(indexDecimal.value) === index;
-                  return {
-                    color: isActive ? colors.white : colors.gray04,
-                  };
-                })}
-              >
-                {label}
-              </AnimatedTabText>
-            </Tab>
+            <TabItem
+              key={name}
+              name={name}
+              label={label}
+              index={index}
+              indexDecimal={indexDecimal}
+              onPress={() => onTabPress(name)}
+            />
           );
         })}
       </TabsContainer>

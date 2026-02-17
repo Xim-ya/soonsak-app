@@ -1,10 +1,13 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
-import { useRoute } from '@react-navigation/native';
+import { useRoute, useFocusEffect } from '@react-navigation/native';
+import { Platform } from 'react-native';
+import * as ScreenOrientation from 'expo-screen-orientation';
 import { BasePage } from '../../components/page';
 import { Header } from './_components';
 import colors from '@/shared/styles/colors';
+import { AppSize } from '@/shared/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { useSharedValue, withTiming, useAnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
@@ -29,6 +32,17 @@ export default function ContentDetailPage() {
 
   const contentId = Number(id);
   const contentType = type as ContentType;
+
+  // iOS WKWebView 전체화면 버그 대응: 포커스 복귀 시 portrait 잠금 + dimensions 강제 복구
+  useFocusEffect(
+    useCallback(() => {
+      if (Platform.OS === 'ios') {
+        ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP).then(() => {
+          AppSize.forceRefreshDimensions();
+        });
+      }
+    }, []),
+  );
 
   // 찜하기 액션 관련 상태 및 핸들러 (Discussion #42: 다이얼로그 상태 훅 분리)
   const {
@@ -83,9 +97,10 @@ export default function ContentDetailPage() {
             renderHeader={() => <Header />}
             renderTabBar={(props) => <TabBar {...props} />}
             allowHeaderOverscroll={true}
-            headerHeight={480} // Header aspectRatio 높이 + ContentInfoView 예상 높이
+            headerHeight={480}
             tabBarHeight={48}
-            minHeaderHeight={48} // 앱바 높이만큼 최소 헤더 높이 설정
+            minHeaderHeight={48}
+            width={AppSize.screenWidth}
           >
             <Tabs.Tab name="영상" label="videoInfo">
               <ContentTabView onScrollChange={handleScrollChange} />
