@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity } from 'react-native';
+import { Pressable, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
@@ -35,33 +35,29 @@ function FeaturedCommentView({
 
   return (
     <Container>
-      <HeaderContainer>
-        <SectionTitle>대표 감상평</SectionTitle>
-        {totalCountText && <CommentCount>{totalCountText}</CommentCount>}
-      </HeaderContainer>
+      <Pressable onPress={onPressShowAll}>
+        <TitleRow>
+          <TitleWrapper>
+            <SectionTitle>대표 감상평</SectionTitle>
+            {totalCountText && <CommentCount>{totalCountText}</CommentCount>}
+          </TitleWrapper>
+          <RightArrowIcon style={{ width: 24, height: 24 }} />
+        </TitleRow>
+      </Pressable>
       <Gap size={16} />
 
       {isLoading ? (
         <CommentSkeletonView />
       ) : (
         featuredComment && (
-          <>
-            <TouchableOpacity onPress={onPressShowAll} activeOpacity={0.8}>
-              <CommentItemView
-                comment={featuredComment}
-                maxLines={3}
-                showReplyCount={false}
-                showPinnedBadge={false}
-              />
-            </TouchableOpacity>
-
-            <Gap size={12} />
-
-            <ShowAllButton onPress={onPressShowAll} activeOpacity={0.7}>
-              <ShowAllText>전체 댓글 보기</ShowAllText>
-              <RightArrowIcon width={16} height={16} />
-            </ShowAllButton>
-          </>
+          <TouchableOpacity onPress={onPressShowAll} activeOpacity={0.8}>
+            <CommentItemView
+              comment={featuredComment}
+              maxLines={3}
+              showReplyCount={false}
+              showPinnedBadge={false}
+            />
+          </TouchableOpacity>
         )
       )}
     </Container>
@@ -76,7 +72,13 @@ const Container = styled.View({
   paddingHorizontal: 16,
 });
 
-const HeaderContainer = styled.View({
+const TitleRow = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+});
+
+const TitleWrapper = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
 });
@@ -90,22 +92,6 @@ const CommentCount = styled.Text({
   ...textStyles.body3,
   color: colors.gray02,
   marginLeft: 8,
-});
-
-const ShowAllButton = styled.TouchableOpacity({
-  flexDirection: 'row',
-  alignItems: 'center',
-  justifyContent: 'center',
-  paddingVertical: 12,
-  paddingHorizontal: 16,
-  backgroundColor: colors.gray05,
-  borderRadius: 8,
-});
-
-const ShowAllText = styled.Text({
-  ...textStyles.body2,
-  color: colors.white,
-  marginRight: 4,
 });
 
 export { FeaturedCommentView };

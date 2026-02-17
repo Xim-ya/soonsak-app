@@ -7757,8 +7757,3 @@ youtubei.js@^16.0.1:
   dependencies:
     "@bufbuild/protobuf" "^2.0.0"
     meriyah "^6.1.4"
-
-zustand@^5.0.11:
-  version "5.0.11"
-  resolved "https://registry.npmjs.org/zustand/-/zustand-5.0.11.tgz"
-  integrity sha512-fdZY+dk7zn/vbWNCYmzZULHRrss0jx5pPFiOuMZ/5HJN6Yv3u+1Wswy/4MpZEkEGhtNH+pwxZB8OKgUBPzYAGg==

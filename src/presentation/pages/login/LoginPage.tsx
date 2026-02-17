@@ -70,6 +70,9 @@ export default function LoginPage() {
     });
   }, [navigation]);
 
+  // onLoginSuccess 콜백 (찜/평점 등 pending 액션 실행용)
+  const onLoginSuccess = route.params?.onLoginSuccess;
+
   // 로그인 성공 시 처리 (상태가 authenticated로 '변경'된 경우에만)
   useEffect(() => {
     const prevStatus = prevStatusRef.current;
@@ -85,6 +88,9 @@ export default function LoginPage() {
         return;
       }
 
+      // 로그인 성공 콜백 실행 (찜/평점 등)
+      onLoginSuccess?.();
+
       if (canGoBack) {
         // 다른 화면에서 로그인 페이지로 왔으면 뒤로가기
         navigation.goBack();
@@ -93,7 +99,7 @@ export default function LoginPage() {
         navigateToMain();
       }
     }
-  }, [status, canGoBack, navigation, navigateToMain]);
+  }, [status, canGoBack, navigation, navigateToMain, onLoginSuccess]);
 
   // 비회원 둘러보기 처리
   // (pending clear는 unmount useEffect에서 처리)

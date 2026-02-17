@@ -117,14 +117,19 @@ export function useWatchProgressSync({
     if (duration <= 0) return;
 
     try {
-      await watchHistoryApi.markAsFullyWatched(contentId, contentType, Math.floor(duration));
+      await watchHistoryApi.markAsFullyWatched(
+        contentId,
+        contentType,
+        Math.floor(duration),
+        videoId,
+      );
 
       // 완료 처리 후 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
     } catch (error) {
       console.error('영상 완료 처리 실패:', error);
     }
-  }, [isLoggedIn, contentId, contentType, queryClient]);
+  }, [isLoggedIn, contentId, contentType, videoId, queryClient]);
 
   /** 초기 동기화 스케줄 (첫 5초 후) */
   const scheduleInitialSync = useCallback(() => {
