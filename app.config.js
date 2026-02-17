@@ -4,6 +4,7 @@ require('dotenv').config();
 const GOOGLE_OAUTH_IOS_CLIENT_ID = process.env.GOOGLE_OAUTH_IOS_CLIENT_ID;
 const GOOGLE_OAUTH_ANDROID_CLIENT_ID = process.env.GOOGLE_OAUTH_ANDROID_CLIENT_ID;
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
+const APP_VARIANT = process.env.APP_VARIANT || 'development';
 
 module.exports = {
   expo: {
@@ -29,7 +30,7 @@ module.exports = {
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
       entitlements: {
-        'aps-environment': 'development',
+        'aps-environment': APP_VARIANT === 'production' ? 'production' : 'development',
       },
     },
     android: {
