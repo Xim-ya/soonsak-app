@@ -1,7 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import {
   View,
-  SafeAreaView,
   StyleSheet,
   StatusBar,
   TouchableWithoutFeedback,
@@ -10,6 +9,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from 'react-native';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import colors from '@/shared/styles/colors';
 
@@ -162,6 +162,17 @@ export const BasePage = React.memo<BasePageProps>(
       return content;
     };
 
+    // SafeArea edges 계산
+    const safeAreaEdges = useMemo<Edge[]>(() => {
+      if (!useSafeArea) return [];
+      const edges: Edge[] = [];
+      if (safeAreaTop) edges.push('top');
+      if (safeAreaBottom) edges.push('bottom');
+      if (safeAreaLeft) edges.push('left');
+      if (safeAreaRight) edges.push('right');
+      return edges;
+    }, [useSafeArea, safeAreaTop, safeAreaBottom, safeAreaLeft, safeAreaRight]);
+
     // 메인 콘텐츠
     const mainContent = (
       <View style={containerStyle}>
@@ -171,10 +182,10 @@ export const BasePage = React.memo<BasePageProps>(
     );
 
     // SafeArea 적용
-    if (useSafeArea) {
+    if (useSafeArea && safeAreaEdges.length > 0) {
       return (
         <View style={unsafeContainerStyle}>
-          <SafeAreaView style={[styles.safeArea, { backgroundColor }]}>
+          <SafeAreaView style={[styles.safeArea, { backgroundColor }]} edges={safeAreaEdges}>
             {wrapWithTouchHandler(mainContent)}
           </SafeAreaView>
         </View>
