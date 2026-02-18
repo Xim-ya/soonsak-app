@@ -4,6 +4,7 @@ import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { TopContentModel, fromContentDto, isValidTopContent } from '../_types/TopContentModel';
 import { contentApi } from '@/features/content/api/contentApi';
+import { getPreloadedBannerContents } from '@/shared/hooks/useAppPreload';
 
 /** 배너에 표시할 콘텐츠 수 */
 const BANNER_CONTENT_LIMIT = 5;
@@ -41,7 +42,11 @@ export function useTopBannerContents() {
   const { data, isError, isLoading, refetch } = useQuery({
     queryKey: ['topBannerContents'],
     queryFn: async (): Promise<TopContentModel[]> => {
-      const contents = await contentApi.getRandomBannerContents(BANNER_CONTENT_LIMIT);
+      // 프리로드된 데이터 우선 사용 (스플래시에서 미리 로드)
+      const preloaded = getPreloadedBannerContents();
+      const contents =
+        preloaded ?? (await contentApi.getRandomBannerContents(BANNER_CONTENT_LIMIT));
+
       // 빈 배열 또는 null/undefined 처리
       if (!contents || contents.length === 0) {
         return [];
@@ -73,7 +78,7 @@ export function useTopBannerContents() {
   );
 
   // 페이지 변경 시 opacity 애니메이션 처리
-  const onProgressChange = (offsetProgress: number, absoluteProgress: number) => {
+  const onProgressChange = (_offsetProgress: number, absoluteProgress: number) => {
     progress.value = absoluteProgress;
 
     // 중간 지점에서 아이템 변경 (Flutter와 동일한 로직)

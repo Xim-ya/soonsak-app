@@ -19,6 +19,7 @@ import { linkingConfig } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
+import { useAppPreload } from '@/shared/hooks/useAppPreload';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
@@ -154,8 +155,18 @@ export default function App() {
     staatliches_regular: require('../assets/fonts/Staatliches-Regular.ttf'),
   });
 
-  if (!fontsLoaded) {
-    return <></>;
+  const { isReady: isPreloadReady, hideSplash } = useAppPreload();
+
+  // 폰트 + 이미지 프리로드 완료 시 스플래시 숨김
+  useEffect(() => {
+    if (fontsLoaded && isPreloadReady) {
+      hideSplash();
+    }
+  }, [fontsLoaded, isPreloadReady, hideSplash]);
+
+  // 폰트 또는 프리로드 미완료 시 스플래시 유지
+  if (!fontsLoaded || !isPreloadReady) {
+    return null;
   }
 
   return (

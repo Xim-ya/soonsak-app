@@ -1,6 +1,7 @@
 import { Text, Dimensions, Pressable, View } from 'react-native';
 import styled from '@emotion/native';
 import { formatter } from '@/shared/utils/formatter';
+import { FadeInImage } from '@/presentation/components/image/FadeInImage';
 import Carousel, { Pagination } from 'react-native-reanimated-carousel';
 import React, { useCallback } from 'react';
 import { DotStyle } from 'react-native-reanimated-carousel/lib/typescript/components/Pagination/Basic/PaginationItem';
@@ -30,6 +31,7 @@ export function Header() {
     headerInfo,
     currentItem,
     isError,
+    isLoading,
     ref,
     progress,
     infoOpacity,
@@ -64,6 +66,11 @@ export function Header() {
       );
     });
   };
+
+  // 로딩 중: 영역만 확보 (레이아웃 점프 방지)
+  if (isLoading) {
+    return <HeaderBox />;
+  }
 
   // 에러 상태 처리 (재시도 버튼 포함)
   if (isError) {
@@ -107,12 +114,10 @@ export function Header() {
         renderItem={({ item }) => (
           <Pressable onPress={() => handleContentPress(item)}>
             {item.backdropImgUrl ? (
-              <BackdropImage
+              <FadeInImage
                 key={`${item.id}-${item.type}`}
-                style={{ height: calculatedHeight }}
-                source={{
-                  uri: formatter.prefixTmdbImgUrl(item.backdropImgUrl),
-                }}
+                style={{ width: '100%', height: calculatedHeight }}
+                source={{ uri: formatter.prefixTmdbImgUrl(item.backdropImgUrl) }}
               />
             ) : (
               <View style={{ height: calculatedHeight, backgroundColor: colors.gray05 }} />
@@ -173,11 +178,6 @@ const HeaderBox = styled.View({
   aspectRatio: backdropRatio,
   alignSelf: 'stretch',
   width: '100%',
-});
-
-const BackdropImage = styled.Image({
-  width: '100%',
-  resizeMode: 'cover', // 이미지 비율 유지하면서 컨테이너에 맞춤
 });
 
 const FixedInfoView = styled.View({
