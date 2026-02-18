@@ -89,9 +89,12 @@ export type RootStackParamList = {
  * 각 탭 화면의 파라미터를 정의합니다.
  * 현재는 모든 탭이 파라미터가 없지만, 필요 시 추가할 수 있습니다.
  */
+/** 탐색 탭 정렬 타입 */
+export type ExploreTabName = 'all' | 'latest' | 'popular' | 'recommended';
+
 export type TabParamList = {
   Home: undefined; // 홈 탭
-  Explore: undefined; // 탐색 탭
+  Explore: { initialTab?: ExploreTabName } | undefined; // 탐색 탭 - 초기 탭 선택
   Soonsak: undefined; // 순삭하기 탭
   My: undefined; // MY 탭
 };

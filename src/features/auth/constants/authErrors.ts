@@ -32,6 +32,16 @@ export const APPLE_ERROR_CODES = {
   CANCELED: 'ERR_REQUEST_CANCELED',
 } as const;
 
+/** Google 에러 코드 맵핑 (@react-native-google-signin/google-signin) */
+export const GOOGLE_ERROR_CODES = {
+  /** 사용자가 로그인 팝업을 직접 닫은 경우 */
+  CANCELED: 'SIGN_IN_CANCELLED',
+  /** 기기에 Google Play 서비스가 없거나 오래된 경우 */
+  PLAY_SERVICES_NOT_AVAILABLE: 'PLAY_SERVICES_NOT_AVAILABLE',
+  /** 네트워크 연결 없음 */
+  NETWORK_ERROR: 'NETWORK_ERROR',
+} as const;
+
 /** 유효한 AuthErrorCode인지 확인하는 타입 가드 */
 export function isValidAuthErrorCode(code: string): code is AuthErrorCode {
   return Object.values(AUTH_ERROR_CODES).includes(code as AuthErrorCode);

@@ -84,22 +84,43 @@ function applyContentFilters<T extends FilterableQuery>(
 
 export const contentApi = {
   /**
-   * 최근 업로드된 콘텐츠 조회
+   * 최근 업로드된 콘텐츠 조회 (페이지네이션 지원)
+   * @param page 페이지 번호 (0부터 시작)
+   * @param pageSize 페이지당 항목 수 (기본값: 12)
    */
-  getRecentUploadedContents: async (): Promise<ContentDto[]> => {
-    const { data, error } = await supabaseClient
-      .from(CONTENT_DATABASE.TABLES.CONTENTS)
-      .select('*')
-      .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false });
+  getRecentUploadedContents: async (
+    page: number = 0,
+    pageSize: number = 12,
+  ): Promise<{ contents: ContentDto[]; hasMore: boolean; totalCount: number }> => {
+    const offset = page * pageSize;
 
-    if (error) {
-      console.error('콘텐츠 조회 실패:', error);
-      throw new Error(`Failed to fetch contents: ${error.message}`);
+    // 카운트와 데이터를 병렬로 조회 (성능 최적화)
+    const [countResult, dataResult] = await Promise.all([
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.CONTENTS)
+        .select('*', { count: 'exact', head: true }),
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.CONTENTS)
+        .select('*')
+        .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false })
+        .range(offset, offset + pageSize - 1),
+    ]);
+
+    if (countResult.error) {
+      console.error('콘텐츠 수 조회 실패:', countResult.error);
+      throw new Error(`Failed to count contents: ${countResult.error.message}`);
     }
 
-    const contents: ContentDto[] = mapWithField<ContentDto[]>(data ?? []);
+    if (dataResult.error) {
+      console.error('콘텐츠 조회 실패:', dataResult.error);
+      throw new Error(`Failed to fetch contents: ${dataResult.error.message}`);
+    }
 
-    return contents ?? [];
+    const totalCount = countResult.count ?? 0;
+    const contents: ContentDto[] = mapWithField<ContentDto[]>(dataResult.data ?? []);
+    const hasMore = (page + 1) * pageSize < totalCount;
+
+    return { contents, hasMore, totalCount };
   },
 
   /**
@@ -447,7 +468,8 @@ export const contentApi = {
     const countQuery = applyContentFilters(
       supabaseClient
         .from(CONTENT_DATABASE.TABLES.CONTENTS)
-        .select('*', { count: 'exact', head: true }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .select('*', { count: 'exact', head: true }) as any,
       filter,
       excludeIds,
       channelContentIds,
@@ -815,5 +837,34 @@ export const contentApi = {
         releaseDate: item.release_date ?? undefined,
         genreIds: item.genre_ids ?? undefined,
       }));
+  },
+
+  /**
+   * 홈 배너용 랜덤 콘텐츠 조회
+   * 조건: backdrop_path/tagline 필수, 대표영상 결말포함, 평점 6.0+, 좋아요비율 0.4%+
+   * 정렬: 조회수 가중치 랜덤 (조회수 높을수록 선택 확률 증가)
+   * @param limit 조회할 콘텐츠 수 (기본값: 5, 최대: 20)
+   * @returns ContentDto 배열 (빈 배열 가능)
+   */
+  getRandomBannerContents: async (limit: number = 5): Promise<ContentDto[]> => {
+    // 유효한 limit 값으로 정규화 (1~20 범위)
+    const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 20);
+
+    const { data, error } = await supabaseClient.rpc(
+      CONTENT_DATABASE.RPC.GET_RANDOM_BANNER_CONTENTS,
+      { p_limit: safeLimit },
+    );
+
+    if (error) {
+      console.error('배너 콘텐츠 조회 실패:', error);
+      throw new Error(`Failed to fetch banner contents: ${error.message}`);
+    }
+
+    // 빈 결과 처리: RPC가 null 또는 빈 배열 반환 시 빈 배열 반환
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
+    return mapWithField<ContentDto[]>(data);
   },
 };
