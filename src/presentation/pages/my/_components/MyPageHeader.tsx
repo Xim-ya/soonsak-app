@@ -91,7 +91,7 @@ const Container = styled.View({
   justifyContent: 'space-between',
   alignItems: 'center',
   paddingHorizontal: AppSize.ratioWidth(16),
-  paddingTop: AppSize.statusBarHeight + AppSize.ratioHeight(8),
+  paddingTop: AppSize.ratioHeight(8),
   paddingBottom: AppSize.ratioHeight(4),
 });
 
