@@ -35,7 +35,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { AppSize } from '@/shared/utils/appSize';
 import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import { useSoonsakGrid, ZIGZAG_OFFSET, calcZigzagOffset } from '../_hooks/useSoonsakGrid';
+import { useQuickExploreGrid, ZIGZAG_OFFSET, calcZigzagOffset } from '../_hooks/useQuickExploreGrid';
 import { ContentCard } from './ContentCard';
 
 // EmptyCell 스타일 (MemoizedCellWrapper에서 사용)
@@ -198,11 +198,11 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
     initialTranslateY,
     updateViewport,
     getRandomContent,
-  } = useSoonsakGrid(filter);
+  } = useQuickExploreGrid(filter);
 
   const zigzagOffset = AppSize.ratioHeight(ZIGZAG_OFFSET);
 
-  // 드래그 위치 (useSoonsakGrid에서 계산된 초기값 사용)
+  // 드래그 위치 (useQuickExploreGrid에서 계산된 초기값 사용)
   const translateX = useSharedValue(initialTranslateX);
   const translateY = useSharedValue(initialTranslateY);
 

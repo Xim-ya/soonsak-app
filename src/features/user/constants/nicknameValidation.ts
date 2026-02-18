@@ -16,7 +16,7 @@ export const NICKNAME_RULES = {
   /** 공백 패턴 */
   SPACE_PATTERN: /\s/,
   /** 예약어 (사용 불가) */
-  RESERVED_WORDS: ['운영자', '관리자', 'admin', 'plotz', '순삭', 'soonsak'] as const,
+  RESERVED_WORDS: ['운영자', '관리자', 'admin', 'plotz', '빠른탐색', 'quickExplore'] as const,
 } as const;
 
 /**

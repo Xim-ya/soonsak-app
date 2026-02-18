@@ -95,7 +95,7 @@ export type ExploreTabName = 'all' | 'latest' | 'popular' | 'recommended';
 export type TabParamList = {
   Home: undefined; // 홈 탭
   Explore: { initialTab?: ExploreTabName } | undefined; // 탐색 탭 - 초기 탭 선택
-  Soonsak: undefined; // 순삭하기 탭
+  QuickExplore: undefined; // 빠른탐색 탭
   My: undefined; // MY 탭
 };
 
