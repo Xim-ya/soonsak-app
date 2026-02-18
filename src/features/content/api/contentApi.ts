@@ -92,35 +92,32 @@ export const contentApi = {
     page: number = 0,
     pageSize: number = 12,
   ): Promise<{ contents: ContentDto[]; hasMore: boolean; totalCount: number }> => {
-    // 전체 카운트 조회
-    const { count, error: countError } = await supabaseClient
-      .from(CONTENT_DATABASE.TABLES.CONTENTS)
-      .select('*', { count: 'exact', head: true });
-
-    if (countError) {
-      console.error('콘텐츠 수 조회 실패:', countError);
-      throw new Error(`Failed to count contents: ${countError.message}`);
-    }
-
-    const totalCount = count ?? 0;
-    if (totalCount === 0) {
-      return { contents: [], hasMore: false, totalCount: 0 };
-    }
-
-    // 페이지네이션된 데이터 조회
     const offset = page * pageSize;
-    const { data, error } = await supabaseClient
-      .from(CONTENT_DATABASE.TABLES.CONTENTS)
-      .select('*')
-      .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false })
-      .range(offset, offset + pageSize - 1);
 
-    if (error) {
-      console.error('콘텐츠 조회 실패:', error);
-      throw new Error(`Failed to fetch contents: ${error.message}`);
+    // 카운트와 데이터를 병렬로 조회 (성능 최적화)
+    const [countResult, dataResult] = await Promise.all([
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.CONTENTS)
+        .select('*', { count: 'exact', head: true }),
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.CONTENTS)
+        .select('*')
+        .order(CONTENT_DATABASE.COLUMNS.UPLOADED_AT, { ascending: false })
+        .range(offset, offset + pageSize - 1),
+    ]);
+
+    if (countResult.error) {
+      console.error('콘텐츠 수 조회 실패:', countResult.error);
+      throw new Error(`Failed to count contents: ${countResult.error.message}`);
     }
 
-    const contents: ContentDto[] = mapWithField<ContentDto[]>(data ?? []);
+    if (dataResult.error) {
+      console.error('콘텐츠 조회 실패:', dataResult.error);
+      throw new Error(`Failed to fetch contents: ${dataResult.error.message}`);
+    }
+
+    const totalCount = countResult.count ?? 0;
+    const contents: ContentDto[] = mapWithField<ContentDto[]>(dataResult.data ?? []);
     const hasMore = (page + 1) * pageSize < totalCount;
 
     return { contents, hasMore, totalCount };
@@ -471,7 +468,8 @@ export const contentApi = {
     const countQuery = applyContentFilters(
       supabaseClient
         .from(CONTENT_DATABASE.TABLES.CONTENTS)
-        .select('*', { count: 'exact', head: true }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .select('*', { count: 'exact', head: true }) as any,
       filter,
       excludeIds,
       channelContentIds,

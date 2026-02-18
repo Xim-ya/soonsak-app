@@ -94,6 +94,16 @@ function SectionContentListView({
     [isFetchingNextPage],
   );
 
+  // 아이템 레이아웃 계산 (스크롤 성능 최적화)
+  const getItemLayout = useCallback(
+    (_: unknown, index: number) => ({
+      length: POSTER_WIDTH,
+      offset: (POSTER_WIDTH + SEPARATOR_WIDTH) * index,
+      index,
+    }),
+    [],
+  );
+
   return (
     <Container>
       {title != null && (
@@ -114,6 +124,7 @@ function SectionContentListView({
           keyExtractor={keyExtractor}
           ItemSeparatorComponent={ItemSeparator}
           ListFooterComponent={ListFooter}
+          getItemLayout={getItemLayout}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.3}
           removeClippedSubviews
@@ -129,6 +140,7 @@ function SectionContentListView({
 /* VARIABLES */
 const POSTER_WIDTH = 92;
 const POSTER_HEIGHT = 140;
+const SEPARATOR_WIDTH = 8;
 const posterRatio = POSTER_WIDTH / POSTER_HEIGHT;
 
 const Container = styled.View({
