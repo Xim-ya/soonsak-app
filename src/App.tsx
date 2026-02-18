@@ -18,9 +18,25 @@ import { isAppError } from '@/shared/errors';
 import { linkingConfig } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
+import { configureGoogleSignin } from '@/features/auth/api/authApi';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
+
+// Google Sign-In 초기화 (모듈 레벨에서 한 번만 호출)
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+
+// 디버깅: 환경 변수 확인
+console.log('[App] GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
+console.log('[App] GOOGLE_IOS_CLIENT_ID:', GOOGLE_IOS_CLIENT_ID);
+
+if (GOOGLE_WEB_CLIENT_ID) {
+  configureGoogleSignin({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+  });
+}
 
 // 개발 모드에서 YouTube API 테스트 비활성화 (성능 최적화)
 // if (__DEV__) {

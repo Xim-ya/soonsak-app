@@ -2,6 +2,7 @@ import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as WebBrowser from 'expo-web-browser';
 import * as Application from 'expo-application';
+import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { supabaseClient } from '@/features/utils/clients/superBaseClient';
 import { mapWithField } from '@/features/utils/mapper/fieldMapper';
 import { AUTH_DATABASE } from '@/features/utils/constants/dbConfig';
@@ -9,6 +10,7 @@ import {
   AUTH_ERROR_CODES,
   AUTH_ERROR_MESSAGES,
   APPLE_ERROR_CODES,
+  GOOGLE_ERROR_CODES,
   type AuthErrorCode,
 } from '../constants/authErrors';
 import type {
@@ -55,17 +57,24 @@ function createAuthError(
 
 /** 사용자 취소 여부 확인 */
 function isUserCancelled(error: unknown, provider: SocialProvider): boolean {
-  if (error instanceof Error) {
-    const errorCode = (error as Error & { code?: string }).code;
-
-    if (__DEV__) {
-      console.log('[AuthApi] Error code:', errorCode, 'Expected:', APPLE_ERROR_CODES.CANCELED);
-    }
-
-    if (provider === 'apple') {
-      return errorCode === APPLE_ERROR_CODES.CANCELED;
-    }
+  if (!(error instanceof Error)) {
+    return false;
   }
+
+  const errorCode = (error as Error & { code?: string }).code;
+
+  if (__DEV__) {
+    console.log('[AuthApi] Error code:', errorCode, 'provider:', provider);
+  }
+
+  if (provider === 'apple') {
+    return errorCode === APPLE_ERROR_CODES.CANCELED;
+  }
+
+  if (provider === 'google') {
+    return errorCode === GOOGLE_ERROR_CODES.CANCELED || errorCode === statusCodes.SIGN_IN_CANCELLED;
+  }
+
   return false;
 }
 
@@ -206,13 +215,78 @@ async function signInWithOAuthBrowser(provider: OAuthProvider): Promise<AuthResu
   }
 }
 
+/**
+ * Google 네이티브 로그인
+ * @react-native-google-signin/google-signin SDK + Supabase signInWithIdToken 방식
+ *
+ * 규칙 1.3: Google Play 서비스 확인(의존성 없음)을 먼저 수행한 뒤,
+ * 결과에 의존하는 signIn → signInWithIdToken 순으로 처리합니다.
+ */
+async function signInWithGoogleNative(): Promise<AuthResultDto> {
+  try {
+    // Step 1: Google Play 서비스 가용성 확인 (Android 전용, iOS는 항상 통과)
+    await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+
+    // Step 2: Google 로그인 팝업 호출 → ID 토큰 획득
+    const signInResult = await GoogleSignin.signIn();
+
+    if (__DEV__) {
+      console.log('[AuthApi] Google signIn result type:', signInResult.type);
+    }
+
+    // 규칙 1.2: 조건부 로직은 await 전에 평가
+    // 사용자 취소는 Supabase 호출 전에 처리
+    if (signInResult.type === 'cancelled') {
+      throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, 'google');
+    }
+
+    const idToken = signInResult.data?.idToken;
+
+    if (!idToken) {
+      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, 'google', 'idToken이 없습니다.');
+    }
+
+    // Step 3: Supabase에 ID 토큰으로 세션 교환
+    // iOS에서는 nonce를 지원하지 않으므로 Supabase 대시보드에서 "Skip nonce check" 활성화 필요
+    const { data, error } = await supabaseClient.auth.signInWithIdToken({
+      provider: 'google',
+      token: idToken,
+    });
+
+    if (error) {
+      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, 'google', error);
+    }
+
+    return { user: data.user, session: data.session };
+  } catch (error) {
+    // 이미 AuthErrorDto인 경우 그대로 전달
+    if (isAuthError(error)) {
+      throw error;
+    }
+
+    // Google Play 서비스 미설치/구버전 (Android)
+    const errorCode = (error as Error & { code?: string })?.code;
+    if (errorCode === statusCodes.PLAY_SERVICES_NOT_AVAILABLE) {
+      throw createAuthError(AUTH_ERROR_CODES.GOOGLE_PLAY_NOT_AVAILABLE, 'google', error);
+    }
+
+    // 사용자 취소
+    if (isUserCancelled(error, 'google')) {
+      throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, 'google');
+    }
+
+    throw createAuthError(AUTH_ERROR_CODES.UNKNOWN_ERROR, 'google', error);
+  }
+}
+
 export const authApi = {
   /**
    * Google 소셜 로그인
-   * OAuth 웹 브라우저 방식 (Expo Go 호환)
+   * 네이티브 SDK 방식: @react-native-google-signin/google-signin + Supabase signInWithIdToken
+   * configure()는 앱 초기화 시 configureGoogleSignin()으로 별도 호출 필요
    */
   signInWithGoogle: async (): Promise<AuthResultDto> => {
-    return signInWithOAuthBrowser('google');
+    return signInWithGoogleNative();
   },
 
   /**
@@ -412,3 +486,30 @@ export const authApi = {
     await supabaseClient.auth.signOut();
   },
 };
+
+interface GoogleSigninConfig {
+  /** Google Cloud Console의 OAuth 2.0 웹 클라이언트 ID (필수) */
+  webClientId: string;
+  /** iOS 클라이언트 ID (iOS에서 필수) */
+  iosClientId?: string;
+}
+
+/**
+ * Google 로그인 초기화
+ *
+ * 앱 시작 시 단 한 번만 호출해야 합니다. (App.tsx 등 루트 컴포넌트)
+ *
+ * @example
+ * // App.tsx (컴포넌트 바깥, 모듈 최상단)
+ * configureGoogleSignin({
+ *   webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+ *   iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+ * });
+ */
+export function configureGoogleSignin(config: GoogleSigninConfig): void {
+  GoogleSignin.configure({
+    webClientId: config.webClientId,
+    iosClientId: config.iosClientId,
+    offlineAccess: false,
+  });
+}
