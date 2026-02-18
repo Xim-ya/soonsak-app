@@ -43,10 +43,14 @@ export async function getOrCreateDeviceId(): Promise<string> {
 
   // 원격 테이블 저장 (트래킹 용도)
   try {
-    await supabaseClient.from(DEVICE_DATABASE.TABLES.DEVICES).insert({
+    const { error } = await supabaseClient.from(DEVICE_DATABASE.TABLES.DEVICES).insert({
       [DEVICE_DATABASE.COLUMNS.DEVICE_ID]: newDeviceId,
       [DEVICE_DATABASE.COLUMNS.PLATFORM]: Platform.OS,
     });
+
+    if (error) {
+      throw error;
+    }
 
     if (__DEV__) {
       console.log('[DeviceId] 새 디바이스 등록 완료:', newDeviceId);
