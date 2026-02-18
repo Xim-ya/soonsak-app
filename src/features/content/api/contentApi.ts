@@ -838,4 +838,33 @@ export const contentApi = {
         genreIds: item.genre_ids ?? undefined,
       }));
   },
+
+  /**
+   * 홈 배너용 랜덤 콘텐츠 조회
+   * 조건: backdrop_path/tagline 필수, 대표영상 결말포함, 평점 6.0+, 좋아요비율 0.4%+
+   * 정렬: 조회수 가중치 랜덤 (조회수 높을수록 선택 확률 증가)
+   * @param limit 조회할 콘텐츠 수 (기본값: 5, 최대: 20)
+   * @returns ContentDto 배열 (빈 배열 가능)
+   */
+  getRandomBannerContents: async (limit: number = 5): Promise<ContentDto[]> => {
+    // 유효한 limit 값으로 정규화 (1~20 범위)
+    const safeLimit = Math.min(Math.max(1, Math.floor(limit)), 20);
+
+    const { data, error } = await supabaseClient.rpc(
+      CONTENT_DATABASE.RPC.GET_RANDOM_BANNER_CONTENTS,
+      { p_limit: safeLimit },
+    );
+
+    if (error) {
+      console.error('배너 콘텐츠 조회 실패:', error);
+      throw new Error(`Failed to fetch banner contents: ${error.message}`);
+    }
+
+    // 빈 결과 처리: RPC가 null 또는 빈 배열 반환 시 빈 배열 반환
+    if (!data || !Array.isArray(data) || data.length === 0) {
+      return [];
+    }
+
+    return mapWithField<ContentDto[]>(data);
+  },
 };

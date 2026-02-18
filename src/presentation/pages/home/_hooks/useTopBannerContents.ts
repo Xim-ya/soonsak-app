@@ -1,47 +1,89 @@
+import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
-import React from 'react';
-import { TopContentModel, topContentMock } from '../_types/TopContentModel';
+import { TopContentModel, fromContentDto, isValidTopContent } from '../_types/TopContentModel';
+import { contentApi } from '@/features/content/api/contentApi';
+
+/** 배너에 표시할 콘텐츠 수 */
+const BANNER_CONTENT_LIMIT = 5;
+
+/** 쿼리 재시도 횟수 */
+const QUERY_RETRY_COUNT = 2;
+
+/** Opacity 애니메이션 임계값 */
+const OPACITY_THRESHOLDS = {
+  /** 완전 표시 임계값 - 이 값 이상일 때 텍스트가 선명하게 보임 */
+  VISIBLE: 0.6,
+  /** 전환 중간 지점 하한 */
+  TRANSITION_LOWER: 0.48,
+  /** 전환 중간 지점 상한 */
+  TRANSITION_UPPER: 0.52,
+} as const;
+
+/** 아이템 전환 임계값 (이 값 이상일 때 다음 아이템으로 전환) */
+const ITEM_SWITCH_THRESHOLD = 0.5;
+
+/** 애니메이션 지속 시간 (ms) */
+const ANIMATION_DURATION_MS = 100;
 
 /**
- * - 콘텐츠 캐러셀 인터렉션
- * - 헤다 상단 콘텐츠 호출
+ * 홈 상단 배너 캐러셀 데이터 및 인터렉션 관리
+ * - 매 세션마다 랜덤 콘텐츠 조회
+ * - 캐러셀 애니메이션 처리
  */
-export function useTopBannerConetns() {
-  const ref = React.useRef<ICarouselInstance>(null);
+export function useTopBannerContents() {
+  const ref = useRef<ICarouselInstance>(null);
   const progress = useSharedValue<number>(0);
   const infoOpacity = useSharedValue<number>(1);
-  const [currentItem, setCurrentItem] = React.useState<TopContentModel | null>(null);
+  const [currentItem, setCurrentItem] = useState<TopContentModel | null>(null);
 
-  const { data, isError, isLoading } = useQuery({
-    queryKey: ['topContent'],
+  const { data, isError, isLoading, refetch } = useQuery({
+    queryKey: ['topBannerContents'],
     queryFn: async (): Promise<TopContentModel[]> => {
-      await new Promise((resolve) => setTimeout(resolve, 200)); // 200ms 딜레이
-      return topContentMock;
+      const contents = await contentApi.getRandomBannerContents(BANNER_CONTENT_LIMIT);
+      // 빈 배열 또는 null/undefined 처리
+      if (!contents || contents.length === 0) {
+        return [];
+      }
+      // DTO 변환 후 유효한 데이터만 필터링 (필수 필드 검증)
+      return contents.map(fromContentDto).filter(isValidTopContent);
     },
+    staleTime: Infinity, // 세션 동안 캐시 유지 (새로고침 시에만 새 데이터)
+    gcTime: Infinity,
+    retry: QUERY_RETRY_COUNT, // 네트워크 오류 시 재시도
   });
 
-  const headerInfo = data ?? [];
+  // 메모이제이션된 headerInfo - 빈 배열 기본값
+  const headerInfo = useMemo(() => data ?? [], [data]);
 
-  const onPressPagination = (index: number) => {
-    ref.current?.scrollTo({
-      count: index - progress.value,
-      animated: true,
-    });
-  };
+  // 에러 발생 시 재시도 핸들러
+  const handleRetry = useCallback(() => {
+    refetch();
+  }, [refetch]);
+
+  const onPressPagination = useCallback(
+    (index: number) => {
+      ref.current?.scrollTo({
+        count: index - progress.value,
+        animated: true,
+      });
+    },
+    [progress],
+  );
 
   // 페이지 변경 시 opacity 애니메이션 처리
   const onProgressChange = (offsetProgress: number, absoluteProgress: number) => {
     progress.value = absoluteProgress;
 
     // 중간 지점에서 아이템 변경 (Flutter와 동일한 로직)
-    if (headerInfo && headerInfo.length > 0) {
+    const hasItems = headerInfo && headerInfo.length > 0;
+    if (hasItems) {
       const remainder = absoluteProgress % 1;
-
-      // 0.5 이상일 때 다음 아이템으로 변경
-      const targetIndex =
-        remainder >= 0.5 ? Math.ceil(absoluteProgress) : Math.floor(absoluteProgress);
+      const shouldSwitchToNext = remainder >= ITEM_SWITCH_THRESHOLD;
+      const targetIndex = shouldSwitchToNext
+        ? Math.ceil(absoluteProgress)
+        : Math.floor(absoluteProgress);
       const safeIndex = targetIndex % headerInfo.length;
       const item = headerInfo[safeIndex];
 
@@ -54,12 +96,20 @@ export function useTopBannerConetns() {
     const remainder = absoluteProgress % 1;
     const opacity = 1 - remainder;
 
-    if (opacity > 0.6) {
-      infoOpacity.value = withTiming(opacity, { duration: 100 });
-    } else if (opacity > 0.48 && opacity < 0.52) {
-      infoOpacity.value = withTiming(0, { duration: 100 });
+    const isFullyVisible = opacity > OPACITY_THRESHOLDS.VISIBLE;
+    const isAtTransitionMidpoint =
+      opacity > OPACITY_THRESHOLDS.TRANSITION_LOWER &&
+      opacity < OPACITY_THRESHOLDS.TRANSITION_UPPER;
+
+    if (isFullyVisible) {
+      // 현재 아이템이 선명하게 보이는 상태
+      infoOpacity.value = withTiming(opacity, { duration: ANIMATION_DURATION_MS });
+    } else if (isAtTransitionMidpoint) {
+      // 전환 중간 지점: 완전히 숨김
+      infoOpacity.value = withTiming(0, { duration: ANIMATION_DURATION_MS });
     } else {
-      infoOpacity.value = withTiming(remainder, { duration: 100 });
+      // 다음 아이템으로 전환 중: 점진적으로 나타남
+      infoOpacity.value = withTiming(remainder, { duration: ANIMATION_DURATION_MS });
     }
   };
 
@@ -74,7 +124,7 @@ export function useTopBannerConetns() {
   };
 
   // 초기 아이템 설정
-  React.useEffect(() => {
+  useEffect(() => {
     if (headerInfo.length > 0 && !currentItem) {
       const firstItem = headerInfo[0];
       if (firstItem) {
@@ -99,5 +149,6 @@ export function useTopBannerConetns() {
     onPressPagination,
     onProgressChange,
     onSnapToItem,
+    handleRetry,
   };
 }
