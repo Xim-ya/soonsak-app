@@ -97,7 +97,7 @@ function defineDeepLink<T extends DeepLinkScreen>(
 export const deepLinkConfig = {
   /**
    * 콘텐츠 상세
-   * @example soonsak://content/123?type=movie
+   * @example quickExplore://content/123?type=movie
    */
   [routePages.contentDetail]: defineDeepLink(routePages.contentDetail, {
     path: 'content/:id',
@@ -109,7 +109,7 @@ export const deepLinkConfig = {
 
   /**
    * 플레이어
-   * @example soonsak://player/abc123?contentId=456&contentType=movie&startSeconds=60
+   * @example quickExplore://player/abc123?contentId=456&contentType=movie&startSeconds=60
    */
   [routePages.player]: defineDeepLink(routePages.player, {
     path: 'player/:videoId',
@@ -123,25 +123,25 @@ export const deepLinkConfig = {
 
   /**
    * 채널 상세
-   * @example soonsak://channel/:channelId
+   * @example quickExplore://channel/:channelId
    */
   [routePages.channelDetail]: defineDeepLink(routePages.channelDetail, 'channel/:channelId'),
 
   /**
    * 검색
-   * @example soonsak://search
+   * @example quickExplore://search
    */
   [routePages.search]: defineDeepLink(routePages.search, 'search'),
 
   /**
    * 설정
-   * @example soonsak://settings
+   * @example quickExplore://settings
    */
   [routePages.settings]: defineDeepLink(routePages.settings, 'settings'),
 
   /**
    * 사용자 콘텐츠 목록 (찜/평가/시청기록)
-   * @example soonsak://my-contents?initialTab=1
+   * @example quickExplore://my-contents?initialTab=1
    */
   [routePages.userContentList]: defineDeepLink(routePages.userContentList, {
     path: 'my-contents',

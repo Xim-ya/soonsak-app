@@ -1,5 +1,5 @@
 /**
- * SoonsakPage - 순삭하기 탭 화면
+ * QuickExplorePage - 빠른탐색 탭 화면
  *
  * 드래그하여 콘텐츠를 탐색할 수 있는 인터랙티브 그리드 화면입니다.
  * 검색 버튼을 누르면 랜덤 콘텐츠로 화려한 애니메이션과 함께 포커스됩니다.
@@ -18,10 +18,10 @@ import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
-import { SoonsakHeader } from './_components/SoonsakHeader';
+import { QuickExploreHeader } from './_components/QuickExploreHeader';
 import { ContentGrid, ContentGridRef } from './_components/ContentGrid';
 
-export default function SoonsakPage() {
+export default function QuickExplorePage() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const gridRef = useRef<ContentGridRef>(null);
 
@@ -103,7 +103,7 @@ export default function SoonsakPage() {
         <ContentGrid ref={gridRef} filter={filter} onContentPress={handleContentPress} />
 
         {/* 상단 헤더 (오버레이) */}
-        <SoonsakHeader
+        <QuickExploreHeader
           onFilterPress={handleFilterPress}
           onSearchPress={handleSearchPress}
           isFilterActive={isFilterApplied}

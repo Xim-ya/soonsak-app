@@ -376,7 +376,7 @@ export const contentApi = {
   },
 
   /**
-   * 랜덤 콘텐츠 조회 (순삭 그리드용)
+   * 랜덤 콘텐츠 조회 (빠른탐색 그리드용)
    * 이미 로드된 ID를 제외하고 랜덤하게 콘텐츠를 가져옴
    * @param excludeIds 제외할 콘텐츠 ID 배열
    * @param limit 조회할 콘텐츠 수 (기본값: 20)
@@ -434,7 +434,7 @@ export const contentApi = {
   },
 
   /**
-   * 필터 조건에 맞는 랜덤 콘텐츠 조회 (순삭 그리드 필터용)
+   * 필터 조건에 맞는 랜덤 콘텐츠 조회 (빠른탐색 그리드 필터용)
    * 기존 getRandomContents를 확장하여 장르, 국가, 연도, 평점 필터를 지원
    * @param filter 콘텐츠 필터 조건
    * @param excludeIds 제외할 콘텐츠 ID 배열

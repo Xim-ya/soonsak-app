@@ -7,7 +7,7 @@ import MyIcon from '@assets/icons/my_tab.svg';
 enum TabRoutes {
   Home = 'Home',
   Explore = 'Explore',
-  Soonsak = 'Soonsak',
+  QuickExplore = 'QuickExplore',
   My = 'My',
 }
 
@@ -25,8 +25,8 @@ const TabConfig: Record<TabRoutes, BottomTabItem> = {
     label: '탐색',
     icon: SearchIcon,
   },
-  [TabRoutes.Soonsak]: {
-    label: '순삭하기',
+  [TabRoutes.QuickExplore]: {
+    label: '빠른탐색',
     icon: ExploreIcon,
   },
   [TabRoutes.My]: {

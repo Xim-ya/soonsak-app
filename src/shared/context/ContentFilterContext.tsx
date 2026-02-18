@@ -1,7 +1,7 @@
 /**
  * ContentFilterContext - 콘텐츠 필터 상태 공유 Context
  *
- * SoonsakPage와 ExploreScreen 간 필터 상태를 공유합니다.
+ * QuickExplorePage와 ExploreScreen 간 필터 상태를 공유합니다.
  */
 
 import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
