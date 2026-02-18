@@ -3,7 +3,7 @@ import styled from '@emotion/native';
 import { formatter } from '@/shared/utils/formatter';
 import { FadeInImage } from '@/presentation/components/image/FadeInImage';
 import Carousel, { Pagination } from 'react-native-reanimated-carousel';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { DotStyle } from 'react-native-reanimated-carousel/lib/typescript/components/Pagination/Basic/PaginationItem';
 import { EmptyView } from '@/presentation/components/view/EmptyView';
 import textStyle from '@/shared/styles/textStyles';
@@ -51,8 +51,8 @@ export function Header() {
     [navigation],
   );
 
-  /** 키워드 목록 렌더링 */
-  const renderKeywords = () => {
+  /** 키워드 목록 렌더링 (메모이제이션) */
+  const keywordElements = useMemo(() => {
     const keywords = currentItem?.keywords;
     if (!keywords || keywords.length === 0) return null;
 
@@ -65,7 +65,7 @@ export function Header() {
         </CategoryItem>
       );
     });
-  };
+  }, [currentItem?.id, currentItem?.keywords]);
 
   // 로딩 중: 영역만 확보 (레이아웃 점프 방지)
   if (isLoading) {
@@ -107,7 +107,7 @@ export function Header() {
         onProgressChange={onProgressChange}
         onSnapToItem={onSnapToItem}
         autoPlay={true}
-        autoPlayInterval={1300}
+        autoPlayInterval={3000}
         onConfigurePanGesture={(panGesture) => {
           panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
         }}
@@ -138,7 +138,7 @@ export function Header() {
           <Title numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>
             {currentItem?.title}
           </Title>
-          <CategoryListView>{renderKeywords()}</CategoryListView>
+          <CategoryListView>{keywordElements}</CategoryListView>
           <Gap size={28} />
         </AnimatedInfoContainer>
       </FixedInfoView>

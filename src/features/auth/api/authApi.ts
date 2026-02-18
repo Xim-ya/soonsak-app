@@ -10,7 +10,6 @@ import {
   AUTH_ERROR_CODES,
   AUTH_ERROR_MESSAGES,
   APPLE_ERROR_CODES,
-  GOOGLE_ERROR_CODES,
   type AuthErrorCode,
 } from '../constants/authErrors';
 import type {
@@ -72,7 +71,7 @@ function isUserCancelled(error: unknown, provider: SocialProvider): boolean {
   }
 
   if (provider === 'google') {
-    return errorCode === GOOGLE_ERROR_CODES.CANCELED || errorCode === statusCodes.SIGN_IN_CANCELLED;
+    return errorCode === statusCodes.SIGN_IN_CANCELLED;
   }
 
   return false;

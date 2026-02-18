@@ -15,7 +15,7 @@ import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 interface SectionContentListViewProps {
   title: string | null;
   contents: BaseContentModel[] | null;
-  onContentTapped: (content: BaseContentModel) => void;
+  onContentTapped?: (content: BaseContentModel) => void;
   onEndReached?: () => void;
   isFetchingNextPage?: boolean;
   onTitlePress?: () => void;

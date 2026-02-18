@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef } from 'react';
 import { ImageSourcePropType, ImageStyle, StyleProp } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
 
@@ -15,15 +15,15 @@ interface FadeInImageProps {
  */
 export function FadeInImage({ source, style }: FadeInImageProps) {
   const opacity = useSharedValue(0);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const isLoadedRef = useRef(false);
 
   const animatedStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
   }));
 
   const handleLoad = () => {
-    if (!isLoaded) {
-      setIsLoaded(true);
+    if (!isLoadedRef.current) {
+      isLoadedRef.current = true;
       opacity.value = withTiming(1, { duration: FADE_DURATION });
     }
   };

@@ -4,9 +4,13 @@ require('dotenv').config();
 const GOOGLE_OAUTH_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_OAUTH_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
 
-// URL scheme용 - .apps.googleusercontent.com 제거
-const GOOGLE_IOS_URL_SCHEME = GOOGLE_OAUTH_IOS_CLIENT_ID?.replace('.apps.googleusercontent.com', '');
-const GOOGLE_ANDROID_URL_SCHEME = GOOGLE_OAUTH_ANDROID_CLIENT_ID?.replace('.apps.googleusercontent.com', '');
+// URL scheme용 - .apps.googleusercontent.com 제거 (undefined 시 null 반환)
+const GOOGLE_IOS_URL_SCHEME = GOOGLE_OAUTH_IOS_CLIENT_ID
+  ? GOOGLE_OAUTH_IOS_CLIENT_ID.replace('.apps.googleusercontent.com', '')
+  : null;
+const GOOGLE_ANDROID_URL_SCHEME = GOOGLE_OAUTH_ANDROID_CLIENT_ID
+  ? GOOGLE_OAUTH_ANDROID_CLIENT_ID.replace('.apps.googleusercontent.com', '')
+  : null;
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
 const APP_VARIANT = process.env.APP_VARIANT || 'development';
 
@@ -16,9 +20,9 @@ module.exports = {
     slug: 'soonsak',
     scheme: [
       'soonsak',
-      `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
-      `com.googleusercontent.apps.${GOOGLE_ANDROID_URL_SCHEME}`,
-    ],
+      GOOGLE_IOS_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
+      GOOGLE_ANDROID_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_ANDROID_URL_SCHEME}`,
+    ].filter(Boolean),
     version: '1.0.0',
     orientation: 'portrait',
     icon: './assets/icon.png',
@@ -65,13 +69,13 @@ module.exports = {
           defaultChannel: 'default',
         },
       ],
-      [
+      GOOGLE_IOS_URL_SCHEME && [
         '@react-native-google-signin/google-signin',
         {
           iosUrlScheme: `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
         },
       ],
-    ],
+    ].filter(Boolean),
     extra: {
       eas: {
         projectId: EAS_PROJECT_ID,

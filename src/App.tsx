@@ -28,9 +28,11 @@ enableScreens(true);
 const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
 const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 
-// 디버깅: 환경 변수 확인
-console.log('[App] GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
-console.log('[App] GOOGLE_IOS_CLIENT_ID:', GOOGLE_IOS_CLIENT_ID);
+// 디버깅: 환경 변수 확인 (개발 모드에서만)
+if (__DEV__) {
+  console.log('[App] GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
+  console.log('[App] GOOGLE_IOS_CLIENT_ID:', GOOGLE_IOS_CLIENT_ID);
+}
 
 if (GOOGLE_WEB_CLIENT_ID) {
   configureGoogleSignin({

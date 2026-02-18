@@ -78,45 +78,48 @@ export function useTopBannerContents() {
   );
 
   // 페이지 변경 시 opacity 애니메이션 처리
-  const onProgressChange = (_offsetProgress: number, absoluteProgress: number) => {
-    progress.value = absoluteProgress;
+  const onProgressChange = useCallback(
+    (_offsetProgress: number, absoluteProgress: number) => {
+      progress.value = absoluteProgress;
 
-    // 중간 지점에서 아이템 변경 (Flutter와 동일한 로직)
-    const hasItems = headerInfo && headerInfo.length > 0;
-    if (hasItems) {
-      const remainder = absoluteProgress % 1;
-      const shouldSwitchToNext = remainder >= ITEM_SWITCH_THRESHOLD;
-      const targetIndex = shouldSwitchToNext
-        ? Math.ceil(absoluteProgress)
-        : Math.floor(absoluteProgress);
-      const safeIndex = targetIndex % headerInfo.length;
-      const item = headerInfo[safeIndex];
+      // 중간 지점에서 아이템 변경 (Flutter와 동일한 로직)
+      const hasItems = headerInfo && headerInfo.length > 0;
+      if (hasItems) {
+        const remainder = absoluteProgress % 1;
+        const shouldSwitchToNext = remainder >= ITEM_SWITCH_THRESHOLD;
+        const targetIndex = shouldSwitchToNext
+          ? Math.ceil(absoluteProgress)
+          : Math.floor(absoluteProgress);
+        const safeIndex = targetIndex % headerInfo.length;
+        const item = headerInfo[safeIndex];
 
-      if (item && item !== currentItem) {
-        setCurrentItem(item);
+        if (item && item !== currentItem) {
+          setCurrentItem(item);
+        }
       }
-    }
 
-    // Opacity 애니메이션 처리
-    const remainder = absoluteProgress % 1;
-    const opacity = 1 - remainder;
+      // Opacity 애니메이션 처리
+      const remainder = absoluteProgress % 1;
+      const opacity = 1 - remainder;
 
-    const isFullyVisible = opacity > OPACITY_THRESHOLDS.VISIBLE;
-    const isAtTransitionMidpoint =
-      opacity > OPACITY_THRESHOLDS.TRANSITION_LOWER &&
-      opacity < OPACITY_THRESHOLDS.TRANSITION_UPPER;
+      const isFullyVisible = opacity > OPACITY_THRESHOLDS.VISIBLE;
+      const isAtTransitionMidpoint =
+        opacity > OPACITY_THRESHOLDS.TRANSITION_LOWER &&
+        opacity < OPACITY_THRESHOLDS.TRANSITION_UPPER;
 
-    if (isFullyVisible) {
-      // 현재 아이템이 선명하게 보이는 상태
-      infoOpacity.value = withTiming(opacity, { duration: ANIMATION_DURATION_MS });
-    } else if (isAtTransitionMidpoint) {
-      // 전환 중간 지점: 완전히 숨김
-      infoOpacity.value = withTiming(0, { duration: ANIMATION_DURATION_MS });
-    } else {
-      // 다음 아이템으로 전환 중: 점진적으로 나타남
-      infoOpacity.value = withTiming(remainder, { duration: ANIMATION_DURATION_MS });
-    }
-  };
+      if (isFullyVisible) {
+        // 현재 아이템이 선명하게 보이는 상태
+        infoOpacity.value = withTiming(opacity, { duration: ANIMATION_DURATION_MS });
+      } else if (isAtTransitionMidpoint) {
+        // 전환 중간 지점: 완전히 숨김
+        infoOpacity.value = withTiming(0, { duration: ANIMATION_DURATION_MS });
+      } else {
+        // 다음 아이템으로 전환 중: 점진적으로 나타남
+        infoOpacity.value = withTiming(remainder, { duration: ANIMATION_DURATION_MS });
+      }
+    },
+    [headerInfo, currentItem, progress, infoOpacity],
+  );
 
   // 스냅 완료 시 호출되는 함수
   const onSnapToItem = (index: number) => {

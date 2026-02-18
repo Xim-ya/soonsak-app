@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { Image } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { contentApi } from '@/features/content/api/contentApi';
@@ -35,6 +35,7 @@ export function getPreloadedBannerContents(): ContentDto[] | null {
  */
 export function useAppPreload() {
   const [isReady, setIsReady] = useState(false);
+  const isReadyRef = useRef(false);
 
   useEffect(() => {
     async function preloadResources() {
@@ -68,16 +69,17 @@ export function useAppPreload() {
     });
 
     Promise.race([preloadResources(), timeoutPromise]).finally(() => {
+      isReadyRef.current = true;
       setIsReady(true);
     });
   }, []);
 
-  // 스플래시 숨기기 콜백
+  // 스플래시 숨기기 콜백 (안정적인 참조 - deps 없음)
   const hideSplash = useCallback(async () => {
-    if (isReady) {
+    if (isReadyRef.current) {
       await SplashScreen.hideAsync();
     }
-  }, [isReady]);
+  }, []);
 
   return { isReady, hideSplash };
 }
