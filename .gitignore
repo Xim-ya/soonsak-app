@@ -111,3 +111,14 @@ CLAUDE.md
 # Firebase
 google-services.json
 *-firebase-adminsdk-*.json
+app.config.js
+package.json
+yarn.lock
+src/App.tsx
+src/features/auth/api/authApi.ts
+src/presentation/components/image/FadeInImage.tsx
+src/presentation/pages/home/_components/Header.tsx
+src/presentation/pages/home/_components/RecentContentView.tsx
+src/presentation/pages/home/_components/SectionContentListView.tsx
+src/presentation/pages/home/_hooks/useTopBannerContents.ts
+src/shared/hooks/useAppPreload.ts

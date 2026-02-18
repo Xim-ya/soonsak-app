@@ -20,6 +20,7 @@ export const CONTENT_DATABASE = {
     GET_CONTENTS_BY_GENRE: 'get_contents_by_genre',
     GET_LONG_RUNTIME_CONTENTS: 'get_long_runtime_contents',
     GET_RANDOM_CURATION_VIDEOS: 'get_random_curation_videos',
+    GET_RANDOM_BANNER_CONTENTS: 'get_random_banner_contents',
   },
 } as const;
 
