@@ -6,7 +6,7 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { ActivityIndicator, ListRenderItem } from 'react-native';
+import { ActivityIndicator, ListRenderItem, Platform } from 'react-native';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
@@ -125,7 +125,6 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
       style={{ backgroundColor: colors.black }}
       contentContainerStyle={{
         paddingBottom: 20,
-        paddingTop: 10,
         backgroundColor: colors.black,
       }}
       columnWrapperStyle={
@@ -142,6 +141,8 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
       windowSize={5}
       initialNumToRender={10}
       showsVerticalScrollIndicator={false}
+      scrollEventThrottle={Platform.OS === 'android' ? 1 : 16}
+      nestedScrollEnabled={Platform.OS === 'android'}
     />
   );
 });
