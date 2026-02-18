@@ -6,7 +6,8 @@
  * - 적용하기 버튼으로 선택 완료
  */
 
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
+import type { NativeSyntheticEvent, NativeScrollEvent } from 'react-native';
 import { Modal, FlatList, ListRenderItem } from 'react-native';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -188,7 +189,7 @@ function MonthYearPickerBottomSheet({
   );
 
   const getItemLayout = useCallback(
-    (_: any, index: number) => ({
+    (_: ArrayLike<number> | null | undefined, index: number) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,
       index,
@@ -197,7 +198,7 @@ function MonthYearPickerBottomSheet({
   );
 
   const handleYearMomentumScrollEnd = useCallback(
-    (event: any) => {
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offsetY = event.nativeEvent.contentOffset.y;
       const index = Math.round(offsetY / ITEM_HEIGHT);
       handleYearScroll(index);
@@ -206,7 +207,7 @@ function MonthYearPickerBottomSheet({
   );
 
   const handleMonthMomentumScrollEnd = useCallback(
-    (event: any) => {
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const offsetY = event.nativeEvent.contentOffset.y;
       const index = Math.round(offsetY / ITEM_HEIGHT);
       handleMonthScroll(index);
@@ -351,11 +352,11 @@ const PickerColumn = styled.View({
   overflow: 'hidden',
 });
 
-const PickerItem = styled.View<{ isSelected: boolean }>(({ isSelected }) => ({
+const PickerItem = styled.View<{ isSelected: boolean }>({
   height: ITEM_HEIGHT,
   justifyContent: 'center',
   alignItems: 'center',
-}));
+});
 
 const PickerItemText = styled.Text<{ isSelected: boolean }>(({ isSelected }) => ({
   ...textStyles.headline2,

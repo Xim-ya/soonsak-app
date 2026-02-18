@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { TouchableOpacity, StatusBar } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
@@ -43,6 +44,7 @@ const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 export default function LoginPage() {
   const navigation = useNavigation<LoginNavigationProp>();
   const route = useRoute<LoginRouteProp>();
+  const insets = useSafeAreaInsets();
   const { status } = useAuth();
   const { handleLogin, loadingProvider } = useSocialLogin();
 
@@ -119,12 +121,13 @@ export default function LoginPage() {
 
   return (
     <Container>
+      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
       {/* 배경 이미지 + 그래디언트 */}
       <LoginBackground />
 
       {/* 뒤로가기 버튼 (canGoBack일 때만 표시) */}
       {canGoBack && (
-        <BackButtonContainer>
+        <BackButtonContainer style={{ top: insets.top + AppSize.ratioHeight(8) }}>
           <TouchableOpacity onPress={handleGoBack} hitSlop={HIT_SLOP}>
             <BackArrowIcon width={24} height={24} color={colors.white} />
           </TouchableOpacity>
@@ -132,7 +135,7 @@ export default function LoginPage() {
       )}
 
       {/* 콘텐츠 영역 */}
-      <ContentContainer>
+      <ContentContainer style={{ paddingTop: insets.top + 60, paddingBottom: insets.bottom + 40 }}>
         {/* 상단 인트로 텍스트 */}
         <TopSection>
           <LoginIntroText />
@@ -158,7 +161,6 @@ const Container = styled.View({
 
 const BackButtonContainer = styled.View({
   position: 'absolute',
-  top: AppSize.statusBarHeight + AppSize.ratioHeight(8),
   left: AppSize.ratioWidth(16),
   zIndex: 10,
 });
@@ -166,8 +168,6 @@ const BackButtonContainer = styled.View({
 const ContentContainer = styled.View({
   flex: 1,
   justifyContent: 'space-between',
-  paddingTop: AppSize.statusBarHeight + 60,
-  paddingBottom: AppSize.bottomInset + 40,
   paddingHorizontal: 24,
 });
 
