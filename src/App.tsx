@@ -18,9 +18,28 @@ import { isAppError } from '@/shared/errors';
 import { linkingConfig } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
+import { configureGoogleSignin } from '@/features/auth/api/authApi';
+import { useAppPreload } from '@/shared/hooks/useAppPreload';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
+
+// Google Sign-In 초기화 (모듈 레벨에서 한 번만 호출)
+const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
+const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+
+// 디버깅: 환경 변수 확인 (개발 모드에서만)
+if (__DEV__) {
+  console.log('[App] GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
+  console.log('[App] GOOGLE_IOS_CLIENT_ID:', GOOGLE_IOS_CLIENT_ID);
+}
+
+if (GOOGLE_WEB_CLIENT_ID) {
+  configureGoogleSignin({
+    webClientId: GOOGLE_WEB_CLIENT_ID,
+    iosClientId: GOOGLE_IOS_CLIENT_ID,
+  });
+}
 
 // 개발 모드에서 YouTube API 테스트 비활성화 (성능 최적화)
 // if (__DEV__) {
@@ -138,8 +157,18 @@ export default function App() {
     staatliches_regular: require('../assets/fonts/Staatliches-Regular.ttf'),
   });
 
-  if (!fontsLoaded) {
-    return <></>;
+  const { isReady: isPreloadReady, hideSplash } = useAppPreload();
+
+  // 폰트 + 이미지 프리로드 완료 시 스플래시 숨김
+  useEffect(() => {
+    if (fontsLoaded && isPreloadReady) {
+      hideSplash();
+    }
+  }, [fontsLoaded, isPreloadReady, hideSplash]);
+
+  // 폰트 또는 프리로드 미완료 시 스플래시 유지
+  if (!fontsLoaded || !isPreloadReady) {
+    return null;
   }
 
   return (

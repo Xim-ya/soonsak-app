@@ -71,6 +71,9 @@ export function useSocialLogin() {
       // 네비게이션 변경도 자동 처리됨
       onSuccess?.();
     } catch (error) {
+      if (__DEV__) {
+        console.error('[useSocialLogin] Login error:', error);
+      }
       handleAuthError(error);
     } finally {
       setLoadingProvider(null);

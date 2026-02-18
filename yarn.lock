@@ -1475,6 +1475,11 @@
   dependencies:
     merge-options "^3.0.4"
 
+"@react-native-google-signin/google-signin@^16.1.1":
+  version "16.1.1"
+  resolved "https://registry.yarnpkg.com/@react-native-google-signin/google-signin/-/google-signin-16.1.1.tgz#40b9f8458a09cf8933132efd8a68f0a573167e92"
+  integrity sha512-lcHBnZ7uvCJiWtGooKOklo/4okqszWvJ0BatW1UaIe+ynmpVpp1lyJkvv1Mj08d39k4soaWuhZVNKjD/RFL34Q==
+
 "@react-native-youtube-bridge/core@2.1.2":
   version "2.1.2"
   resolved "https://registry.npmjs.org/@react-native-youtube-bridge/core/-/core-2.1.2.tgz"
@@ -1685,6 +1690,143 @@
   version "1.1.0"
   resolved "https://registry.npmjs.org/@rtsao/scc/-/scc-1.1.0.tgz"
   integrity sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==
+
+"@sentry-internal/browser-utils@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/browser-utils/-/browser-utils-10.38.0.tgz#576780062808bd3bae21476393f50caf9acbe12f"
+  integrity sha512-UOJtYmdcxHCcV0NPfXFff/a95iXl/E0EhuQ1y0uE0BuZDMupWSF5t2BgC4HaE5Aw3RTjDF3XkSHWoIF6ohy7eA==
+  dependencies:
+    "@sentry/core" "10.38.0"
+
+"@sentry-internal/feedback@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/feedback/-/feedback-10.38.0.tgz#c15b00513cddfbe839dbb86684115ec4860abd58"
+  integrity sha512-JXneg9zRftyfy1Fyfc39bBlF/Qd8g4UDublFFkVvdc1S6JQPlK+P6q22DKz3Pc8w3ySby+xlIq/eTu9Pzqi4KA==
+  dependencies:
+    "@sentry/core" "10.38.0"
+
+"@sentry-internal/replay-canvas@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/replay-canvas/-/replay-canvas-10.38.0.tgz#40fc937e2d05f9819b68c4c5d4d69e789c324823"
+  integrity sha512-OXWM9jEqNYh4VTvrMu7v+z1anz+QKQ/fZXIZdsO7JTT2lGNZe58UUMeoq386M+Saxen8F9SUH7yTORy/8KI5qw==
+  dependencies:
+    "@sentry-internal/replay" "10.38.0"
+    "@sentry/core" "10.38.0"
+
+"@sentry-internal/replay@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry-internal/replay/-/replay-10.38.0.tgz#b901acf514265bf882e3e4ad849e6d9dd8276633"
+  integrity sha512-YWIkL6/dnaiQyFiZXJ/nN+NXGv/15z45ia86bE/TMq01CubX/DUOilgsFz0pk2v/pg3tp/U2MskLO9Hz0cnqeg==
+  dependencies:
+    "@sentry-internal/browser-utils" "10.38.0"
+    "@sentry/core" "10.38.0"
+
+"@sentry/babel-plugin-component-annotate@4.9.1":
+  version "4.9.1"
+  resolved "https://registry.yarnpkg.com/@sentry/babel-plugin-component-annotate/-/babel-plugin-component-annotate-4.9.1.tgz#76b306cb89ac465946e9328228a20c5e7b83b534"
+  integrity sha512-0gEoi2Lb54MFYPOmdTfxlNKxI7kCOvNV7gP8lxMXJ7nCazF5OqOOZIVshfWjDLrc0QrSV6XdVvwPV9GDn4wBMg==
+
+"@sentry/browser@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry/browser/-/browser-10.38.0.tgz#2409e3982756ae8a0b3e46c701a51b63d4ed84cc"
+  integrity sha512-3phzp1YX4wcQr9mocGWKbjv0jwtuoDBv7+Y6Yfrys/kwyaL84mDLjjQhRf4gL5SX7JdYkhBp4WaiNlR0UC4kTA==
+  dependencies:
+    "@sentry-internal/browser-utils" "10.38.0"
+    "@sentry-internal/feedback" "10.38.0"
+    "@sentry-internal/replay" "10.38.0"
+    "@sentry-internal/replay-canvas" "10.38.0"
+    "@sentry/core" "10.38.0"
+
+"@sentry/cli-darwin@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-darwin/-/cli-darwin-3.2.0.tgz#b7093ca887dd4508fa8e11bb092ee0e411240be7"
+  integrity sha512-2If2h0P/X9K0UrwlpZYKnxBmIFfa957lAHGe5VmN64v8nEHk8dxcrX+NS9nX9H75eccLGzGMcYk0Zt0KQgQJ3g==
+
+"@sentry/cli-linux-arm64@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-arm64/-/cli-linux-arm64-3.2.0.tgz#767e4f8328ad17570ef9fd4b95fa91e1c3bf057a"
+  integrity sha512-YFpYIfYpXYzpSrIspmPOOPjXbxWp/Ve+F2hSIQb1tSKmcxFgaUm6WfuniYF8EIaLNa8YOLECf0xo78yGXBa+ug==
+
+"@sentry/cli-linux-arm@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-arm/-/cli-linux-arm-3.2.0.tgz#8b6eaa900849e5b6d1675cd19c42155bd7c6b9b5"
+  integrity sha512-NVcGcS9mceivVhi8W6iEnlcK96OlPMzOdM6xkIm+7+J0uXHgUyMyc+rT6p2QG3j8jI5I7qAl7fTHWluSX2lx3g==
+
+"@sentry/cli-linux-i686@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-i686/-/cli-linux-i686-3.2.0.tgz#4a745785cd3f1777b7686c8c3d487ae2701b4fdf"
+  integrity sha512-6SOxlF37NqRRKxEuvWryBM7MAgTisq0G6ZQzhI2iuWbcrmlLUDUW2Yssz3gAR01eYJ4jfpqvojSzPRDwqB0K+Q==
+
+"@sentry/cli-linux-x64@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-linux-x64/-/cli-linux-x64-3.2.0.tgz#90081c9c8fb11112530350429162935a6d36b83e"
+  integrity sha512-7LRd0A74ma/1ejlTRPOoBiFiJr4LWkoE6CnA2XwAoYd0r62WUjGHtg6gIC+yElOCwtxXP7I9fOiV2BJIAq2DHw==
+
+"@sentry/cli-win32-arm64@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-win32-arm64/-/cli-win32-arm64-3.2.0.tgz#12a92d0d3c43e0e258530a6477cfad697dc46a59"
+  integrity sha512-uKRi/++gnGepsaGi4goIcC13YGNEHgOUcROkz4L3H8vAR7QxWv2SHy7SCN+2S6c+Q2mOd0DfY35cMW5MzTpb7g==
+
+"@sentry/cli-win32-i686@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-win32-i686/-/cli-win32-i686-3.2.0.tgz#952dd24be42c129821d302d4a98bbaa7197a19a8"
+  integrity sha512-/84NEPeFQne2bQWfDZ+3EzioxFR8ojSwExCgVsyTfqa/4PzmaerAGUAxiD+VcJLJTyJEHAjWXTmSZGbYjIgdyQ==
+
+"@sentry/cli-win32-x64@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli-win32-x64/-/cli-win32-x64-3.2.0.tgz#3479f637887a9c28ebf33f930d45d057cb8c2a3f"
+  integrity sha512-N9qGGT91awsh4IMyXrRHH+qIWmv9MJk9tPPAWPvLMWgdlTHT/40WYwvA4tYj80uZXU0TN8ppBWbd3ebDyOjwxA==
+
+"@sentry/cli@3.2.0":
+  version "3.2.0"
+  resolved "https://registry.yarnpkg.com/@sentry/cli/-/cli-3.2.0.tgz#7c5bf56ff38b60f5893132cda48f658f596cbe9e"
+  integrity sha512-YLv/xgttSc8sRhK2xBoxmLS+yQlCW154ey2cXFsFe+yY73lXvQ9nZ7BkHmSc+YUl8y5CKHL+8edQLYV8O8PQMA==
+  dependencies:
+    progress "^2.0.3"
+    proxy-from-env "^1.1.0"
+    undici "^6.22.0"
+    which "^2.0.2"
+  optionalDependencies:
+    "@sentry/cli-darwin" "3.2.0"
+    "@sentry/cli-linux-arm" "3.2.0"
+    "@sentry/cli-linux-arm64" "3.2.0"
+    "@sentry/cli-linux-i686" "3.2.0"
+    "@sentry/cli-linux-x64" "3.2.0"
+    "@sentry/cli-win32-arm64" "3.2.0"
+    "@sentry/cli-win32-i686" "3.2.0"
+    "@sentry/cli-win32-x64" "3.2.0"
+
+"@sentry/core@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry/core/-/core-10.38.0.tgz#391f2535fde084e3eff4b1d2d634aa5619629b34"
+  integrity sha512-1pubWDZE5y5HZEPMAZERP4fVl2NH3Ihp1A+vMoVkb3Qc66Diqj1WierAnStlZP7tCx0TBa0dK85GTW/ZFYyB9g==
+
+"@sentry/react-native@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@sentry/react-native/-/react-native-8.0.0.tgz#fee747f7d9ce57d71fb53be5f4ebf711a690909d"
+  integrity sha512-u+aXkL3Vw4gwIldIk5C0UI6ZwED/ct4FwoEU2UuIlrNmtKJffoE7I1oRnHA6AmVuq9ZvvdzOh/AhXb242HfTsg==
+  dependencies:
+    "@sentry/babel-plugin-component-annotate" "4.9.1"
+    "@sentry/browser" "10.38.0"
+    "@sentry/cli" "3.2.0"
+    "@sentry/core" "10.38.0"
+    "@sentry/react" "10.38.0"
+    "@sentry/types" "10.38.0"
+
+"@sentry/react@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry/react/-/react-10.38.0.tgz#e9a8509694aff12132791410db96fa2aed9a06d6"
+  integrity sha512-3UiKo6QsqTyPGUt0XWRY9KLaxc/cs6Kz4vlldBSOXEL6qPDL/EfpwNJT61osRo81VFWu8pKu7ZY2bvLPryrnBQ==
+  dependencies:
+    "@sentry/browser" "10.38.0"
+    "@sentry/core" "10.38.0"
+
+"@sentry/types@10.38.0":
+  version "10.38.0"
+  resolved "https://registry.yarnpkg.com/@sentry/types/-/types-10.38.0.tgz#7be4da257414efca8b35e7c51f8594a91112cffb"
+  integrity sha512-DoeyTv/TvnoVDhHgdyv/wehieAKdyjLjEMtPOqqq/AjkP02BxeC0JYUrrWKOjV0wdLq5ZP8jKcCX8GN7awZonQ==
+  dependencies:
+    "@sentry/core" "10.38.0"
 
 "@sinclair/typebox@^0.27.8":
   version "0.27.8"
@@ -3791,19 +3933,7 @@ expo-asset@~12.0.12:
     "@expo/image-utils" "^0.8.8"
     expo-constants "~18.0.12"
 
-expo-auth-session@~7.0.10:
-  version "7.0.10"
-  resolved "https://registry.npmjs.org/expo-auth-session/-/expo-auth-session-7.0.10.tgz"
-  integrity sha512-XDnKkudvhHSKkZfJ+KkodM+anQcrxB71i+h0kKabdLa5YDXTQ81aC38KRc3TMqmnBDHAu0NpfbzEVd9WDFY3Qg==
-  dependencies:
-    expo-application "~7.0.8"
-    expo-constants "~18.0.11"
-    expo-crypto "~15.0.8"
-    expo-linking "~8.0.10"
-    expo-web-browser "~15.0.10"
-    invariant "^2.2.4"
-
-expo-constants@~18.0.11, expo-constants@~18.0.12, expo-constants@~18.0.13:
+expo-constants@~18.0.12, expo-constants@~18.0.13:
   version "18.0.13"
   resolved "https://registry.npmjs.org/expo-constants/-/expo-constants-18.0.13.tgz"
   integrity sha512-FnZn12E1dRYKDHlAdIyNFhBurKTS3F9CrfrBDJI5m3D7U17KBHMQ6JEfYlSj7LG7t+Ulr+IKaj58L1k5gBwTcQ==
@@ -3896,14 +4026,6 @@ expo-linear-gradient@~15.0.8:
   resolved "https://registry.npmjs.org/expo-linear-gradient/-/expo-linear-gradient-15.0.8.tgz"
   integrity sha512-V2d8Wjn0VzhPHO+rrSBtcl+Fo+jUUccdlmQ6OoL9/XQB7Qk3d9lYrqKDJyccwDxmQT10JdST3Tmf2K52NLc3kw==
 
-expo-linking@~8.0.10:
-  version "8.0.11"
-  resolved "https://registry.npmjs.org/expo-linking/-/expo-linking-8.0.11.tgz"
-  integrity sha512-+VSaNL5om3kOp/SSKO5qe6cFgfSIWnnQDSbA7XLs3ECkYzXRquk5unxNS3pg7eK5kNUmQ4kgLI7MhTggAEUBLA==
-  dependencies:
-    expo-constants "~18.0.12"
-    invariant "^2.2.4"
-
 expo-manifests@~1.0.10:
   version "1.0.10"
   resolved "https://registry.yarnpkg.com/expo-manifests/-/expo-manifests-1.0.10.tgz#5dfb3db1cdf6b46fee349f1d68a25edf5e087994"
@@ -3930,11 +4052,6 @@ expo-modules-core@3.0.29:
   dependencies:
     invariant "^2.2.4"
 
-expo-screen-orientation@^9.0.8:
-  version "9.0.8"
-  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-9.0.8.tgz#15b8f85bd4d183831943fc5a21e3020e17432867"
-  integrity sha512-qRoPi3E893o3vQHT4h1NKo51+7g2hjRSbDeg1fsSo/u2pOW5s6FCeoacLvD+xofOP33cH2MkE4ua54aWWO7Icw==
-
 expo-notifications@~0.32.16:
   version "0.32.16"
   resolved "https://registry.yarnpkg.com/expo-notifications/-/expo-notifications-0.32.16.tgz#1a1304b89efedd7cdeba92de39b21f09fb2db2c7"
@@ -3948,10 +4065,22 @@ expo-notifications@~0.32.16:
     expo-application "~7.0.8"
     expo-constants "~18.0.13"
 
+expo-screen-orientation@~9.0.8:
+  version "9.0.8"
+  resolved "https://registry.yarnpkg.com/expo-screen-orientation/-/expo-screen-orientation-9.0.8.tgz#15b8f85bd4d183831943fc5a21e3020e17432867"
+  integrity sha512-qRoPi3E893o3vQHT4h1NKo51+7g2hjRSbDeg1fsSo/u2pOW5s6FCeoacLvD+xofOP33cH2MkE4ua54aWWO7Icw==
+
 expo-server@^1.0.5:
   version "1.0.5"
   resolved "https://registry.npmjs.org/expo-server/-/expo-server-1.0.5.tgz"
   integrity sha512-IGR++flYH70rhLyeXF0Phle56/k4cee87WeQ4mamS+MkVAVP+dDlOHf2nN06Z9Y2KhU0Gp1k+y61KkghF7HdhA==
+
+expo-splash-screen@~31.0.13:
+  version "31.0.13"
+  resolved "https://registry.yarnpkg.com/expo-splash-screen/-/expo-splash-screen-31.0.13.tgz#f41f1a4c8bb1ae7fcc52b760e7dd485d7ddec642"
+  integrity sha512-1epJLC1cDlwwj089R2h8cxaU5uk4ONVAC+vzGiTZH4YARQhL4Stlz1MbR6yAS173GMosvkE6CAeihR7oIbCkDA==
+  dependencies:
+    "@expo/prebuild-config" "^54.0.8"
 
 expo-status-bar@~3.0.9:
   version "3.0.9"
@@ -7384,7 +7513,7 @@ undici-types@~6.21.0:
   resolved "https://registry.npmjs.org/undici-types/-/undici-types-6.21.0.tgz"
   integrity sha512-iwDZqg0QAGrg9Rav5H4n0M64c3mkR59cJ6wQp+7C4nI0gsmExaedaYLNO44eT4AtBBwjbTiGPMlt2Md0T9H9JQ==
 
-undici@^6.18.2:
+undici@^6.18.2, undici@^6.22.0:
   version "6.23.0"
   resolved "https://registry.npmjs.org/undici/-/undici-6.23.0.tgz"
   integrity sha512-VfQPToRA5FZs/qJxLIinmU59u0r7LXqoJkCzinq3ckNJp3vKEh7jTWN589YQ5+aoAC/TGRLyJLCPKcLQbM8r9g==
@@ -7606,7 +7735,7 @@ which-typed-array@^1.1.16, which-typed-array@^1.1.19, which-typed-array@^1.1.2:
     gopd "^1.2.0"
     has-tostringtag "^1.0.2"
 
-which@^2.0.1:
+which@^2.0.1, which@^2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/which/-/which-2.0.2.tgz"
   integrity sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==
