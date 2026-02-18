@@ -261,6 +261,7 @@ const AnimatedIndicator = styled(Animated.View)({
 
 const FilterBarSection = styled.View({
   paddingTop: 10,
+  paddingBottom: 10,
 });
 
 const BottomGradient = styled(LinearGradient)({

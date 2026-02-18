@@ -10,6 +10,7 @@ import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabaseClient } from '@/features/utils/clients/superBaseClient';
 import { PUSH_DATABASE } from '@/features/utils/constants/dbConfig';
+import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
 
 /** AsyncStorage 키: 로컬에 저장된 푸시 토큰 */
 const PUSH_TOKEN_STORAGE_KEY = '@soonsak/expo_push_token';
@@ -52,12 +53,16 @@ export const pushTokenApi = {
       .eq(PUSH_DATABASE.COLUMNS.TOKEN, token)
       .neq(PUSH_DATABASE.COLUMNS.USER_ID, userId);
 
+    // device_id 조회 (없으면 생성)
+    const deviceId = await getOrCreateDeviceId();
+
     // 토큰 등록 (upsert) - 항상 실행하여 DB 동기화 보장
     const { error } = await supabaseClient.from(PUSH_DATABASE.TABLES.PUSH_TOKENS).upsert(
       {
         [PUSH_DATABASE.COLUMNS.USER_ID]: userId,
         [PUSH_DATABASE.COLUMNS.TOKEN]: token,
         [PUSH_DATABASE.COLUMNS.PLATFORM]: Platform.OS,
+        [PUSH_DATABASE.COLUMNS.DEVICE_ID]: deviceId,
         [PUSH_DATABASE.COLUMNS.IS_ACTIVE]: true,
         [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
       },

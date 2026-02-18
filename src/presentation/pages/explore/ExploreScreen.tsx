@@ -74,7 +74,13 @@ export default function ExploreScreen() {
           containerStyle={{ backgroundColor: colors.black }}
           headerContainerStyle={{ backgroundColor: colors.black }}
           minHeaderHeight={0}
-          pagerProps={{ style: { backgroundColor: colors.black } }}
+          tabBarHeight={150}
+          snapThreshold={null}
+          allowHeaderOverscroll={true}
+          pagerProps={{
+            style: { backgroundColor: colors.black },
+            overScrollMode: 'never',
+          }}
         >
           <Tabs.Tab name="all" label="전체">
             <ExploreTabContent sortType="all" filter={filter} onContentPress={handleContentPress} />

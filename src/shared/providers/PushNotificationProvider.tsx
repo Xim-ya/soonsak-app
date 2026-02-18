@@ -24,6 +24,7 @@ import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { useAuth } from './AuthProvider';
+import { getOrCreateDeviceId, linkDeviceToUser } from '@/shared/utils/deviceId';
 
 /** PushNotificationContext 값 타입 */
 interface PushNotificationContextValue {
@@ -56,6 +57,22 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // Set을 사용하여 연속 알림(A → B → A) 시나리오도 처리
   const handledNotificationIdsRef = useRef<Set<string>>(new Set());
   const MAX_TRACKED_IDS = 50; // 메모리 관리를 위한 최대 추적 수
+
+  // 앱 시작 시 디바이스 등록 (비로그인 유저 트래킹 용도)
+  useEffect(() => {
+    const registerDevice = async () => {
+      try {
+        await getOrCreateDeviceId();
+        if (__DEV__) {
+          console.log('[PushNotificationProvider] 디바이스 등록 완료');
+        }
+      } catch (error) {
+        console.error('[PushNotificationProvider] 디바이스 등록 실패:', error);
+      }
+    };
+
+    registerDevice();
+  }, []); // 마운트 시 한 번만 실행
 
   // 앱이 종료 상태(Killed)에서 푸시 알림으로 시작된 경우 처리
   // status가 idle이면 AuthProvider 세션 복원이 완료되지 않았으므로 대기
@@ -165,6 +182,10 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
     const syncToken = async () => {
       try {
+        // 디바이스를 유저에 연결 (devices 테이블 업데이트)
+        await linkDeviceToUser(user.id);
+
+        // 푸시 토큰 동기화 (push_tokens 테이블)
         await pushTokenApi.syncToken(user.id, expoPushToken);
         lastSyncedRef.current = { userId: user.id, token: expoPushToken };
         if (__DEV__) {
