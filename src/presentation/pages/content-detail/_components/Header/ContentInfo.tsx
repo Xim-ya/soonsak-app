@@ -203,6 +203,9 @@ const ContentTitle = styled.Text({
 const SubTextView = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
+  flexWrap: 'wrap',
+  justifyContent: 'center',
+  width: '100%',
 });
 
 const SubText = styled.Text({
