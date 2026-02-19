@@ -100,20 +100,18 @@ function WatchCalendarComponent({
     <Container>
       {/* 월 네비게이션 */}
       <MonthNavigation>
-        <NavButton onPress={onPrevMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <NavButton onPress={onPrevMonth} activeOpacity={0.7}>
           <BackArrowIcon width={ARROW_SIZE} height={ARROW_SIZE} color={colors.white} />
         </NavButton>
 
-        <TouchableOpacity onPress={onOpenMonthPicker} activeOpacity={0.7}>
-          <MonthSelector>
-            <MonthText>
-              {year}년 {month}월
-            </MonthText>
-            <DropdownIcon>▼</DropdownIcon>
-          </MonthSelector>
-        </TouchableOpacity>
+        <MonthPillButton onPress={onOpenMonthPicker} activeOpacity={0.7}>
+          <MonthText>
+            {year}년 {month}월
+          </MonthText>
+          <DropdownIcon>▼</DropdownIcon>
+        </MonthPillButton>
 
-        <NavButton onPress={onNextMonth} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <NavButton onPress={onNextMonth} activeOpacity={0.7}>
           <NextArrowIcon>
             <BackArrowIcon width={ARROW_SIZE} height={ARROW_SIZE} color={colors.white} />
           </NextArrowIcon>
@@ -124,9 +122,7 @@ function WatchCalendarComponent({
       <WeekDaysRow>
         {DAYS_OF_WEEK.map((day, index) => (
           <WeekDayCell key={day} style={{ marginRight: index === 6 ? 0 : CELL_GAP }}>
-            <WeekDayText isSunday={index === 0} isSaturday={index === 6}>
-              {day}
-            </WeekDayText>
+            <WeekDayText>{day}</WeekDayText>
           </WeekDayCell>
         ))}
       </WeekDaysRow>
@@ -208,26 +204,28 @@ const Container = styled.View({
 const MonthNavigation = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
-  justifyContent: 'center',
+  justifyContent: 'space-between',
   marginBottom: AppSize.ratioHeight(16),
 });
 
 const NavButton = styled(TouchableOpacity)({
-  padding: AppSize.ratioWidth(8),
+  width: 48,
+  height: 48,
+  alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const NextArrowIcon = styled.View({
   transform: [{ rotate: '180deg' }],
 });
 
-const MonthSelector = styled.View({
+const MonthPillButton = styled(TouchableOpacity)({
   flexDirection: 'row',
   alignItems: 'center',
   backgroundColor: colors.gray06,
   paddingHorizontal: AppSize.ratioWidth(16),
   paddingVertical: AppSize.ratioHeight(8),
   borderRadius: 20,
-  marginHorizontal: AppSize.ratioWidth(16),
 });
 
 const MonthText = styled.Text({
@@ -238,7 +236,7 @@ const MonthText = styled.Text({
 const DropdownIcon = styled.Text({
   ...textStyles.desc,
   color: colors.gray02,
-  marginLeft: AppSize.ratioWidth(6),
+  marginLeft: AppSize.ratioWidth(8),
 });
 
 const WeekDaysRow = styled.View({
@@ -251,12 +249,10 @@ const WeekDayCell = styled.View({
   alignItems: 'center',
 });
 
-const WeekDayText = styled.Text<{ isSunday?: boolean; isSaturday?: boolean }>(
-  ({ isSunday, isSaturday }) => ({
-    ...textStyles.desc,
-    color: isSunday ? colors.red : isSaturday ? colors.primary : colors.gray02,
-  }),
-);
+const WeekDayText = styled.Text({
+  ...textStyles.desc,
+  color: colors.gray02,
+});
 
 const CalendarGrid = styled.View({
   flexDirection: 'row',
@@ -274,9 +270,8 @@ const EmptyDateCell = styled.View({
   height: CELL_HEIGHT,
   marginBottom: CELL_GAP,
   alignItems: 'center',
-  justifyContent: 'center',
-  backgroundColor: colors.gray07,
-  borderRadius: 4,
+  justifyContent: 'flex-start',
+  paddingTop: AppSize.ratioHeight(8),
 });
 
 const DateCell = styled(TouchableOpacity)({

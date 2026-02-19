@@ -124,16 +124,28 @@ export default function MyPage() {
 
   // 통계 섹션 클릭 핸들러 (initialTab: 0=찜했어요, 1=평가했어요, 2=봤어요)
   const handleFavoritesPress = useCallback(() => {
+    if (isGuest) {
+      setLoginDialogVisible(true);
+      return;
+    }
     navigation.navigate(routePages.userContentList, { initialTab: 0 });
-  }, [navigation]);
+  }, [isGuest, navigation]);
 
   const handleRatingsPress = useCallback(() => {
+    if (isGuest) {
+      setLoginDialogVisible(true);
+      return;
+    }
     navigation.navigate(routePages.userContentList, { initialTab: 1 });
-  }, [navigation]);
+  }, [isGuest, navigation]);
 
   const handleWatchedPress = useCallback(() => {
+    if (isGuest) {
+      setLoginDialogVisible(true);
+      return;
+    }
     navigation.navigate(routePages.userContentList, { initialTab: 2 });
-  }, [navigation]);
+  }, [isGuest, navigation]);
 
   return (
     <BasePage touchableWithoutFeedback={false}>
