@@ -8,6 +8,12 @@ import { ContentType, KnownContentType } from '@/presentation/types/content/cont
 type ISOTimestamp = string;
 
 /**
+ * 타이틀 로고 언어 타입
+ * DB의 title_logo_lang 컬럼 enum과 대응
+ */
+type LogoLanguage = 'ko' | 'en';
+
+/**
  * 감독/출연진 정보 타입
  */
 interface PersonDto {
@@ -40,6 +46,8 @@ interface ContentDto {
   readonly originCountry?: string[];
   readonly directors?: PersonDto[];
   readonly mainCast?: PersonDto[];
+  readonly titleLogo?: string;
+  readonly titleLogoLang?: LogoLanguage;
 }
 
 /**
@@ -107,6 +115,7 @@ interface ContentCollectionWithContentsDto extends Omit<ContentCollectionDto, 'c
 
 export type {
   ISOTimestamp,
+  LogoLanguage,
   ContentDto,
   ContentWithVideoDto,
   VideoDto,

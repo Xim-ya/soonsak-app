@@ -712,6 +712,29 @@ export const contentApi = {
       }
     }
 
+    // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
+    let excludeContentIds: number[] = [];
+    if (filter.excludeWatched) {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if (userData?.user?.id) {
+        const { data: watchedRows, error: watchedError } = await supabaseClient
+          .from('watch_history')
+          .select('content_id')
+          .eq('user_id', userData.user.id);
+
+        if (watchedError) {
+          console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
+          // 에러 시 필터 무시 (사용자 경험 유지)
+        } else {
+          const rawIds = [
+            ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
+          ];
+          // 유효성 검증 및 제한 적용
+          excludeContentIds = sanitizeExcludeIds(rawIds);
+        }
+      }
+    }
+
     const offset = page * pageSize;
 
     // 'all' 정렬: 세션 시드 기반 랜덤 (RPC 함수 사용)
@@ -731,6 +754,7 @@ export const contentApi = {
           p_include_ending: filter.includeEnding,
           p_channel_content_ids: channelContentIds,
           p_ending_content_ids: endingContentIds,
+          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
         },
       );
 
@@ -761,7 +785,7 @@ export const contentApi = {
       .from(CONTENT_DATABASE.TABLES.CONTENTS)
       .select('*', { count: 'exact', head: true });
 
-    countQuery = applyContentFilters(countQuery, filter, [], channelContentIds);
+    countQuery = applyContentFilters(countQuery, filter, excludeContentIds, channelContentIds);
 
     if (endingContentIds !== null) {
       countQuery = countQuery.in('id', endingContentIds);
@@ -786,7 +810,7 @@ export const contentApi = {
       .order(sortConfig.column, { ascending: sortConfig.ascending })
       .range(offset, offset + pageSize - 1);
 
-    query = applyContentFilters(query, filter, [], channelContentIds);
+    query = applyContentFilters(query, filter, excludeContentIds, channelContentIds);
 
     if (endingContentIds !== null) {
       query = query.in('id', endingContentIds);
