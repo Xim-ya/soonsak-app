@@ -23,10 +23,12 @@ import { ContentType } from '@/presentation/types/content/contentType.enum';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { FavoriteActionBottomSheet } from '@/presentation/components/bottom-sheet/FavoriteActionBottomSheet';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
+import { useAuth } from '@/shared/providers/AuthProvider';
 
 export default function ContentDetailPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
   const { id, type, title, videoId } = route.params;
+  const { isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
   const appBarOpacity = useSharedValue(0);
 
@@ -80,7 +82,7 @@ export default function ContentDetailPage() {
           insets={insets}
           opacity={appBarOpacity}
           title={title || undefined}
-          onMorePress={handleMorePress}
+          onMorePress={isAdmin ? handleMorePress : undefined}
         />
         <TabsContainer paddingTop={insets.top}>
           <Tabs.Container

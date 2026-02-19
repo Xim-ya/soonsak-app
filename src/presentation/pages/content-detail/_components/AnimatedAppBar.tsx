@@ -16,7 +16,7 @@ interface AnimatedAppBarProps {
   insets: EdgeInsets;
   opacity: SharedValue<number>;
   title?: string;
-  onMorePress: () => void;
+  onMorePress?: () => void;
 }
 
 // 최적화된 AnimatedBackButtonAppBar 컴포넌트
@@ -51,9 +51,9 @@ const AnimatedAppBar = React.memo<AnimatedAppBarProps>(
       [insets.top],
     );
 
-    // 액션 버튼 메모이제이션
+    // 액션 버튼 메모이제이션 (onMorePress가 있을 때만 표시)
     const actions = useMemo(
-      () => [<MoreOptionsButton key="more" onPress={onMorePress} />],
+      () => (onMorePress ? [<MoreOptionsButton key="more" onPress={onMorePress} />] : []),
       [onMorePress],
     );
 
