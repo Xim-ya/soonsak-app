@@ -154,22 +154,11 @@ const ExploreTabBar = <T extends string>({
     [indexDecimal],
   );
 
-  // 디버그용 로그
-  const logScrollPosition = React.useCallback((offset: number) => {
-    console.log(`[ExploreTabBar] Y: ${Math.round(offset)}`);
-  }, []);
-
   // 스크롤 위치 감지하여 그라데이션 opacity 업데이트
-  // interpolate 사용으로 간결화 + 불필요한 업데이트 방지
   useAnimatedReaction(
     () => scrollY.value,
     (offset) => {
       'worklet';
-      // 디버그 로그 (10px 단위로만 출력)
-      if (Math.round(offset) % 10 === 0) {
-        runOnJS(logScrollPosition)(offset);
-      }
-
       const targetOpacity = interpolate(
         offset,
         [GRADIENT_OPACITY_START, GRADIENT_OPACITY_END],
@@ -177,15 +166,9 @@ const ExploreTabBar = <T extends string>({
         Extrapolation.CLAMP,
       );
 
-      // 값이 변경된 경우에만 업데이트 (소수점 3자리까지 비교)
-      const roundedTarget = Math.round(targetOpacity * 1000) / 1000;
-      const roundedCurrent = Math.round(gradientOpacity.value * 1000) / 1000;
-
-      if (roundedTarget !== roundedCurrent) {
-        gradientOpacity.value = targetOpacity;
-      }
+      gradientOpacity.value = targetOpacity;
     },
-    [scrollY, gradientOpacity, logScrollPosition],
+    [scrollY, gradientOpacity],
   );
 
   // 그라데이션 애니메이션 스타일
