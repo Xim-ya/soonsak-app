@@ -37,62 +37,72 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
   const borderRadius = AppSize.ratioWidth(40);
   const padding = AppSize.ratioWidth(16);
 
-  const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath, { size: TmdbImageSize.w500 });
+  const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath, {
+    size: TmdbImageSize.w500,
+  });
 
   return (
-    <CardContainer
-      onPress={onPress}
-      activeOpacity={0.9}
-      cardWidth={cardWidth}
-      cardHeight={cardHeight}
-      borderRadius={borderRadius}
-    >
-      {/* 포스터 이미지 */}
-      {posterUrl ? (
-        <LoadableImageView
-          source={posterUrl}
-          width={cardWidth}
-          height={cardHeight}
-          borderRadius={borderRadius}
-        />
-      ) : (
-        <PosterPlaceholder
+    // iOS에서 overflow: 'hidden'과 shadow를 같은 View에 적용하면 CALayer 오프스크린
+    // 렌더링이 발생합니다. shadow는 외부 ShadowWrapper에, overflow는 내부 CardContainer에 분리합니다.
+    <ShadowWrapper cardWidth={cardWidth} cardHeight={cardHeight} borderRadius={borderRadius}>
+      <CardContainer
+        onPress={onPress}
+        activeOpacity={0.9}
+        cardWidth={cardWidth}
+        cardHeight={cardHeight}
+        borderRadius={borderRadius}
+      >
+        {/* 포스터 이미지 */}
+        {posterUrl ? (
+          <LoadableImageView
+            source={posterUrl}
+            width={cardWidth}
+            height={cardHeight}
+            borderRadius={borderRadius}
+          />
+        ) : (
+          <PosterPlaceholder
+            cardWidth={cardWidth}
+            cardHeight={cardHeight}
+            borderRadius={borderRadius}
+          />
+        )}
+
+        {/* 하단 그라데이션 오버레이 */}
+        <GradientOverlay
+          colors={['transparent', 'rgba(0, 0, 0, 0.8)']}
+          locations={[0.5, 1]}
           cardWidth={cardWidth}
           cardHeight={cardHeight}
           borderRadius={borderRadius}
         />
-      )}
 
-      {/* 하단 그라데이션 오버레이 */}
-      <GradientOverlay
-        colors={['transparent', 'rgba(0, 0, 0, 0.8)']}
-        locations={[0.5, 1]}
-        cardWidth={cardWidth}
-        cardHeight={cardHeight}
-        borderRadius={borderRadius}
-      />
+        {/* 콘텐츠 정보 */}
+        <ContentInfo padding={padding}>
+          {/* 콘텐츠 타입 칩 */}
+          <TypeChip>
+            <TypeChipText>{contentTypeConfigs[content.type].label}</TypeChipText>
+          </TypeChip>
 
-      {/* 콘텐츠 정보 */}
-      <ContentInfo padding={padding}>
-        {/* 콘텐츠 타입 칩 */}
-        <TypeChip>
-          <TypeChipText>{contentTypeConfigs[content.type].label}</TypeChipText>
-        </TypeChip>
+          {/* 제목 */}
+          <TitleText numberOfLines={2}>{content.title}</TitleText>
+        </ContentInfo>
 
-        {/* 제목 */}
-        <TitleText numberOfLines={2}>{content.title}</TitleText>
-      </ContentInfo>
-
-      {/* 포커스 상태일 때 브랜드 색상 테두리 */}
-      {isFocused && (
-        <FocusBorder cardWidth={cardWidth} cardHeight={cardHeight} borderRadius={borderRadius} />
-      )}
-    </CardContainer>
+        {/* 포커스 상태일 때 브랜드 색상 테두리 */}
+        {isFocused && (
+          <FocusBorder cardWidth={cardWidth} cardHeight={cardHeight} borderRadius={borderRadius} />
+        )}
+      </CardContainer>
+    </ShadowWrapper>
   );
 }
 
 /* Styled Components */
-const CardContainer = styled(TouchableOpacity)<{
+
+// iOS에서 shadow는 overflow: 'hidden'이 없는 별도 View에서만 올바르게 렌더링됩니다.
+// overflow: 'hidden'과 shadow를 함께 사용하면 CALayer 오프스크린 렌더링을 유발하므로
+// ShadowWrapper에서 shadow를, CardContainer에서 overflow를 각각 담당합니다.
+const ShadowWrapper = styled.View<{
   cardWidth: number;
   cardHeight: number;
   borderRadius: number;
@@ -101,8 +111,6 @@ const CardContainer = styled(TouchableOpacity)<{
   height: cardHeight,
   borderRadius,
   margin: AppSize.ratioWidth(10),
-  overflow: 'hidden',
-  position: 'relative',
   ...Platform.select({
     ios: {
       shadowColor: colors.black,
@@ -114,6 +122,18 @@ const CardContainer = styled(TouchableOpacity)<{
       elevation: 8,
     },
   }),
+}));
+
+const CardContainer = styled(TouchableOpacity)<{
+  cardWidth: number;
+  cardHeight: number;
+  borderRadius: number;
+}>(({ cardWidth, cardHeight, borderRadius }) => ({
+  width: cardWidth,
+  height: cardHeight,
+  borderRadius,
+  overflow: 'hidden',
+  position: 'relative',
 }));
 
 const GradientOverlay = styled(LinearGradient)<{
