@@ -24,6 +24,7 @@ export interface ContentDetailModel extends BaseContentModel {
   readonly voteAverage: number;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace ContentDetailModel {
   /**
    * TMDB API DTO를 ContentDetailModel로 변환
