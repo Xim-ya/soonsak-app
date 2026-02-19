@@ -6,6 +6,7 @@ export interface BaseContentModel {
   readonly title: string;
   readonly type: ContentType;
   readonly posterPath: string;
+  readonly backdropPath: string;
 }
 
 export namespace BaseContentModel {
@@ -20,6 +21,7 @@ export namespace BaseContentModel {
       title: dto.title ?? '제목 없음',
       type: contentType,
       posterPath: dto.posterPath ?? '',
+      backdropPath: dto.backdropPath ?? '',
     };
   }
 }

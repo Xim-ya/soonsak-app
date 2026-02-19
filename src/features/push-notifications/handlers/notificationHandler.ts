@@ -98,7 +98,7 @@ function handleNavigation(action: NavigationAction, options: HandleNotificationO
  */
 const getStoreConfig = () => ({
   iosAppId: '6738924478',
-  androidPackageName: Constants.expoConfig?.android?.package ?? 'com.soonsak.app',
+  androidPackageName: Constants.expoConfig?.android?.package ?? 'com.quickExplore.app',
 });
 
 /**

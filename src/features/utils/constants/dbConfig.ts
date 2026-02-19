@@ -21,6 +21,7 @@ export const CONTENT_DATABASE = {
     GET_LONG_RUNTIME_CONTENTS: 'get_long_runtime_contents',
     GET_RANDOM_CURATION_VIDEOS: 'get_random_curation_videos',
     GET_RANDOM_BANNER_CONTENTS: 'get_random_banner_contents',
+    GET_CONTENT_COLLECTIONS: 'get_content_collections',
   },
 } as const;
 

@@ -2,7 +2,7 @@
  * ContentFilter - 콘텐츠 필터 상태 모델
  *
  * 바텀시트에서 설정한 필터 조건을 표현하는 타입입니다.
- * 순삭 페이지, 검색 페이지 등 다양한 화면에서 재사용됩니다.
+ * 빠른탐색 페이지, 검색 페이지 등 다양한 화면에서 재사용됩니다.
  */
 
 import { ContentType } from '@/presentation/types/content/contentType.enum';

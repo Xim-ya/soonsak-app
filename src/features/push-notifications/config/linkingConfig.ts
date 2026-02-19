@@ -19,7 +19,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import { getDeepLinkConfig } from '@/shared/navigation/config/routeRegistry';
 
 /** URL 스킴 */
-const SCHEME = 'soonsak';
+const SCHEME = 'quickExplore';
 
 /**
  * Linking 설정

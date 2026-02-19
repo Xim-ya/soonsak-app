@@ -1,5 +1,5 @@
 /**
- * useSoonsakGrid - 무한 가상화 그리드 상태 관리 훅
+ * useQuickExploreGrid - 무한 가상화 그리드 상태 관리 훅
  *
  * 화면에 보이는 영역만 렌더링하고, 스크롤 시 새로운 콘텐츠를 로드합니다.
  * 셀 기반으로 콘텐츠를 관리하여 무한 그리드를 구현합니다.
@@ -75,7 +75,7 @@ export interface ContentWithPosition {
   translateY: number;
 }
 
-interface UseSoonsakGridReturn {
+interface UseQuickExploreGridReturn {
   // 그리드 상태
   cells: GridCell[];
   isLoading: boolean;
@@ -110,7 +110,7 @@ function getStableFilterKey(filter: ContentFilter): string {
   });
 }
 
-export function useSoonsakGrid(filter?: ContentFilter): UseSoonsakGridReturn {
+export function useQuickExploreGrid(filter?: ContentFilter): UseQuickExploreGridReturn {
   // 반응형 크기
   const cellWidth = AppSize.ratioWidth(GRID_UNIT_WIDTH);
   const cellHeight = AppSize.ratioHeight(CARD_HEIGHT) + AppSize.ratioWidth(CARD_MARGIN) * 2;
@@ -170,7 +170,7 @@ export function useSoonsakGrid(filter?: ContentFilter): UseSoonsakGridReturn {
 
   // 초기 콘텐츠 로드 (필터 포함)
   const { data: initialContents, isLoading: isInitialLoading } = useQuery({
-    queryKey: ['soonsakInitialContents', filterKey],
+    queryKey: ['quickExploreInitialContents', filterKey],
     queryFn: async () => {
       const contents =
         hasFilter && filter
@@ -216,10 +216,10 @@ export function useSoonsakGrid(filter?: ContentFilter): UseSoonsakGridReturn {
     setIsInitialLoadDone(true);
     if (__DEV__) {
       console.log(
-        `[SoonsakGrid] 초기 로드 완료, 콘텐츠 수: ${initialContents.length}, 배치 범위: (${positions[0]?.row},${positions[0]?.col}) ~ (${positions[initialContents.length - 1]?.row},${positions[initialContents.length - 1]?.col})`,
+        `[QuickExploreGrid] 초기 로드 완료, 콘텐츠 수: ${initialContents.length}, 배치 범위: (${positions[0]?.row},${positions[0]?.col}) ~ (${positions[initialContents.length - 1]?.row},${positions[initialContents.length - 1]?.col})`,
       );
       console.log(
-        `[SoonsakGrid] 현재 뷰포트: row(${visibleRange.startRow}~${visibleRange.endRow}), col(${visibleRange.startCol}~${visibleRange.endCol})`,
+        `[QuickExploreGrid] 현재 뷰포트: row(${visibleRange.startRow}~${visibleRange.endRow}), col(${visibleRange.startCol}~${visibleRange.endCol})`,
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -250,7 +250,7 @@ export function useSoonsakGrid(filter?: ContentFilter): UseSoonsakGridReturn {
         }
         if (__DEV__) {
           console.log(
-            `[SoonsakGrid] 뷰포트 변경: row(${startRow}~${endRow}), col(${startCol}~${endCol})`,
+            `[QuickExploreGrid] 뷰포트 변경: row(${startRow}~${endRow}), col(${startCol}~${endCol})`,
           );
         }
         return { startRow, endRow, startCol, endCol };
@@ -399,7 +399,7 @@ export function useSoonsakGrid(filter?: ContentFilter): UseSoonsakGridReturn {
   const getRandomContent = useCallback((): ContentWithPosition | null => {
     const entries = Array.from(contentMapRef.current.entries());
     if (__DEV__)
-      console.log(`[SoonsakGrid] getRandomContent 호출, 콘텐츠 맵 크기: ${entries.length}`);
+      console.log(`[QuickExploreGrid] getRandomContent 호출, 콘텐츠 맵 크기: ${entries.length}`);
     if (entries.length === 0) return null;
 
     const randomIndex = Math.floor(Math.random() * entries.length);
