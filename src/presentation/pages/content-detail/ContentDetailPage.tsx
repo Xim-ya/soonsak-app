@@ -157,6 +157,9 @@ function ContentDetailContent({
         actions={adminAction.actions}
         onSelectAction={adminAction.handleSelectAction}
         onClose={adminAction.handleCloseActionSheet}
+        contentId={adminAction.contentId}
+        contentType={adminAction.contentType}
+        videoId={adminAction.currentVideoId}
       />
 
       {/* 메인 이미지(Backdrop) 선택 모달 */}

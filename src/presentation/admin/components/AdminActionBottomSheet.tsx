@@ -5,7 +5,8 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { Modal } from 'react-native';
+import { Modal, Alert } from 'react-native';
+import * as Clipboard from 'expo-clipboard';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -38,6 +39,12 @@ interface AdminActionBottomSheetProps {
   readonly onSelectAction: (action: AdminContentAction) => void;
   /** 닫기 콜백 */
   readonly onClose: () => void;
+  /** 콘텐츠 ID */
+  readonly contentId?: number;
+  /** 콘텐츠 타입 */
+  readonly contentType?: string;
+  /** 비디오 ID */
+  readonly videoId?: string;
 }
 
 function AdminActionBottomSheet({
@@ -45,11 +52,18 @@ function AdminActionBottomSheet({
   actions,
   onSelectAction,
   onClose,
+  contentId,
+  contentType,
+  videoId,
 }: AdminActionBottomSheetProps) {
+  // ID 칩 영역 높이 (ID가 있을 때만)
+  const hasIds = contentId !== undefined || videoId !== undefined;
+  const idChipsHeight = hasIds ? 44 : 0;
+
   // 시트 높이 계산 (옵션 개수에 따라 동적)
   const optionsHeight = actions.length * OPTION_HEIGHT + (actions.length - 1) * OPTION_GAP;
   const sheetHeight =
-    optionsHeight + SPACING + CLOSE_BUTTON_HEIGHT + AppSize.responsiveBottomInset + 24;
+    optionsHeight + SPACING + CLOSE_BUTTON_HEIGHT + AppSize.responsiveBottomInset + 24 + idChipsHeight;
   const closeThreshold = sheetHeight * 0.25;
 
   // 애니메이션 값
@@ -81,6 +95,12 @@ function AdminActionBottomSheet({
       },
     );
   }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight]);
+
+  // ID 복사 핸들러
+  const handleCopyId = useCallback(async (label: string, value: string) => {
+    await Clipboard.setStringAsync(value);
+    Alert.alert('복사됨', `${label}: ${value}`);
+  }, []);
 
   // 액션 선택 핸들러
   const handleSelectAction = useCallback(
@@ -146,12 +166,29 @@ function AdminActionBottomSheet({
                 <HandleContainer>
                   <Handle />
                 </HandleContainer>
-                {/* 어드민 배지 */}
-                <AdminBadgeContainer>
-                  <AdminBadge>
-                    <AdminBadgeText>관리자</AdminBadgeText>
-                  </AdminBadge>
-                </AdminBadgeContainer>
+                {/* ID 칩들 */}
+                {hasIds && (
+                  <IdChipsContainer>
+                    {contentId !== undefined && contentType && (
+                      <IdChip
+                        onPress={() => handleCopyId('Content', `${contentType}/${contentId}`)}
+                        activeOpacity={0.7}
+                      >
+                        <IdChipLabel>Content</IdChipLabel>
+                        <IdChipValue>{`${contentType}/${contentId}`}</IdChipValue>
+                      </IdChip>
+                    )}
+                    {videoId && (
+                      <IdChip
+                        onPress={() => handleCopyId('Video', videoId)}
+                        activeOpacity={0.7}
+                      >
+                        <IdChipLabel>Video</IdChipLabel>
+                        <IdChipValue>{videoId}</IdChipValue>
+                      </IdChip>
+                    )}
+                  </IdChipsContainer>
+                )}
               </DragArea>
             </GestureDetector>
 
@@ -229,22 +266,32 @@ const Handle = styled.View({
   backgroundColor: colors.gray03,
 });
 
-const AdminBadgeContainer = styled.View({
-  alignItems: 'center',
+const IdChipsContainer = styled.View({
+  flexDirection: 'row',
+  justifyContent: 'center',
+  gap: 8,
   paddingBottom: 12,
 });
 
-const AdminBadge = styled.View({
-  backgroundColor: colors.primary,
+const IdChip = styled.TouchableOpacity({
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: colors.gray05,
   paddingHorizontal: 10,
-  paddingVertical: 4,
-  borderRadius: 6,
+  paddingVertical: 6,
+  borderRadius: 16,
+  gap: 6,
 });
 
-const AdminBadgeText = styled.Text({
-  ...textStyles.alert1,
+const IdChipLabel = styled.Text({
+  ...textStyles.alert2,
+  color: colors.gray02,
+});
+
+const IdChipValue = styled.Text({
+  ...textStyles.alert2,
   color: colors.white,
-  fontWeight: '600',
+  fontWeight: '500',
 });
 
 const OptionsContainer = styled.View({
