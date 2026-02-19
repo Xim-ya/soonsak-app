@@ -28,6 +28,7 @@ interface ExploreContentModel {
   readonly title: string;
   readonly type: ContentType;
   readonly posterPath: string;
+  readonly backdropPath?: string;
 }
 
 /** 큐레이션 캐러셀용 비디오 모델 */

@@ -11,6 +11,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSharedValue } from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
 import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
@@ -28,6 +29,7 @@ export default function ExploreScreen() {
   const route = useRoute<RouteProp<TabParamList, 'Explore'>>();
   const insets = useSafeAreaInsets();
   const initialTab = route.params?.initialTab ?? 'all';
+  const gradientOpacity = useSharedValue(0);
 
   const {
     filter,
@@ -69,6 +71,7 @@ export default function ExploreScreen() {
               onIncludeEndingToggle={toggleIncludeEnding}
               isCustomFilterActive={isCustomFilterActive}
               onFilterPress={openSheet}
+              gradientOpacity={gradientOpacity}
             />
           )}
           containerStyle={{ backgroundColor: colors.black }}

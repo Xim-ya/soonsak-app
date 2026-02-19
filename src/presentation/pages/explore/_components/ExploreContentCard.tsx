@@ -12,7 +12,6 @@ import { SvgXml } from 'react-native-svg';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import ContentTypeChip from '@/presentation/components/chip/ContentTypeChip';
 import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import type { ExploreContentModel } from '../_types/exploreTypes';
 
@@ -52,15 +51,18 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
     onPress(content);
   }, [content, onPress]);
 
-  const posterUrl = content.posterPath
-    ? `https://image.tmdb.org/t/p/w342${content.posterPath}`
-    : null;
+  // backdropPath 우선, 없으면 posterPath 사용
+  const imageUrl = content.backdropPath
+    ? `https://image.tmdb.org/t/p/w780${content.backdropPath}`
+    : content.posterPath
+      ? `https://image.tmdb.org/t/p/w342${content.posterPath}`
+      : null;
 
   return (
     <CardContainer onPress={handlePress} activeOpacity={0.8}>
-      {posterUrl ? (
+      {imageUrl ? (
         <LoadableImageView
-          source={posterUrl}
+          source={imageUrl}
           width={CARD_WIDTH}
           height={CARD_HEIGHT}
           borderRadius={8}
@@ -125,7 +127,8 @@ const TitleContainer = styled.View({
 });
 
 const CardTitle = styled.Text({
-  ...textStyles.body3,
+  fontSize: 16,
+  fontFamily: 'DoHyeon-Regular',
   color: colors.white,
   textAlign: 'center',
 });
