@@ -104,6 +104,10 @@ interface ExploreTabBarProps<T extends string> extends TabBarProps<T> {
   readonly includeEnding: boolean;
   /** 결말 포함 필터 토글 콜백 */
   readonly onIncludeEndingToggle: () => void;
+  /** 본 작품 제외 필터 활성화 여부 */
+  readonly excludeWatched: boolean;
+  /** 본 작품 제외 필터 토글 콜백 (로그인 체크 포함) */
+  readonly onExcludeWatchedToggle: () => void;
   /** 커스텀 필터 적용 여부 */
   readonly isCustomFilterActive: boolean;
   /** 필터 버튼 클릭 콜백 */
@@ -118,6 +122,8 @@ const ExploreTabBar = <T extends string>({
   onTabPress,
   includeEnding,
   onIncludeEndingToggle,
+  excludeWatched,
+  onExcludeWatchedToggle,
   isCustomFilterActive,
   onFilterPress,
   gradientOpacity,
@@ -235,11 +241,13 @@ const ExploreTabBar = <T extends string>({
               <FilterChipText selected={includeEnding}>결말포함</FilterChipText>
             </FilterChip>
 
-            {/* 본 작품 제외 칩 (disabled) */}
-            <FilterChip selected={false} disabled activeOpacity={1}>
-              <FilterChipText selected={false} disabled>
-                본 작품 제외
-              </FilterChipText>
+            {/* 본 작품 제외 칩 */}
+            <FilterChip
+              selected={excludeWatched}
+              onPress={onExcludeWatchedToggle}
+              activeOpacity={0.7}
+            >
+              <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
             </FilterChip>
           </ScrollView>
         </FilterBarSection>

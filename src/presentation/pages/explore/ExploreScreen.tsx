@@ -16,6 +16,7 @@ import colors from '@/shared/styles/colors';
 import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
+import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import type { ExploreContentModel } from './_types/exploreTypes';
 import { ExploreHeader } from './_components/ExploreHeader';
 import { ExploreTabBar } from './_components/ExploreTabBar';
@@ -38,10 +39,14 @@ export default function ExploreScreen() {
     hasPendingFilter,
     isCustomFilterActive,
     toggleIncludeEnding,
+    toggleExcludeWatched,
     openSheet,
     closeSheet,
     applyFilter,
     requestChannelSelection,
+    isLoginDialogVisible,
+    loginSuccessCallback,
+    closeLoginDialog,
   } = useExploreFilterSheet();
 
   const handleContentPress = useCallback(
@@ -69,6 +74,8 @@ export default function ExploreScreen() {
               {...props}
               includeEnding={filter.includeEnding}
               onIncludeEndingToggle={toggleIncludeEnding}
+              excludeWatched={filter.excludeWatched}
+              onExcludeWatchedToggle={toggleExcludeWatched}
               isCustomFilterActive={isCustomFilterActive}
               onFilterPress={openSheet}
               gradientOpacity={gradientOpacity}
@@ -120,6 +127,13 @@ export default function ExploreScreen() {
         onClose={closeSheet}
         onRequestChannelSelection={requestChannelSelection}
         preserveScrollPosition={hasPendingFilter}
+      />
+
+      {/* 로그인 유도 다이얼로그 */}
+      <LoginPromptDialog
+        visible={isLoginDialogVisible}
+        onClose={closeLoginDialog}
+        onLoginSuccess={loginSuccessCallback}
       />
     </Container>
   );
