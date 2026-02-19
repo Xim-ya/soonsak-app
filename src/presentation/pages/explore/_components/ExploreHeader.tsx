@@ -10,6 +10,8 @@
 
 import React, { useCallback, useState } from 'react';
 import { ImageBackground, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -20,9 +22,14 @@ import {
 } from '@/presentation/components/shadow/DarkedLinearShadow';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { RootStackParamList } from '@/shared/navigation/types';
+import { routePages } from '@/shared/navigation/constant/routePages';
+import LightningIcon from '@assets/icons/lightning.svg';
 import { CurationCarousel } from './CurationCarousel';
 import { CurationPromptCard } from './CurationPromptCard';
 import { useRandomBackdrop } from '../_hooks/useRandomBackdrop';
+
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // 레이아웃 상수
 const HEADER_HEIGHT = AppSize.ratioHeight(280);
@@ -30,6 +37,7 @@ const TOP_GRADIENT_HEIGHT = AppSize.ratioHeight(80);
 const BOTTOM_GRADIENT_HEIGHT = AppSize.ratioHeight(180);
 
 const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
+  const navigation = useNavigation<NavigationProp>();
   const { status, signOut } = useAuth();
   const isLoggedIn = status === 'authenticated';
 
@@ -46,6 +54,11 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
     setLoginDialogVisible(false);
   }, []);
 
+  // 빠른탐색 페이지로 이동
+  const handleQuickExplorePress = useCallback(() => {
+    navigation.navigate(routePages.quickExplore);
+  }, [navigation]);
+
   // TODO: 테스트용 로그아웃 - 개발 완료 후 제거
   const handleLogoutPress = useCallback(() => {
     signOut();
@@ -57,9 +70,15 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
       <LoggedInContainer>
         <TitleRow>
           <TitleText>탐색</TitleText>
-          <LoginButton onPress={handleLogoutPress} activeOpacity={0.8}>
-            <LoginButtonText>로그아웃</LoginButtonText>
-          </LoginButton>
+          <ActionButtonRow>
+            <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+              <LightningIcon width={14} height={14} fill={colors.white} />
+              <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+            </QuickExploreChip>
+            <LoginButton onPress={handleLogoutPress} activeOpacity={0.8}>
+              <LoginButtonText>로그아웃</LoginButtonText>
+            </LoginButton>
+          </ActionButtonRow>
         </TitleRow>
         <CurationCarousel />
       </LoggedInContainer>
@@ -73,9 +92,15 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
         <FallbackContainer>
           <TitleRow>
             <TitleText>탐색</TitleText>
-            <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-              <LoginButtonText>로그인</LoginButtonText>
-            </LoginButton>
+            <ActionButtonRow>
+              <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+                <LightningIcon width={14} height={14} fill={colors.white} />
+                <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+              </QuickExploreChip>
+              <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
+                <LoginButtonText>로그인</LoginButtonText>
+              </LoginButton>
+            </ActionButtonRow>
           </TitleRow>
           <CurationPromptCard />
         </FallbackContainer>
@@ -95,9 +120,15 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
           <ContentOverlay>
             <TitleRow>
               <TitleText>탐색</TitleText>
-              <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-                <LoginButtonText>로그인</LoginButtonText>
-              </LoginButton>
+              <ActionButtonRow>
+                <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+                  <LightningIcon width={14} height={14} fill={colors.white} />
+                  <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+                </QuickExploreChip>
+                <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
+                  <LoginButtonText>로그인</LoginButtonText>
+                </LoginButton>
+              </ActionButtonRow>
             </TitleRow>
 
             <CardSection>
@@ -161,6 +192,27 @@ const CardSection = styled.View({
 
 const TitleText = styled.Text({
   ...textStyles.headline1,
+  color: colors.white,
+});
+
+const ActionButtonRow = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+});
+
+const QuickExploreChip = styled(TouchableOpacity)({
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: colors.gray04,
+  paddingHorizontal: 12,
+  paddingVertical: 8,
+  borderRadius: 20,
+  gap: 4,
+});
+
+const QuickExploreChipText = styled.Text({
+  ...textStyles.alert1,
   color: colors.white,
 });
 

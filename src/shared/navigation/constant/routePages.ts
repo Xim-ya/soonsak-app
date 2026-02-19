@@ -11,6 +11,7 @@ export const routePages = {
   profileSetup: 'ProfileSetup',
   settings: 'Settings',
   userContentList: 'UserContentList',
+  quickExplore: 'QuickExplore',
 } as const;
 
 export type RoutePages = typeof routePages;
