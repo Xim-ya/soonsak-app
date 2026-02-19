@@ -9,3 +9,6 @@ export { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } fro
 
 // Hooks
 export { useAdminContentActions } from './hooks/useAdminContentActions';
+
+// API
+export { adminContentApi } from './api';

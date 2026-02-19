@@ -18,25 +18,69 @@ import { RelatedContentTabView } from './_components/OriginContentTabView';
 import { AnimatedAppBar } from './_components/AnimatedAppBar';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentDetailProvider } from './_provider/ContentDetailProvider';
+import { ContentDetailProvider, useContentVideos } from './_provider/ContentDetailProvider';
 import { ContentType } from '@/presentation/types/content/contentType.enum';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { FavoriteActionBottomSheet } from '@/presentation/components/bottom-sheet/FavoriteActionBottomSheet';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
-import { useAdminContentActions } from '@/features/admin';
-import { AdminActionBottomSheet } from '@/presentation/admin/components/AdminActionBottomSheet';
+import { useAdminContentActions, AdminContentAction } from '@/features/admin';
+import {
+  AdminActionBottomSheet,
+  BackdropSelectionModal,
+  VideoStatusModal,
+} from '@/presentation/admin/components';
+import { useContentDetail } from './_hooks/useContentDetail';
 
 export default function ContentDetailPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
   const { id, type, title, videoId } = route.params;
-  const insets = useSafeAreaInsets();
-  const appBarOpacity = useSharedValue(0);
 
   const contentId = Number(id);
   const contentType = type as ContentType;
 
+  return (
+    <ContentDetailProvider contentId={contentId} contentType={contentType} videoId={videoId}>
+      <ContentDetailContent
+        contentId={contentId}
+        contentType={contentType}
+        title={title || undefined}
+      />
+    </ContentDetailProvider>
+  );
+}
+
+/**
+ * ContentDetailContent - 실제 콘텐츠 상세 화면 내용
+ *
+ * ContentDetailProvider 내부에서 렌더링되어 비디오 컨텍스트에 접근 가능
+ */
+function ContentDetailContent({
+  contentId,
+  contentType,
+  title,
+}: {
+  contentId: number;
+  contentType: ContentType;
+  title: string | undefined;
+}) {
+  const insets = useSafeAreaInsets();
+  const appBarOpacity = useSharedValue(0);
+
+  // 비디오 컨텍스트에서 현재 비디오 정보 가져오기
+  const { primaryVideo } = useContentVideos();
+
+  // 콘텐츠 상세 정보 (현재 backdrop 경로 가져오기 위해)
+  const { data: contentDetail } = useContentDetail(contentId, contentType);
+
   // 어드민 액션 (훅 내부에서 isAdmin 체크, 분리 시 이 훅만 제거하면 됨)
-  const adminAction = useAdminContentActions({ contentId, contentType });
+  const adminAction = useAdminContentActions({
+    contentId,
+    contentType,
+    currentBackdropPath: contentDetail?.backdropPath,
+    currentVideo: primaryVideo
+      ? { id: primaryVideo.id, title: primaryVideo.title, status: primaryVideo.status }
+      : undefined,
+  });
 
   // iOS WKWebView 전체화면 버그 대응: 포커스 복귀 시 portrait 잠금 + dimensions 강제 복구
   useFocusEffect(
@@ -62,7 +106,7 @@ export default function ContentDetailPage() {
   } = useFavoriteAction({ contentId, contentType });
 
   return (
-    <ContentDetailProvider contentId={contentId} contentType={contentType} videoId={videoId}>
+    <>
       <BasePage
         useSafeArea={false}
         touchableWithoutFeedback={false}
@@ -84,7 +128,7 @@ export default function ContentDetailPage() {
         <AnimatedAppBar
           insets={insets}
           opacity={appBarOpacity}
-          title={title || undefined}
+          {...(title && { title })}
           onMorePress={adminAction.handleMorePress ?? handleMorePress}
         />
         <TabsContainer paddingTop={insets.top}>
@@ -115,6 +159,30 @@ export default function ContentDetailPage() {
         onClose={adminAction.handleCloseActionSheet}
       />
 
+      {/* 메인 이미지(Backdrop) 선택 모달 */}
+      <BackdropSelectionModal
+        visible={adminAction.selectedAction === AdminContentAction.CHANGE_BACKDROP}
+        contentId={adminAction.contentId}
+        contentType={adminAction.contentType}
+        currentBackdropPath={adminAction.currentBackdropPath}
+        onSelect={adminAction.handleBackdropSelect}
+        onClose={adminAction.handleCloseActionModal}
+        isSaving={adminAction.isSaving}
+      />
+
+      {/* 비디오 상태 변경 모달 */}
+      {adminAction.currentVideoId && adminAction.currentVideoTitle && (
+        <VideoStatusModal
+          visible={adminAction.selectedAction === AdminContentAction.CHANGE_VIDEO_STATUS}
+          videoId={adminAction.currentVideoId}
+          videoTitle={adminAction.currentVideoTitle}
+          currentStatus={adminAction.currentVideoStatus}
+          onChangeStatus={adminAction.handleVideoStatusChange}
+          onClose={adminAction.handleCloseActionModal}
+          isSaving={adminAction.isSaving}
+        />
+      )}
+
       {/* 찜하기 액션 바텀시트 (일반 사용자용) */}
       <FavoriteActionBottomSheet
         visible={isActionSheetVisible}
@@ -126,7 +194,7 @@ export default function ContentDetailPage() {
 
       {/* 로그인 유도 다이얼로그 */}
       <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
-    </ContentDetailProvider>
+    </>
   );
 }
 
