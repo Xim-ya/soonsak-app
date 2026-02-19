@@ -7,6 +7,7 @@ import type {
   AuthContextValue,
   UserProfileModel,
   ProfileDto,
+  UserRole,
 } from '@/features/auth/types';
 
 /** 초기 인증 상태 */
@@ -19,6 +20,7 @@ const initialState: AuthState = {
 };
 
 const DEFAULT_DISPLAY_NAME = '사용자';
+const DEFAULT_ROLE: UserRole = 'user';
 
 /**
  * 유저 프로필 Model 파생
@@ -209,10 +211,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const userProfile = deriveUserProfile(state.profile, state.user);
 
   // AuthContextValue: DTO(profile)를 노출하지 않고 필요한 필드만 제공
+  const role = state.profile?.role ?? DEFAULT_ROLE;
   const value: AuthContextValue = {
     status: state.status,
     user: state.user,
     session: state.session,
+    role,
+    isAdmin: role === 'admin',
     needsProfileSetup: state.needsProfileSetup,
     ...userProfile,
     signOut,

@@ -10,6 +10,9 @@ export type OAuthProvider = Exclude<SocialProvider, 'apple'>;
 /** 인증 상태 */
 export type AuthStatus = 'idle' | 'authenticated' | 'unauthenticated';
 
+/** 유저 역할 */
+export type UserRole = 'user' | 'admin' | 'banned';
+
 /** 프로필 DTO */
 export interface ProfileDto {
   id: string;
@@ -17,6 +20,7 @@ export interface ProfileDto {
   displayName: string | null;
   avatarUrl: string | null;
   provider: string | null;
+  role: UserRole;
   createdAt: string;
   updatedAt: string;
   lastLoginAt: string | null;
@@ -65,6 +69,10 @@ export interface AuthContextValue extends UserProfileModel {
   user: User | null;
   /** Supabase Session 객체 */
   session: Session | null;
+  /** 유저 역할 */
+  role: UserRole;
+  /** 관리자 여부 (role === 'admin') */
+  isAdmin: boolean;
   /** 프로필 설정 플로우 필요 여부 (신규 사용자) */
   needsProfileSetup: boolean;
   /** 로그아웃 */

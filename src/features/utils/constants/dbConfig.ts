@@ -53,6 +53,7 @@ export const AUTH_DATABASE = {
     DISPLAY_NAME: 'display_name',
     AVATAR_URL: 'avatar_url',
     PROVIDER: 'provider',
+    ROLE: 'role',
     CREATED_AT: 'created_at',
     UPDATED_AT: 'updated_at',
     LAST_LOGIN_AT: 'last_login_at',
