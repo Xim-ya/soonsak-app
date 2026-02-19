@@ -59,7 +59,6 @@ interface MemoizedCellWrapperProps {
   content: BaseContentModel | null;
   hasMoreContents: boolean;
   isFocused: boolean;
-  isDimmed: boolean;
   onPress: (content: BaseContentModel) => void;
 }
 
@@ -74,7 +73,6 @@ const MemoizedCellWrapper = memo(
     content,
     hasMoreContents,
     isFocused,
-    isDimmed,
     onPress,
   }: MemoizedCellWrapperProps) {
     const yOffset = calcZigzagOffset(row, col, columns, zigzagOffset);
@@ -84,29 +82,15 @@ const MemoizedCellWrapper = memo(
 
     // 포커스 애니메이션 값
     const scale = useSharedValue(1);
-    const dimOpacity = useSharedValue(1);
 
-    // 포커스 상태 변경 시 애니메이션
+    // 포커스 상태 변경 시 스케일 애니메이션
     useEffect(() => {
       if (isFocused) {
-        // 포커스된 카드: 빠른 확대
         scale.value = withSpring(1.08, { damping: 12, stiffness: 200 });
       } else {
         scale.value = withSpring(1, { damping: 20, stiffness: 300 });
       }
-
-      if (isDimmed) {
-        dimOpacity.value = withTiming(0.25, {
-          duration: 200,
-          easing: Easing.out(Easing.ease),
-        });
-      } else {
-        dimOpacity.value = withTiming(1, {
-          duration: 250,
-          easing: Easing.inOut(Easing.ease),
-        });
-      }
-    }, [isFocused, isDimmed, scale, dimOpacity]);
+    }, [isFocused, scale]);
 
     // 애니메이션 스타일
     const animatedWrapperStyle = useAnimatedStyle(() => ({
@@ -116,7 +100,7 @@ const MemoizedCellWrapper = memo(
       top,
       width: cellWidth,
       transform: [{ translateY: yOffset }, { scale: scale.value }],
-      opacity: dimOpacity.value,
+      // 포커스된 셀은 오버레이(zIndex: 10) 위에 표시
       zIndex: isFocused ? 100 : 0,
     }));
 
@@ -145,7 +129,6 @@ const MemoizedCellWrapper = memo(
       prevProps.zigzagOffset === nextProps.zigzagOffset &&
       prevProps.hasMoreContents === nextProps.hasMoreContents &&
       prevProps.isFocused === nextProps.isFocused &&
-      prevProps.isDimmed === nextProps.isDimmed &&
       prevProps.content?.id === nextProps.content?.id
     );
   },
@@ -240,6 +223,35 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
   useEffect(() => {
     isFocusModeShared.value = isFocusMode;
   }, [isFocusMode, isFocusModeShared]);
+
+  // 단일 딤 오버레이 애니메이션 (포커스 모드 진입/해제 시 1회만 실행)
+  const overlayOpacity = useSharedValue(0);
+  useEffect(() => {
+    if (isFocusMode) {
+      overlayOpacity.value = withTiming(0.75, {
+        duration: 200,
+        easing: Easing.out(Easing.ease),
+      });
+    } else {
+      overlayOpacity.value = withTiming(0, {
+        duration: 250,
+        easing: Easing.inOut(Easing.ease),
+      });
+    }
+  }, [isFocusMode, overlayOpacity]);
+
+  const overlayAnimatedStyle = useAnimatedStyle(() => ({
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'black',
+    opacity: overlayOpacity.value,
+    // 오버레이는 일반 셀(zIndex: 0) 위, 포커스 셀(zIndex: 100) 아래
+    zIndex: 10,
+    pointerEvents: 'none' as const,
+  }));
 
   // 초기 뷰포트 설정
   useEffect(() => {
@@ -392,11 +404,12 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
                 content={cell.content}
                 hasMoreContents={hasMoreContents}
                 isFocused={cellKey === focusedCellKey}
-                isDimmed={isFocusMode && cellKey !== focusedCellKey}
                 onPress={handleContentPress}
               />
             );
           })}
+          {/* 포커스 모드 딤 오버레이: 셀 수에 관계없이 단 1개의 애니메이션으로 처리 */}
+          <Animated.View style={overlayAnimatedStyle} />
         </AnimatedGrid>
       </Container>
     </GestureDetector>
