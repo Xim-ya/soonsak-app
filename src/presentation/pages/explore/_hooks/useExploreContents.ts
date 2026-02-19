@@ -30,13 +30,19 @@ interface UseExploreContentsReturn {
   refetch: () => void;
 }
 
-/** ContentDto를 ExploreContentModel로 변환 */
+/** ContentDto를 ExploreContentModel로 변환 (한국어 로고만 사용) */
 function toExploreContentModel(dto: ContentDto): ExploreContentModel {
+  // 한국어 로고만 사용, 영어는 undefined 처리
+  const isKoreanLogo = dto.titleLogoLang === 'ko';
+
   return {
     id: dto.id,
     title: dto.title,
     type: dto.contentType,
     posterPath: dto.posterPath ?? '',
+    backdropPath: dto.backdropPath,
+    titleLogo: isKoreanLogo ? dto.titleLogo : undefined,
+    titleLogoLang: isKoreanLogo ? dto.titleLogoLang : undefined,
   };
 }
 

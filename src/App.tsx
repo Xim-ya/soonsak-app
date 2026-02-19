@@ -155,6 +155,8 @@ export default function App() {
     'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.otf'),
     staatliches_regular: require('../assets/fonts/Staatliches-Regular.ttf'),
+    // 한글 포스터 폰트
+    'DoHyeon-Regular': require('../assets/fonts/DoHyeon-Regular.ttf'),
   });
 
   const { isReady: isPreloadReady, hideSplash } = useAppPreload();

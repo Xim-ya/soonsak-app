@@ -11,10 +11,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useSharedValue } from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
 import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
+import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import type { ExploreContentModel } from './_types/exploreTypes';
 import { ExploreHeader } from './_components/ExploreHeader';
 import { ExploreTabBar } from './_components/ExploreTabBar';
@@ -28,6 +30,7 @@ export default function ExploreScreen() {
   const route = useRoute<RouteProp<TabParamList, 'Explore'>>();
   const insets = useSafeAreaInsets();
   const initialTab = route.params?.initialTab ?? 'all';
+  const gradientOpacity = useSharedValue(0);
 
   const {
     filter,
@@ -36,10 +39,14 @@ export default function ExploreScreen() {
     hasPendingFilter,
     isCustomFilterActive,
     toggleIncludeEnding,
+    toggleExcludeWatched,
     openSheet,
     closeSheet,
     applyFilter,
     requestChannelSelection,
+    isLoginDialogVisible,
+    loginSuccessCallback,
+    closeLoginDialog,
   } = useExploreFilterSheet();
 
   const handleContentPress = useCallback(
@@ -67,8 +74,11 @@ export default function ExploreScreen() {
               {...props}
               includeEnding={filter.includeEnding}
               onIncludeEndingToggle={toggleIncludeEnding}
+              excludeWatched={filter.excludeWatched}
+              onExcludeWatchedToggle={toggleExcludeWatched}
               isCustomFilterActive={isCustomFilterActive}
               onFilterPress={openSheet}
+              gradientOpacity={gradientOpacity}
             />
           )}
           containerStyle={{ backgroundColor: colors.black }}
@@ -117,6 +127,13 @@ export default function ExploreScreen() {
         onClose={closeSheet}
         onRequestChannelSelection={requestChannelSelection}
         preserveScrollPosition={hasPendingFilter}
+      />
+
+      {/* 로그인 유도 다이얼로그 */}
+      <LoginPromptDialog
+        visible={isLoginDialogVisible}
+        onClose={closeLoginDialog}
+        onLoginSuccess={loginSuccessCallback}
       />
     </Container>
   );
