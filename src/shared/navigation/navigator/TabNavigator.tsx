@@ -3,7 +3,7 @@ import HomeScreen from '../../../presentation/pages/home/HomePage';
 import { Text } from 'react-native';
 import { TabConfig, TabRoutes } from '../constant/tabConfigs';
 import Explorepage from '../../../presentation/pages/explore/ExploreScreen';
-import SoonsakPage from '../../../presentation/pages/soonsak/SoonsakPage';
+import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
 import MyPage from '../../../presentation/pages/my/MyPage';
 import { TabParamList } from '../types';
 import colors from '@/shared/styles/colors';
@@ -36,7 +36,7 @@ export default function TabNavigator() {
     >
       <Tab.Screen name={TabRoutes.Home} component={HomeScreen} />
       <Tab.Screen name={TabRoutes.Explore} component={Explorepage} />
-      <Tab.Screen name={TabRoutes.Soonsak} component={SoonsakPage} />
+      <Tab.Screen name={TabRoutes.QuickExplore} component={QuickExplorePage} />
       <Tab.Screen name={TabRoutes.My} component={MyPage} />
     </Tab.Navigator>
   );

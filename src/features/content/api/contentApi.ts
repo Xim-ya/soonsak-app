@@ -376,7 +376,7 @@ export const contentApi = {
   },
 
   /**
-   * 랜덤 콘텐츠 조회 (순삭 그리드용)
+   * 랜덤 콘텐츠 조회 (빠른탐색 그리드용)
    * 이미 로드된 ID를 제외하고 랜덤하게 콘텐츠를 가져옴
    * @param excludeIds 제외할 콘텐츠 ID 배열
    * @param limit 조회할 콘텐츠 수 (기본값: 20)
@@ -434,7 +434,7 @@ export const contentApi = {
   },
 
   /**
-   * 필터 조건에 맞는 랜덤 콘텐츠 조회 (순삭 그리드 필터용)
+   * 필터 조건에 맞는 랜덤 콘텐츠 조회 (빠른탐색 그리드 필터용)
    * 기존 getRandomContents를 확장하여 장르, 국가, 연도, 평점 필터를 지원
    * @param filter 콘텐츠 필터 조건
    * @param excludeIds 제외할 콘텐츠 ID 배열
@@ -528,22 +528,43 @@ export const contentApi = {
   },
 
   /**
-   * 활성화된 콘텐츠 컬렉션 목록 조회
-   * display_order 기준 정렬
+   * 콘텐츠 컬렉션 목록 조회 (RPC 사용)
+   * 활성 컬렉션 + 최근 비활성 컬렉션 3개를 포함하여 총 8개 반환
+   * contents 정보가 이미 포함되어 있음
    */
-  getActiveContentCollections: async (): Promise<ContentCollectionDto[]> => {
-    const { data, error } = await supabaseClient
-      .from(CONTENT_DATABASE.TABLES.CONTENT_COLLECTIONS)
-      .select('id, title, subtitle, theme_keywords, content_ids, display_order, is_active')
-      .eq('is_active', true)
-      .order('display_order', { ascending: true });
+  getContentCollections: async (): Promise<ContentCollectionWithContentsDto[]> => {
+    const { data, error } = await supabaseClient.rpc(
+      CONTENT_DATABASE.RPC.GET_CONTENT_COLLECTIONS,
+    );
+
+    console.log('[DEBUG] RPC 응답 개수:', data?.length, '개');
+    console.log('[DEBUG] RPC 응답 제목들:', data?.map((d: { title: string }) => d.title));
 
     if (error) {
       console.error('콘텐츠 컬렉션 조회 실패:', error);
       throw new Error(`Failed to fetch content collections: ${error.message}`);
     }
 
-    return mapWithField<ContentCollectionDto[]>(data ?? []);
+    // RPC 결과 타입 정의
+    type RpcCollectionRow = {
+      id: string;
+      title: string;
+      subtitle: string | null;
+      theme_keywords: string[] | null;
+      display_order: number;
+      generated_at: string;
+      contents: unknown[];
+    };
+
+    return (data ?? []).map((row: RpcCollectionRow): ContentCollectionWithContentsDto => ({
+      id: row.id,
+      title: row.title,
+      subtitle: row.subtitle ?? undefined,
+      themeKeywords: row.theme_keywords ?? undefined,
+      displayOrder: row.display_order,
+      isActive: true,
+      contents: mapWithField<ContentDto[]>(row.contents),
+    }));
   },
 
   /**

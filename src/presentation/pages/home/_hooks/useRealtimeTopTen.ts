@@ -11,8 +11,8 @@ const STALE_TIME_MS = 5 * 60 * 1000;
  * 실시간 Top 10 콘텐츠를 조회하는 훅
  *
  * 우선순위 로직:
- * 1. TMDB 주간 트렌딩 콘텐츠 중 순삭에 등록된 콘텐츠 (1~N위)
- * 2. 순삭 자체 인기 콘텐츠로 나머지 채움 (N+1~10위)
+ * 1. TMDB 주간 트렌딩 콘텐츠 중 빠른탐색에 등록된 콘텐츠 (1~N위)
+ * 2. 빠른탐색 자체 인기 콘텐츠로 나머지 채움 (N+1~10위)
  */
 export function useRealtimeTopTen() {
   return useQuery({

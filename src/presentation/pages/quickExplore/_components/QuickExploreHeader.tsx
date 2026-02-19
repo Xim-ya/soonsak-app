@@ -1,12 +1,12 @@
 /**
- * SoonsakHeader - 순삭 페이지 상단 헤더
+ * QuickExploreHeader - 빠른탐색 페이지 상단 헤더
  *
  * 글래스모피즘 스타일의 필터/검색 버튼이 포함된 헤더입니다.
  * 콘텐츠 그리드 위에 오버레이로 표시됩니다.
  * 필터가 활성화되면 필터 버튼에 인디케이터가 표시됩니다.
  *
  * @example
- * <SoonsakHeader
+ * <QuickExploreHeader
  *   onFilterPress={handleFilter}
  *   onSearchPress={handleSearch}
  *   isFilterActive={isFilterActive(filter)}
@@ -20,7 +20,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
 import SearchIcon from '@assets/icons/search_tab.svg';
 
-interface SoonsakHeaderProps {
+interface QuickExploreHeaderProps {
   onFilterPress?: () => void;
   onSearchPress?: () => void;
   /** 필터 활성화 여부 (인디케이터 표시) */
@@ -31,11 +31,11 @@ const HEADER_PADDING = 20;
 const ICON_SIZE = 24;
 const BUTTON_SIZE = 56;
 
-function SoonsakHeader({
+function QuickExploreHeader({
   onFilterPress,
   onSearchPress,
   isFilterActive = false,
-}: SoonsakHeaderProps) {
+}: QuickExploreHeaderProps) {
   return (
     <Container>
       {/* 좌측: 필터 버튼 */}
@@ -84,5 +84,5 @@ const FilterIndicator = styled.View({
   backgroundColor: colors.main,
 });
 
-export { SoonsakHeader };
-export type { SoonsakHeaderProps };
+export { QuickExploreHeader };
+export type { QuickExploreHeaderProps };
