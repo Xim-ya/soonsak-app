@@ -124,6 +124,8 @@ export interface AppImageProps {
   placeholder?: PlaceholderOptions;
   /** 모서리 둥글기 */
   borderRadius?: number;
+  /** 배경 투명 처리 (로고 등에 사용) */
+  transparent?: boolean;
   /** 추가 스타일 */
   style?: ViewStyle;
   /** 이미지 로드 완료 콜백 */
@@ -236,6 +238,7 @@ function AppImageComponent({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO: expo-image 전환 시 활성화
   placeholder,
   borderRadius = DEFAULT_BORDER_RADIUS,
+  transparent = false,
   style,
   onLoad,
   onError,
@@ -269,8 +272,8 @@ function AppImageComponent({
   // 에러 상태인지 판단 (빈 소스 또는 로드 에러)
   const shouldShowError = hasError || !hasValidSource;
 
-  // 로딩 상태 표시 조건
-  const shouldShowPlaceholder = isLoading && hasValidSource;
+  // 로딩 상태 표시 조건 (transparent 모드에서는 placeholder 숨김)
+  const shouldShowPlaceholder = isLoading && hasValidSource && !transparent;
 
   // 이미지 표시 조건
   const shouldShowImage = !hasError && hasValidSource;
@@ -296,7 +299,7 @@ function AppImageComponent({
   // />
 
   return (
-    <Container width={width} height={height} borderRadius={borderRadius} style={style}>
+    <Container width={width} height={height} borderRadius={borderRadius} transparent={transparent} style={style}>
       {/* 로딩 중 placeholder */}
       {shouldShowPlaceholder && (
         <PlaceholderView width={width} height={height} borderRadius={borderRadius} />
@@ -333,13 +336,14 @@ const Container = styled.View<{
   width: number;
   height: number;
   borderRadius: number;
-}>(({ width, height, borderRadius }) => ({
+  transparent: boolean;
+}>(({ width, height, borderRadius, transparent }) => ({
   width,
   height,
   borderRadius,
   overflow: 'hidden',
   position: 'relative',
-  backgroundColor: colors.gray05,
+  backgroundColor: transparent ? 'transparent' : colors.gray05,
 }));
 
 const PlaceholderView = styled.View<{

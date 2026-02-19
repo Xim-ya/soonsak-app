@@ -10,6 +10,8 @@ interface TopContentModel extends BaseContentModel {
   keywords: string[];
   /** 배경 이미지 URL (TMDB 파일명) */
   backdropImgUrl: string;
+  /** 한국어 타이틀 로고 URL (TMDB 파일명). 로고가 없거나 한국어가 아니면 null */
+  logoUrl: string | null;
 }
 
 /** 최대 키워드 표시 개수 */
@@ -46,6 +48,17 @@ function safeContentType(contentType: string | undefined | null): ContentType {
 }
 
 /**
+ * 한국어 로고 URL 추출
+ * 로고가 있고 언어가 'ko'인 경우에만 URL 반환, 그 외 null
+ */
+function extractKoreanLogoUrl(dto: ContentDto): string | null {
+  if (dto.titleLogo && dto.titleLogoLang === 'ko') {
+    return dto.titleLogo;
+  }
+  return null;
+}
+
+/**
  * ContentDto를 TopContentModel로 변환
  * 필수 필드 누락 시에도 기본값으로 안전하게 변환
  */
@@ -58,6 +71,7 @@ function fromContentDto(dto: ContentDto): TopContentModel {
     pointDescription: dto.tagline ?? '',
     keywords: convertGenreIdsToKeywords(dto.genreIds),
     backdropImgUrl: dto.backdropPath ?? '',
+    logoUrl: extractKoreanLogoUrl(dto),
   };
 }
 
