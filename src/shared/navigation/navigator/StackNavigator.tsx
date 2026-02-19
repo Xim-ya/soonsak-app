@@ -13,6 +13,7 @@ import LoginPage from '../../../presentation/pages/login/LoginPage';
 import ProfileSetupPage from '../../../presentation/pages/profile-setup/ProfileSetupPage';
 import SettingsPage from '../../../presentation/pages/settings/SettingsPage';
 import UserContentListPage from '../../../presentation/pages/user-content-list/UserContentListPage';
+import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -139,6 +140,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.userContentList}
         component={UserContentListPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.quickExplore}
+        component={QuickExplorePage}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

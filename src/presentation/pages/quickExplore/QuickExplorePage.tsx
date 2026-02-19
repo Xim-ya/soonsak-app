@@ -1,5 +1,5 @@
 /**
- * QuickExplorePage - 빠른탐색 탭 화면
+ * QuickExplorePage - 빠른탐색 화면
  *
  * 드래그하여 콘텐츠를 탐색할 수 있는 인터랙티브 그리드 화면입니다.
  * 검색 버튼을 누르면 랜덤 콘텐츠로 화려한 애니메이션과 함께 포커스됩니다.
@@ -10,6 +10,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import styled from '@emotion/native';
 import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { RootStackParamList } from '@/shared/navigation/types';
@@ -18,6 +19,10 @@ import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
+import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
+import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/shared/styles/colors';
+import CloseIcon from '@assets/icons/close.svg';
 import { QuickExploreHeader } from './_components/QuickExploreHeader';
 import { ContentGrid, ContentGridRef } from './_components/ContentGrid';
 
@@ -93,6 +98,11 @@ export default function QuickExplorePage() {
     [navigation],
   );
 
+  // 닫기 버튼 핸들러
+  const handleClose = useCallback(() => {
+    navigation.goBack();
+  }, [navigation]);
+
   // 바텀시트에 전달할 필터 (pendingFilter가 있으면 해당 값 사용)
   const bottomSheetFilter = pendingFilter ?? filter;
 
@@ -102,7 +112,14 @@ export default function QuickExplorePage() {
         {/* 드래그 가능한 콘텐츠 그리드 */}
         <ContentGrid ref={gridRef} filter={filter} onContentPress={handleContentPress} />
 
-        {/* 상단 헤더 (오버레이) */}
+        {/* 좌측 상단 닫기 버튼 */}
+        <CloseButtonContainer>
+          <GlassIconButton size={44} onPress={handleClose}>
+            <CloseIcon width={20} height={20} color={colors.white} />
+          </GlassIconButton>
+        </CloseButtonContainer>
+
+        {/* 하단 헤더 (오버레이) */}
         <QuickExploreHeader
           onFilterPress={handleFilterPress}
           onSearchPress={handleSearchPress}
@@ -125,3 +142,11 @@ export default function QuickExplorePage() {
     </BasePage>
   );
 }
+
+/* Styled Components */
+const CloseButtonContainer = styled.View({
+  position: 'absolute',
+  top: AppSize.statusBarHeight + 24,
+  left: 16,
+  zIndex: 10,
+});
