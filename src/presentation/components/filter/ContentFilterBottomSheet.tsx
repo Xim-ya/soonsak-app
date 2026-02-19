@@ -206,6 +206,7 @@ function ContentFilterBottomSheet({
   const filterHandlers = useMemo(
     () => ({
       onIncludeEndingChange: (includeEnding: boolean) => updateFilter({ includeEnding }),
+      onExcludeWatchedChange: (excludeWatched: boolean) => updateFilter({ excludeWatched }),
       onContentTypeChange: (contentType: ContentFilter['contentType']) =>
         updateFilter({ contentType, genreIds: [] }),
       onGenreIdsChange: (genreIds: number[]) => updateFilter({ genreIds }),
@@ -307,6 +308,8 @@ function ContentFilterBottomSheet({
                 <RecommendFilterTab
                   includeEnding={tempFilter.includeEnding}
                   onIncludeEndingChange={filterHandlers.onIncludeEndingChange}
+                  excludeWatched={tempFilter.excludeWatched}
+                  onExcludeWatchedChange={filterHandlers.onExcludeWatchedChange}
                 />
               </SectionWrapper>
             )}

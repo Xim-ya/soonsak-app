@@ -6,13 +6,15 @@
  */
 
 import React, { useCallback } from 'react';
-import { ScrollView, TouchableOpacity } from 'react-native';
+import { ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import Animated, {
   useAnimatedStyle,
   useAnimatedReaction,
+  interpolate,
+  Extrapolation,
   runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
@@ -77,8 +79,10 @@ const ExploreTabButton = <T extends string>({
 
 const HORIZONTAL_PADDING = 16;
 
-/** 헤더가 거의 접혔을 때의 스크롤 임계값 */
-const STICKY_THRESHOLD = 250;
+/** 그라데이션 opacity가 시작되는 스크롤 오프셋 */
+const GRADIENT_OPACITY_START = 240;
+/** 그라데이션 opacity가 1에 도달하는 스크롤 오프셋 (스티키 시점) */
+const GRADIENT_OPACITY_END = 290;
 
 /** 개발자 추천 탭 인덱스 (필터 바 숨김 처리용) */
 const RECOMMENDED_TAB_INDEX = 3;
@@ -100,10 +104,16 @@ interface ExploreTabBarProps<T extends string> extends TabBarProps<T> {
   readonly includeEnding: boolean;
   /** 결말 포함 필터 토글 콜백 */
   readonly onIncludeEndingToggle: () => void;
+  /** 본 작품 제외 필터 활성화 여부 */
+  readonly excludeWatched: boolean;
+  /** 본 작품 제외 필터 토글 콜백 (로그인 체크 포함) */
+  readonly onExcludeWatchedToggle: () => void;
   /** 커스텀 필터 적용 여부 */
   readonly isCustomFilterActive: boolean;
   /** 필터 버튼 클릭 콜백 */
   readonly onFilterPress: () => void;
+  /** 하단 그라데이션 opacity를 제어하는 SharedValue */
+  readonly gradientOpacity: SharedValue<number>;
 }
 
 const ExploreTabBar = <T extends string>({
@@ -112,15 +122,16 @@ const ExploreTabBar = <T extends string>({
   onTabPress,
   includeEnding,
   onIncludeEndingToggle,
+  excludeWatched,
+  onExcludeWatchedToggle,
   isCustomFilterActive,
   onFilterPress,
+  gradientOpacity,
 }: ExploreTabBarProps<T>) => {
   const navigation = useNavigation<NavigationProp>();
 
   // 개발자 추천 탭(index 3)일 때 필터 바 숨김
   const [showFilterBar, setShowFilterBar] = React.useState(true);
-  // 스티키 상태 (헤더가 접혔을 때)
-  const [isSticky, setIsSticky] = React.useState(false);
 
   // 스크롤 위치 추적
   const scrollY = useCurrentTabScrollY();
@@ -131,23 +142,42 @@ const ExploreTabBar = <T extends string>({
   }, [navigation]);
 
   // 탭 인덱스 변화 감지하여 필터 바 표시 여부 업데이트
+  // 값이 실제로 변경되었을 때만 runOnJS 호출
   useAnimatedReaction(
     () => Math.round(indexDecimal.value),
-    (currentIndex) => {
-      runOnJS(setShowFilterBar)(currentIndex !== RECOMMENDED_TAB_INDEX);
+    (currentIndex, previousIndex) => {
+      'worklet';
+      if (currentIndex !== previousIndex) {
+        runOnJS(setShowFilterBar)(currentIndex !== RECOMMENDED_TAB_INDEX);
+      }
     },
     [indexDecimal],
   );
 
-  // 스크롤 위치 감지하여 스티키 상태 업데이트
+  // 스크롤 위치 감지하여 그라데이션 opacity 업데이트
   useAnimatedReaction(
     () => scrollY.value,
-    (currentScroll) => {
-      const shouldBeSticky = currentScroll >= STICKY_THRESHOLD;
-      runOnJS(setIsSticky)(shouldBeSticky);
+    (offset) => {
+      'worklet';
+      const targetOpacity = interpolate(
+        offset,
+        [GRADIENT_OPACITY_START, GRADIENT_OPACITY_END],
+        [0, 1],
+        Extrapolation.CLAMP,
+      );
+
+      gradientOpacity.value = targetOpacity;
     },
-    [scrollY],
+    [scrollY, gradientOpacity],
   );
+
+  // 그라데이션 애니메이션 스타일
+  const gradientAnimatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    return {
+      opacity: gradientOpacity.value,
+    };
+  }, [gradientOpacity]);
 
   return (
     <Container>
@@ -194,18 +224,29 @@ const ExploreTabBar = <T extends string>({
               <FilterChipText selected={includeEnding}>결말포함</FilterChipText>
             </FilterChip>
 
-            {/* 본 작품 제외 칩 (disabled) */}
-            <FilterChip selected={false} disabled activeOpacity={1}>
-              <FilterChipText selected={false} disabled>
-                본 작품 제외
-              </FilterChipText>
+            {/* 본 작품 제외 칩 */}
+            <FilterChip
+              selected={excludeWatched}
+              onPress={onExcludeWatchedToggle}
+              activeOpacity={0.7}
+            >
+              <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
             </FilterChip>
           </ScrollView>
         </FilterBarSection>
       )}
-      {/* 하단 그라데이션 - 스티키 상태일 때만 표시 */}
-      {showFilterBar && isSticky && (
-        <BottomGradient colors={[colors.black, 'transparent']} pointerEvents="none" />
+      {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
+      {showFilterBar && (
+        <AnimatedGradientWrapper
+          style={[
+            gradientAnimatedStyle,
+            // Android: LinearGradient 렌더링 아티팩트 방지를 위해 1px 위로 이동
+            Platform.OS === 'android' && { bottom: -19 },
+          ]}
+          pointerEvents="none"
+        >
+          <BottomGradient colors={['#000000', '#00000000']} />
+        </AnimatedGradientWrapper>
       )}
     </Container>
   );
@@ -264,12 +305,16 @@ const FilterBarSection = styled.View({
   paddingBottom: 10,
 });
 
-const BottomGradient = styled(LinearGradient)({
+const AnimatedGradientWrapper = styled(Animated.View)({
   position: 'absolute',
   left: 0,
   right: 0,
   bottom: -20,
   height: 20,
+});
+
+const BottomGradient = styled(LinearGradient)({
+  flex: 1,
 });
 
 const FilterIconButton = styled.TouchableOpacity({
