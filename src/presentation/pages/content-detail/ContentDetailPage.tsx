@@ -23,17 +23,20 @@ import { ContentType } from '@/presentation/types/content/contentType.enum';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { FavoriteActionBottomSheet } from '@/presentation/components/bottom-sheet/FavoriteActionBottomSheet';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAdminContentActions } from '@/features/admin';
+import { AdminActionBottomSheet } from '@/presentation/admin/components/AdminActionBottomSheet';
 
 export default function ContentDetailPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
   const { id, type, title, videoId } = route.params;
-  const { isAdmin } = useAuth();
   const insets = useSafeAreaInsets();
   const appBarOpacity = useSharedValue(0);
 
   const contentId = Number(id);
   const contentType = type as ContentType;
+
+  // 어드민 액션 (훅 내부에서 isAdmin 체크, 분리 시 이 훅만 제거하면 됨)
+  const adminAction = useAdminContentActions({ contentId, contentType });
 
   // iOS WKWebView 전체화면 버그 대응: 포커스 복귀 시 portrait 잠금 + dimensions 강제 복구
   useFocusEffect(
@@ -82,7 +85,7 @@ export default function ContentDetailPage() {
           insets={insets}
           opacity={appBarOpacity}
           title={title || undefined}
-          onMorePress={isAdmin ? handleMorePress : undefined}
+          onMorePress={adminAction.handleMorePress ?? handleMorePress}
         />
         <TabsContainer paddingTop={insets.top}>
           <Tabs.Container
@@ -104,7 +107,15 @@ export default function ContentDetailPage() {
         </TabsContainer>
       </BasePage>
 
-      {/* 찜하기 액션 바텀시트 */}
+      {/* 어드민 액션 바텀시트 */}
+      <AdminActionBottomSheet
+        visible={adminAction.isActionSheetVisible}
+        actions={adminAction.actions}
+        onSelectAction={adminAction.handleSelectAction}
+        onClose={adminAction.handleCloseActionSheet}
+      />
+
+      {/* 찜하기 액션 바텀시트 (일반 사용자용) */}
       <FavoriteActionBottomSheet
         visible={isActionSheetVisible}
         isFavorited={isFavorited}
