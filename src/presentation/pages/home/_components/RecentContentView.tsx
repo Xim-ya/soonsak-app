@@ -44,13 +44,14 @@ export function RecentContentView() {
   }, [navigation]);
 
   if (isError) {
-    return <Text>최신 콘텐츠를 불러올 수 없습니다</Text>;
+    return <Text>콘텐츠를 불러올 수 없습니다</Text>;
   }
 
   return (
     <SectionContentListView
-      title="최신 콘텐츠"
-      contents={isLoading ? [] : contents}
+      title="새로 올라왔어요"
+      contents={contents}
+      isLoading={isLoading}
       onContentTapped={handleContentTapped}
       onEndReached={handleEndReached}
       isFetchingNextPage={isFetchingNextPage}
