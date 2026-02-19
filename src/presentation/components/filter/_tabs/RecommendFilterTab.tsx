@@ -39,12 +39,7 @@ function RecommendFilterTab({
       <FilterSectionHeader title="추천" />
       <FilterChipGrid>
         <FilterChip label="결말포함" selected={includeEnding} onPress={handleEndingToggle} />
-        <FilterChip
-          label="본 작품 제외"
-          selected={excludeWatched}
-          onPress={handleWatchedToggle}
-          disabled
-        />
+        <FilterChip label="본 작품 제외" selected={excludeWatched} onPress={handleWatchedToggle} />
       </FilterChipGrid>
     </>
   );

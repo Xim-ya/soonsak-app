@@ -13,8 +13,12 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
+import { useAuth } from '@/shared/providers/AuthProvider';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+/** 로그인이 필요한 필터 액션 타입 */
+type PendingFilterAction = 'excludeWatched';
 
 interface UseExploreFilterSheetReturn {
   /** 현재 필터 상태 */
@@ -29,6 +33,8 @@ interface UseExploreFilterSheetReturn {
   isCustomFilterActive: boolean;
   /** 결말포함 토글 */
   toggleIncludeEnding: () => void;
+  /** 본 작품 제외 토글 (로그인 체크 포함) */
+  toggleExcludeWatched: () => void;
   /** 필터 버튼 클릭 (바텀시트 열기) */
   openSheet: () => void;
   /** 바텀시트 닫기 */
@@ -37,14 +43,26 @@ interface UseExploreFilterSheetReturn {
   applyFilter: (newFilter: ContentFilter) => void;
   /** 채널 선택 페이지로 이동 */
   requestChannelSelection: (tempFilter: ContentFilter) => void;
+  /** 로그인 다이얼로그 표시 여부 */
+  isLoginDialogVisible: boolean;
+  /** 로그인 성공 시 실행할 콜백 */
+  loginSuccessCallback: (() => void) | undefined;
+  /** 로그인 다이얼로그 닫기 */
+  closeLoginDialog: () => void;
 }
 
 export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
   const navigation = useNavigation<NavigationProp>();
   const { filter, setFilter } = useContentFilter();
+  const { status } = useAuth();
+  const isLoggedIn = status === 'authenticated';
 
   const [isVisible, setIsVisible] = useState(false);
   const [pendingFilter, setPendingFilter] = useState<ContentFilter | null>(null);
+
+  // 로그인 다이얼로그 상태
+  const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingFilterAction | null>(null);
 
   // pendingFilter의 최신 값을 ref로 유지 (useFocusEffect 의존성 제거)
   const pendingFilterRef = useRef<ContentFilter | null>(null);
@@ -67,6 +85,33 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
   const toggleIncludeEnding = useCallback(() => {
     setFilter({ ...filter, includeEnding: !filter.includeEnding });
   }, [filter, setFilter]);
+
+  // 본 작품 제외 토글 (로그인 체크 포함)
+  const toggleExcludeWatched = useCallback(() => {
+    if (!isLoggedIn) {
+      setPendingAction('excludeWatched');
+      setLoginDialogVisible(true);
+      return;
+    }
+    setFilter({ ...filter, excludeWatched: !filter.excludeWatched });
+  }, [isLoggedIn, filter, setFilter]);
+
+  // 로그인 다이얼로그 닫기
+  const closeLoginDialog = useCallback(() => {
+    setLoginDialogVisible(false);
+    setPendingAction(null);
+  }, []);
+
+  // 로그인 성공 시 실행할 콜백
+  const loginSuccessCallback = useMemo(() => {
+    if (pendingAction === 'excludeWatched') {
+      return () => {
+        setFilter({ ...filter, excludeWatched: true });
+        setPendingAction(null);
+      };
+    }
+    return undefined;
+  }, [pendingAction, filter, setFilter]);
 
   const openSheet = useCallback(() => {
     setPendingFilter(null);
@@ -98,7 +143,7 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
     [navigation],
   );
 
-  // includeEnding 외의 필터가 적용되었는지 확인
+  // includeEnding 외의 필터가 적용되었는지 확인 (excludeWatched 포함)
   const isCustomFilterActive = useMemo(
     () =>
       filter.contentType !== null ||
@@ -106,7 +151,8 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
       filter.countryCodes.length > 0 ||
       filter.releaseYearRange !== null ||
       filter.minStarRating !== null ||
-      filter.channelIds.length > 0,
+      filter.channelIds.length > 0 ||
+      filter.excludeWatched,
     [filter],
   );
 
@@ -117,9 +163,13 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
     hasPendingFilter: pendingFilter !== null,
     isCustomFilterActive,
     toggleIncludeEnding,
+    toggleExcludeWatched,
     openSheet,
     closeSheet,
     applyFilter,
     requestChannelSelection,
+    isLoginDialogVisible,
+    loginSuccessCallback,
+    closeLoginDialog,
   };
 }
