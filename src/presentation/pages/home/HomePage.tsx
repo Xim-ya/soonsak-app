@@ -11,6 +11,7 @@ import { ContentCollectionSectionView } from './_components/ContentCollectionSec
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
+  useAnimatedReaction,
   runOnJS,
 } from 'react-native-reanimated';
 
@@ -22,6 +23,7 @@ export default function HomeScreen() {
   const [viewportHeight, setViewportHeight] = useState(0);
   const collectionYRef = useRef(0);
   const scrollY = useSharedValue(0);
+  const isTriggered = useSharedValue(false);
 
   const handleContainerLayout = useCallback((event: LayoutChangeEvent) => {
     setViewportHeight(event.nativeEvent.layout.height);
@@ -31,24 +33,31 @@ export default function HomeScreen() {
     collectionYRef.current = event.nativeEvent.layout.y;
   }, []);
 
-  const checkCollectionVisibility = useCallback(
-    (offsetY: number) => {
-      if (isCollectionVisible) return;
-
-      const triggerPoint = collectionYRef.current - viewportHeight - VIEWPORT_THRESHOLD;
-      if (offsetY >= triggerPoint && collectionYRef.current > 0) {
-        setIsCollectionVisible(true);
-      }
-    },
-    [isCollectionVisible, viewportHeight],
-  );
+  const triggerCollectionLoad = useCallback(() => {
+    setIsCollectionVisible(true);
+  }, []);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
-      runOnJS(checkCollectionVisibility)(event.contentOffset.y);
     },
   });
+
+  // 스크롤 위치 감지하여 레이지 로드 트리거 (stale closure 방지)
+  useAnimatedReaction(
+    () => scrollY.value,
+    (currentScrollY) => {
+      if (isTriggered.value) return;
+      if (collectionYRef.current <= 0 || viewportHeight <= 0) return;
+
+      const triggerPoint = collectionYRef.current - viewportHeight - VIEWPORT_THRESHOLD;
+      if (currentScrollY >= triggerPoint) {
+        isTriggered.value = true;
+        runOnJS(triggerCollectionLoad)();
+      }
+    },
+    [viewportHeight],
+  );
 
   return (
     <Container onLayout={handleContainerLayout}>
