@@ -692,7 +692,7 @@ export const contentApi = {
     }
 
     // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
-    let watchedContentIds: number[] = [];
+    let excludeContentIds: number[] = [];
     if (filter.excludeWatched) {
       const { data: userData } = await supabaseClient.auth.getUser();
       if (userData?.user?.id) {
@@ -705,9 +705,11 @@ export const contentApi = {
           console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
           // 에러 시 필터 무시 (사용자 경험 유지)
         } else {
-          watchedContentIds = [
+          const rawIds = [
             ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
           ];
+          // 유효성 검증 및 제한 적용
+          excludeContentIds = sanitizeExcludeIds(rawIds);
         }
       }
     }
@@ -731,7 +733,7 @@ export const contentApi = {
           p_include_ending: filter.includeEnding,
           p_channel_content_ids: channelContentIds,
           p_ending_content_ids: endingContentIds,
-          p_exclude_content_ids: watchedContentIds.length > 0 ? watchedContentIds : null,
+          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
         },
       );
 
@@ -762,7 +764,7 @@ export const contentApi = {
       .from(CONTENT_DATABASE.TABLES.CONTENTS)
       .select('*', { count: 'exact', head: true });
 
-    countQuery = applyContentFilters(countQuery, filter, watchedContentIds, channelContentIds);
+    countQuery = applyContentFilters(countQuery, filter, excludeContentIds, channelContentIds);
 
     if (endingContentIds !== null) {
       countQuery = countQuery.in('id', endingContentIds);
@@ -787,7 +789,7 @@ export const contentApi = {
       .order(sortConfig.column, { ascending: sortConfig.ascending })
       .range(offset, offset + pageSize - 1);
 
-    query = applyContentFilters(query, filter, watchedContentIds, channelContentIds);
+    query = applyContentFilters(query, filter, excludeContentIds, channelContentIds);
 
     if (endingContentIds !== null) {
       query = query.in('id', endingContentIds);
