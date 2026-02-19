@@ -12,8 +12,8 @@
 export const AdminContentAction = {
   /** 메인 이미지(backdrop) 변경 */
   CHANGE_BACKDROP: 'CHANGE_BACKDROP',
-  /** 콘텐츠 타입 변경 (추후 reject 등 추가 예정) */
-  CHANGE_CONTENT_TYPE: 'CHANGE_CONTENT_TYPE',
+  /** 비디오 상태 변경 */
+  CHANGE_VIDEO_STATUS: 'CHANGE_VIDEO_STATUS',
 } as const;
 
 export type AdminContentAction =
@@ -40,7 +40,7 @@ export const ADMIN_CONTENT_ACTIONS: AdminActionConfig[] = [
     label: '메인 이미지 변경',
   },
   {
-    action: AdminContentAction.CHANGE_CONTENT_TYPE,
-    label: '콘텐츠 타입 변경',
+    action: AdminContentAction.CHANGE_VIDEO_STATUS,
+    label: '비디오 상태 변경',
   },
 ];
