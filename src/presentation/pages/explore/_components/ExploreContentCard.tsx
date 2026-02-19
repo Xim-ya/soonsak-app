@@ -6,6 +6,7 @@
  */
 
 import React, { useCallback } from 'react';
+import { Image } from 'react-native';
 import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
@@ -13,6 +14,7 @@ import { LoadableImageView } from '@/presentation/components/image/LoadableImage
 import ContentTypeChip from '@/presentation/components/chip/ContentTypeChip';
 import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
+import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import type { ExploreContentModel } from '../_types/exploreTypes';
 
 /** 포스터 없을 때 표시할 아이콘 */
@@ -58,6 +60,11 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
       ? `https://image.tmdb.org/t/p/w342${content.posterPath}`
       : null;
 
+  // 타이틀 로고 URL (한국어 로고만 매핑 단계에서 필터링됨)
+  const titleLogoUrl = content.titleLogo
+    ? formatter.prefixTmdbImgUrl(content.titleLogo, { size: TmdbImageSize.w342 })
+    : null;
+
   return (
     <CardContainer onPress={handlePress} activeOpacity={0.8}>
       {imageUrl ? (
@@ -76,10 +83,14 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
       <ChipContainer>
         <ContentTypeChip contentType={content.type} />
       </ChipContainer>
-      {/* 하단 그라데이션 + 제목 */}
+      {/* 하단 그라데이션 + 제목/로고 */}
       <GradientOverlay colors={['transparent', 'rgba(0, 0, 0, 0.8)']} />
       <TitleContainer>
-        <CardTitle numberOfLines={2}>{content.title}</CardTitle>
+        {titleLogoUrl ? (
+          <TitleLogoImage source={{ uri: titleLogoUrl }} resizeMode="contain" />
+        ) : (
+          <CardTitle numberOfLines={2}>{content.title}</CardTitle>
+        )}
       </TitleContainer>
     </CardContainer>
   );
@@ -127,10 +138,15 @@ const TitleContainer = styled.View({
 });
 
 const CardTitle = styled.Text({
-  fontSize: 16,
+  fontSize: 18,
   fontFamily: 'DoHyeon-Regular',
   color: colors.white,
   textAlign: 'center',
+});
+
+const TitleLogoImage = styled(Image)({
+  width: CARD_WIDTH - 16,
+  height: 40,
 });
 
 export { ExploreContentCard, CARD_WIDTH, CARD_HEIGHT, GRID_GAP, HORIZONTAL_PADDING };

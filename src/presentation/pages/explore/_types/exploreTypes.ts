@@ -3,6 +3,7 @@
  */
 
 import { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { LogoLanguage } from '@/features/content/types';
 
 /** 정렬 타입 */
 type ExploreSortType = 'all' | 'latest' | 'popular' | 'recommended';
@@ -29,6 +30,8 @@ interface ExploreContentModel {
   readonly type: ContentType;
   readonly posterPath: string;
   readonly backdropPath?: string;
+  readonly titleLogo?: string;
+  readonly titleLogoLang?: LogoLanguage;
 }
 
 /** 큐레이션 캐러셀용 비디오 모델 */
