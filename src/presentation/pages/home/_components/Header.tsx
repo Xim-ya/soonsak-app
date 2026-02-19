@@ -13,7 +13,12 @@ import {
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
 import colors from '@/shared/styles/colors';
-import Animated from 'react-native-reanimated';
+import Animated, {
+  SharedValue,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { useTopBannerContents } from '../_hooks/useTopBannerContents';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -22,10 +27,14 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { TopContentModel } from '../_types/TopContentModel';
 
+interface HeaderProps {
+  scrollY?: SharedValue<number>;
+}
+
 /**
  * 최신/대표 콘텐츠 들이 스와이프 형태로 노출 되는 뷰
  * */
-export function Header() {
+export function Header({ scrollY }: HeaderProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const {
     headerInfo,
@@ -50,6 +59,19 @@ export function Header() {
     },
     [navigation],
   );
+
+  // 위로 당길 때 백드롭 이미지 scale 증가
+  const backdropAnimatedStyle = useAnimatedStyle(() => {
+    if (!scrollY) return {};
+
+    const scale = interpolate(scrollY.value, [-200, 0], [1.2, 1], Extrapolation.CLAMP);
+
+    const translateY = interpolate(scrollY.value, [-200, 0], [-20, 0], Extrapolation.CLAMP);
+
+    return {
+      transform: [{ scale }, { translateY }],
+    };
+  });
 
   /** 키워드 목록 렌더링 (메모이제이션) */
   const keywordElements = useMemo(() => {
@@ -99,32 +121,34 @@ export function Header() {
 
   return (
     <HeaderBox>
-      <Carousel
-        ref={ref}
-        width={width}
-        height={calculatedHeight}
-        data={headerInfo}
-        onProgressChange={onProgressChange}
-        onSnapToItem={onSnapToItem}
-        autoPlay={true}
-        autoPlayInterval={3000}
-        onConfigurePanGesture={(panGesture) => {
-          panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
-        }}
-        renderItem={({ item }) => (
-          <Pressable onPress={() => handleContentPress(item)}>
-            {item.backdropImgUrl ? (
-              <FadeInImage
-                key={`${item.id}-${item.type}`}
-                style={{ width: '100%', height: calculatedHeight }}
-                source={{ uri: formatter.prefixTmdbImgUrl(item.backdropImgUrl) }}
-              />
-            ) : (
-              <View style={{ height: calculatedHeight, backgroundColor: colors.gray05 }} />
-            )}
-          </Pressable>
-        )}
-      />
+      <Animated.View style={backdropAnimatedStyle}>
+        <Carousel
+          ref={ref}
+          width={width}
+          height={calculatedHeight}
+          data={headerInfo}
+          onProgressChange={onProgressChange}
+          onSnapToItem={onSnapToItem}
+          autoPlay={true}
+          autoPlayInterval={3000}
+          onConfigurePanGesture={(panGesture) => {
+            panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
+          }}
+          renderItem={({ item }) => (
+            <Pressable onPress={() => handleContentPress(item)}>
+              {item.backdropImgUrl ? (
+                <FadeInImage
+                  key={`${item.id}-${item.type}`}
+                  style={{ width: '100%', height: calculatedHeight }}
+                  source={{ uri: formatter.prefixTmdbImgUrl(item.backdropImgUrl) }}
+                />
+              ) : (
+                <View style={{ height: calculatedHeight, backgroundColor: colors.gray05 }} />
+              )}
+            </Pressable>
+          )}
+        />
+      </Animated.View>
 
       {/* 하단 그라데이션 */}
       <DarkedLinearShadow align={LinearAlign.bottomTop} height={178} />
@@ -178,6 +202,7 @@ const HeaderBox = styled.View({
   aspectRatio: backdropRatio,
   alignSelf: 'stretch',
   width: '100%',
+  overflow: 'hidden',
 });
 
 const FixedInfoView = styled.View({
