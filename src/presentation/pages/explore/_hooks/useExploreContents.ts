@@ -37,6 +37,7 @@ function toExploreContentModel(dto: ContentDto): ExploreContentModel {
     title: dto.title,
     type: dto.contentType,
     posterPath: dto.posterPath ?? '',
+    backdropPath: dto.backdropPath,
   };
 }
 
