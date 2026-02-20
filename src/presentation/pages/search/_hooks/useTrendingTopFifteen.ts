@@ -22,6 +22,10 @@ export function useTrendingTopFifteen() {
         RECENT_DAYS,
       );
 
+      if (!trendingContents || trendingContents.length === 0) {
+        return [];
+      }
+
       return trendingContents.map((content, index) =>
         TrendingContentModel.fromContentDto(content, index + 1),
       );

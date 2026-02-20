@@ -21,6 +21,33 @@ const MAX_EXCLUDE_IDS = 1000;
 const RPC_THROTTLE_MS = 5000;
 const rpcThrottleMap = new Map<string, number>();
 
+/** 트렌딩 RPC 결과 행 타입 (out_ 접두사 컬럼명) */
+type RpcTrendingRow = {
+  out_id: number;
+  out_content_type: string;
+  out_title: string;
+  out_poster_path: string | null;
+  out_backdrop_path: string | null;
+  out_title_logo: string | null;
+  out_title_logo_lang: string | null;
+  out_trending_score: number;
+};
+
+/** RPC 트렌딩 결과를 ContentDto 배열로 변환 */
+function mapTrendingRowsToContentDtos(rows: RpcTrendingRow[]): ContentDto[] {
+  return rows.map(
+    (row): ContentDto => ({
+      id: row.out_id,
+      contentType: row.out_content_type as ContentType,
+      title: row.out_title,
+      ...(row.out_poster_path && { posterPath: row.out_poster_path }),
+      ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
+      ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
+      ...(row.out_title_logo_lang && { titleLogoLang: row.out_title_logo_lang as 'ko' | 'en' }),
+    }),
+  );
+}
+
 /** 쓰로틀 체크: 최근 호출 이후 충분한 시간이 지났는지 확인 */
 function shouldThrottleRpc(key: string): boolean {
   const now = Date.now();
@@ -903,30 +930,7 @@ export const contentApi = {
       throw new Error(`Failed to fetch trending contents: ${error.message}`);
     }
 
-    // RPC 결과 타입 정의 (out_ 접두사 컬럼명)
-    type RpcTrendingRow = {
-      out_id: number;
-      out_content_type: string;
-      out_title: string;
-      out_poster_path: string | null;
-      out_backdrop_path: string | null;
-      out_title_logo: string | null;
-      out_title_logo_lang: string | null;
-      out_trending_score: number;
-    };
-
-    // RPC 결과를 ContentDto 형식으로 변환 (exactOptionalPropertyTypes 대응)
-    return (data ?? []).map(
-      (row: RpcTrendingRow): ContentDto => ({
-        id: row.out_id,
-        contentType: row.out_content_type as ContentType,
-        title: row.out_title,
-        ...(row.out_poster_path && { posterPath: row.out_poster_path }),
-        ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
-        ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-        ...(row.out_title_logo_lang && { titleLogoLang: row.out_title_logo_lang as 'ko' | 'en' }),
-      }),
-    );
+    return mapTrendingRowsToContentDtos(data ?? []);
   },
 
   /**
@@ -946,30 +950,7 @@ export const contentApi = {
       throw new Error(`Failed to fetch soonsak top ten: ${error.message}`);
     }
 
-    // RPC 결과 타입 정의 (out_ 접두사 컬럼명)
-    type RpcTrendingRow = {
-      out_id: number;
-      out_content_type: string;
-      out_title: string;
-      out_poster_path: string | null;
-      out_backdrop_path: string | null;
-      out_title_logo: string | null;
-      out_title_logo_lang: string | null;
-      out_trending_score: number;
-    };
-
-    // RPC 결과를 ContentDto 형식으로 변환 (exactOptionalPropertyTypes 대응)
-    return (data ?? []).map(
-      (row: RpcTrendingRow): ContentDto => ({
-        id: row.out_id,
-        contentType: row.out_content_type as ContentType,
-        title: row.out_title,
-        ...(row.out_poster_path && { posterPath: row.out_poster_path }),
-        ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
-        ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-        ...(row.out_title_logo_lang && { titleLogoLang: row.out_title_logo_lang as 'ko' | 'en' }),
-      }),
-    );
+    return mapTrendingRowsToContentDtos(data ?? []);
   },
 
   /**
@@ -996,30 +977,7 @@ export const contentApi = {
       throw new Error(`Failed to fetch recent trending contents: ${error.message}`);
     }
 
-    // RPC 결과 타입 정의 (out_ 접두사 컬럼명)
-    type RpcTrendingRow = {
-      out_id: number;
-      out_content_type: string;
-      out_title: string;
-      out_poster_path: string | null;
-      out_backdrop_path: string | null;
-      out_title_logo: string | null;
-      out_title_logo_lang: string | null;
-      out_trending_score: number;
-    };
-
-    // RPC 결과를 ContentDto 형식으로 변환 (exactOptionalPropertyTypes 대응)
-    return (data ?? []).map(
-      (row: RpcTrendingRow): ContentDto => ({
-        id: row.out_id,
-        contentType: row.out_content_type as ContentType,
-        title: row.out_title,
-        ...(row.out_poster_path && { posterPath: row.out_poster_path }),
-        ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
-        ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-        ...(row.out_title_logo_lang && { titleLogoLang: row.out_title_logo_lang as 'ko' | 'en' }),
-      }),
-    );
+    return mapTrendingRowsToContentDtos(data ?? []);
   },
 
   /**
