@@ -53,7 +53,7 @@ function TopTenContentListView() {
 
   return (
     <HorizontalCardSlider
-      title="지금 뜨고있는 인기 콘텐츠"
+      title="이번주 인기작 TOP 10"
       data={topTenContents}
       isLoading={isLoading}
       isError={isError}

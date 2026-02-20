@@ -50,7 +50,7 @@ function TitleWithLogo({ title, logoUrl }: TitleWithLogoProps) {
   // 로고가 없거나 로드 실패 -> 텍스트 표시
   if (!logoUrl || hasError) {
     return (
-      <Title numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>
+      <Title numberOfLines={2} ellipsizeMode="tail">
         {title}
       </Title>
     );

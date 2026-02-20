@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef } from 'react';
 import { TextInput, TouchableOpacity, Keyboard } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
@@ -7,8 +7,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { useSearchContext } from '../_provider/SearchProvider';
 
 const ICON_SIZE = 20;
-const INPUT_HEIGHT = 44;
-const HORIZONTAL_PADDING = 16;
+const INPUT_HEIGHT = 40;
 
 // 검색 아이콘 SVG
 const searchIconSvg = `
@@ -35,14 +34,6 @@ function SearchBar() {
   const inputRef = useRef<TextInput>(null);
   const hasText = searchText.length > 0;
 
-  // 컴포넌트 마운트 시 자동 포커스
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      inputRef.current?.focus();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   const handleClear = () => {
     clearSearchText();
     inputRef.current?.focus();
@@ -57,7 +48,7 @@ function SearchBar() {
       <SearchIconWrapper>
         <SvgXml xml={searchIconSvg} width={ICON_SIZE} height={ICON_SIZE} />
       </SearchIconWrapper>
-      <Input
+      <TextInput
         ref={inputRef}
         value={searchText}
         onChangeText={setSearchText}
@@ -67,6 +58,7 @@ function SearchBar() {
         onSubmitEditing={handleSubmit}
         autoCorrect={false}
         autoCapitalize="none"
+        style={inputStyle}
       />
       {hasText && (
         <ClearButton onPress={handleClear} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
@@ -79,11 +71,11 @@ function SearchBar() {
 
 /* Styled Components */
 const Container = styled.View({
+  flex: 1,
   flexDirection: 'row',
   alignItems: 'center',
   backgroundColor: colors.gray05,
   borderRadius: 8,
-  marginHorizontal: HORIZONTAL_PADDING,
   paddingHorizontal: 12,
   height: INPUT_HEIGHT,
 });
@@ -92,12 +84,15 @@ const SearchIconWrapper = styled.View({
   marginRight: 8,
 });
 
-const Input = styled.TextInput({
+const inputStyle = {
   flex: 1,
-  ...textStyles.body2,
+  fontFamily: textStyles.body2.fontFamily,
+  fontSize: textStyles.body2.fontSize,
+  letterSpacing: textStyles.body2.letterSpacing,
   color: colors.white,
   padding: 0,
-});
+  textAlignVertical: 'center' as const,
+};
 
 const ClearButton = styled(TouchableOpacity)({
   marginLeft: 8,

@@ -1,11 +1,12 @@
 import { useCallback } from 'react';
-import { FlatList, ActivityIndicator, Keyboard } from 'react-native';
+import { FlatList, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import { useSearchContext } from '../_provider/SearchProvider';
 import { SearchResultModel } from '../_types/searchResultModel';
 import { SearchResultItem } from './SearchResultItem';
 import { SearchEmptyState } from './SearchEmptyState';
+import { TrendingContentGridView } from './TrendingContentGridView';
 
 /**
  * 아이템 키 추출 함수 (FlatList 최적화)
@@ -14,37 +15,50 @@ const keyExtractor = (item: SearchResultModel): string => `${item.contentType}-$
 
 /**
  * SearchResultList - 검색 결과 리스트 컴포넌트
+ *
+ * 상태에 따라 다른 UI를 표시:
+ * - 초기 상태: 트렌딩 콘텐츠 그리드
+ * - 로딩 중: 로딩 인디케이터
+ * - 에러/결과 없음: 빈 상태 컴포넌트
+ * - 결과 있음: 검색 결과 리스트
  */
 function SearchResultList() {
   const { results, isLoading, isEmpty, error, debouncedSearchText } = useSearchContext();
 
-  // 리스트 아이템 렌더링 (FlatList에 전달되므로 useCallback 필요)
   const renderItem = useCallback(
     ({ item }: { item: SearchResultModel }) => <SearchResultItem item={item} />,
     [],
   );
 
-  // 검색어가 없는 초기 상태 (공백만 입력한 경우 포함)
-  if (!debouncedSearchText.trim()) {
-    return <SearchEmptyState type="initial" />;
+  const hasNoSearchQuery = !debouncedSearchText.trim();
+  const hasError = Boolean(error);
+  const hasNoResults = isEmpty;
+
+  // 검색어가 없는 초기 상태
+  if (hasNoSearchQuery) {
+    return (
+      <InitialStateContainer>
+        <TrendingContentGridView />
+      </InitialStateContainer>
+    );
   }
 
   // 로딩 중
   if (isLoading) {
     return (
       <LoadingContainer>
-        <ActivityIndicator size="large" color={colors.main} />
+        <ActivityIndicator />
       </LoadingContainer>
     );
   }
 
   // 에러 발생
-  if (error) {
+  if (hasError) {
     return <SearchEmptyState type="error" />;
   }
 
   // 결과 없음
-  if (isEmpty) {
+  if (hasNoResults) {
     return <SearchEmptyState type="noResults" />;
   }
 
@@ -73,6 +87,11 @@ const LoadingContainer = styled.View({
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
+  backgroundColor: colors.black,
+});
+
+const InitialStateContainer = styled(ScrollView)({
+  flex: 1,
   backgroundColor: colors.black,
 });
 
