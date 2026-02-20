@@ -22,6 +22,9 @@ export const CONTENT_DATABASE = {
     GET_RANDOM_CURATION_VIDEOS: 'get_random_curation_videos',
     GET_RANDOM_BANNER_CONTENTS: 'get_random_banner_contents',
     GET_CONTENT_COLLECTIONS: 'get_content_collections',
+    GET_TRENDING_CONTENTS: 'get_trending_contents',
+    GET_RECENT_TRENDING_CONTENTS: 'get_recent_trending_contents',
+    GET_SOONSAK_TOP_TEN: 'get_soonsak_top_ten',
   },
 } as const;
 
