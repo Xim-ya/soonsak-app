@@ -59,9 +59,15 @@ function SearchBar() {
         autoCorrect={false}
         autoCapitalize="none"
         style={inputStyle}
+        accessibilityLabel="콘텐츠 검색 입력"
+        accessibilityHint="검색어를 입력하면 콘텐츠를 검색합니다"
       />
       {hasText && (
-        <ClearButton onPress={handleClear} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+        <ClearButton
+          onPress={handleClear}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          accessibilityLabel="검색어 지우기"
+        >
           <SvgXml xml={clearIconSvg} width={ICON_SIZE} height={ICON_SIZE} />
         </ClearButton>
       )}

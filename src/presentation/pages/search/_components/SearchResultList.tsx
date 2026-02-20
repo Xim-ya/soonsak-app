@@ -30,12 +30,13 @@ function SearchResultList() {
     [],
   );
 
-  const hasNoSearchQuery = !debouncedSearchText.trim();
+  // 상태 플래그: 일관된 긍정형 네이밍으로 가독성 향상
+  const hasSearchQuery = Boolean(debouncedSearchText.trim());
   const hasError = Boolean(error);
-  const hasNoResults = isEmpty;
+  const hasResults = !isEmpty;
 
-  // 검색어가 없는 초기 상태
-  if (hasNoSearchQuery) {
+  // 1. 검색어가 없는 초기 상태 -> 트렌딩 콘텐츠 표시
+  if (!hasSearchQuery) {
     return (
       <InitialStateContainer>
         <TrendingContentGridView />
@@ -43,25 +44,26 @@ function SearchResultList() {
     );
   }
 
-  // 로딩 중
+  // 2. 로딩 중
   if (isLoading) {
     return (
       <LoadingContainer>
-        <ActivityIndicator />
+        <ActivityIndicator color={colors.gray02} />
       </LoadingContainer>
     );
   }
 
-  // 에러 발생
+  // 3. 에러 발생
   if (hasError) {
     return <SearchEmptyState type="error" />;
   }
 
-  // 결과 없음
-  if (hasNoResults) {
+  // 4. 결과 없음
+  if (!hasResults) {
     return <SearchEmptyState type="noResults" />;
   }
 
+  // 5. 결과 있음 -> 리스트 표시
   return (
     <StyledFlatList
       data={results}
@@ -73,6 +75,7 @@ function SearchResultList() {
       removeClippedSubviews={true}
       maxToRenderPerBatch={10}
       windowSize={5}
+      initialNumToRender={10}
     />
   );
 }

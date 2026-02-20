@@ -22,6 +22,10 @@ export function useRealtimeTopTen() {
         RECENT_DAYS,
       );
 
+      if (!trendingContents || trendingContents.length === 0) {
+        return [];
+      }
+
       return trendingContents.map((content, index) =>
         TopTenContentModel.fromContentDto(content, index + 1),
       );

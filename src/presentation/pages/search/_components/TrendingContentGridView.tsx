@@ -188,8 +188,12 @@ function TrendingContentGridView() {
     [],
   );
 
-  if (isError) return null;
-  if (!isLoading && columnGroups.length === 0) return null;
+  // Early return 조건: 에러 또는 데이터 없음
+  const hasError = isError;
+  const hasNoDataAfterLoad = !isLoading && columnGroups.length === 0;
+  const shouldHideComponent = hasError || hasNoDataAfterLoad;
+
+  if (shouldHideComponent) return null;
 
   return (
     <Container>
@@ -226,6 +230,7 @@ const columnGroupKeyExtractor = (_: ColumnGroup, index: number) => `trending-col
  * FlatList ItemSeparatorComponent - React.memo로 감싸서 불필요한 리렌더 방지
  */
 const ColumnSeparator = React.memo(() => <Gap size={COLUMN_GAP} />);
+ColumnSeparator.displayName = 'ColumnSeparator';
 
 /* Styled Components */
 
