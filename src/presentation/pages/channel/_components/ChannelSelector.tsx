@@ -28,6 +28,7 @@ import {
 
 // 아바타 크기 상수
 const AVATAR_SIZE = 64;
+const ITEM_WIDTH = AVATAR_SIZE + 6; // 선택 테두리 여백 포함
 const ITEM_SEPARATOR = 12;
 
 type ListItem = ChannelItemModel | SkeletonModel;
@@ -95,8 +96,8 @@ ItemSeparator.displayName = 'ItemSeparator';
  * FlatList getItemLayout (고정 크기 아이템 최적화)
  */
 const getItemLayout = (_: unknown, index: number) => ({
-  length: AVATAR_SIZE,
-  offset: (AVATAR_SIZE + ITEM_SEPARATOR) * index,
+  length: ITEM_WIDTH,
+  offset: (ITEM_WIDTH + ITEM_SEPARATOR) * index,
   index,
 });
 
@@ -170,7 +171,7 @@ const Container = styled.View({
 });
 
 const ItemContainer = styled.View({
-  width: AVATAR_SIZE + 6, // 선택 테두리 여백 포함
+  width: ITEM_WIDTH,
   alignItems: 'center',
 });
 

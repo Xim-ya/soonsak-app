@@ -55,7 +55,12 @@ function formatSubscriberCount(count?: number): string {
     return `${Math.floor(count / 10000)}만`;
   }
   if (count >= 1000) {
-    return `${(count / 1000).toFixed(1)}천`;
+    // 반올림 결과가 10 이상이면 만 단위로 표시 (예: 9950 -> 1만)
+    const rounded = parseFloat((count / 1000).toFixed(1));
+    if (rounded >= 10) {
+      return '1만';
+    }
+    return `${rounded}천`;
   }
   return `${count}`;
 }
@@ -171,7 +176,7 @@ const AnimatedChannelItem = React.memo(
             />
           </Animated.View>
         </TouchableOpacity>
-        <Animated.View style={[{ marginTop: 4 }, animatedTextStyle]}>
+        <Animated.View style={[{ marginTop: 4, overflow: 'hidden' }, animatedTextStyle]}>
           <ChannelName numberOfLines={1}>{channel.name}</ChannelName>
           {subscriberText && <SubscriberCount>{subscriberText}</SubscriberCount>}
         </Animated.View>
@@ -264,6 +269,7 @@ function AnimatedChannelSelector({
 
   // 컨테이너 높이 애니메이션
   const animatedContainerStyle = useAnimatedStyle(() => {
+    'worklet';
     const height = interpolate(
       scrollY.value,
       [0, SCROLL_RANGE],
