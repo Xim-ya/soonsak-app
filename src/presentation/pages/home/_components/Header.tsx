@@ -3,7 +3,7 @@ import styled from '@emotion/native';
 import { formatter } from '@/shared/utils/formatter';
 import { FadeInImage } from '@/presentation/components/image/FadeInImage';
 import Carousel, { Pagination } from 'react-native-reanimated-carousel';
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { DotStyle } from 'react-native-reanimated-carousel/lib/typescript/components/Pagination/Basic/PaginationItem';
 import { EmptyView } from '@/presentation/components/view/EmptyView';
 import textStyle from '@/shared/styles/textStyles';
@@ -26,6 +26,49 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { TopContentModel } from '../_types/TopContentModel';
+import { AppImage, ContentFit } from '@/presentation/components/image/AppImage';
+
+/** 로고 사이즈 */
+const LOGO_WIDTH = 200;
+const LOGO_HEIGHT = 60;
+
+/** 타이틀 영역: 로고 있으면 로고, 없거나 에러면 텍스트 */
+interface TitleWithLogoProps {
+  title: string;
+  logoUrl: string | null;
+}
+
+function TitleWithLogo({ title, logoUrl }: TitleWithLogoProps) {
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = useCallback(() => {
+    setHasError(true);
+  }, []);
+
+  // 로고가 없거나 로드 실패 -> 텍스트 표시
+  if (!logoUrl || hasError) {
+    return (
+      <Title numberOfLines={2} ellipsizeMode="tail">
+        {title}
+      </Title>
+    );
+  }
+
+  // 로고 표시 (AppImage 페이드인 애니메이션)
+  return (
+    <LogoContainer>
+      <AppImage
+        source={formatter.prefixTmdbImgUrl(logoUrl)}
+        width={LOGO_WIDTH}
+        height={LOGO_HEIGHT}
+        contentFit={ContentFit.Contain}
+        transition={200}
+        transparent
+        onError={handleError}
+      />
+    </LogoContainer>
+  );
+}
 
 interface HeaderProps {
   scrollY?: SharedValue<number>;
@@ -55,6 +98,7 @@ export function Header({ scrollY }: HeaderProps) {
       navigation.navigate(routePages.contentDetail, {
         id: item.id,
         type: item.type,
+        title: item.title,
       });
     },
     [navigation],
@@ -156,12 +200,14 @@ export function Header({ scrollY }: HeaderProps) {
       {/* 콘텐츠 정보 */}
       <FixedInfoView>
         <AnimatedInfoContainer style={{ opacity: infoOpacity }}>
-          <PointDescription numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>
+          <PointDescription numberOfLines={2} ellipsizeMode="tail">
             {currentItem?.pointDescription}
           </PointDescription>
-          <Title numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.85}>
-            {currentItem?.title}
-          </Title>
+          <TitleWithLogo
+            key={currentItem?.id}
+            title={currentItem?.title ?? ''}
+            logoUrl={currentItem?.logoUrl ?? null}
+          />
           <CategoryListView>{keywordElements}</CategoryListView>
           <Gap size={28} />
         </AnimatedInfoContainer>
@@ -237,6 +283,13 @@ const Title = styled.Text({
   marginBottom: 8,
   textAlign: 'center',
   textAlignVertical: 'center',
+});
+
+const LogoContainer = styled.View({
+  alignItems: 'center',
+  justifyContent: 'center',
+  minHeight: LOGO_HEIGHT,
+  marginBottom: 8,
 });
 
 const CategoryListView = styled.View({

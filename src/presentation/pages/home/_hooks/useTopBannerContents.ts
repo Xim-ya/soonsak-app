@@ -1,10 +1,12 @@
 import { useRef, useState, useEffect, useMemo, useCallback } from 'react';
+import { Image } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { TopContentModel, fromContentDto, isValidTopContent } from '../_types/TopContentModel';
 import { contentApi } from '@/features/content/api/contentApi';
 import { getPreloadedBannerContents } from '@/shared/hooks/useAppPreload';
+import { formatter } from '@/shared/utils/formatter';
 
 /** 배너에 표시할 콘텐츠 수 */
 const BANNER_CONTENT_LIMIT = 5;
@@ -140,6 +142,20 @@ export function useTopBannerContents() {
       }
     }
   }, [headerInfo, currentItem]);
+
+  // 로고 이미지 프리페치
+  useEffect(() => {
+    if (headerInfo.length === 0) return;
+
+    const logoUrls = headerInfo
+      .map((item) => item.logoUrl)
+      .filter((url): url is string => url !== null)
+      .map((url) => formatter.prefixTmdbImgUrl(url));
+
+    logoUrls.forEach((url) => {
+      Image.prefetch(url);
+    });
+  }, [headerInfo]);
 
   return {
     // Data
