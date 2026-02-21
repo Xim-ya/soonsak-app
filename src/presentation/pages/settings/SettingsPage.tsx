@@ -21,6 +21,7 @@ import { authApi } from '@/features/auth/api/authApi';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { SettingsSection, SettingsItem, SettingsToggleItem } from './_components';
+import { AdminOnly } from '@/features/auth/guards';
 
 // TODO: react-native-device-info로 실제 버전 가져오기
 const APP_VERSION = '1.0.0';
@@ -163,6 +164,16 @@ export default function SettingsPage() {
               onPress={handleWithdrawPress}
             />
           </SettingsSection>
+
+          {/* 관리자 섹션 - 어드민에게만 표시 */}
+          <AdminOnly>
+            <SettingsSection title="관리자">
+              <SettingsItem
+                label="비디오 처리"
+                onPress={() => navigation.navigate(routePages.adminVideoManagement)}
+              />
+            </SettingsSection>
+          </AdminOnly>
         </ScrollView>
 
         {/* 회원탈퇴 로딩 오버레이 */}

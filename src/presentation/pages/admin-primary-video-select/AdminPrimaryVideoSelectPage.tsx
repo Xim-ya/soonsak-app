@@ -318,7 +318,7 @@ const getStatusColor = (status: string): string => {
     case 'rejected':
       return colors.red;
     case 'needs_review':
-      return colors.orange;
+      return colors.yellow;
     default:
       return colors.gray02;
   }

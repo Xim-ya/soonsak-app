@@ -382,3 +382,152 @@ export interface ContentVideoItem {
   status: ContentStatus;
   channelName: string | null;
 }
+
+/**
+ * 비디오 관리 아이템 타입 (어드민 비디오 처리 페이지용)
+ */
+export interface VideoManagementItem {
+  id: string;
+  title: string;
+  contentId: number;
+  contentType: ContentType;
+  contentTitle: string;
+  contentPosterPath: string | null;
+  channelName: string | null;
+  uploadedAt: string;
+  status: ContentStatus;
+}
+
+/**
+ * 상태별 비디오 카운트 타입
+ */
+export interface VideoStatusCounts {
+  total: number;
+  pending: number;
+  confirmed: number;
+  rejected: number;
+  needsReview: number;
+}
+
+/**
+ * 비디오 관리 목록 조회 결과
+ */
+export interface VideoManagementListResult {
+  videos: VideoManagementItem[];
+  hasMore: boolean;
+  nextCursor: string | null;
+}
+
+export const adminVideoApi = {
+  /**
+   * 상태별 비디오 목록 조회 (무한스크롤용)
+   * @param status 필터할 상태 (null이면 전체)
+   * @param cursor 페이지네이션 커서 (uploaded_at 기준)
+   * @param limit 한 번에 가져올 개수
+   */
+  getVideosByStatus: async (
+    status: ContentStatus | null,
+    cursor: string | null,
+    limit: number = 20,
+  ): Promise<VideoManagementListResult> => {
+    let query = supabaseClient
+      .from(CONTENT_DATABASE.TABLES.VIDEOS)
+      .select(
+        `
+        id,
+        title,
+        content_id,
+        content_type,
+        uploaded_at,
+        status,
+        channels (name),
+        contents!inner (title, poster_path)
+      `,
+      )
+      .order('uploaded_at', { ascending: false })
+      .limit(limit + 1); // 다음 페이지 존재 여부 확인용으로 1개 더 요청
+
+    // 상태 필터
+    if (status) {
+      query = query.eq('status', status);
+    }
+
+    // 커서 기반 페이지네이션
+    if (cursor) {
+      query = query.lt('uploaded_at', cursor);
+    }
+
+    const { data, error } = await query;
+
+    if (error) {
+      console.error('비디오 목록 조회 실패:', error);
+      throw new Error(`Failed to fetch videos: ${error.message}`);
+    }
+
+    const hasMore = (data?.length ?? 0) > limit;
+    const videos = (data ?? []).slice(0, limit);
+
+    return {
+      videos: videos.map((video) => {
+        const channel = video.channels as unknown as { name: string } | null;
+        const content = video.contents as unknown as { title: string; poster_path: string | null };
+        return {
+          id: video.id,
+          title: video.title,
+          contentId: video.content_id,
+          contentType: video.content_type as ContentType,
+          contentTitle: content?.title ?? '',
+          contentPosterPath: content?.poster_path ?? null,
+          channelName: channel?.name ?? null,
+          uploadedAt: video.uploaded_at,
+          status: video.status as ContentStatus,
+        };
+      }),
+      hasMore,
+      nextCursor: hasMore && videos.length > 0 ? videos[videos.length - 1]!.uploaded_at : null,
+    };
+  },
+
+  /**
+   * 상태별 비디오 카운트 조회
+   */
+  getVideoStatusCounts: async (): Promise<VideoStatusCounts> => {
+    // 전체 카운트
+    const { count: total, error: totalError } = await supabaseClient
+      .from(CONTENT_DATABASE.TABLES.VIDEOS)
+      .select('*', { count: 'exact', head: true });
+
+    if (totalError) {
+      console.error('전체 비디오 카운트 조회 실패:', totalError);
+      throw new Error(`Failed to count total videos: ${totalError.message}`);
+    }
+
+    // 각 상태별 카운트를 병렬로 조회
+    const [pendingResult, confirmedResult, rejectedResult, needsReviewResult] = await Promise.all([
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.VIDEOS)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'pending'),
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.VIDEOS)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'confirmed'),
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.VIDEOS)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'rejected'),
+      supabaseClient
+        .from(CONTENT_DATABASE.TABLES.VIDEOS)
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'needs_review'),
+    ]);
+
+    return {
+      total: total ?? 0,
+      pending: pendingResult.count ?? 0,
+      confirmed: confirmedResult.count ?? 0,
+      rejected: rejectedResult.count ?? 0,
+      needsReview: needsReviewResult.count ?? 0,
+    };
+  },
+};
