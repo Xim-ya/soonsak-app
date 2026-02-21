@@ -1,6 +1,12 @@
 import React, { useMemo, useCallback, useEffect, useRef } from 'react';
-import { TouchableHighlight, TouchableOpacity, Animated } from 'react-native';
+import { TouchableHighlight, TouchableOpacity, Animated as RNAnimated } from 'react-native';
 import styled from '@emotion/native';
+import Animated, {
+  SharedValue,
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
@@ -28,6 +34,10 @@ import {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+interface HeaderBackgroundProps {
+  scrollY?: SharedValue<number>;
+}
+
 /**
  * 헤더 배경 이미지와 재생 버튼을 포함하는 컴포넌트
  *
@@ -36,8 +46,9 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
  * - 재생 버튼 및 이어보기 기능
  * - 시청 진행률 표시
  * - 런타임 칩 표시
+ * - 스크롤 시 배경 이미지 확대 효과
  */
-export const HeaderBackground = React.memo(() => {
+export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) => {
   const { id, type } = useContentDetailRoute();
   const { data: contentInfo } = useContentDetail(Number(id), type);
   const { primaryVideo, watchProgress } = useContentVideos();
@@ -50,11 +61,11 @@ export const HeaderBackground = React.memo(() => {
   const { data: videoInfo, isLoading: youtubeLoading } = useYouTubeVideo(youtubeUrl ?? '');
 
   // YouTube 이미지 페이드인 애니메이션
-  const youtubeOpacity = useRef(new Animated.Value(0)).current;
+  const youtubeOpacity = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
     if (!youtubeLoading && videoInfo?.thumbnails?.high) {
-      Animated.timing(youtubeOpacity, {
+      RNAnimated.timing(youtubeOpacity, {
         toValue: 1,
         duration: 600,
         useNativeDriver: true,
@@ -63,6 +74,18 @@ export const HeaderBackground = React.memo(() => {
       youtubeOpacity.setValue(0);
     }
   }, [youtubeLoading, videoInfo?.thumbnails?.high, youtubeOpacity]);
+
+  // 위로 당길 때 백드롭 이미지 scale 증가
+  const backdropAnimatedStyle = useAnimatedStyle(() => {
+    if (!scrollY) return {};
+
+    const scale = interpolate(scrollY.value, [-200, 0], [1.2, 1], Extrapolation.CLAMP);
+    const translateY = interpolate(scrollY.value, [-200, 0], [-20, 0], Extrapolation.CLAMP);
+
+    return {
+      transform: [{ scale }, { translateY }],
+    };
+  });
 
   // 썸네일 크기 계산
   const thumbnailSize = useMemo(() => {
@@ -125,24 +148,26 @@ export const HeaderBackground = React.memo(() => {
 
   return (
     <Container>
-      <ImageWrapper>
-        {/* TMDB 배경 이미지 */}
-        {imageUrls.tmdb && (
-          <AnimatedBackgroundImage
-            source={{ uri: imageUrls.tmdb }}
-            style={{ opacity: opacityValues.primary }}
-          />
-        )}
-        {/* YouTube 배경 이미지 */}
-        {imageUrls.youtube && (
-          <AnimatedBackgroundImage
-            source={{ uri: imageUrls.youtube }}
-            style={{
-              opacity: Animated.multiply(opacityValues.secondary, youtubeOpacity),
-            }}
-          />
-        )}
-      </ImageWrapper>
+      <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, backdropAnimatedStyle]}>
+        <ImageWrapper>
+          {/* TMDB 배경 이미지 */}
+          {imageUrls.tmdb && (
+            <RNAnimatedBackgroundImage
+              source={{ uri: imageUrls.tmdb }}
+              style={{ opacity: opacityValues.primary }}
+            />
+          )}
+          {/* YouTube 배경 이미지 */}
+          {imageUrls.youtube && (
+            <RNAnimatedBackgroundImage
+              source={{ uri: imageUrls.youtube }}
+              style={{
+                opacity: RNAnimated.multiply(opacityValues.secondary, youtubeOpacity),
+              }}
+            />
+          )}
+        </ImageWrapper>
+      </Animated.View>
 
       {/* 상단 그라데이션 그림자 */}
       <GradientWrapper>
@@ -191,21 +216,21 @@ export const HeaderBackground = React.memo(() => {
           <ThumbnailWrapper width={thumbnailSize.width} height={thumbnailSize.height}>
             {/* TMDB 썸네일 */}
             {imageUrls.tmdb && (
-              <Animated.View style={{ position: 'absolute', opacity: opacityValues.secondary }}>
+              <RNAnimated.View style={{ position: 'absolute', opacity: opacityValues.secondary }}>
                 <LoadableImageView
                   source={imageUrls.tmdb}
                   width={thumbnailSize.width}
                   height={thumbnailSize.height}
                   borderRadius={2}
                 />
-              </Animated.View>
+              </RNAnimated.View>
             )}
             {/* YouTube 썸네일 */}
             {imageUrls.youtube && (
-              <Animated.View
+              <RNAnimated.View
                 style={{
                   position: 'absolute',
-                  opacity: Animated.multiply(opacityValues.primary, youtubeOpacity),
+                  opacity: RNAnimated.multiply(opacityValues.primary, youtubeOpacity),
                 }}
               >
                 <LoadableImageView
@@ -214,7 +239,7 @@ export const HeaderBackground = React.memo(() => {
                   height={thumbnailSize.height}
                   borderRadius={2}
                 />
-              </Animated.View>
+              </RNAnimated.View>
             )}
           </ThumbnailWrapper>
         </TouchableOpacity>
@@ -292,7 +317,7 @@ const VideoThumbnailContainer = styled.View({
   elevation: 5,
 });
 
-const AnimatedBackgroundImage = styled(Animated.Image)({
+const RNAnimatedBackgroundImage = styled(RNAnimated.Image)({
   position: 'absolute',
   top: 0,
   left: 0,
