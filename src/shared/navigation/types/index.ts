@@ -81,6 +81,7 @@ export type RootStackParamList = {
   [routePages.userContentList]: {
     initialTab?: UserContentListTabIndex; // 초기 활성화 탭 인덱스 (기본값: 0)
   }; // 사용자 콘텐츠 목록 - 탭 인덱스 선택
+  [routePages.quickExplore]: undefined; // 빠른탐색 - 파라미터 없음
   [routePages.adminContentSearch]: {
     videoId: string; // 교체할 비디오 ID
     videoTitle: string; // 비디오 제목 (UI 표시용)
@@ -108,7 +109,7 @@ export type ExploreTabName = 'all' | 'latest' | 'popular' | 'recommended';
 export type TabParamList = {
   Home: undefined; // 홈 탭
   Explore: { initialTab?: ExploreTabName } | undefined; // 탐색 탭 - 초기 탭 선택
-  QuickExplore: undefined; // 빠른탐색 탭
+  Channel: undefined; // 채널 탭
   My: undefined; // MY 탭
 };
 

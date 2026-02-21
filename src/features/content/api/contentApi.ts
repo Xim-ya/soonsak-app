@@ -1018,4 +1018,90 @@ export const contentApi = {
 
     return mapWithField<ContentDto[]>(data);
   },
+
+  /**
+   * 채널 페이지용 비디오 조회
+   * 채널별 비디오 목록을 콘텐츠/채널 정보와 함께 반환
+   * @param channelIds 조회할 채널 ID 배열 (null이면 전체)
+   * @param sortType 정렬 타입 (latest: 최신순, popular: 인기순, random: 랜덤)
+   * @param page 페이지 번호 (0부터 시작)
+   * @param pageSize 페이지당 항목 수
+   * @param seed 랜덤 정렬용 시드 값
+   */
+  getChannelVideos: async (
+    channelIds: string[] | null = null,
+    sortType: 'latest' | 'popular' | 'random' = 'latest',
+    page: number = 0,
+    pageSize: number = 20,
+    seed?: number,
+  ): Promise<{
+    videos: Array<{
+      videoId: string;
+      contentId: number;
+      contentType: ContentType;
+      videoTitle: string;
+      thumbnailUrl?: string;
+      channelId: string;
+      channelName: string;
+      channelLogoUrl: string;
+      contentTitle: string;
+      releaseDate?: string;
+      genreIds?: number[];
+      backdropPath?: string;
+    }>;
+    hasMore: boolean;
+    totalCount: number;
+  }> => {
+    const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CHANNEL_VIDEOS, {
+      p_channel_ids: channelIds,
+      p_sort_type: sortType,
+      p_page: page,
+      p_page_size: pageSize,
+      p_seed: seed,
+    });
+
+    if (error) {
+      console.error('채널 비디오 조회 실패:', error);
+      throw new Error(`Failed to fetch channel videos: ${error.message}`);
+    }
+
+    if (!data || data.length === 0) {
+      return { videos: [], hasMore: false, totalCount: 0 };
+    }
+
+    const totalCount = Number(data[0]?.total_count ?? 0);
+    const videos = data.map(
+      (item: {
+        video_id: string;
+        content_id: number;
+        content_type: string;
+        video_title: string;
+        thumbnail_url: string | null;
+        channel_id: string;
+        channel_name: string;
+        channel_logo_url: string;
+        content_title: string;
+        release_date: string | null;
+        genre_ids: number[] | null;
+        backdrop_path: string | null;
+      }) => ({
+        videoId: item.video_id,
+        contentId: item.content_id,
+        contentType: item.content_type as ContentType,
+        videoTitle: item.video_title,
+        thumbnailUrl: item.thumbnail_url ?? undefined,
+        channelId: item.channel_id,
+        channelName: item.channel_name,
+        channelLogoUrl: item.channel_logo_url,
+        contentTitle: item.content_title,
+        releaseDate: item.release_date ?? undefined,
+        genreIds: item.genre_ids ?? undefined,
+        backdropPath: item.backdrop_path ?? undefined,
+      }),
+    );
+
+    const hasMore = (page + 1) * pageSize < totalCount;
+
+    return { videos, hasMore, totalCount };
+  },
 };
