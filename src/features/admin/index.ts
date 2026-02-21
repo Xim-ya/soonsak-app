@@ -11,4 +11,4 @@ export { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } fro
 export { useAdminContentActions } from './hooks/useAdminContentActions';
 
 // API
-export { adminContentApi } from './api';
+export { adminContentApi, type ContentVideoItem } from './api/adminContentApi';

@@ -81,6 +81,19 @@ export type RootStackParamList = {
   [routePages.userContentList]: {
     initialTab?: UserContentListTabIndex; // 초기 활성화 탭 인덱스 (기본값: 0)
   }; // 사용자 콘텐츠 목록 - 탭 인덱스 선택
+  [routePages.adminContentSearch]: {
+    videoId: string; // 교체할 비디오 ID
+    videoTitle: string; // 비디오 제목 (UI 표시용)
+    currentContentId: number; // 현재 매핑된 콘텐츠 ID
+    currentContentType: ContentType; // 현재 매핑된 콘텐츠 타입
+    currentContentTitle: string; // 현재 콘텐츠 제목
+    currentContentReleaseYear: string | null; // 현재 콘텐츠 개봉/방영 연도
+  }; // 어드민 콘텐츠 검색 - 비디오를 다른 콘텐츠로 교체할 때 사용
+  [routePages.adminPrimaryVideoSelect]: {
+    contentId: number; // 콘텐츠 ID
+    contentType: ContentType; // 콘텐츠 타입
+    contentTitle: string; // 콘텐츠 제목 (UI 표시용)
+  }; // 어드민 대표 비디오 선택 - 콘텐츠의 비디오 목록에서 대표 비디오 변경
 };
 
 /**

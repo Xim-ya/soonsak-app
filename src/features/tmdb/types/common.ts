@@ -143,3 +143,28 @@ export interface TrendingItemDto {
   readonly genreIds: number[];
   readonly originalLanguage: string;
 }
+
+/**
+ * TMDB Multi Search API 응답 아이템 DTO
+ * /search/multi에서 반환되는 아이템
+ * movie, tv, person 타입 포함 (person은 필터링하여 사용)
+ */
+export interface SearchMultiItemDto {
+  readonly id: number;
+  readonly mediaType: 'movie' | 'tv' | 'person';
+  readonly title?: string; // movie의 경우
+  readonly name?: string; // tv/person의 경우
+  readonly originalTitle?: string;
+  readonly originalName?: string;
+  readonly overview?: string;
+  readonly posterPath: string | null;
+  readonly backdropPath?: string | null;
+  readonly releaseDate?: string; // movie의 경우
+  readonly firstAirDate?: string; // tv의 경우
+  readonly voteAverage?: number;
+  readonly popularity: number;
+  readonly adult?: boolean;
+  readonly genreIds?: number[];
+  readonly originalLanguage?: string;
+  readonly originCountry?: string[];
+}
