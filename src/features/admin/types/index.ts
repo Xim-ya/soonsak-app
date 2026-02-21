@@ -18,6 +18,8 @@ export const AdminContentAction = {
   CHANGE_CONTENT: 'CHANGE_CONTENT',
   /** 대표 비디오 변경 */
   CHANGE_PRIMARY_VIDEO: 'CHANGE_PRIMARY_VIDEO',
+  /** 결말포함 여부 변경 */
+  CHANGE_INCLUDES_ENDING: 'CHANGE_INCLUDES_ENDING',
 } as const;
 
 export type AdminContentAction = (typeof AdminContentAction)[keyof typeof AdminContentAction];
@@ -57,5 +59,9 @@ export const ADMIN_CONTENT_ACTIONS: AdminActionConfig[] = [
   {
     action: AdminContentAction.CHANGE_PRIMARY_VIDEO,
     label: '대표 비디오 변경',
+  },
+  {
+    action: AdminContentAction.CHANGE_INCLUDES_ENDING,
+    label: '결말포함 여부 변경', // 동적 라벨은 훅에서 처리
   },
 ];
