@@ -2,12 +2,12 @@
  * QuickExploreHeader - 빠른탐색 페이지 오버레이 UI
  *
  * - 우측 상단: 필터 버튼 (글래스모피즘)
- * - 하단 가운데: 주사위 버튼 (랜덤 탐색)
+ * - 하단 가운데: 찾기 버튼 (랜덤 탐색)
  *
  * @example
  * <QuickExploreHeader
  *   onFilterPress={handleFilter}
- *   onDicePress={handleDice}
+ *   onSearchPress={handleSearch}
  *   isFilterActive={isFilterActive(filter)}
  * />
  */

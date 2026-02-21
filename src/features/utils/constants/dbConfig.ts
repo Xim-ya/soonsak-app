@@ -25,6 +25,7 @@ export const CONTENT_DATABASE = {
     GET_TRENDING_CONTENTS: 'get_trending_contents',
     GET_RECENT_TRENDING_CONTENTS: 'get_recent_trending_contents',
     GET_SOONSAK_TOP_TEN: 'get_soonsak_top_ten',
+    GET_CHANNEL_VIDEOS: 'get_channel_videos',
   },
 } as const;
 

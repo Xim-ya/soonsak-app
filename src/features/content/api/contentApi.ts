@@ -1052,7 +1052,7 @@ export const contentApi = {
     hasMore: boolean;
     totalCount: number;
   }> => {
-    const { data, error } = await supabaseClient.rpc('get_channel_videos', {
+    const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CHANNEL_VIDEOS, {
       p_channel_ids: channelIds,
       p_sort_type: sortType,
       p_page: page,
