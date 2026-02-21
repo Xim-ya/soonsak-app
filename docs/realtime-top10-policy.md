@@ -173,7 +173,7 @@ ORDER BY score DESC
 | 파일 | 역할 |
 |------|------|
 | `src/presentation/pages/home/_types/topTenContentModel.home.ts` | Top 10 콘텐츠 모델 정의 |
-| `src/presentation/pages/home/_hooks/useRealtimeTopTen.ts` | 실시간 Top 10 데이터 조회 훅 |
+| `src/presentation/pages/home/_hooks/useWeeklyTopTen.ts` | 주간 Top 10 데이터 조회 훅 |
 | `src/presentation/pages/home/_components/TopTenContentListView.tsx` | Top 10 UI 컴포넌트 |
 | `src/features/tmdb/api/tmdbApi.ts` | TMDB Trending API |
 | `src/features/content/api/contentApi.ts` | Supabase 콘텐츠 API |

@@ -3,6 +3,7 @@ import { View, LayoutChangeEvent } from 'react-native';
 import styled from '@emotion/native';
 import colors from '../../../shared/styles/colors';
 import { Header } from './_components/Header';
+import HomeAppBar from './_components/HomeAppBar';
 import RecentContentView from './_components/RecentContentView';
 import { TopTenContentListView } from './_components/TopTenContentListView';
 import { FeaturedChannelSectionView } from './_components/FeaturedChannelSectionView';
@@ -71,6 +72,7 @@ export default function HomeScreen() {
           <ContentCollectionSectionView isVisible={isCollectionVisible} />
         </View>
       </Animated.ScrollView>
+      <HomeAppBar scrollY={scrollY} />
     </Container>
   );
 }
