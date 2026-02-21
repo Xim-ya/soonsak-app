@@ -95,6 +95,7 @@ export type RootStackParamList = {
     contentType: ContentType; // 콘텐츠 타입
     contentTitle: string; // 콘텐츠 제목 (UI 표시용)
   }; // 어드민 대표 비디오 선택 - 콘텐츠의 비디오 목록에서 대표 비디오 변경
+  [routePages.adminVideoManagement]: undefined; // 어드민 비디오 처리 - 파라미터 없음
 };
 
 /**
