@@ -1,9 +1,8 @@
 /**
- * QuickExploreHeader - 빠른탐색 페이지 상단 헤더
+ * QuickExploreHeader - 빠른탐색 페이지 오버레이 UI
  *
- * 글래스모피즘 스타일의 필터/검색 버튼이 포함된 헤더입니다.
- * 콘텐츠 그리드 위에 오버레이로 표시됩니다.
- * 필터가 활성화되면 필터 버튼에 인디케이터가 표시됩니다.
+ * - 우측 상단: 필터 버튼 (글래스모피즘)
+ * - 하단 가운데: 찾기 버튼 (랜덤 탐색)
  *
  * @example
  * <QuickExploreHeader
@@ -18,7 +17,8 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
-import SearchIcon from '@assets/icons/search_tab.svg';
+import FilterIcon from '@assets/icons/filter.svg';
+import DiceIcon from '@assets/icons/dice.svg';
 
 interface QuickExploreHeaderProps {
   onFilterPress?: () => void;
@@ -27,9 +27,9 @@ interface QuickExploreHeaderProps {
   isFilterActive?: boolean;
 }
 
-const HEADER_PADDING = 20;
-const ICON_SIZE = 24;
-const BUTTON_SIZE = 56;
+const ICON_SIZE = 20;
+const FILTER_BUTTON_SIZE = 44;
+const DICE_BUTTON_HEIGHT = 52;
 
 function QuickExploreHeader({
   onFilterPress,
@@ -37,51 +37,78 @@ function QuickExploreHeader({
   isFilterActive = false,
 }: QuickExploreHeaderProps) {
   return (
-    <Container>
-      {/* 좌측: 필터 버튼 */}
-      <FilterButtonWrapper>
-        <GlassIconButton size={BUTTON_SIZE} {...(onFilterPress && { onPress: onFilterPress })}>
-          <FilterButtonText>필터</FilterButtonText>
-        </GlassIconButton>
-        {isFilterActive && <FilterIndicator />}
-      </FilterButtonWrapper>
+    <>
+      {/* 우측 상단: 필터 버튼 */}
+      <TopRightContainer>
+        <FilterButtonWrapper>
+          <GlassIconButton
+            size={FILTER_BUTTON_SIZE}
+            {...(onFilterPress && { onPress: onFilterPress })}
+          >
+            <FilterIcon width={ICON_SIZE} height={ICON_SIZE} color={colors.white} />
+          </GlassIconButton>
+          {isFilterActive && <FilterIndicator />}
+        </FilterButtonWrapper>
+      </TopRightContainer>
 
-      {/* 우측: 검색 버튼 */}
-      <GlassIconButton size={BUTTON_SIZE} {...(onSearchPress && { onPress: onSearchPress })}>
-        <SearchIcon width={ICON_SIZE} height={ICON_SIZE} fill={colors.white} />
-      </GlassIconButton>
-    </Container>
+      {/* 하단: 주사위 버튼 (전체 너비) */}
+      <BottomContainer>
+        <DiceButton activeOpacity={0.7} {...(onSearchPress && { onPress: onSearchPress })}>
+          <DiceIcon width={20} height={20} color={colors.white} />
+          <DiceButtonText>찾기</DiceButtonText>
+        </DiceButton>
+      </BottomContainer>
+    </>
   );
 }
 
 /* Styled Components */
-const Container = styled.View({
+const TopRightContainer = styled.View({
   position: 'absolute',
-  bottom: AppSize.bottomInset + AppSize.ratioHeight(HEADER_PADDING),
-  left: 0,
-  right: 0,
-  flexDirection: 'row',
-  justifyContent: 'space-between',
-  alignItems: 'center',
-  paddingHorizontal: AppSize.ratioWidth(HEADER_PADDING),
+  top: AppSize.statusBarHeight + 24,
+  right: 16,
   zIndex: 10,
 });
 
 const FilterButtonWrapper = styled.View({});
 
-const FilterButtonText = styled.Text({
-  ...textStyles.alert1,
-  color: colors.white,
-});
-
 const FilterIndicator = styled.View({
   position: 'absolute',
-  top: 6,
-  right: 6,
+  top: 4,
+  right: 4,
   width: 8,
   height: 8,
   borderRadius: 4,
   backgroundColor: colors.main,
+});
+
+const BottomContainer = styled.View({
+  position: 'absolute',
+  bottom: AppSize.bottomInset + 24,
+  left: 0,
+  right: 0,
+  paddingHorizontal: 16,
+  alignItems: 'center',
+  zIndex: 10,
+});
+
+const DiceButton = styled.TouchableOpacity({
+  width: '100%',
+  maxWidth: AppSize.isTablet ? 400 : undefined,
+  height: DICE_BUTTON_HEIGHT,
+  borderRadius: 12,
+  backgroundColor: 'rgba(255, 255, 255, 0.15)',
+  borderWidth: 1,
+  borderColor: 'rgba(255, 255, 255, 0.2)',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 8,
+});
+
+const DiceButtonText = styled.Text({
+  ...textStyles.title2,
+  color: colors.white,
 });
 
 export { QuickExploreHeader };
