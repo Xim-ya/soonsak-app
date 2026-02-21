@@ -95,10 +95,16 @@ const TrendingGridItem = React.memo(({ item }: { item: TrendingContentModel }) =
   const imageUrl = imagePath ? formatter.prefixTmdbImgUrl(imagePath, { size: imageSize }) : '';
 
   const typeLabel = CONTENT_TYPE_LABEL[item.type] ?? item.type;
+  const accessibilityLabel = `${typeLabel}, ${item.title}`;
 
   return (
     <ItemContainer>
-      <ItemTouchable onPress={handlePress} activeOpacity={0.8}>
+      <ItemTouchable
+        onPress={handlePress}
+        activeOpacity={0.8}
+        accessibilityLabel={accessibilityLabel}
+        accessibilityRole="button"
+      >
         <ImageWrapper>
           <LoadableImageView
             source={imageUrl}
@@ -163,7 +169,7 @@ ColumnGroupView.displayName = 'ColumnGroupView';
  * 검색 화면 초기 상태에서 표시되는 인기 콘텐츠 (가로 스크롤, 세로 3개씩 그룹)
  */
 function TrendingContentGridView() {
-  const { data: trendingContents, isLoading, isError } = useTrendingTopFifteen();
+  const { data: trendingContents, isLoading, isError, refetch } = useTrendingTopFifteen();
 
   /** 세로 3개씩 그룹화된 데이터 */
   const columnGroups: ColumnGroup[] = useMemo(() => {
@@ -188,12 +194,29 @@ function TrendingContentGridView() {
     [],
   );
 
-  // Early return 조건: 에러 또는 데이터 없음
-  const hasError = isError;
-  const hasNoDataAfterLoad = !isLoading && columnGroups.length === 0;
-  const shouldHideComponent = hasError || hasNoDataAfterLoad;
+  // 로딩 완료 후 데이터가 없는 경우 컴포넌트 숨김
+  const hasNoDataAfterLoad = !isLoading && !isError && columnGroups.length === 0;
+  if (hasNoDataAfterLoad) return null;
 
-  if (shouldHideComponent) return null;
+  // 에러 상태 렌더링
+  if (isError) {
+    return (
+      <Container>
+        <SectionHeader>
+          <SectionTitle>지금 뜨고 있는 인기 작품</SectionTitle>
+          <InfoIcon>ⓘ</InfoIcon>
+        </SectionHeader>
+        <Gap size={12} />
+        <ErrorContainer>
+          <ErrorText>콘텐츠를 불러오는 중 오류가 발생했습니다</ErrorText>
+          <Gap size={12} />
+          <RetryButton onPress={() => refetch()} activeOpacity={0.7}>
+            <RetryButtonText>다시 시도</RetryButtonText>
+          </RetryButton>
+        </ErrorContainer>
+      </Container>
+    );
+  }
 
   return (
     <Container>
@@ -347,6 +370,30 @@ const SkeletonBox = styled.View({
   height: IMAGE_HEIGHT,
   borderRadius: 6,
   backgroundColor: colors.gray05,
+});
+
+const ErrorContainer = styled.View({
+  paddingHorizontal: HORIZONTAL_PADDING,
+  paddingVertical: 24,
+  alignItems: 'center',
+});
+
+const ErrorText = styled.Text({
+  ...textStyles.body3,
+  color: colors.gray02,
+  textAlign: 'center',
+});
+
+const RetryButton = styled(TouchableOpacity)({
+  paddingHorizontal: 16,
+  paddingVertical: 8,
+  backgroundColor: colors.gray05,
+  borderRadius: 6,
+});
+
+const RetryButtonText = styled.Text({
+  ...textStyles.body3,
+  color: colors.white,
 });
 
 export { TrendingContentGridView };

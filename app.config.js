@@ -48,7 +48,7 @@ module.exports = {
     android: {
       adaptiveIcon: {
         foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#ffffff',
+        backgroundColor: '#000000',
       },
       edgeToEdgeEnabled: true,
       package: 'com.soonsak.app',

@@ -27,7 +27,6 @@ const clearIconSvg = `
  * SearchBar - 검색 입력 바 컴포넌트
  *
  * 검색어 입력, 초기화 기능을 제공합니다.
- * 자동으로 포커스를 설정하고 키보드를 표시합니다.
  */
 function SearchBar() {
   const { searchText, setSearchText, clearSearchText } = useSearchContext();
