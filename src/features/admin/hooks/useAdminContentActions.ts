@@ -24,6 +24,7 @@ interface UseAdminContentActionsParams {
         id: string;
         title: string;
         status: ContentStatus | undefined;
+        includesEnding: boolean;
       }
     | undefined;
 }
@@ -63,6 +64,10 @@ interface UseAdminContentActionsReturn {
   readonly currentVideoStatus: ContentStatus | undefined;
   /** 비디오 상태 변경 핸들러 */
   readonly handleVideoStatusChange: (status: ContentStatus) => Promise<void>;
+  /** 현재 결말포함 여부 */
+  readonly currentIncludesEnding: boolean;
+  /** 결말포함 여부 변경 핸들러 */
+  readonly handleIncludesEndingChange: (includesEnding: boolean) => Promise<void>;
 }
 
 /**
@@ -94,7 +99,7 @@ export function useAdminContentActions({
     staleTime: 5 * 60 * 1000, // 5분
   });
 
-  // 액션 목록 생성 (비디오 개수에 따라 disabled 처리)
+  // 액션 목록 생성 (비디오 개수에 따라 disabled 처리, 결말포함 상태 표시)
   const actions: AdminActionConfig[] = useMemo(() => {
     return ADMIN_CONTENT_ACTIONS.map((action) => {
       if (action.action === AdminContentAction.CHANGE_PRIMARY_VIDEO) {
@@ -105,9 +110,16 @@ export function useAdminContentActions({
           disabledReason: isDisabled ? '비디오가 1개뿐입니다' : undefined,
         };
       }
+      if (action.action === AdminContentAction.CHANGE_INCLUDES_ENDING) {
+        const currentState = currentVideo?.includesEnding ? 'ON' : 'OFF';
+        return {
+          ...action,
+          label: `결말포함 여부 변경 (${currentState})`,
+        };
+      }
       return action;
     });
-  }, [videoCount]);
+  }, [videoCount, currentVideo?.includesEnding]);
 
   // 더보기 버튼 클릭
   const handleMorePress = useCallback(() => {
@@ -180,6 +192,33 @@ export function useAdminContentActions({
     [currentVideo?.id, contentId, contentType, queryClient],
   );
 
+  // 결말포함 여부 변경 핸들러
+  const handleIncludesEndingChange = useCallback(
+    async (includesEnding: boolean) => {
+      if (!currentVideo?.id) return;
+
+      try {
+        setIsSaving(true);
+        await adminContentApi.updateIncludesEnding(currentVideo.id, includesEnding);
+
+        // 비디오 목록 캐시 무효화하여 UI 업데이트
+        await queryClient.invalidateQueries({
+          queryKey: ['videos', contentId, contentType],
+        });
+
+        const statusText = includesEnding ? 'ON' : 'OFF';
+        Alert.alert('완료', `결말포함 여부가 ${statusText}(으)로 변경되었습니다.`);
+        setSelectedAction(null);
+      } catch (error) {
+        console.error('결말포함 여부 변경 실패:', error);
+        Alert.alert('오류', '변경에 실패했습니다. 다시 시도해주세요.');
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [currentVideo?.id, contentId, contentType, queryClient],
+  );
+
   // 어드민이 아니면 빈 상태 반환 (일관된 인터페이스)
   if (!isAdmin) {
     return {
@@ -200,6 +239,8 @@ export function useAdminContentActions({
       currentVideoTitle: undefined,
       currentVideoStatus: undefined,
       handleVideoStatusChange: async () => {},
+      currentIncludesEnding: false,
+      handleIncludesEndingChange: async () => {},
     };
   }
 
@@ -221,5 +262,7 @@ export function useAdminContentActions({
     currentVideoTitle: currentVideo?.title,
     currentVideoStatus: currentVideo?.status,
     handleVideoStatusChange,
+    currentIncludesEnding: currentVideo?.includesEnding ?? false,
+    handleIncludesEndingChange,
   };
 }

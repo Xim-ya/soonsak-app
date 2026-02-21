@@ -29,6 +29,7 @@ import {
   AdminActionBottomSheet,
   BackdropSelectionModal,
   VideoStatusModal,
+  IncludesEndingModal,
 } from '@/presentation/admin/components';
 import { useContentDetail } from './_hooks/useContentDetail';
 
@@ -82,7 +83,12 @@ function ContentDetailContent({
     contentType,
     currentBackdropPath: contentDetail?.backdropPath,
     currentVideo: primaryVideo
-      ? { id: primaryVideo.id, title: primaryVideo.title, status: primaryVideo.status }
+      ? {
+          id: primaryVideo.id,
+          title: primaryVideo.title,
+          status: primaryVideo.status,
+          includesEnding: primaryVideo.includesEnding,
+        }
       : undefined,
   });
 
@@ -239,6 +245,19 @@ function ContentDetailContent({
           videoTitle={adminAction.currentVideoTitle}
           currentStatus={adminAction.currentVideoStatus}
           onChangeStatus={adminAction.handleVideoStatusChange}
+          onClose={adminAction.handleCloseActionModal}
+          isSaving={adminAction.isSaving}
+        />
+      )}
+
+      {/* 결말포함 여부 변경 모달 */}
+      {adminAction.currentVideoId && adminAction.currentVideoTitle && (
+        <IncludesEndingModal
+          visible={adminAction.selectedAction === AdminContentAction.CHANGE_INCLUDES_ENDING}
+          videoId={adminAction.currentVideoId}
+          videoTitle={adminAction.currentVideoTitle}
+          currentIncludesEnding={adminAction.currentIncludesEnding}
+          onChangeIncludesEnding={adminAction.handleIncludesEndingChange}
           onClose={adminAction.handleCloseActionModal}
           isSaving={adminAction.isSaving}
         />

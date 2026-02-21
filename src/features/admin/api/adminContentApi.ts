@@ -352,6 +352,23 @@ export const adminContentApi = {
       throw new Error(`Failed to set primary video: ${updateError.message}`);
     }
   },
+
+  /**
+   * 비디오 결말포함 여부 업데이트
+   * @param videoId 비디오 ID
+   * @param includesEnding 결말포함 여부
+   */
+  updateIncludesEnding: async (videoId: string, includesEnding: boolean): Promise<void> => {
+    const { error } = await supabaseClient
+      .from(CONTENT_DATABASE.TABLES.VIDEOS)
+      .update({ includes_ending: includesEnding })
+      .eq('id', videoId);
+
+    if (error) {
+      console.error('결말포함 여부 업데이트 실패:', error);
+      throw new Error(`Failed to update includes_ending: ${error.message}`);
+    }
+  },
 };
 
 /**
