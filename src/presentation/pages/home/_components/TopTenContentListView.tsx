@@ -10,7 +10,7 @@ import {
   CardSkeletonBox,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
-import { useRealtimeTopTen } from '../_hooks/useRealtimeTopTen';
+import { useWeeklyTopTen } from '../_hooks/useWeeklyTopTen';
 import { TopTenContentModel } from '../_types/topTenContentModel.home';
 
 const CONTAINER_HEIGHT = 168;
@@ -40,10 +40,10 @@ const TopTenSkeletonItem = React.memo(() => (
 TopTenSkeletonItem.displayName = 'TopTenSkeletonItem';
 
 /**
- * 실시간 Top 10 콘텐츠 슬라이더
+ * 주간 Top 10 콘텐츠 슬라이더
  */
 function TopTenContentListView() {
-  const { data: topTenContents, isLoading, isError } = useRealtimeTopTen();
+  const { data: topTenContents, isLoading, isError } = useWeeklyTopTen();
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<TopTenContentModel | null>) =>
@@ -53,7 +53,7 @@ function TopTenContentListView() {
 
   return (
     <HorizontalCardSlider
-      title="지금 뜨고있는 인기 콘텐츠"
+      title="이번주 인기작 TOP 10"
       data={topTenContents}
       isLoading={isLoading}
       isError={isError}

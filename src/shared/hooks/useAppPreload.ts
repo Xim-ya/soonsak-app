@@ -46,14 +46,21 @@ export function useAppPreload() {
         preloadedBannerCache = bannerContents;
 
         // 배너 backdrop 이미지 URL 수집
-        const imageUrls = bannerContents
+        const backdropUrls = bannerContents
           .filter((content) => content.backdropPath)
           .map((content) => formatter.prefixTmdbImgUrl(content.backdropPath!));
 
-        // 이미지 프리페치 (실패해도 계속 진행)
-        await Promise.allSettled(imageUrls.map((url) => Image.prefetch(url)));
+        // 한국어 로고 이미지 URL 수집
+        const logoUrls = bannerContents
+          .filter((content) => content.titleLogo && content.titleLogoLang === 'ko')
+          .map((content) => formatter.prefixTmdbImgUrl(content.titleLogo!));
 
-        console.log(`[Preload] 배너 이미지 ${imageUrls.length}개 프리로드 완료`);
+        const allImageUrls = [...backdropUrls, ...logoUrls];
+
+        // 이미지 프리페치 (실패해도 계속 진행)
+        await Promise.allSettled(allImageUrls.map((url) => Image.prefetch(url)));
+
+        console.log(`[Preload] 배너 이미지 ${backdropUrls.length}개, 로고 ${logoUrls.length}개 프리로드 완료`);
       } catch (error) {
         // 프리로드 실패해도 앱은 정상 실행
         console.warn('[Preload] 프리로드 중 오류 (무시됨):', error);
