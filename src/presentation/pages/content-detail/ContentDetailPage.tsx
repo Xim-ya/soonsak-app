@@ -1,7 +1,8 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
-import { useRoute, useFocusEffect } from '@react-navigation/native';
+import { useRoute, useFocusEffect, useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Platform } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { BasePage } from '../../components/page';
@@ -11,12 +12,12 @@ import { AppSize } from '@/shared/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { TabBar } from './_components/TabBar';
 import { ContentTabView } from './_components/VideoTabView';
 import { RelatedContentTabView } from './_components/OriginContentTabView';
 import { AnimatedAppBar } from './_components/AnimatedAppBar';
-import { ScreenRouteProp } from '@/shared/navigation/types';
+import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentDetailProvider, useContentVideos } from './_provider/ContentDetailProvider';
 import { ContentType } from '@/presentation/types/content/contentType.enum';
@@ -54,6 +55,8 @@ export default function ContentDetailPage() {
  *
  * ContentDetailProvider 내부에서 렌더링되어 비디오 컨텍스트에 접근 가능
  */
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 function ContentDetailContent({
   contentId,
   contentType,
@@ -63,6 +66,7 @@ function ContentDetailContent({
   contentType: ContentType;
   title: string | undefined;
 }) {
+  const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
   const appBarOpacity = useSharedValue(0);
 
@@ -81,6 +85,60 @@ function ContentDetailContent({
       ? { id: primaryVideo.id, title: primaryVideo.title, status: primaryVideo.status }
       : undefined,
   });
+
+  // CHANGE_CONTENT 액션 선택 시 콘텐츠 검색 화면으로 이동
+  useEffect(() => {
+    if (
+      adminAction.selectedAction === AdminContentAction.CHANGE_CONTENT &&
+      adminAction.currentVideoId &&
+      adminAction.currentVideoTitle &&
+      contentDetail
+    ) {
+      const releaseYear = contentDetail.releaseDate
+        ? new Date(contentDetail.releaseDate).getFullYear().toString()
+        : null;
+
+      navigation.navigate(routePages.adminContentSearch, {
+        videoId: adminAction.currentVideoId,
+        videoTitle: adminAction.currentVideoTitle,
+        currentContentId: contentId,
+        currentContentType: contentType,
+        currentContentTitle: contentDetail.title,
+        currentContentReleaseYear: releaseYear,
+      });
+      // 네비게이션 후 선택 상태 초기화
+      adminAction.handleCloseActionModal();
+    }
+  }, [
+    adminAction.selectedAction,
+    adminAction.currentVideoId,
+    adminAction.currentVideoTitle,
+    adminAction.handleCloseActionModal,
+    contentId,
+    contentType,
+    contentDetail,
+    navigation,
+  ]);
+
+  // CHANGE_PRIMARY_VIDEO 액션 선택 시 대표 비디오 선택 화면으로 이동
+  useEffect(() => {
+    if (adminAction.selectedAction === AdminContentAction.CHANGE_PRIMARY_VIDEO && contentDetail) {
+      navigation.navigate(routePages.adminPrimaryVideoSelect, {
+        contentId,
+        contentType,
+        contentTitle: contentDetail.title,
+      });
+      // 네비게이션 후 선택 상태 초기화
+      adminAction.handleCloseActionModal();
+    }
+  }, [
+    adminAction.selectedAction,
+    adminAction.handleCloseActionModal,
+    contentId,
+    contentType,
+    contentDetail,
+    navigation,
+  ]);
 
   // iOS WKWebView 전체화면 버그 대응: 포커스 복귀 시 portrait 잠금 + dimensions 강제 복구
   useFocusEffect(
@@ -129,7 +187,7 @@ function ContentDetailContent({
           insets={insets}
           opacity={appBarOpacity}
           {...(title && { title })}
-          onMorePress={adminAction.handleMorePress ?? handleMorePress}
+          onMorePress={adminAction.handleMorePress}
         />
         <TabsContainer paddingTop={insets.top}>
           <Tabs.Container

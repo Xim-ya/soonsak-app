@@ -4,4 +4,4 @@
  * 어드민 API Public API
  */
 
-export { adminContentApi } from './adminContentApi';
+export { adminContentApi, type ContentVideoItem } from './adminContentApi';

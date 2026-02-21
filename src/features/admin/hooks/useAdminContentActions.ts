@@ -4,11 +4,11 @@
  * 콘텐츠 상세 페이지에서 어드민 전용 액션을 관리하는 훅
  */
 
-import { useCallback, useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState, useMemo } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { useAuth } from '@/shared/providers/AuthProvider';
-import { AdminContentAction, ADMIN_CONTENT_ACTIONS } from '../types';
+import { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } from '../types';
 import { adminContentApi } from '../api';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
@@ -31,8 +31,8 @@ interface UseAdminContentActionsParams {
 interface UseAdminContentActionsReturn {
   /** 어드민 여부 */
   readonly isAdmin: boolean;
-  /** 어드민 액션 목록 (isAdmin이 false면 빈 배열) */
-  readonly actions: typeof ADMIN_CONTENT_ACTIONS;
+  /** 어드민 액션 목록 (isAdmin이 false면 빈 배열, 조건에 따라 disabled 상태 포함) */
+  readonly actions: AdminActionConfig[];
   /** 바텀시트 표시 여부 */
   readonly isActionSheetVisible: boolean;
   /** 더보기 버튼 클릭 핸들러 (isAdmin이 false면 undefined) */
@@ -85,6 +85,29 @@ export function useAdminContentActions({
   const [isActionSheetVisible, setActionSheetVisible] = useState(false);
   const [selectedAction, setSelectedAction] = useState<AdminContentAction | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+
+  // 비디오 개수 조회 (어드민인 경우에만)
+  const { data: videoCount = 0 } = useQuery({
+    queryKey: ['videoCount', contentId, contentType],
+    queryFn: () => adminContentApi.getContentVideoCount(contentId, contentType),
+    enabled: isAdmin,
+    staleTime: 5 * 60 * 1000, // 5분
+  });
+
+  // 액션 목록 생성 (비디오 개수에 따라 disabled 처리)
+  const actions: AdminActionConfig[] = useMemo(() => {
+    return ADMIN_CONTENT_ACTIONS.map((action) => {
+      if (action.action === AdminContentAction.CHANGE_PRIMARY_VIDEO) {
+        const isDisabled = videoCount <= 1;
+        return {
+          ...action,
+          disabled: isDisabled,
+          disabledReason: isDisabled ? '비디오가 1개뿐입니다' : undefined,
+        };
+      }
+      return action;
+    });
+  }, [videoCount]);
 
   // 더보기 버튼 클릭
   const handleMorePress = useCallback(() => {
@@ -182,7 +205,7 @@ export function useAdminContentActions({
 
   return {
     isAdmin: true,
-    actions: ADMIN_CONTENT_ACTIONS,
+    actions,
     isActionSheetVisible,
     handleMorePress,
     handleCloseActionSheet,

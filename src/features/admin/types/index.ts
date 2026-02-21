@@ -14,10 +14,13 @@ export const AdminContentAction = {
   CHANGE_BACKDROP: 'CHANGE_BACKDROP',
   /** 비디오 상태 변경 */
   CHANGE_VIDEO_STATUS: 'CHANGE_VIDEO_STATUS',
+  /** 콘텐츠 교체 (비디오를 다른 콘텐츠로 재매핑) */
+  CHANGE_CONTENT: 'CHANGE_CONTENT',
+  /** 대표 비디오 변경 */
+  CHANGE_PRIMARY_VIDEO: 'CHANGE_PRIMARY_VIDEO',
 } as const;
 
-export type AdminContentAction =
-  (typeof AdminContentAction)[keyof typeof AdminContentAction];
+export type AdminContentAction = (typeof AdminContentAction)[keyof typeof AdminContentAction];
 
 /**
  * 어드민 액션 설정
@@ -29,6 +32,10 @@ export interface AdminActionConfig {
   label: string;
   /** 위험한 액션 여부 (삭제 등) */
   isDestructive?: boolean;
+  /** 비활성화 여부 (조건에 따라 동적으로 설정) */
+  disabled?: boolean;
+  /** 비활성화 시 표시할 설명 */
+  disabledReason?: string;
 }
 
 /**
@@ -42,5 +49,13 @@ export const ADMIN_CONTENT_ACTIONS: AdminActionConfig[] = [
   {
     action: AdminContentAction.CHANGE_VIDEO_STATUS,
     label: '비디오 상태 변경',
+  },
+  {
+    action: AdminContentAction.CHANGE_CONTENT,
+    label: '콘텐츠 교체',
+  },
+  {
+    action: AdminContentAction.CHANGE_PRIMARY_VIDEO,
+    label: '대표 비디오 변경',
   },
 ];

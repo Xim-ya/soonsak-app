@@ -11,6 +11,8 @@ export const routePages = {
   profileSetup: 'ProfileSetup',
   settings: 'Settings',
   userContentList: 'UserContentList',
+  adminContentSearch: 'AdminContentSearch',
+  adminPrimaryVideoSelect: 'AdminPrimaryVideoSelect',
 } as const;
 
 export type RoutePages = typeof routePages;

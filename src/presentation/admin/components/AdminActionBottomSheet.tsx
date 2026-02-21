@@ -40,11 +40,11 @@ interface AdminActionBottomSheetProps {
   /** 닫기 콜백 */
   readonly onClose: () => void;
   /** 콘텐츠 ID */
-  readonly contentId?: number;
+  readonly contentId?: number | undefined;
   /** 콘텐츠 타입 */
-  readonly contentType?: string;
+  readonly contentType?: string | undefined;
   /** 비디오 ID */
-  readonly videoId?: string;
+  readonly videoId?: string | undefined;
 }
 
 function AdminActionBottomSheet({
@@ -197,14 +197,25 @@ function AdminActionBottomSheet({
               {actions.map((actionConfig, index) => (
                 <OptionButton
                   key={actionConfig.action}
-                  onPress={() => handleSelectAction(actionConfig.action)}
-                  activeOpacity={0.7}
+                  onPress={
+                    actionConfig.disabled
+                      ? undefined
+                      : () => handleSelectAction(actionConfig.action)
+                  }
+                  activeOpacity={actionConfig.disabled ? 1 : 0.7}
                   isDestructive={actionConfig.isDestructive ?? false}
+                  isDisabled={actionConfig.disabled ?? false}
                   isLast={index === actions.length - 1}
                 >
-                  <OptionText isDestructive={actionConfig.isDestructive ?? false}>
+                  <OptionText
+                    isDestructive={actionConfig.isDestructive ?? false}
+                    isDisabled={actionConfig.disabled ?? false}
+                  >
                     {actionConfig.label}
                   </OptionText>
+                  {actionConfig.disabled && actionConfig.disabledReason && (
+                    <DisabledReasonText>{actionConfig.disabledReason}</DisabledReasonText>
+                  )}
                 </OptionButton>
               ))}
             </OptionsContainer>
@@ -302,24 +313,37 @@ const OptionsContainer = styled.View({
 
 interface OptionButtonProps {
   isDestructive: boolean;
+  isDisabled: boolean;
   isLast: boolean;
 }
 
 const OptionButton = styled.TouchableOpacity<OptionButtonProps>(
-  ({ isDestructive, isLast }) => ({
+  ({ isDestructive, isDisabled, isLast }) => ({
     height: OPTION_HEIGHT,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: isDestructive ? 'rgba(255, 72, 78, 0.1)' : 'transparent',
     borderBottomWidth: isLast ? 0 : 1,
     borderBottomColor: colors.gray05,
+    opacity: isDisabled ? 0.4 : 1,
   }),
 );
 
-const OptionText = styled.Text<{ isDestructive: boolean }>(({ isDestructive }) => ({
+interface OptionTextProps {
+  isDestructive: boolean;
+  isDisabled: boolean;
+}
+
+const OptionText = styled.Text<OptionTextProps>(({ isDestructive, isDisabled }) => ({
   ...textStyles.title2,
-  color: isDestructive ? colors.red : colors.white,
+  color: isDisabled ? colors.gray03 : isDestructive ? colors.red : colors.white,
 }));
+
+const DisabledReasonText = styled.Text({
+  ...textStyles.alert2,
+  color: colors.gray03,
+  marginTop: 2,
+});
 
 const Spacer = styled.View({
   height: SPACING,
