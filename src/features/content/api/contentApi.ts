@@ -21,6 +21,48 @@ const MAX_EXCLUDE_IDS = 1000;
 const RPC_THROTTLE_MS = 5000;
 const rpcThrottleMap = new Map<string, number>();
 
+/** 트렌딩 RPC 결과 행 타입 (out_ 접두사 컬럼명) */
+type RpcTrendingRow = {
+  out_id: number;
+  out_content_type: string;
+  out_title: string;
+  out_poster_path: string | null;
+  out_backdrop_path: string | null;
+  out_title_logo: string | null;
+  out_title_logo_lang: string | null;
+  out_trending_score: number;
+};
+
+/** 유효한 ContentType 값인지 검증 */
+function isValidContentType(value: string): value is ContentType {
+  return value === 'movie' || value === 'tv';
+}
+
+/** 유효한 title logo 언어 값인지 검증 */
+function isValidTitleLogoLang(value: string): value is 'ko' | 'en' {
+  return value === 'ko' || value === 'en';
+}
+
+/** RPC 트렌딩 결과를 ContentDto 배열로 변환 */
+function mapTrendingRowsToContentDtos(rows: RpcTrendingRow[]): ContentDto[] {
+  return rows
+    .filter((row) => isValidContentType(row.out_content_type))
+    .map(
+      (row): ContentDto => ({
+        id: row.out_id,
+        contentType: row.out_content_type as ContentType,
+        title: row.out_title,
+        ...(row.out_poster_path && { posterPath: row.out_poster_path }),
+        ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
+        ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
+        ...(row.out_title_logo_lang &&
+          isValidTitleLogoLang(row.out_title_logo_lang) && {
+            titleLogoLang: row.out_title_logo_lang,
+          }),
+      }),
+    );
+}
+
 /** 쓰로틀 체크: 최근 호출 이후 충분한 시간이 지났는지 확인 */
 function shouldThrottleRpc(key: string): boolean {
   const now = Date.now();
@@ -533,12 +575,7 @@ export const contentApi = {
    * contents 정보가 이미 포함되어 있음
    */
   getContentCollections: async (): Promise<ContentCollectionWithContentsDto[]> => {
-    const { data, error } = await supabaseClient.rpc(
-      CONTENT_DATABASE.RPC.GET_CONTENT_COLLECTIONS,
-    );
-
-    console.log('[DEBUG] RPC 응답 개수:', data?.length, '개');
-    console.log('[DEBUG] RPC 응답 제목들:', data?.map((d: { title: string }) => d.title));
+    const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CONTENT_COLLECTIONS);
 
     if (error) {
       console.error('콘텐츠 컬렉션 조회 실패:', error);
@@ -552,19 +589,22 @@ export const contentApi = {
       subtitle: string | null;
       theme_keywords: string[] | null;
       display_order: number;
+      is_active: boolean;
       generated_at: string;
       contents: unknown[];
     };
 
-    return (data ?? []).map((row: RpcCollectionRow): ContentCollectionWithContentsDto => ({
-      id: row.id,
-      title: row.title,
-      subtitle: row.subtitle ?? undefined,
-      themeKeywords: row.theme_keywords ?? undefined,
-      displayOrder: row.display_order,
-      isActive: true,
-      contents: mapWithField<ContentDto[]>(row.contents),
-    }));
+    return (data ?? []).map(
+      (row: RpcCollectionRow): ContentCollectionWithContentsDto => ({
+        id: row.id,
+        title: row.title,
+        subtitle: row.subtitle ?? undefined,
+        themeKeywords: row.theme_keywords ?? undefined,
+        displayOrder: row.display_order,
+        isActive: row.is_active,
+        contents: mapWithField<ContentDto[]>(row.contents),
+      }),
+    );
   },
 
   /**
@@ -882,6 +922,72 @@ export const contentApi = {
         releaseDate: item.release_date ?? undefined,
         genreIds: item.genre_ids ?? undefined,
       }));
+  },
+
+  /**
+   * 이번주 뜨는 콘텐츠 조회 (복합 점수 기반)
+   * 가중치: 시청완료(100) > 찜(80) > TMDB평점(60) > 앱내평점(60) > YT조회수(35) > YT좋아요비율(30) > TMDB인기도(10)
+   * @param limit 조회할 콘텐츠 수 (기본값: 15)
+   * @returns 트렌딩 콘텐츠 배열
+   */
+  getTrendingContents: async (limit: number = 15): Promise<ContentDto[]> => {
+    const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_TRENDING_CONTENTS, {
+      p_limit: limit,
+    });
+
+    if (error) {
+      console.error('트렌딩 콘텐츠 조회 실패:', error);
+      throw new Error(`Failed to fetch trending contents: ${error.message}`);
+    }
+
+    return mapTrendingRowsToContentDtos(data ?? []);
+  },
+
+  /**
+   * 순삭 TOP 10 조회 (홈 화면용)
+   * 조건: 대표 비디오가 결말 포함(includes_ending=true)인 콘텐츠만
+   * 가중치: YT좋아요비율(100) > YT조회수(80) > 시청완료(60) > 찜(50) > TMDB평점(40) > 앱내평점(40) > TMDB인기도(10)
+   * @param limit 조회할 콘텐츠 수 (기본값: 10)
+   * @returns 트렌딩 콘텐츠 배열
+   */
+  getSoonsakTopTen: async (limit: number = 10): Promise<ContentDto[]> => {
+    const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_SOONSAK_TOP_TEN, {
+      p_limit: limit,
+    });
+
+    if (error) {
+      console.error('순삭 TOP 10 조회 실패:', error);
+      throw new Error(`Failed to fetch soonsak top ten: ${error.message}`);
+    }
+
+    return mapTrendingRowsToContentDtos(data ?? []);
+  },
+
+  /**
+   * 최근 업로드된 콘텐츠 중 트렌딩 조회 (검색 화면용)
+   * 최근 2주 내 업로드된 콘텐츠만 대상으로 복합 점수 계산
+   * @param limit 조회할 콘텐츠 수 (기본값: 15)
+   * @param days 업로드 기준 일수 (기본값: 14)
+   * @returns 트렌딩 콘텐츠 배열
+   */
+  getRecentTrendingContents: async (
+    limit: number = 15,
+    days: number = 14,
+  ): Promise<ContentDto[]> => {
+    const { data, error } = await supabaseClient.rpc(
+      CONTENT_DATABASE.RPC.GET_RECENT_TRENDING_CONTENTS,
+      {
+        p_limit: limit,
+        p_days: days,
+      },
+    );
+
+    if (error) {
+      console.error('최근 트렌딩 콘텐츠 조회 실패:', error);
+      throw new Error(`Failed to fetch recent trending contents: ${error.message}`);
+    }
+
+    return mapTrendingRowsToContentDtos(data ?? []);
   },
 
   /**
