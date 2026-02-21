@@ -14,6 +14,8 @@ import ProfileSetupPage from '../../../presentation/pages/profile-setup/ProfileS
 import SettingsPage from '../../../presentation/pages/settings/SettingsPage';
 import UserContentListPage from '../../../presentation/pages/user-content-list/UserContentListPage';
 import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
+import AdminContentSearchPage from '../../../presentation/pages/admin-content-search/AdminContentSearchPage';
+import AdminPrimaryVideoSelectPage from '../../../presentation/pages/admin-primary-video-select/AdminPrimaryVideoSelectPage';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -145,6 +147,16 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.quickExplore}
         component={QuickExplorePage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminContentSearch}
+        component={AdminContentSearchPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminPrimaryVideoSelect}
+        component={AdminPrimaryVideoSelectPage}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

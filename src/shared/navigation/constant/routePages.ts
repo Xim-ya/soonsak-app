@@ -12,6 +12,8 @@ export const routePages = {
   settings: 'Settings',
   userContentList: 'UserContentList',
   quickExplore: 'QuickExplore',
+  adminContentSearch: 'AdminContentSearch',
+  adminPrimaryVideoSelect: 'AdminPrimaryVideoSelect',
 } as const;
 
 export type RoutePages = typeof routePages;
