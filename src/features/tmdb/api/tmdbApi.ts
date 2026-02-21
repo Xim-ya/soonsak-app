@@ -8,6 +8,7 @@ import {
   RelatedMovieItemDto,
   RelatedTvItemDto,
   TrendingItemDto,
+  SearchMultiItemDto,
 } from '../types/common';
 import { tmdbClient } from '@/features/utils/clients/tmbClient';
 
@@ -98,5 +99,16 @@ export const tmdbApi = {
   getContentImages: (contentId: number, contentType: 'movie' | 'tv') =>
     tmdbClient.get<TmdbImagesResponseDto>(`/${contentType}/${contentId}/images`, {
       params: { include_image_language: 'ko,en,null' },
+    }),
+
+  /**
+   * TMDB 통합 검색 (영화 + TV)
+   * @param query 검색어
+   * @param page 페이지 번호 (기본값: 1)
+   * @returns 검색 결과 (movie, tv 타입만 필터링하여 반환)
+   */
+  searchMulti: (query: string, page: number = 1) =>
+    tmdbClient.get<TmdbPaginatedResponse<SearchMultiItemDto>>('/search/multi', {
+      params: { query, page, include_adult: false },
     }),
 };

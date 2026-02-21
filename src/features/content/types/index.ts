@@ -14,6 +14,33 @@ type ISOTimestamp = string;
 type LogoLanguage = 'ko' | 'en';
 
 /**
+ * 콘텐츠/비디오 상태 enum
+ * DB의 content_status_enum과 대응
+ */
+export const ContentStatus = {
+  /** 검토 대기 */
+  PENDING: 'pending',
+  /** 확인 완료, 정상 노출 */
+  CONFIRMED: 'confirmed',
+  /** 거부됨 */
+  REJECTED: 'rejected',
+  /** 검토 필요 (신고 등) */
+  NEEDS_REVIEW: 'needs_review',
+} as const;
+
+export type ContentStatus = (typeof ContentStatus)[keyof typeof ContentStatus];
+
+/**
+ * 상태별 라벨 (UI 표시용)
+ */
+export const ContentStatusLabel: Record<ContentStatus, string> = {
+  [ContentStatus.PENDING]: '대기',
+  [ContentStatus.CONFIRMED]: '승인',
+  [ContentStatus.REJECTED]: '거부',
+  [ContentStatus.NEEDS_REVIEW]: '검토 필요',
+};
+
+/**
  * 감독/출연진 정보 타입
  */
 interface PersonDto {
@@ -48,6 +75,8 @@ interface ContentDto {
   readonly mainCast?: PersonDto[];
   readonly titleLogo?: string;
   readonly titleLogoLang?: LogoLanguage;
+  /** 콘텐츠 상태 */
+  readonly status?: ContentStatus;
 }
 
 /**
@@ -74,6 +103,8 @@ interface VideoDto {
   readonly includesEnding: boolean;
   readonly uploadedAt: ISOTimestamp;
   readonly updatedAt: ISOTimestamp;
+  /** 비디오 상태 */
+  readonly status?: ContentStatus;
 }
 
 /**
@@ -124,3 +155,5 @@ export type {
   ContentCollectionDto,
   ContentCollectionWithContentsDto,
 };
+
+// ContentStatus는 위에서 export const와 export type으로 이미 내보냄
