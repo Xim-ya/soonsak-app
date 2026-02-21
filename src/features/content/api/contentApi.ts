@@ -33,19 +33,34 @@ type RpcTrendingRow = {
   out_trending_score: number;
 };
 
+/** 유효한 ContentType 값인지 검증 */
+function isValidContentType(value: string): value is ContentType {
+  return value === 'movie' || value === 'tv';
+}
+
+/** 유효한 title logo 언어 값인지 검증 */
+function isValidTitleLogoLang(value: string): value is 'ko' | 'en' {
+  return value === 'ko' || value === 'en';
+}
+
 /** RPC 트렌딩 결과를 ContentDto 배열로 변환 */
 function mapTrendingRowsToContentDtos(rows: RpcTrendingRow[]): ContentDto[] {
-  return rows.map(
-    (row): ContentDto => ({
-      id: row.out_id,
-      contentType: row.out_content_type as ContentType,
-      title: row.out_title,
-      ...(row.out_poster_path && { posterPath: row.out_poster_path }),
-      ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
-      ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-      ...(row.out_title_logo_lang && { titleLogoLang: row.out_title_logo_lang as 'ko' | 'en' }),
-    }),
-  );
+  return rows
+    .filter((row) => isValidContentType(row.out_content_type))
+    .map(
+      (row): ContentDto => ({
+        id: row.out_id,
+        contentType: row.out_content_type as ContentType,
+        title: row.out_title,
+        ...(row.out_poster_path && { posterPath: row.out_poster_path }),
+        ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
+        ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
+        ...(row.out_title_logo_lang &&
+          isValidTitleLogoLang(row.out_title_logo_lang) && {
+            titleLogoLang: row.out_title_logo_lang,
+          }),
+      }),
+    );
 }
 
 /** 쓰로틀 체크: 최근 호출 이후 충분한 시간이 지났는지 확인 */
@@ -562,12 +577,6 @@ export const contentApi = {
   getContentCollections: async (): Promise<ContentCollectionWithContentsDto[]> => {
     const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CONTENT_COLLECTIONS);
 
-    console.log('[DEBUG] RPC 응답 개수:', data?.length, '개');
-    console.log(
-      '[DEBUG] RPC 응답 제목들:',
-      data?.map((d: { title: string }) => d.title),
-    );
-
     if (error) {
       console.error('콘텐츠 컬렉션 조회 실패:', error);
       throw new Error(`Failed to fetch content collections: ${error.message}`);
@@ -580,6 +589,7 @@ export const contentApi = {
       subtitle: string | null;
       theme_keywords: string[] | null;
       display_order: number;
+      is_active: boolean;
       generated_at: string;
       contents: unknown[];
     };
@@ -591,7 +601,7 @@ export const contentApi = {
         subtitle: row.subtitle ?? undefined,
         themeKeywords: row.theme_keywords ?? undefined,
         displayOrder: row.display_order,
-        isActive: true,
+        isActive: row.is_active,
         contents: mapWithField<ContentDto[]>(row.contents),
       }),
     );

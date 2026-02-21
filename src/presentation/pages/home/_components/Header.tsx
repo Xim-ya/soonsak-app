@@ -16,8 +16,6 @@ import colors from '@/shared/styles/colors';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
-  useSharedValue,
-  withTiming,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';

@@ -20,6 +20,20 @@ function ensureValidRank(rank: number): number {
   return Math.max(1, Math.floor(rank));
 }
 
+/** 유효한 콘텐츠 타입 목록 */
+const VALID_CONTENT_TYPES: ContentType[] = ['movie', 'tv', 'unknown'];
+
+/**
+ * contentType 문자열을 안전하게 ContentType으로 변환
+ * 유효하지 않은 값은 'unknown'으로 처리
+ */
+function safeContentType(contentType: string | undefined | null): ContentType {
+  if (!contentType || !VALID_CONTENT_TYPES.includes(contentType as ContentType)) {
+    return 'unknown';
+  }
+  return contentType as ContentType;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace TrendingContentModel {
   /**
@@ -67,8 +81,8 @@ export namespace TrendingContentModel {
     const base = {
       rank: validRank,
       id: content.id,
-      title: content.title,
-      type: content.contentType,
+      title: content.title ?? '제목 없음',
+      type: safeContentType(content.contentType),
       posterPath: content.posterPath ?? '',
       backdropPath: content.backdropPath ?? '',
       source: 'engagement' as const,

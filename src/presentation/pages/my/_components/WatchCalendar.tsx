@@ -100,7 +100,12 @@ function WatchCalendarComponent({
     <Container>
       {/* 월 네비게이션 */}
       <MonthNavigation>
-        <NavButton onPress={onPrevMonth} activeOpacity={0.7}>
+        <NavButton
+          onPress={onPrevMonth}
+          activeOpacity={0.7}
+          accessibilityLabel="이전 달"
+          accessibilityRole="button"
+        >
           <BackArrowIcon width={ARROW_SIZE} height={ARROW_SIZE} color={colors.white} />
         </NavButton>
 
@@ -111,7 +116,12 @@ function WatchCalendarComponent({
           <DropdownIcon>▼</DropdownIcon>
         </MonthPillButton>
 
-        <NavButton onPress={onNextMonth} activeOpacity={0.7}>
+        <NavButton
+          onPress={onNextMonth}
+          activeOpacity={0.7}
+          accessibilityLabel="다음 달"
+          accessibilityRole="button"
+        >
           <NextArrowIcon>
             <BackArrowIcon width={ARROW_SIZE} height={ARROW_SIZE} color={colors.white} />
           </NextArrowIcon>
@@ -270,8 +280,7 @@ const EmptyDateCell = styled.View({
   height: CELL_HEIGHT,
   marginBottom: CELL_GAP,
   alignItems: 'center',
-  justifyContent: 'flex-start',
-  paddingTop: AppSize.ratioHeight(8),
+  justifyContent: 'center',
 });
 
 const DateCell = styled(TouchableOpacity)({

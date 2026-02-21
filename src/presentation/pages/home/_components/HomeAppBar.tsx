@@ -61,7 +61,7 @@ function HomeAppBar({ scrollY }: HomeAppBarProps) {
     <Container style={{ paddingTop: insets.top }}>
       <AnimatedContent style={animatedStyle}>
         <LogoImage source={logoImage} resizeMode="contain" />
-        <SearchButton onPress={handleSearchPress} hitSlop={12}>
+        <SearchButton onPress={handleSearchPress} hitSlop={12} accessibilityLabel="검색">
           <SearchIcon width={SEARCH_ICON_SIZE} height={SEARCH_ICON_SIZE} color={colors.white} />
         </SearchButton>
       </AnimatedContent>

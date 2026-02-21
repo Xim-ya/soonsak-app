@@ -299,7 +299,13 @@ function AppImageComponent({
   // />
 
   return (
-    <Container width={width} height={height} borderRadius={borderRadius} transparent={transparent} style={style}>
+    <Container
+      width={width}
+      height={height}
+      borderRadius={borderRadius}
+      transparent={transparent}
+      style={style}
+    >
       {/* 로딩 중 placeholder */}
       {shouldShowPlaceholder && (
         <PlaceholderView width={width} height={height} borderRadius={borderRadius} />
@@ -396,6 +402,7 @@ const ErrorIcon = styled.Text<{ width: number; height: number }>(({ width, heigh
  * - cachePolicy: 캐싱 정책
  * - contentFit: 맞춤 방식
  * - borderRadius: 모서리 둥글기
+ * - transparent: 배경 투명 여부
  */
 export const AppImage = memo(AppImageComponent, (prevProps, nextProps) => {
   return (
@@ -405,6 +412,7 @@ export const AppImage = memo(AppImageComponent, (prevProps, nextProps) => {
     prevProps.cachePolicy === nextProps.cachePolicy &&
     prevProps.contentFit === nextProps.contentFit &&
     prevProps.borderRadius === nextProps.borderRadius &&
-    prevProps.transition === nextProps.transition
+    prevProps.transition === nextProps.transition &&
+    prevProps.transparent === nextProps.transparent
   );
 });
