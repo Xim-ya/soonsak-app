@@ -185,6 +185,11 @@ export default function SettingsPage() {
                 label="유저 관리"
                 onPress={() => navigation.navigate(routePages.adminUserManagement)}
               />
+              <Divider />
+              <SettingsItem
+                label="채널 관리"
+                onPress={() => navigation.navigate(routePages.adminChannelManagement)}
+              />
             </SettingsSection>
           </AdminOnly>
         </ScrollView>

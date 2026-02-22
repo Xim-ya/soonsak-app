@@ -22,6 +22,8 @@ import AdminUserDetailPage from '../../../presentation/pages/admin-user-detail/A
 import AdminPushContentSelectPage from '../../../presentation/pages/admin-push-content-select/AdminPushContentSelectPage';
 import AdminUserContentListPage from '../../../presentation/pages/admin-user-content-list/AdminUserContentListPage';
 import AdminContentRegistrationPage from '../../../presentation/pages/admin-content-registration/AdminContentRegistrationPage';
+import AdminChannelManagementPage from '../../../presentation/pages/admin-channel-management/AdminChannelManagementPage';
+import AdminChannelDetailPage from '../../../presentation/pages/admin-channel-detail/AdminChannelDetailPage';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -193,6 +195,16 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.adminContentRegistration}
         component={AdminContentRegistrationPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminChannelManagement}
+        component={AdminChannelManagementPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminChannelDetail}
+        component={AdminChannelDetailPage}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

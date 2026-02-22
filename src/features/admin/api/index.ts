@@ -21,3 +21,12 @@ export {
   type ChannelRegistrationResult,
   type BatchRegistrationResult,
 } from './adminRegistrationApi';
+export {
+  adminChannelApi,
+  type ChannelManagementItem,
+  type ChannelDetailItem,
+  type ChannelContentItem,
+  type ChannelListResult,
+  type ChannelContentsResult,
+  type DeleteChannelResult,
+} from './adminChannelApi';

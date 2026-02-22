@@ -76,6 +76,17 @@ export {
   type BatchRegistrationResultItem,
 } from './api/adminRegistrationApi';
 
+// API - Channel
+export {
+  adminChannelApi,
+  type ChannelManagementItem,
+  type ChannelDetailItem,
+  type ChannelContentItem,
+  type ChannelListResult,
+  type ChannelContentsResult,
+  type DeleteChannelResult,
+} from './api/adminChannelApi';
+
 // Services
 export {
   contentRegistrationService,

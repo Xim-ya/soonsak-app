@@ -111,6 +111,11 @@ export type RootStackParamList = {
     initialTab?: 0 | 1 | 2; // 초기 탭 (0: 시청기록, 1: 찜, 2: 평가)
   }; // 어드민 유저 콘텐츠 목록 - 시청기록/찜/평가 목록 확인
   [routePages.adminContentRegistration]: undefined; // 어드민 콘텐츠 등록 - 파라미터 없음
+  [routePages.adminChannelManagement]: undefined; // 어드민 채널 관리 - 파라미터 없음
+  [routePages.adminChannelDetail]: {
+    channelId: string; // 채널 ID
+    channelName: string; // 채널명 (헤더 표시용)
+  }; // 어드민 채널 상세 - channelId, channelName 필수
 };
 
 /**
