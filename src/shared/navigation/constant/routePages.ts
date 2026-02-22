@@ -17,6 +17,8 @@ export const routePages = {
   adminVideoManagement: 'AdminVideoManagement',
   adminUserManagement: 'AdminUserManagement',
   adminUserDetail: 'AdminUserDetail',
+  adminPushContentSelect: 'AdminPushContentSelect',
+  adminUserContentList: 'AdminUserContentList',
 } as const;
 
 export type RoutePages = typeof routePages;

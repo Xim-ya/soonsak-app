@@ -7,7 +7,7 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
-import { adminUserApi, type UserDetailItem } from '@/features/admin';
+import { adminUserApi, type UserDetailItem, type PushData } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 
 // ============================================================================
@@ -62,8 +62,8 @@ interface UseUserDetailReturn {
   readonly updateRole: (newRole: UserRole) => void;
   /** 푸시 발송 중 여부 */
   readonly isSendingPush: boolean;
-  /** 푸시 발송 */
-  readonly sendPush: (title: string, body: string) => Promise<boolean>;
+  /** 푸시 발송 (딥링크 데이터 포함 가능) */
+  readonly sendPush: (title: string, body: string, data?: PushData) => Promise<boolean>;
   /** 새로고침 */
   readonly refetch: () => void;
 }
@@ -117,8 +117,8 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
 
   // 푸시 발송 뮤테이션
   const sendPushMutation = useMutation({
-    mutationFn: ({ title, body }: { title: string; body: string }) =>
-      adminUserApi.sendPushNotification(userId, title, body),
+    mutationFn: ({ title, body, data }: { title: string; body: string; data?: PushData }) =>
+      adminUserApi.sendPushNotification(userId, title, body, data),
   });
 
   // 역할 변경 핸들러
@@ -132,7 +132,7 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
 
   // 푸시 발송 핸들러
   const sendPush = useCallback(
-    async (title: string, body: string): Promise<boolean> => {
+    async (title: string, body: string, data?: PushData): Promise<boolean> => {
       // 중복 요청 방지
       if (sendPushMutation.isPending) return false;
 
@@ -149,13 +149,16 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
         const result = await sendPushMutation.mutateAsync({
           title: trimmedTitle,
           body: trimmedBody,
+          ...(data && { data }),
         });
 
         if (result.success) {
+          const hasDeeplink = data !== undefined;
+          const deeplinkInfo = hasDeeplink ? '\n(딥링크 포함)' : '';
           const message =
             result.failedCount > 0
-              ? `푸시 알림이 발송되었습니다.\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
-              : `푸시 알림이 발송되었습니다. (${result.sentCount}건)`;
+              ? `푸시 알림이 발송되었습니다.${deeplinkInfo}\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
+              : `푸시 알림이 발송되었습니다.${deeplinkInfo} (${result.sentCount}건)`;
           Alert.alert('성공', message);
           return true;
         }

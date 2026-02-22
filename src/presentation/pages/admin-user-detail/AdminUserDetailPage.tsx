@@ -124,6 +124,7 @@ export default function AdminUserDetailPage() {
 
           {/* 푸시 발송 */}
           <PushNotificationSender
+            userId={userId}
             hasActiveTokens={canSendPush}
             isLoading={isSendingPush}
             onSend={sendPush}

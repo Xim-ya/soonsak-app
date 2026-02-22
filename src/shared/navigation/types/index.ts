@@ -101,6 +101,15 @@ export type RootStackParamList = {
     userId: string; // 유저 ID
     displayName?: string | null; // 유저 닉네임 (UI 표시용)
   }; // 어드민 유저 상세 - userId 필수, displayName 선택
+  [routePages.adminPushContentSelect]: {
+    userId: string; // 대상 유저 ID (시청기록/찜/평가 조회용)
+    mode: 'content' | 'player'; // content: 콘텐츠만 선택, player: 콘텐츠+비디오 선택
+  }; // 어드민 푸시 콘텐츠 선택 - 푸시 알림 딥링크용 콘텐츠/비디오 선택
+  [routePages.adminUserContentList]: {
+    userId: string; // 대상 유저 ID
+    displayName?: string | null; // 유저 닉네임 (헤더 표시용)
+    initialTab?: 0 | 1 | 2; // 초기 탭 (0: 시청기록, 1: 찜, 2: 평가)
+  }; // 어드민 유저 콘텐츠 목록 - 시청기록/찜/평가 목록 확인
 };
 
 /**
