@@ -4,11 +4,50 @@
  * 유저 상세 정보, 역할 변경, 푸시 발송 로직을 관리합니다.
  */
 
-import { useState, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Alert } from 'react-native';
 import { adminUserApi, type UserDetailItem } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
+
+// ============================================================================
+// Constants
+// ============================================================================
+
+/** 에러 메시지 매핑 */
+const ERROR_MESSAGES = {
+  ROLE_UPDATE_FAILED: '역할 변경에 실패했습니다.',
+  PUSH_SEND_FAILED: '푸시 발송에 실패했습니다.',
+  NO_ACTIVE_TOKENS: '활성화된 푸시 토큰이 없습니다.',
+  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
+  TIMEOUT_ERROR: '요청 시간이 초과되었습니다.',
+} as const;
+
+// ============================================================================
+// Helpers
+// ============================================================================
+
+/**
+ * 에러에서 사용자 친화적 메시지 추출
+ */
+function getUserFriendlyErrorMessage(error: unknown, fallback: string): string {
+  if (!(error instanceof Error)) return fallback;
+
+  const message = error.message.toLowerCase();
+
+  if (message.includes('network') || message.includes('fetch')) {
+    return ERROR_MESSAGES.NETWORK_ERROR;
+  }
+  if (message.includes('timeout') || message.includes('abort')) {
+    return ERROR_MESSAGES.TIMEOUT_ERROR;
+  }
+
+  return fallback;
+}
+
+// ============================================================================
+// Types
+// ============================================================================
 
 interface UseUserDetailReturn {
   /** 유저 상세 정보 */
@@ -20,7 +59,7 @@ interface UseUserDetailReturn {
   /** 역할 변경 중 여부 */
   readonly isUpdatingRole: boolean;
   /** 역할 변경 */
-  readonly updateRole: (newRole: UserRole) => Promise<void>;
+  readonly updateRole: (newRole: UserRole) => void;
   /** 푸시 발송 중 여부 */
   readonly isSendingPush: boolean;
   /** 푸시 발송 */
@@ -29,10 +68,22 @@ interface UseUserDetailReturn {
   readonly refetch: () => void;
 }
 
+// ============================================================================
+// Query Keys
+// ============================================================================
+
+const QUERY_KEYS = {
+  userDetail: (userId: string) => ['adminUserDetail', userId] as const,
+  users: ['adminUsers'] as const,
+  roleCounts: ['adminUserRoleCounts'] as const,
+} as const;
+
+// ============================================================================
+// Hook
+// ============================================================================
+
 export function useUserDetail(userId: string): UseUserDetailReturn {
   const queryClient = useQueryClient();
-  const [isUpdatingRole, setIsUpdatingRole] = useState(false);
-  const [isSendingPush, setIsSendingPush] = useState(false);
 
   // 유저 상세 정보 조회
   const {
@@ -41,7 +92,7 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
     error,
     refetch,
   } = useQuery({
-    queryKey: ['adminUserDetail', userId],
+    queryKey: QUERY_KEYS.userDetail(userId),
     queryFn: () => adminUserApi.getUserDetail(userId),
     staleTime: 30 * 1000, // 30초
     enabled: !!userId,
@@ -51,72 +102,84 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
   const updateRoleMutation = useMutation({
     mutationFn: (newRole: UserRole) => adminUserApi.updateUserRole(userId, newRole),
     onSuccess: () => {
-      // 유저 상세 및 목록 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['adminUserDetail', userId] });
-      queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
-      queryClient.invalidateQueries({ queryKey: ['adminUserRoleCounts'] });
+      // 관련 캐시 무효화
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userDetail(userId) });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleCounts });
+      Alert.alert('성공', '역할이 변경되었습니다.');
     },
+    onError: (err) => {
+      console.error('역할 변경 실패:', err);
+      const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.ROLE_UPDATE_FAILED);
+      Alert.alert('오류', errorMessage);
+    },
+  });
+
+  // 푸시 발송 뮤테이션
+  const sendPushMutation = useMutation({
+    mutationFn: ({ title, body }: { title: string; body: string }) =>
+      adminUserApi.sendPushNotification(userId, title, body),
   });
 
   // 역할 변경 핸들러
   const updateRole = useCallback(
-    async (newRole: UserRole) => {
-      if (isUpdatingRole) return;
-
-      setIsUpdatingRole(true);
-      try {
-        await updateRoleMutation.mutateAsync(newRole);
-        Alert.alert('성공', '역할이 변경되었습니다.');
-      } catch (err) {
-        console.error('역할 변경 실패:', err);
-        Alert.alert('오류', '역할 변경에 실패했습니다.');
-      } finally {
-        setIsUpdatingRole(false);
-      }
+    (newRole: UserRole) => {
+      if (updateRoleMutation.isPending) return;
+      updateRoleMutation.mutate(newRole);
     },
-    [isUpdatingRole, updateRoleMutation],
+    [updateRoleMutation],
   );
 
   // 푸시 발송 핸들러
   const sendPush = useCallback(
     async (title: string, body: string): Promise<boolean> => {
-      if (isSendingPush) return false;
+      // 중복 요청 방지
+      if (sendPushMutation.isPending) return false;
 
-      setIsSendingPush(true);
+      // 입력값 검증
+      const trimmedTitle = title?.trim() ?? '';
+      const trimmedBody = body?.trim() ?? '';
+
+      if (trimmedTitle.length === 0 || trimmedBody.length === 0) {
+        Alert.alert('입력 오류', '제목과 내용을 모두 입력해주세요.');
+        return false;
+      }
+
       try {
-        const result = await adminUserApi.sendPushNotification(userId, title, body);
+        const result = await sendPushMutation.mutateAsync({
+          title: trimmedTitle,
+          body: trimmedBody,
+        });
 
         if (result.success) {
-          Alert.alert('성공', `푸시 알림이 발송되었습니다. (성공: ${result.sentCount})`);
+          const message =
+            result.failedCount > 0
+              ? `푸시 알림이 발송되었습니다.\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
+              : `푸시 알림이 발송되었습니다. (${result.sentCount}건)`;
+          Alert.alert('성공', message);
           return true;
-        } else {
-          Alert.alert('실패', '활성화된 푸시 토큰이 없습니다.');
-          return false;
         }
+
+        Alert.alert('실패', ERROR_MESSAGES.NO_ACTIVE_TOKENS);
+        return false;
       } catch (err) {
         console.error('푸시 발송 실패:', err);
-        Alert.alert('오류', '푸시 발송에 실패했습니다.');
+        const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.PUSH_SEND_FAILED);
+        Alert.alert('오류', errorMessage);
         return false;
-      } finally {
-        setIsSendingPush(false);
       }
     },
-    [isSendingPush, userId],
+    [sendPushMutation],
   );
-
-  // 새로고침 핸들러
-  const handleRefetch = useCallback(() => {
-    refetch();
-  }, [refetch]);
 
   return {
     user: user ?? null,
     isLoading,
     error: error as Error | null,
-    isUpdatingRole,
+    isUpdatingRole: updateRoleMutation.isPending,
     updateRole,
-    isSendingPush,
+    isSendingPush: sendPushMutation.isPending,
     sendPush,
-    refetch: handleRefetch,
+    refetch,
   };
 }

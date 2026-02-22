@@ -4,7 +4,7 @@
  * 유저의 푸시 토큰 목록과 상태를 표시합니다.
  */
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { View } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
@@ -25,8 +25,17 @@ interface PushTokenStatusProps {
 }
 
 export const PushTokenStatus = memo(function PushTokenStatus({ tokens }: PushTokenStatusProps) {
-  const activeTokens = tokens.filter((t) => t.isActive);
-  const inactiveTokens = tokens.filter((t) => !t.isActive);
+  // 토큰 분류 (활성/비활성)
+  const { activeTokens, inactiveTokens } = useMemo(() => {
+    const active = tokens.filter((token) => token.isActive);
+    const inactive = tokens.filter((token) => !token.isActive);
+    return { activeTokens: active, inactiveTokens: inactive };
+  }, [tokens]);
+
+  // 토큰이 비어있는지 여부
+  const hasNoTokens = tokens.length === 0;
+  const hasActiveTokens = activeTokens.length > 0;
+  const hasInactiveTokens = inactiveTokens.length > 0;
 
   return (
     <Container>
@@ -35,14 +44,14 @@ export const PushTokenStatus = memo(function PushTokenStatus({ tokens }: PushTok
         <SectionTitle>푸시 토큰</SectionTitle>
       </SectionHeader>
 
-      {tokens.length === 0 ? (
+      {hasNoTokens ? (
         <EmptyContainer>
           <EmptyText>등록된 푸시 토큰이 없습니다</EmptyText>
         </EmptyContainer>
       ) : (
         <>
           {/* 활성 토큰 */}
-          {activeTokens.length > 0 && (
+          {hasActiveTokens && (
             <TokenSection>
               <TokenSectionTitle>활성 ({activeTokens.length})</TokenSectionTitle>
               {activeTokens.map((token) => (
@@ -58,7 +67,7 @@ export const PushTokenStatus = memo(function PushTokenStatus({ tokens }: PushTok
           )}
 
           {/* 비활성 토큰 */}
-          {inactiveTokens.length > 0 && (
+          {hasInactiveTokens && (
             <TokenSection>
               <TokenSectionTitle>비활성 ({inactiveTokens.length})</TokenSectionTitle>
               {inactiveTokens.map((token) => (

@@ -18,8 +18,21 @@ import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 
-// 보내기 아이콘 SVG
-const sendIconSvg = `
+// ============================================================================
+// Constants
+// ============================================================================
+
+/** 제목 최대 길이 */
+const MAX_TITLE_LENGTH = 50;
+/** 내용 최대 길이 */
+const MAX_BODY_LENGTH = 200;
+/** 제목 최소 길이 */
+const MIN_TITLE_LENGTH = 1;
+/** 내용 최소 길이 */
+const MIN_BODY_LENGTH = 1;
+
+// 보내기 아이콘 SVG (컴포넌트 외부 상수로 최적화)
+const SEND_ICON_SVG = `
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M22 2L11 13M22 2L15 22L11 13L2 9L22 2Z" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -50,16 +63,22 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     setIsModalVisible(false);
   }, []);
 
-  const handleSend = useCallback(async () => {
-    if (!title.trim() || !body.trim()) return;
+  // 입력값 검증
+  const trimmedTitle = title.trim();
+  const trimmedBody = body.trim();
+  const isTitleValid = trimmedTitle.length >= MIN_TITLE_LENGTH;
+  const isBodyValid = trimmedBody.length >= MIN_BODY_LENGTH;
+  const isValid = isTitleValid && isBodyValid;
 
-    const success = await onSend(title.trim(), body.trim());
+  const handleSend = useCallback(async () => {
+    // 중복 방지 및 유효성 재검증
+    if (isLoading || !isValid) return;
+
+    const success = await onSend(trimmedTitle, trimmedBody);
     if (success) {
       setIsModalVisible(false);
     }
-  }, [title, body, onSend]);
-
-  const isValid = title.trim().length > 0 && body.trim().length > 0;
+  }, [isLoading, isValid, trimmedTitle, trimmedBody, onSend]);
 
   return (
     <>
@@ -75,7 +94,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             <ActivityIndicator size="small" color={colors.white} />
           ) : (
             <>
-              <SvgXml xml={sendIconSvg} width={20} height={20} />
+              <SvgXml xml={SEND_ICON_SVG} width={20} height={20} />
               <SendButtonText>개인 푸시 보내기</SendButtonText>
             </>
           )}
@@ -94,18 +113,29 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             <ModalTitle>푸시 알림 작성</ModalTitle>
 
             <InputContainer>
-              <InputLabel>제목</InputLabel>
+              <InputLabelRow>
+                <InputLabel>제목</InputLabel>
+                <CharacterCount isNearLimit={title.length > MAX_TITLE_LENGTH * 0.8}>
+                  {title.length}/{MAX_TITLE_LENGTH}
+                </CharacterCount>
+              </InputLabelRow>
               <StyledTextInput
                 value={title}
                 onChangeText={setTitle}
                 placeholder="알림 제목 입력"
                 placeholderTextColor={colors.gray03}
-                maxLength={50}
+                maxLength={MAX_TITLE_LENGTH}
+                returnKeyType="next"
               />
             </InputContainer>
 
             <InputContainer>
-              <InputLabel>내용</InputLabel>
+              <InputLabelRow>
+                <InputLabel>내용</InputLabel>
+                <CharacterCount isNearLimit={body.length > MAX_BODY_LENGTH * 0.8}>
+                  {body.length}/{MAX_BODY_LENGTH}
+                </CharacterCount>
+              </InputLabelRow>
               <StyledTextInput
                 value={body}
                 onChangeText={setBody}
@@ -113,7 +143,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                 placeholderTextColor={colors.gray03}
                 multiline
                 numberOfLines={3}
-                maxLength={200}
+                maxLength={MAX_BODY_LENGTH}
                 textAlignVertical="top"
               />
             </InputContainer>
@@ -211,11 +241,26 @@ const InputContainer = styled(View)({
   marginBottom: 16,
 });
 
+const InputLabelRow = styled(View)({
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  marginBottom: 8,
+});
+
 const InputLabel = styled.Text({
   ...textStyles.body2,
   color: colors.gray01,
-  marginBottom: 8,
 });
+
+interface CharacterCountProps {
+  isNearLimit: boolean;
+}
+
+const CharacterCount = styled.Text<CharacterCountProps>(({ isNearLimit }) => ({
+  ...textStyles.alert2,
+  color: isNearLimit ? colors.yellow : colors.gray03,
+}));
 
 const StyledTextInput = styled(TextInput)({
   ...textStyles.body2,

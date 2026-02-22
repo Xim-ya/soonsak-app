@@ -17,7 +17,46 @@ import {
   type UserSearchField,
 } from '@/features/admin';
 
+// ============================================================================
+// Constants
+// ============================================================================
+
 const PAGE_SIZE = 20;
+/** 검색어 최대 길이 */
+const MAX_SEARCH_QUERY_LENGTH = 100;
+/** 검색어 최소 길이 (검색 실행 시) */
+const MIN_SEARCH_QUERY_LENGTH = 1;
+
+const QUERY_KEYS = {
+  statistics: ['adminUserStatistics'] as const,
+  roleCounts: ['adminUserRoleCounts'] as const,
+  users: (params: UserListQueryParams) =>
+    ['adminUsers', params.role, params.searchQuery, params.searchField, params.sortBy] as const,
+} as const;
+
+const DEFAULT_COUNTS: UserRoleCounts = {
+  total: 0,
+  user: 0,
+  admin: 0,
+  banned: 0,
+};
+
+const DEFAULT_STATISTICS: UserStatistics = {
+  totalUsers: 0,
+  dailyActiveVisitors: 0,
+  activePushTokens: 0,
+};
+
+// ============================================================================
+// Types
+// ============================================================================
+
+interface UserListQueryParams {
+  role: UserRoleFilter;
+  searchQuery: string | null;
+  searchField: UserSearchField;
+  sortBy: UserSortBy;
+}
 
 interface UseUserManagementReturn {
   /** 유저 목록 */
@@ -60,8 +99,14 @@ interface UseUserManagementReturn {
   readonly isRefreshing: boolean;
 }
 
+// ============================================================================
+// Hook
+// ============================================================================
+
 export function useUserManagement(): UseUserManagementReturn {
   const queryClient = useQueryClient();
+
+  // 필터/검색/정렬 상태
   const [selectedRole, setSelectedRole] = useState<UserRoleFilter>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [appliedSearchQuery, setAppliedSearchQuery] = useState<string | null>(null);
@@ -69,16 +114,27 @@ export function useUserManagement(): UseUserManagementReturn {
   const [sortBy, setSortBy] = useState<UserSortBy>('createdAt');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  // 현재 쿼리 파라미터
+  const queryParams: UserListQueryParams = useMemo(
+    () => ({
+      role: selectedRole,
+      searchQuery: appliedSearchQuery,
+      searchField,
+      sortBy,
+    }),
+    [selectedRole, appliedSearchQuery, searchField, sortBy],
+  );
+
   // 대시보드 통계 조회
   const { data: statistics = DEFAULT_STATISTICS, isLoading: isStatisticsLoading } = useQuery({
-    queryKey: ['adminUserStatistics'],
+    queryKey: QUERY_KEYS.statistics,
     queryFn: adminUserApi.getUserStatistics,
     staleTime: 60 * 1000, // 1분
   });
 
   // 역할별 카운트 조회
   const { data: counts = DEFAULT_COUNTS } = useQuery({
-    queryKey: ['adminUserRoleCounts'],
+    queryKey: QUERY_KEYS.roleCounts,
     queryFn: adminUserApi.getUserRoleCounts,
     staleTime: 30 * 1000, // 30초
   });
@@ -89,16 +145,16 @@ export function useUserManagement(): UseUserManagementReturn {
     isLoading,
     isFetchingNextPage,
     hasNextPage = false,
-    fetchNextPage,
+    fetchNextPage: fetchNextPageQuery,
     refetch: refetchUsers,
   } = useInfiniteQuery({
-    queryKey: ['adminUsers', selectedRole, appliedSearchQuery, searchField, sortBy],
+    queryKey: QUERY_KEYS.users(queryParams),
     queryFn: ({ pageParam }) =>
       adminUserApi.getUsers({
-        role: selectedRole,
-        searchQuery: appliedSearchQuery,
-        searchField,
-        sortBy,
+        role: queryParams.role,
+        searchQuery: queryParams.searchQuery,
+        searchField: queryParams.searchField,
+        sortBy: queryParams.sortBy,
         cursor: pageParam,
         limit: PAGE_SIZE,
       }),
@@ -108,17 +164,17 @@ export function useUserManagement(): UseUserManagementReturn {
   });
 
   // 전체 유저 목록 평탄화
-  const users = useMemo(() => {
-    return data?.pages.flatMap((page) => page.users) ?? [];
-  }, [data]);
+  const users = useMemo(() => data?.pages.flatMap((page) => page.users) ?? [], [data]);
 
   // 역할 필터 변경
   const onSelectRole = useCallback((role: UserRoleFilter) => {
     setSelectedRole(role);
   }, []);
 
-  // 검색어 변경 (입력 중)
+  // 검색어 변경 (입력 중) - 최대 길이 제한
   const onSearchChange = useCallback((query: string) => {
+    // 최대 길이 초과 시 무시
+    if (query.length > MAX_SEARCH_QUERY_LENGTH) return;
     setSearchQuery(query);
   }, []);
 
@@ -129,7 +185,13 @@ export function useUserManagement(): UseUserManagementReturn {
 
   // 검색 실행
   const onSearch = useCallback(() => {
-    setAppliedSearchQuery(searchQuery.trim() || null);
+    const trimmedQuery = searchQuery.trim();
+    // 빈 문자열이거나 최소 길이 미만이면 null로 설정 (전체 조회)
+    if (trimmedQuery.length < MIN_SEARCH_QUERY_LENGTH) {
+      setAppliedSearchQuery(null);
+      return;
+    }
+    setAppliedSearchQuery(trimmedQuery);
   }, [searchQuery]);
 
   // 정렬 기준 변경
@@ -138,19 +200,20 @@ export function useUserManagement(): UseUserManagementReturn {
   }, []);
 
   // 다음 페이지 로드
-  const handleFetchNextPage = useCallback(() => {
-    if (hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
+  const fetchNextPage = useCallback(() => {
+    const canFetchMore = hasNextPage && !isFetchingNextPage;
+    if (canFetchMore) {
+      fetchNextPageQuery();
     }
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPageQuery]);
 
   // 새로고침 (pull-to-refresh)
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['adminUserStatistics'] }),
-        queryClient.invalidateQueries({ queryKey: ['adminUserRoleCounts'] }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.statistics }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleCounts }),
         refetchUsers(),
       ]);
     } finally {
@@ -161,8 +224,8 @@ export function useUserManagement(): UseUserManagementReturn {
   // 화면 포커스 시 데이터 새로고침
   useFocusEffect(
     useCallback(() => {
-      queryClient.invalidateQueries({ queryKey: ['adminUserStatistics'] });
-      queryClient.invalidateQueries({ queryKey: ['adminUserRoleCounts'] });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.statistics });
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleCounts });
       queryClient.invalidateQueries({ queryKey: ['adminUsers'] });
     }, [queryClient]),
   );
@@ -184,21 +247,8 @@ export function useUserManagement(): UseUserManagementReturn {
     isStatisticsLoading,
     isFetchingNextPage,
     hasNextPage,
-    fetchNextPage: handleFetchNextPage,
+    fetchNextPage,
     refetch: handleRefresh,
     isRefreshing,
   };
 }
-
-const DEFAULT_COUNTS: UserRoleCounts = {
-  total: 0,
-  user: 0,
-  admin: 0,
-  banned: 0,
-};
-
-const DEFAULT_STATISTICS: UserStatistics = {
-  totalUsers: 0,
-  dailyActiveVisitors: 0,
-  activePushTokens: 0,
-};

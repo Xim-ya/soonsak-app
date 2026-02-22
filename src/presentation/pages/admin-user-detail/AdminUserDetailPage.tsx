@@ -4,7 +4,7 @@
  * 유저 상세 정보, 역할 변경, 활동 통계, 푸시 토큰, 푸시 발송
  */
 
-import { useCallback } from 'react';
+import { useCallback, useMemo } from 'react';
 import { ScrollView, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -28,12 +28,17 @@ import { useUserDetail } from './_hooks/useUserDetail';
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 type RouteProp = ScreenRouteProp<typeof routePages.adminUserDetail>;
 
-// 뒤로가기 아이콘 SVG
-const backIconSvg = `
+// 뒤로가기 아이콘 SVG (컴포넌트 외부 상수로 최적화)
+const BACK_ICON_SVG = `
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M15 18L9 12L15 6" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
+
+// ScrollView contentContainerStyle 상수 (매 렌더마다 객체 재생성 방지)
+const getContentContainerStyle = (bottomInset: number) => ({
+  paddingBottom: bottomInset + 20,
+});
 
 export default function AdminUserDetailPage() {
   const navigation = useNavigation<NavigationProp>();
@@ -57,18 +62,24 @@ export default function AdminUserDetailPage() {
     navigation.goBack();
   }, [navigation]);
 
-  // 활성 푸시 토큰 존재 여부
-  const hasActiveTokens = (user?.pushTokens ?? []).some((t) => t.isActive);
+  // 푸시 발송 가능 여부 (활성 토큰 존재)
+  const canSendPush = useMemo(
+    () => (user?.pushTokens ?? []).some((token) => token.isActive),
+    [user?.pushTokens],
+  );
 
-  // 헤더 타이틀
-  const headerTitle = user?.displayName || displayName || '유저 상세';
+  // 헤더 타이틀 (메모이제이션)
+  const headerTitle = useMemo(
+    () => user?.displayName || displayName || '유저 상세',
+    [user?.displayName, displayName],
+  );
 
   return (
     <BasePage useSafeArea={false} automaticallyAdjustKeyboardInsets={false} touchableWithoutFeedback={false}>
       {/* 헤더 */}
       <HeaderContainer paddingTop={insets.top}>
         <BackButton onPress={handleGoBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <SvgXml xml={backIconSvg} width={24} height={24} />
+          <SvgXml xml={BACK_ICON_SVG} width={24} height={24} />
         </BackButton>
         <HeaderTitle numberOfLines={1}>{headerTitle}</HeaderTitle>
         <HeaderSpacer />
@@ -90,7 +101,7 @@ export default function AdminUserDetailPage() {
         <ScrollView
           style={{ flex: 1 }}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
+          contentContainerStyle={getContentContainerStyle(insets.bottom)}
           refreshControl={
             <RefreshControl refreshing={false} onRefresh={refetch} tintColor={colors.gray02} />
           }
@@ -113,7 +124,7 @@ export default function AdminUserDetailPage() {
 
           {/* 푸시 발송 */}
           <PushNotificationSender
-            hasActiveTokens={hasActiveTokens}
+            hasActiveTokens={canSendPush}
             isLoading={isSendingPush}
             onSend={sendPush}
           />

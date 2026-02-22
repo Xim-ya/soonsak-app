@@ -75,6 +75,50 @@ export interface UserListResult {
 }
 
 // ============================================================================
+// Constants
+// ============================================================================
+
+/** 최대 허용 limit 값 */
+const MAX_PAGE_LIMIT = 100;
+/** 기본 limit 값 */
+const DEFAULT_PAGE_LIMIT = 20;
+/** 최소 limit 값 */
+const MIN_PAGE_LIMIT = 1;
+
+// ============================================================================
+// Validation Helpers
+// ============================================================================
+
+/**
+ * UUID 형식 검증
+ */
+function isValidUUID(id: string): boolean {
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return uuidRegex.test(id);
+}
+
+/**
+ * limit 값 정규화 (범위 내로 제한)
+ */
+function normalizeLimit(limit: number): number {
+  if (!Number.isFinite(limit) || limit < MIN_PAGE_LIMIT) {
+    return DEFAULT_PAGE_LIMIT;
+  }
+  return Math.min(limit, MAX_PAGE_LIMIT);
+}
+
+/**
+ * 검색어 정규화 (XSS 방지를 위한 특수문자 이스케이프)
+ */
+function sanitizeSearchQuery(query: string | null): string | null {
+  if (!query || typeof query !== 'string') return null;
+  const trimmed = query.trim();
+  if (trimmed.length === 0) return null;
+  // SQL LIKE 특수문자 이스케이프
+  return trimmed.replace(/[%_\\]/g, '\\$&');
+}
+
+// ============================================================================
 // API
 // ============================================================================
 
@@ -83,7 +127,9 @@ export const adminUserApi = {
    * 유저 목록 조회 (무한스크롤, 필터, 검색, 정렬)
    */
   getUsers: async (params: UserListParams): Promise<UserListResult> => {
-    const { role, searchQuery, searchField, sortBy, cursor, limit } = params;
+    const { role, searchQuery, searchField, sortBy, cursor } = params;
+    const limit = normalizeLimit(params.limit);
+    const sanitizedSearchQuery = sanitizeSearchQuery(searchQuery);
 
     let query = supabaseClient
       .from(AUTH_DATABASE.TABLES.PROFILES)
@@ -96,10 +142,10 @@ export const adminUserApi = {
       query = query.eq('role', role);
     }
 
-    // 검색 필터
-    if (searchQuery && searchQuery.trim().length > 0) {
+    // 검색 필터 (정규화된 검색어 사용)
+    if (sanitizedSearchQuery) {
       const searchColumn = searchField === 'email' ? 'email' : 'display_name';
-      query = query.ilike(searchColumn, `%${searchQuery.trim()}%`);
+      query = query.ilike(searchColumn, `%${sanitizedSearchQuery}%`);
     }
 
     // 정렬 (보조 정렬로 id 추가하여 일관성 보장)
@@ -249,6 +295,11 @@ export const adminUserApi = {
    * 유저 상세 조회 (푸시토큰, 활동통계 포함)
    */
   getUserDetail: async (userId: string): Promise<UserDetailItem> => {
+    // userId 유효성 검증
+    if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
     // 유저 기본 정보 조회
     const { data: user, error: userError } = await supabaseClient
       .from(AUTH_DATABASE.TABLES.PROFILES)
@@ -317,6 +368,17 @@ export const adminUserApi = {
    * 유저 역할 변경
    */
   updateUserRole: async (userId: string, newRole: UserRole): Promise<void> => {
+    // userId 유효성 검증
+    if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    // 역할 유효성 검증
+    const validRoles: UserRole[] = ['user', 'admin', 'banned'];
+    if (!validRoles.includes(newRole)) {
+      throw new Error(`Invalid role: ${newRole}. Must be one of: ${validRoles.join(', ')}`);
+    }
+
     const { error } = await supabaseClient
       .from(AUTH_DATABASE.TABLES.PROFILES)
       .update({ role: newRole, updated_at: new Date().toISOString() })
@@ -336,6 +398,28 @@ export const adminUserApi = {
     title: string,
     body: string,
   ): Promise<{ success: boolean; sentCount: number; failedCount: number }> => {
+    // userId 유효성 검증
+    if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    // 푸시 알림 내용 검증
+    const trimmedTitle = title?.trim() ?? '';
+    const trimmedBody = body?.trim() ?? '';
+
+    if (trimmedTitle.length === 0) {
+      throw new Error('Push notification title is required');
+    }
+    if (trimmedBody.length === 0) {
+      throw new Error('Push notification body is required');
+    }
+    if (trimmedTitle.length > 100) {
+      throw new Error('Push notification title exceeds maximum length (100 characters)');
+    }
+    if (trimmedBody.length > 500) {
+      throw new Error('Push notification body exceeds maximum length (500 characters)');
+    }
+
     // 유저의 활성 푸시 토큰 조회
     const { data: tokens, error: tokenError } = await supabaseClient
       .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
@@ -352,32 +436,50 @@ export const adminUserApi = {
       return { success: false, sentCount: 0, failedCount: 0 };
     }
 
-    // Expo Push API로 발송
+    // Expo Push API로 발송 (검증된 값 사용)
     const messages = tokens.map((t) => ({
       to: t.token,
-      title,
-      body,
+      title: trimmedTitle,
+      body: trimmedBody,
       sound: 'default' as const,
     }));
 
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30초 타임아웃
+
       const response = await fetch('https://exp.host/--/api/v2/push/send', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          Accept: 'application/json',
         },
         body: JSON.stringify(messages),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
+
       if (!response.ok) {
-        throw new Error(`Expo Push API error: ${response.status}`);
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(`Expo Push API error: ${response.status} - ${errorText}`);
       }
 
       const result = await response.json();
-      const data = Array.isArray(result.data) ? result.data : [result.data];
 
-      const sentCount = data.filter((r: { status: string }) => r.status === 'ok').length;
-      const failedCount = data.filter((r: { status: string }) => r.status === 'error').length;
+      // 응답 데이터 검증
+      if (!result || typeof result !== 'object') {
+        throw new Error('Invalid response from Expo Push API');
+      }
+
+      const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+
+      const sentCount = data.filter(
+        (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'ok',
+      ).length;
+      const failedCount = data.filter(
+        (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'error',
+      ).length;
 
       return {
         success: sentCount > 0,
@@ -385,6 +487,9 @@ export const adminUserApi = {
         failedCount,
       };
     } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('Push notification request timed out');
+      }
       console.error('푸시 발송 실패:', error);
       throw error;
     }

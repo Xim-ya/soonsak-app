@@ -12,15 +12,14 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { type UserSearchField, UserSearchFieldLabel } from '@/features/admin';
 
-// 검색 아이콘 SVG
-const searchIconSvg = `
+// SVG 아이콘 상수 (컴포넌트 외부로 최적화)
+const SEARCH_ICON_SVG = `
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M21 21L16.65 16.65M19 11C19 15.4183 15.4183 19 11 19C6.58172 19 3 15.4183 3 11C3 6.58172 6.58172 3 11 3C15.4183 3 19 6.58172 19 11Z" stroke="${colors.gray02}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
-// 드롭다운 아이콘 SVG
-const dropdownIconSvg = `
+const DROPDOWN_ICON_SVG = `
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M6 9L12 15L18 9" stroke="${colors.gray02}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -57,12 +56,12 @@ export const UserSearchBar = memo(function UserSearchBar({
       {/* 검색 필드 선택 */}
       <FieldSelector onPress={handleFieldToggle} activeOpacity={0.7}>
         <FieldLabel>{UserSearchFieldLabel[searchField]}</FieldLabel>
-        <SvgXml xml={dropdownIconSvg} width={16} height={16} />
+        <SvgXml xml={DROPDOWN_ICON_SVG} width={16} height={16} />
       </FieldSelector>
 
       {/* 검색어 입력 */}
       <SearchInputContainer>
-        <SvgXml xml={searchIconSvg} width={20} height={20} />
+        <SvgXml xml={SEARCH_ICON_SVG} width={20} height={20} />
         <SearchInput
           value={searchQuery}
           onChangeText={onSearchChange}
