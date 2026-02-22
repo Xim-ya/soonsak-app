@@ -19,8 +19,11 @@ export type { BackdropImageProps } from './BackdropImage';
 // 에러 플레이스홀더
 export { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
+// Shimmer 스켈레톤
+export { ShimmerSkeleton } from './ShimmerSkeleton';
+
 // 이미지 상수
-export { IMAGE_RATIO, IMAGE_DEFAULTS, ERROR_PLACEHOLDER } from './imageConstants';
+export { IMAGE_RATIO, IMAGE_DEFAULTS, ERROR_PLACEHOLDER, SHIMMER } from './imageConstants';
 
 // 기타 이미지 컴포넌트
 export { LoadableImageView } from './LoadableImageView';
