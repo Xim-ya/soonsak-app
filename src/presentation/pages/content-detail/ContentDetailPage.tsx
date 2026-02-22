@@ -34,13 +34,18 @@ import { useContentDetail } from './_hooks/useContentDetail';
 
 export default function ContentDetailPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
-  const { id, type, title, videoId } = route.params;
+  const { id, type, title, videoId, initialData } = route.params;
 
   const contentId = Number(id);
   const contentType = type as ContentType;
 
   return (
-    <ContentDetailProvider contentId={contentId} contentType={contentType} videoId={videoId}>
+    <ContentDetailProvider
+      contentId={contentId}
+      contentType={contentType}
+      videoId={videoId}
+      initialData={initialData}
+    >
       <ContentDetailContent
         contentId={contentId}
         contentType={contentType}

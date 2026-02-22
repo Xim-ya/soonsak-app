@@ -2,7 +2,13 @@
  * 시청 기록 React Query Hooks
  */
 
-import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { watchHistoryApi } from '../api/watchHistoryApi';
 import type { CreateWatchHistoryParams } from '../types';
@@ -27,6 +33,8 @@ export const watchHistoryKeys = {
     [...watchHistoryKeys.all(userId), 'fullyWatchedList'] as const,
   calendar: (userId: string | null, year: number, month: number) =>
     [...watchHistoryKeys.all(userId), 'calendar', year, month] as const,
+  byDate: (userId: string | null, date: string) =>
+    [...watchHistoryKeys.all(userId), 'byDate', date] as const,
   list: (userId: string | null) => [...watchHistoryKeys.all(userId), 'list'] as const,
   uniqueList: (userId: string | null) => [...watchHistoryKeys.all(userId), 'uniqueList'] as const,
   progress: (userId: string | null, contentId: number, contentType: string) =>
@@ -82,6 +90,30 @@ export const useFullyWatchedList = (
     }),
     enabled: (options?.enabled ?? true) && !!userId,
     placeholderData: { items: [], hasMore: false, totalCount: 0 },
+    staleTime: TWO_MINUTES,
+    gcTime: TEN_MINUTES,
+  });
+};
+
+/**
+ * 특정 날짜의 시청 기록 조회 Hook
+ * 캘린더에서 날짜 클릭 시 사용
+ */
+export const useWatchHistoryByDate = (
+  date: string,
+  options?: {
+    enabled?: boolean;
+  },
+): UseQueryResult<WatchHistoryModel[], Error> => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
+  return useQuery({
+    queryKey: watchHistoryKeys.byDate(userId, date),
+    queryFn: () => watchHistoryApi.getHistoryByDate(date),
+    select: WatchHistoryModel.fromDtoList,
+    enabled: (options?.enabled ?? true) && !!userId && !!date,
+    placeholderData: [],
     staleTime: TWO_MINUTES,
     gcTime: TEN_MINUTES,
   });
@@ -174,6 +206,97 @@ export const useUniqueWatchHistory = (
     }),
     enabled: (options?.enabled ?? true) && !!userId,
     placeholderData: { items: [], hasMore: false },
+    staleTime: TWO_MINUTES,
+    gcTime: TEN_MINUTES,
+  });
+};
+
+/**
+ * 시청 기록 프리뷰 무한 스크롤 Hook (가로 리스트용)
+ * MyPage 등 프리뷰 섹션에서 사용
+ * 최대 아이템 수 제한을 지원하며, 스크롤 끝에서 다음 페이지 로드
+ */
+export const useWatchHistoryPreview = (config?: {
+  pageSize?: number;
+  maxItems?: number;
+  enabled?: boolean;
+}) => {
+  const { pageSize = 6, maxItems = 12, enabled = true } = config ?? {};
+  const { user, status } = useAuth();
+  const userId = user?.id ?? null;
+  const isGuest = status === 'unauthenticated';
+
+  const query = useInfiniteQuery({
+    queryKey: [...watchHistoryKeys.uniqueList(userId), 'preview', pageSize, maxItems],
+    queryFn: async ({ pageParam = 0 }) => {
+      const data = await watchHistoryApi.getUniqueContentHistory(pageSize, pageParam);
+      return {
+        items: WatchHistoryModel.fromDtoList(data.items),
+        hasMore: data.hasMore,
+        nextOffset: pageParam + pageSize,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, allPages) => {
+      // 최대 아이템 수 도달 시 더 이상 로드하지 않음
+      const totalLoaded = allPages.reduce((sum, page) => sum + page.items.length, 0);
+      if (totalLoaded >= maxItems) return undefined;
+      return lastPage.hasMore ? lastPage.nextOffset : undefined;
+    },
+    enabled: enabled && !!userId,
+    staleTime: TWO_MINUTES,
+    gcTime: TEN_MINUTES,
+  });
+
+  // 평탄화된 아이템 목록 (최대 개수 제한 적용)
+  const items = (query.data?.pages.flatMap((page) => page.items) ?? []).slice(0, maxItems);
+
+  // 더 로드할 수 있는지 여부
+  const canLoadMore = query.hasNextPage && items.length < maxItems && !query.isFetchingNextPage;
+
+  // 빈 상태 여부 (로딩 완료 후 에러 없이 데이터 없음)
+  const isEmpty = !query.isLoading && !query.isError && items.length === 0;
+
+  return {
+    items,
+    isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    isEmpty,
+    isFetchingNextPage: query.isFetchingNextPage,
+    hasNextPage: canLoadMore,
+    isGuest,
+    fetchNextPage: query.fetchNextPage,
+    refetch: query.refetch,
+  };
+};
+
+/**
+ * 고유 콘텐츠 시청 기록 무한 스크롤 Hook
+ * 전체 시청 기록 페이지에서 사용
+ */
+export const useInfiniteUniqueWatchHistory = (
+  pageSize: number = 20,
+  options?: {
+    enabled?: boolean;
+  },
+) => {
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
+
+  return useInfiniteQuery({
+    queryKey: [...watchHistoryKeys.uniqueList(userId), 'infinite', pageSize],
+    queryFn: async ({ pageParam = 0 }) => {
+      const data = await watchHistoryApi.getUniqueContentHistory(pageSize, pageParam);
+      return {
+        items: WatchHistoryModel.fromDtoList(data.items),
+        hasMore: data.hasMore,
+        nextOffset: pageParam + pageSize,
+      };
+    },
+    initialPageParam: 0,
+    getNextPageParam: (lastPage) => (lastPage.hasMore ? lastPage.nextOffset : undefined),
+    enabled: (options?.enabled ?? true) && !!userId,
     staleTime: TWO_MINUTES,
     gcTime: TEN_MINUTES,
   });

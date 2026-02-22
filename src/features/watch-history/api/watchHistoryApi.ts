@@ -13,6 +13,11 @@ import type {
 const TABLE_NAME = 'watch_history';
 
 /**
+ * Supabase join으로 가져온 contents 테이블의 부분 타입
+ */
+type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
+
+/**
  * 인증된 사용자 정보 반환
  * @returns 미인증 시 null
  */
@@ -139,8 +144,6 @@ export const watchHistoryApi = {
       console.error('완료된 시청 목록 조회 실패:', error);
       throw new Error(`Failed to fetch fully watched: ${error.message}`);
     }
-
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
 
     const items: WatchHistoryWithContentDto[] = (data ?? []).map((item) => {
       const contents = item.contents as ContentJoin;
@@ -318,8 +321,6 @@ export const watchHistoryApi = {
       throw new Error(`Failed to fetch watch history: ${error.message}`);
     }
 
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
-
     const items: WatchHistoryWithContentDto[] = (data ?? []).map((item) => {
       const contents = item.contents as ContentJoin;
       return {
@@ -378,8 +379,6 @@ export const watchHistoryApi = {
     // 콘텐츠별 중복 제거 (최신 기록만 유지)
     const seenContents = new Set<string>();
     const uniqueItems: WatchHistoryWithContentDto[] = [];
-
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
 
     for (const item of data ?? []) {
       const contentKey = `${item.content_id}-${item.content_type}`;
@@ -513,6 +512,60 @@ export const watchHistoryApi = {
       console.error('시청 진행률 업데이트 실패:', updateError);
       throw new Error(`Failed to update watch progress: ${updateError.message}`);
     }
+  },
+
+  /**
+   * 특정 날짜의 시청 기록 조회
+   * 캘린더에서 날짜 클릭 시 해당 날짜의 시청 콘텐츠 목록 반환
+   */
+  getHistoryByDate: async (date: string): Promise<WatchHistoryWithContentDto[]> => {
+    // 날짜 형식 유효성 검사 (YYYY-MM-DD)
+    const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateFormatRegex.test(date)) {
+      throw new Error(`Invalid date format: ${date}. Expected YYYY-MM-DD.`);
+    }
+
+    const user = await requireAuth();
+
+    // NOTE: 날짜 범위는 UTC 기준으로 설정됩니다.
+    // getCalendarHistory의 날짜 그룹화 방식(split('T')[0])과 동일한 UTC 기준을 사용하여
+    // 캘린더와 상세 목록 간 일관성을 보장합니다.
+    const startDate = `${date}T00:00:00.000Z`;
+    const endDate = `${date}T23:59:59.999Z`;
+
+    const { data, error } = await supabaseClient
+      .from(TABLE_NAME)
+      .select(
+        `
+        *,
+        contents!watch_history_content_fkey (
+          title,
+          poster_path,
+          backdrop_path
+        )
+      `,
+      )
+      .eq('user_id', user.id)
+      .gte('last_watched_at', startDate)
+      .lte('last_watched_at', endDate)
+      .order('last_watched_at', { ascending: false });
+
+    if (error) {
+      console.error('날짜별 시청 기록 조회 실패:', error);
+      throw new Error(`Failed to fetch history by date: ${error.message}`);
+    }
+
+    return (data ?? []).map((item) => {
+      const contents = item.contents as ContentJoin;
+      return {
+        ...mapWithField<WatchHistoryDto>(item),
+        contentTitle: contents?.title ?? '',
+        contentPosterPath: contents?.poster_path ?? '',
+        contentBackdropPath: contents?.backdrop_path ?? '',
+        progressSeconds: item.progress_seconds ?? 0,
+        durationSeconds: item.duration_seconds ?? 0,
+      };
+    });
   },
 
   /**
