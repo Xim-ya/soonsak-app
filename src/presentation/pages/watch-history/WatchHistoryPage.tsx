@@ -87,23 +87,20 @@ export default function WatchHistoryPage() {
     }
   }, [date, hasNextPage, isFetchingNextPage, infiniteQuery]);
 
-  // 아이템 클릭 핸들러 (이어보기: 플레이어로 직접 이동)
-  // videoId가 없는 경우 콘텐츠 상세 페이지로 fallback
+  // 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
+  // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
   const handleItemPress = useCallback(
     (item: WatchHistoryModelType) => {
-      if (!item.videoId) {
-        navigation.navigate(routePages.contentDetail, {
-          id: item.contentId,
-          type: item.contentType,
-        });
-        return;
-      }
-      navigation.navigate(routePages.player, {
-        videoId: item.videoId,
+      navigation.navigate(routePages.contentDetail, {
+        id: item.contentId,
+        type: item.contentType,
         title: item.contentTitle,
-        contentId: item.contentId,
-        contentType: item.contentType,
-        ...(item.progressSeconds > 0 && { startSeconds: item.progressSeconds }),
+        initialData: {
+          backdropPath: item.contentBackdropPath,
+          posterPath: item.contentPosterPath,
+          progressSeconds: item.progressSeconds,
+          durationSeconds: item.durationSeconds,
+        },
       });
     },
     [navigation],

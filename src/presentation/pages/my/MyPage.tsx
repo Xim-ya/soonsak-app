@@ -26,7 +26,6 @@ import {
   type WatchHistoryModelType,
 } from '@/features/watch-history';
 import { useFavoritesCount } from '@/features/favorites';
-import { useSocialLogin } from '@/presentation/pages/login/_hooks/useSocialLogin';
 import { useCalendarNavigation, useRatingsCount } from './_hooks';
 import {
   MyPageHeader,
@@ -47,9 +46,6 @@ export default function MyPage() {
   // 유저 프로필 및 인증 상태
   const { status, displayName, avatarUrl } = useAuth();
   const isGuest = status === 'unauthenticated';
-
-  // 소셜 로그인
-  const { handleLogin, loadingProvider } = useSocialLogin();
 
   // 프로필 클릭 시 로그인 다이얼로그 상태
   const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
@@ -93,33 +89,20 @@ export default function MyPage() {
     setLoginDialogVisible(false);
   }, []);
 
-  const handleKakaoLogin = useCallback(() => {
-    handleLogin('kakao');
-    setLoginDialogVisible(false);
-  }, [handleLogin]);
-
-  const handleOtherLogin = useCallback(() => {
-    navigation.navigate(routePages.login, { canGoBack: true });
-    setLoginDialogVisible(false);
-  }, [navigation]);
-
-  // 시청 기록 아이템 클릭 핸들러 (이어보기: 플레이어로 직접 이동)
-  // videoId가 없는 경우 콘텐츠 상세 페이지로 fallback
+  // 시청 기록 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
+  // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
-      if (!item.videoId) {
-        navigation.navigate(routePages.contentDetail, {
-          id: item.contentId,
-          type: item.contentType,
-        });
-        return;
-      }
-      navigation.navigate(routePages.player, {
-        videoId: item.videoId,
+      navigation.navigate(routePages.contentDetail, {
+        id: item.contentId,
+        type: item.contentType,
         title: item.contentTitle,
-        contentId: item.contentId,
-        contentType: item.contentType,
-        ...(item.progressSeconds > 0 && { startSeconds: item.progressSeconds }),
+        initialData: {
+          backdropPath: item.contentBackdropPath,
+          posterPath: item.contentPosterPath,
+          progressSeconds: item.progressSeconds,
+          durationSeconds: item.durationSeconds,
+        },
       });
     },
     [navigation],
@@ -221,9 +204,6 @@ export default function MyPage() {
       <LoginPromptDialog
         visible={isLoginDialogVisible}
         onClose={handleCloseLoginDialog}
-        onKakaoLogin={handleKakaoLogin}
-        onOtherLogin={handleOtherLogin}
-        isKakaoLoading={loadingProvider === 'kakao'}
       />
     </BasePage>
   );

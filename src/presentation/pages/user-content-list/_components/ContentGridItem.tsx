@@ -35,13 +35,17 @@ function ContentGridItem({ item, showRating = false }: ContentGridItemProps) {
     size: TmdbImageSize.w342,
   });
 
+  // initialData로 포스터 경로를 전달하여 API 응답 전에 즉시 표시
   const handlePress = useCallback(() => {
     navigation.push(routePages.contentDetail, {
       id: item.contentId,
       title: item.contentTitle,
       type: item.contentType,
+      initialData: {
+        posterPath: item.contentPosterPath,
+      },
     });
-  }, [navigation, item.contentId, item.contentTitle, item.contentType]);
+  }, [navigation, item.contentId, item.contentTitle, item.contentType, item.contentPosterPath]);
 
   return (
     <Container>

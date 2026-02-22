@@ -18,7 +18,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 /**
  * 카드 이미지에 표시할 수 있는 콘텐츠 아이템 인터페이스
  */
-export interface CardContentItem extends BaseContentModel {
+export interface CardContentItem extends Omit<BaseContentModel, 'backdropPath'> {
   readonly backdropPath: string | undefined;
 }
 
@@ -38,13 +38,18 @@ const ContentCardImage = React.memo(
   ({ item, overlay, titleLeftOffset = 8 }: ContentCardImageProps) => {
     const navigation = useNavigation<NavigationProp>();
 
+    // initialData로 이미지 경로를 전달하여 API 응답 전에 즉시 표시
     const handlePress = useCallback(() => {
       navigation.navigate(routePages.contentDetail, {
         id: item.id,
         title: item.title,
         type: item.type,
+        initialData: {
+          ...(item.backdropPath && { backdropPath: item.backdropPath }),
+          posterPath: item.posterPath,
+        },
       });
-    }, [navigation, item.id, item.title, item.type]);
+    }, [navigation, item.id, item.title, item.type, item.backdropPath, item.posterPath]);
 
     const imageUrl = useMemo(
       () =>

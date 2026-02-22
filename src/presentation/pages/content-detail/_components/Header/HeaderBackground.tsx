@@ -51,7 +51,11 @@ interface HeaderBackgroundProps {
 export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) => {
   const { id, type } = useContentDetailRoute();
   const { data: contentInfo } = useContentDetail(Number(id), type);
-  const { primaryVideo, watchProgress } = useContentVideos();
+  const { primaryVideo, watchProgress, preloadedBackdropPath, preloadedWatchProgress } =
+    useContentVideos();
+
+  // 시청 진행률: API 응답 우선, 없으면 프리로드 데이터 사용
+  const effectiveWatchProgress = watchProgress ?? preloadedWatchProgress;
 
   const { toggleImages, opacityValues } = useImageTransition();
   const navigation = useNavigation<NavigationProp>();
@@ -94,25 +98,27 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     return { width, height };
   }, []);
 
-  // 이미지 URL 메모이제이션
-  const imageUrls = useMemo(
-    () => ({
+  // 이미지 URL 메모이제이션 (프리로드된 이미지 fallback 포함)
+  const imageUrls = useMemo(() => {
+    // API 응답 우선, 없으면 프리로드된 경로 사용
+    const backdropPath = contentInfo?.backdropPath ?? preloadedBackdropPath;
+    return {
       youtube: videoInfo?.thumbnails?.high || '',
-      tmdb: contentInfo?.backdropPath
-        ? formatter.prefixTmdbImgUrl(contentInfo.backdropPath, { size: TmdbImageSize.w780 })
+      tmdb: backdropPath
+        ? formatter.prefixTmdbImgUrl(backdropPath, { size: TmdbImageSize.w780 })
         : '',
-    }),
-    [contentInfo?.backdropPath, videoInfo?.thumbnails?.high],
-  );
+    };
+  }, [contentInfo?.backdropPath, preloadedBackdropPath, videoInfo?.thumbnails?.high]);
 
   // 콘텐츠 제목
   const contentTitle = contentInfo?.title ?? '';
 
   // 이어보기 가능 여부 판단 - 복잡한 조건에 명시적 이름 부여
-  const isSameVideo = watchProgress?.videoId === primaryVideo?.id;
+  // API 응답 시 videoId 체크, 프리로드 데이터는 WatchHistory에서 왔으므로 유효하다고 간주
+  const isSameVideo = watchProgress ? watchProgress.videoId === primaryVideo?.id : true;
   const hasValidProgress = shouldShowProgressBar(
-    watchProgress?.progressSeconds ?? 0,
-    watchProgress?.durationSeconds ?? 0,
+    effectiveWatchProgress?.progressSeconds ?? 0,
+    effectiveWatchProgress?.durationSeconds ?? 0,
   );
   const canResume = isSameVideo && hasValidProgress;
 
@@ -125,11 +131,12 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
       title: primaryVideo.title || contentTitle || '',
       contentId: Number(id),
       contentType: type,
-      ...(canResume && { startSeconds: watchProgress!.progressSeconds }),
+      ...(canResume &&
+        effectiveWatchProgress && { startSeconds: effectiveWatchProgress.progressSeconds }),
     };
 
     navigation.navigate(routePages.player, playerParams);
-  }, [navigation, primaryVideo, contentTitle, id, type, canResume, watchProgress]);
+  }, [navigation, primaryVideo, contentTitle, id, type, canResume, effectiveWatchProgress]);
 
   // 썸네일 클릭 핸들러
   const handleThumbnailPress = useCallback(() => {
@@ -137,13 +144,16 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   }, [toggleImages]);
 
   // UI 상태 파생 - 복잡한 조건에 명시적 이름 부여
-  const hasRuntimeInfo = primaryVideo?.runtime != null && primaryVideo.runtime > 0;
+  // 런타임: API 응답 우선, 없으면 프리로드된 durationSeconds 사용
+  const effectiveRuntime =
+    primaryVideo?.runtime ?? effectiveWatchProgress?.durationSeconds ?? 0;
+  const hasRuntimeInfo = effectiveRuntime > 0;
   const showRuntimeChip = !hasValidProgress && hasRuntimeInfo;
 
   // 진행률 계산
   const progressPercent = calculateProgressPercent(
-    watchProgress?.progressSeconds ?? 0,
-    watchProgress?.durationSeconds ?? 0,
+    effectiveWatchProgress?.progressSeconds ?? 0,
+    effectiveWatchProgress?.durationSeconds ?? 0,
   );
 
   return (
@@ -195,14 +205,14 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
       {/* 런타임 칩 - 좌측 하단 (시청 기록 없을 때만) */}
       {showRuntimeChip && (
         <RuntimeChipContainer>
-          <DarkChip content={formatter.formatRuntime(primaryVideo!.runtime!)} />
+          <DarkChip content={formatter.formatRuntime(effectiveRuntime)} />
         </RuntimeChipContainer>
       )}
 
       {/* 시청 진행률 - 하단 전체 */}
-      {hasValidProgress && (
+      {hasValidProgress && effectiveWatchProgress && (
         <ProgressContainer>
-          <DarkChip content={formatter.formatRuntime(watchProgress!.progressSeconds)} />
+          <DarkChip content={formatter.formatRuntime(effectiveWatchProgress.progressSeconds)} />
           <ProgressBarWrapper>
             <ProgressBarTrack />
             <ProgressBarFill style={{ width: `${progressPercent}%` }} />

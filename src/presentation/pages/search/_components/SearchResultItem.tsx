@@ -37,13 +37,17 @@ interface SearchResultItemProps {
 const SearchResultItem = memo(function SearchResultItem({ item }: SearchResultItemProps) {
   const navigation = useNavigation<NavigationProp>();
 
+  // initialData로 포스터 경로를 전달하여 API 응답 전에 즉시 표시
   const handlePress = useCallback(() => {
     navigation.navigate(routePages.contentDetail, {
       id: item.id,
       title: item.title,
       type: item.contentType,
+      ...(item.posterPath && {
+        initialData: { posterPath: item.posterPath },
+      }),
     });
-  }, [navigation, item.id, item.title, item.contentType]);
+  }, [navigation, item.id, item.title, item.contentType, item.posterPath]);
 
   // 포스터 이미지 URL 생성
   const posterUrl = item.posterPath
