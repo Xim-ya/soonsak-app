@@ -24,7 +24,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
 interface LoadableImageViewProps {
   source: string;
@@ -95,11 +95,7 @@ function LoadableImageViewComponent({
 
       {/* 에러 시 에러 표시 (빈 소스 포함) */}
       {(hasError || !isValidSource) && (
-        <ErrorContainer width={width} height={height} borderRadius={borderRadius}>
-          <ErrorIcon width={width} height={height}>
-            ?
-          </ErrorIcon>
-        </ErrorContainer>
+        <ImageErrorPlaceholder width={width} height={height} borderRadius={borderRadius} />
       )}
 
       {/* 실제 이미지 - Reanimated 애니메이션 */}
@@ -144,30 +140,6 @@ const PlaceholderView = styled.View<{
   borderRadius,
 }));
 
-// 에러 상태 컨테이너
-const ErrorContainer = styled.View<{
-  width: number;
-  height: number;
-  borderRadius: number;
-}>(({ width, height, borderRadius }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width,
-  height,
-  backgroundColor: colors.gray05,
-  borderRadius,
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
-
-// 에러 아이콘
-const ErrorIcon = styled.Text<{ width: number; height: number }>(({ width, height }) => ({
-  ...textStyles.body1,
-  color: colors.gray02,
-  fontSize: Math.min(width, height) * 0.15, // 컨테이너 최소 크기의 15%
-  fontWeight: 'bold',
-}));
 
 // memo로 감싸서 source가 같으면 리렌더링 방지
 const LoadableImageView = memo(LoadableImageViewComponent, (prevProps, nextProps) => {
