@@ -50,12 +50,12 @@ const BACK_ICON_SVG = `
 
 type TabType = 'search' | 'history' | 'favorites' | 'ratings';
 
-const TABS: { key: TabType; label: string }[] = [
+const TABS: ReadonlyArray<{ readonly key: TabType; readonly label: string }> = [
   { key: 'search', label: '전체 검색' },
   { key: 'history', label: '시청기록' },
   { key: 'favorites', label: '찜' },
   { key: 'ratings', label: '평가' },
-];
+] as const;
 
 // ============================================================================
 // Types
@@ -349,6 +349,10 @@ export default function AdminPushContentSelectPage() {
             renderItem={renderVideoItem}
             contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}
+            removeClippedSubviews
+            maxToRenderPerBatch={10}
+            windowSize={5}
+            initialNumToRender={8}
           />
         )}
       </BasePage>
@@ -413,6 +417,10 @@ export default function AdminPushContentSelectPage() {
             renderItem={renderSearchItem}
             contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}
+            removeClippedSubviews
+            maxToRenderPerBatch={10}
+            windowSize={7}
+            initialNumToRender={10}
           />
         )
       ) : isLoadingUserContents ? (
@@ -434,6 +442,10 @@ export default function AdminPushContentSelectPage() {
           renderItem={renderUserContentItem}
           contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 20 }}
           showsVerticalScrollIndicator={false}
+          removeClippedSubviews
+          maxToRenderPerBatch={10}
+          windowSize={7}
+          initialNumToRender={10}
         />
       )}
     </BasePage>

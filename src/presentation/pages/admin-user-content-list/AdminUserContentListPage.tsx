@@ -31,7 +31,11 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import type { PushData } from '@/features/admin/types/pushAction';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AdminContentGridItem } from './_components/AdminContentGridItem';
+import {
+  MemoizedAdminContentGridItem,
+  GRID_ITEM_WIDTH,
+  GRID_POSTER_HEIGHT,
+} from './_components/AdminContentGridItem';
 
 // ============================================================================
 // Constants
@@ -68,6 +72,9 @@ const TAB_INDEX_TO_KEY: TabType[] = ['history', 'favorites', 'ratings'];
 
 const MAX_TITLE_LENGTH = 50;
 const MAX_BODY_LENGTH = 200;
+
+// 그리드 아이템 높이 계산 (포스터 + 버튼 영역 + 마진)
+const GRID_ITEM_HEIGHT = GRID_POSTER_HEIGHT + 30 + 16;
 
 // ============================================================================
 // Component
@@ -197,7 +204,7 @@ export default function AdminUserContentListPage() {
   // 아이템 렌더링
   const renderItem = useCallback(
     ({ item }: { item: UserContentItem }) => (
-      <AdminContentGridItem
+      <MemoizedAdminContentGridItem
         item={item}
         showRating={activeTab === 'ratings'}
         showProgress={activeTab === 'history'}
@@ -205,6 +212,19 @@ export default function AdminUserContentListPage() {
       />
     ),
     [activeTab, handleOpenPushModal],
+  );
+
+  // getItemLayout for 3-column grid performance
+  const getItemLayout = useCallback(
+    (_: ArrayLike<UserContentItem> | null | undefined, index: number) => {
+      const rowIndex = Math.floor(index / 3);
+      return {
+        length: GRID_ITEM_HEIGHT,
+        offset: GRID_ITEM_HEIGHT * rowIndex,
+        index,
+      };
+    },
+    [],
   );
 
   const keyExtractor = useCallback(
@@ -283,6 +303,11 @@ export default function AdminUserContentListPage() {
             paddingBottom: insets.bottom + 20,
           }}
           showsVerticalScrollIndicator={false}
+          getItemLayout={getItemLayout}
+          removeClippedSubviews
+          maxToRenderPerBatch={9}
+          windowSize={5}
+          initialNumToRender={15}
         />
       )}
 
