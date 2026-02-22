@@ -116,6 +116,7 @@ function WatchHistoryListComponent({
   const {
     items,
     isLoading,
+    isEmpty,
     isFetchingNextPage,
     hasNextPage,
     isGuest,
@@ -124,8 +125,6 @@ function WatchHistoryListComponent({
     pageSize: PAGE_SIZE,
     maxItems: MAX_ITEMS,
   });
-
-  const hasNoHistory = items.length === 0 && !isLoading;
 
   // 스크롤 끝 도달 시 다음 페이지 로드
   const handleEndReached = useCallback(() => {
@@ -168,8 +167,8 @@ function WatchHistoryListComponent({
     );
   }
 
-  // 로그인 유저 + 기록 없음
-  if (hasNoHistory) {
+  // 로그인 유저 + 기록 없음 (로딩 완료 후 에러 없이 데이터 없음)
+  if (isEmpty) {
     return (
       <Container>
         <SectionHeader>

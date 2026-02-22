@@ -521,7 +521,9 @@ export const watchHistoryApi = {
   getHistoryByDate: async (date: string): Promise<WatchHistoryWithContentDto[]> => {
     const user = await requireAuth();
 
-    // 날짜 범위 설정 (해당 날짜의 00:00:00 ~ 23:59:59)
+    // NOTE: 날짜 범위는 UTC 기준으로 설정됩니다.
+    // getCalendarHistory의 날짜 그룹화 방식(split('T')[0])과 동일한 UTC 기준을 사용하여
+    // 캘린더와 상세 목록 간 일관성을 보장합니다.
     const startDate = `${date}T00:00:00.000Z`;
     const endDate = `${date}T23:59:59.999Z`;
 

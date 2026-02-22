@@ -114,8 +114,11 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const contentTitle = contentInfo?.title ?? '';
 
   // 이어보기 가능 여부 판단 - 복잡한 조건에 명시적 이름 부여
-  // 시청 진행률의 videoId가 primaryVideo의 id와 일치하는지 확인
-  const isSameVideo = (watchProgress ?? preloadedWatchProgress)?.videoId === primaryVideo?.id;
+  // API 응답(watchProgress)이 있으면 videoId 비교, 없으면(프리로드 상태) primaryVideo 존재 시 허용
+  // 프리로드 데이터는 WatchHistory에서 왔으므로 해당 콘텐츠의 진행률로 간주
+  const isSameVideo = watchProgress
+    ? watchProgress.videoId === primaryVideo?.id
+    : preloadedWatchProgress != null && primaryVideo != null;
   const hasValidProgress = shouldShowProgressBar(
     effectiveWatchProgress?.progressSeconds ?? 0,
     effectiveWatchProgress?.durationSeconds ?? 0,
@@ -145,8 +148,7 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
 
   // UI 상태 파생 - 복잡한 조건에 명시적 이름 부여
   // 런타임: API 응답 우선, 없으면 프리로드된 durationSeconds 사용
-  const effectiveRuntime =
-    primaryVideo?.runtime ?? effectiveWatchProgress?.durationSeconds ?? 0;
+  const effectiveRuntime = primaryVideo?.runtime ?? effectiveWatchProgress?.durationSeconds ?? 0;
   const hasRuntimeInfo = effectiveRuntime > 0;
   const showRuntimeChip = !hasValidProgress && hasRuntimeInfo;
 
@@ -158,7 +160,12 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
 
   return (
     <Container>
-      <Animated.View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }, backdropAnimatedStyle]}>
+      <Animated.View
+        style={[
+          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+          backdropAnimatedStyle,
+        ]}
+      >
         <ImageWrapper>
           {/* TMDB 배경 이미지 */}
           {imageUrls.tmdb && (
@@ -212,7 +219,9 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
       {/* 시청 진행률 - 하단 전체 */}
       {hasValidProgress && effectiveWatchProgress && (
         <ProgressContainer>
-          <DarkChip content={formatter.formatRuntime(effectiveWatchProgress.progressSeconds)} />
+          <DarkChip
+            content={formatter.formatRuntime(effectiveWatchProgress.progressSeconds ?? 0)}
+          />
           <ProgressBarWrapper>
             <ProgressBarTrack />
             <ProgressBarFill style={{ width: `${progressPercent}%` }} />
