@@ -22,7 +22,6 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import {
   useWatchHistoryCalendar,
-  useUniqueWatchHistory,
   useFullyWatchedCount,
   type WatchHistoryModelType,
 } from '@/features/watch-history';
@@ -69,9 +68,6 @@ export default function MyPage() {
 
   // 캘린더 시청 기록 조회
   const { data: calendarData } = useWatchHistoryCalendar(selectedYear, selectedMonth);
-
-  // 고유 콘텐츠 시청 기록 조회 (하단 목록용)
-  const { data: watchHistoryData, isLoading: isHistoryLoading } = useUniqueWatchHistory(10, 0);
 
   // 통계 데이터 조회
   const { data: favoritesCount = 0 } = useFavoritesCount();
@@ -147,6 +143,23 @@ export default function MyPage() {
     navigation.navigate(routePages.userContentList, { initialTab: 2 });
   }, [isGuest, navigation]);
 
+  // 시청기록 전체 보기 핸들러
+  const handleViewAllWatchHistory = useCallback(() => {
+    if (isGuest) {
+      setLoginDialogVisible(true);
+      return;
+    }
+    navigation.navigate(routePages.watchHistory, {});
+  }, [isGuest, navigation]);
+
+  // 캘린더 날짜 클릭 핸들러 (해당 날짜의 시청기록 페이지로 이동)
+  const handleCalendarDatePress = useCallback(
+    (date: string) => {
+      navigation.navigate(routePages.watchHistory, { date });
+    },
+    [navigation],
+  );
+
   return (
     <BasePage touchableWithoutFeedback={false}>
       <Container>
@@ -173,13 +186,10 @@ export default function MyPage() {
 
           <Gap size={20} />
 
-          {watchHistoryData && (
-            <WatchHistoryList
-              items={watchHistoryData.items}
-              isLoading={isHistoryLoading}
-              onItemPress={handleWatchHistoryItemPress}
-            />
-          )}
+          <WatchHistoryList
+            onItemPress={handleWatchHistoryItemPress}
+            onViewAllPress={handleViewAllWatchHistory}
+          />
 
           <WatchCalendar
             year={selectedYear}
@@ -188,6 +198,7 @@ export default function MyPage() {
             onPrevMonth={handlePrevMonth}
             onNextMonth={handleNextMonth}
             onOpenMonthPicker={handleOpenMonthPicker}
+            onDatePress={handleCalendarDatePress}
           />
         </ScrollView>
       </Container>

@@ -81,6 +81,9 @@ export type RootStackParamList = {
   [routePages.userContentList]: {
     initialTab?: UserContentListTabIndex; // 초기 활성화 탭 인덱스 (기본값: 0)
   }; // 사용자 콘텐츠 목록 - 탭 인덱스 선택
+  [routePages.watchHistory]: {
+    date?: string; // 특정 날짜 필터 (YYYY-MM-DD 형식, 없으면 전체 시청 기록)
+  }; // 시청 기록 - 날짜 필터 선택
   [routePages.quickExplore]: undefined; // 빠른탐색 - 파라미터 없음
   [routePages.adminContentSearch]: {
     videoId: string; // 교체할 비디오 ID

@@ -11,6 +11,7 @@ export const routePages = {
   profileSetup: 'ProfileSetup',
   settings: 'Settings',
   userContentList: 'UserContentList',
+  watchHistory: 'WatchHistory',
   quickExplore: 'QuickExplore',
   adminContentSearch: 'AdminContentSearch',
   adminPrimaryVideoSelect: 'AdminPrimaryVideoSelect',

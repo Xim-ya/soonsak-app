@@ -516,6 +516,54 @@ export const watchHistoryApi = {
   },
 
   /**
+   * 특정 날짜의 시청 기록 조회
+   * 캘린더에서 날짜 클릭 시 해당 날짜의 시청 콘텐츠 목록 반환
+   */
+  getHistoryByDate: async (date: string): Promise<WatchHistoryWithContentDto[]> => {
+    const user = await requireAuth();
+
+    // 날짜 범위 설정 (해당 날짜의 00:00:00 ~ 23:59:59)
+    const startDate = `${date}T00:00:00.000Z`;
+    const endDate = `${date}T23:59:59.999Z`;
+
+    const { data, error } = await supabaseClient
+      .from(TABLE_NAME)
+      .select(
+        `
+        *,
+        contents!watch_history_content_fkey (
+          title,
+          poster_path,
+          backdrop_path
+        )
+      `,
+      )
+      .eq('user_id', user.id)
+      .gte('last_watched_at', startDate)
+      .lte('last_watched_at', endDate)
+      .order('last_watched_at', { ascending: false });
+
+    if (error) {
+      console.error('날짜별 시청 기록 조회 실패:', error);
+      throw new Error(`Failed to fetch history by date: ${error.message}`);
+    }
+
+    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
+
+    return (data ?? []).map((item) => {
+      const contents = item.contents as ContentJoin;
+      return {
+        ...mapWithField<WatchHistoryDto>(item),
+        contentTitle: contents?.title ?? '',
+        contentPosterPath: contents?.poster_path ?? '',
+        contentBackdropPath: contents?.backdrop_path ?? '',
+        progressSeconds: item.progress_seconds ?? 0,
+        durationSeconds: item.duration_seconds ?? 0,
+      };
+    });
+  },
+
+  /**
    * 특정 콘텐츠의 시청 진행률 조회
    * 가장 최근 시청 기록의 진행률을 반환
    */

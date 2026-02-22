@@ -10,13 +10,19 @@
 // API
 export { watchHistoryApi } from './api/watchHistoryApi';
 
+// Components
+export { WatchHistoryCard, CARD_WIDTH, CARD_HEIGHT, HORIZONTAL_PADDING } from './components';
+
 // Hooks
 export {
   useFullyWatchedCount,
   useFullyWatchedList,
+  useWatchHistoryByDate,
   useWatchHistoryCalendar,
   useWatchHistoryList,
   useUniqueWatchHistory,
+  useWatchHistoryPreview,
+  useInfiniteUniqueWatchHistory,
   useAddWatchHistory,
   useDeleteWatchHistory,
   useClearAllWatchHistory,
