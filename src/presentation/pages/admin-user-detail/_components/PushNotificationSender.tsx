@@ -203,10 +203,9 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     [selectedActionKey],
   );
 
-  // 입력값 검증
+  // 입력값 검증 (title은 선택적, body는 필수)
   const trimmedTitle = title.trim();
   const trimmedBody = body.trim();
-  const isTitleValid = trimmedTitle.length >= MIN_TITLE_LENGTH;
   const isBodyValid = trimmedBody.length >= MIN_BODY_LENGTH;
 
   // 액션 파라미터 유효성 검증
@@ -261,7 +260,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     return true;
   }, [selectedAction, actionParams]);
 
-  const isValid = isTitleValid && isBodyValid && isActionParamsValid;
+  const isValid = isBodyValid && isActionParamsValid;
 
   // 모달 열기
   const handleOpenModal = useCallback(() => {
@@ -671,10 +670,10 @@ export const PushNotificationSender = memo(function PushNotificationSender({
               <ModalScrollView showsVerticalScrollIndicator={false}>
                 <ModalTitle>푸시 알림 작성</ModalTitle>
 
-                {/* 제목 */}
+                {/* 제목 (선택) */}
                 <InputContainer>
                   <InputLabelRow>
-                    <InputLabel>제목</InputLabel>
+                    <InputLabel>제목 (선택)</InputLabel>
                     <CharacterCount isNearLimit={title.length > MAX_TITLE_LENGTH * 0.8}>
                       {title.length}/{MAX_TITLE_LENGTH}
                     </CharacterCount>
@@ -682,7 +681,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   <StyledTextInput
                     value={title}
                     onChangeText={setTitle}
-                    placeholder="알림 제목 입력"
+                    placeholder="없으면 앱 이름으로 표시"
                     placeholderTextColor={colors.gray03}
                     maxLength={MAX_TITLE_LENGTH}
                     returnKeyType="next"

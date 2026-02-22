@@ -158,8 +158,8 @@ export default function AdminUserContentListPage() {
     const trimmedTitle = pushTitle.trim();
     const trimmedBody = pushBody.trim();
 
-    if (trimmedTitle.length === 0 || trimmedBody.length === 0) {
-      Alert.alert('입력 오류', '제목과 내용을 모두 입력해주세요.');
+    if (trimmedBody.length === 0) {
+      Alert.alert('입력 오류', '내용을 입력해주세요.');
       return;
     }
 
@@ -257,7 +257,7 @@ export default function AdminUserContentListPage() {
     }
   };
 
-  const isValidInput = pushTitle.trim().length > 0 && pushBody.trim().length > 0;
+  const isValidInput = pushBody.trim().length > 0;
 
   return (
     <BasePage useSafeArea={false}>
@@ -347,15 +347,15 @@ export default function AdminUserContentListPage() {
                   </SelectedContentInfo>
                 )}
 
-                {/* 제목 입력 */}
+                {/* 제목 입력 (선택) */}
                 <InputSection>
                   <InputLabel>
-                    제목 <CharCount>({pushTitle.length}/{MAX_TITLE_LENGTH})</CharCount>
+                    제목 (선택) <CharCount>({pushTitle.length}/{MAX_TITLE_LENGTH})</CharCount>
                   </InputLabel>
                   <StyledTextInput
                     value={pushTitle}
                     onChangeText={(text) => setPushTitle(text.slice(0, MAX_TITLE_LENGTH))}
-                    placeholder="푸시 알림 제목"
+                    placeholder="없으면 앱 이름으로 표시"
                     placeholderTextColor={colors.gray03}
                     maxLength={MAX_TITLE_LENGTH}
                   />
