@@ -11,8 +11,8 @@
  * <WatchHistoryCard item={watchHistory} onPress={handlePress} />
  */
 
-import { memo, useCallback } from 'react';
-import { TouchableOpacity, Dimensions } from 'react-native';
+import { memo, useCallback, useMemo } from 'react';
+import { TouchableOpacity, useWindowDimensions } from 'react-native';
 import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import {
@@ -33,17 +33,23 @@ interface WatchHistoryCardProps {
   readonly onPress?: (item: WatchHistoryModel) => void;
 }
 
-/* Constants - ChannelVideoCard와 동일한 크기 */
+/* Constants */
 
 const HORIZONTAL_PADDING = 16;
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_WIDTH = SCREEN_WIDTH - HORIZONTAL_PADDING * 2;
-const CARD_HEIGHT = CARD_WIDTH * (9 / 16); // 16:9 비율
 const PROGRESS_BAR_HEIGHT = 3;
 
 /* Component */
 
 function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
+  const { width: screenWidth } = useWindowDimensions();
+
+  // Runtime 크기 계산 (ChannelVideoCard와 동일한 크기)
+  const dimensions = useMemo(() => {
+    const cardWidth = screenWidth - HORIZONTAL_PADDING * 2;
+    const cardHeight = cardWidth * (9 / 16); // 16:9 비율
+    return { cardWidth, cardHeight };
+  }, [screenWidth]);
+
   const handlePress = useCallback(() => {
     onPress?.(item);
   }, [item, onPress]);
@@ -55,16 +61,21 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
   });
 
   return (
-    <Container>
-      <ThumbnailTouchable onPress={handlePress} activeOpacity={0.8}>
-        <ThumbnailWrapper>
+    <Container cardWidth={dimensions.cardWidth}>
+      <ThumbnailTouchable
+        onPress={handlePress}
+        activeOpacity={0.8}
+        cardWidth={dimensions.cardWidth}
+        cardHeight={dimensions.cardHeight}
+      >
+        <ThumbnailWrapper cardWidth={dimensions.cardWidth} cardHeight={dimensions.cardHeight}>
           <LoadableImageView
             source={imageUrl}
-            width={CARD_WIDTH}
-            height={CARD_HEIGHT}
+            width={dimensions.cardWidth}
+            height={dimensions.cardHeight}
             borderRadius={12}
           />
-          <DarkedLinearShadow height={CARD_HEIGHT} align={LinearAlign.bottomTop} />
+          <DarkedLinearShadow height={dimensions.cardHeight} align={LinearAlign.bottomTop} />
 
           {/* 런타임 칩 */}
           {item.durationSeconds > 0 && (
@@ -94,23 +105,27 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
 
 /* Styled Components */
 
-const Container = styled.View({
-  width: CARD_WIDTH,
+const Container = styled.View<{ cardWidth: number }>(({ cardWidth }) => ({
+  width: cardWidth,
   marginHorizontal: HORIZONTAL_PADDING,
-});
+}));
 
-const ThumbnailTouchable = styled(TouchableOpacity)({
-  width: CARD_WIDTH,
-  height: CARD_HEIGHT,
-});
+const ThumbnailTouchable = styled(TouchableOpacity)<{ cardWidth: number; cardHeight: number }>(
+  ({ cardWidth, cardHeight }) => ({
+    width: cardWidth,
+    height: cardHeight,
+  }),
+);
 
-const ThumbnailWrapper = styled.View({
-  width: CARD_WIDTH,
-  height: CARD_HEIGHT,
-  borderRadius: 12,
-  overflow: 'hidden',
-  backgroundColor: colors.gray05,
-});
+const ThumbnailWrapper = styled.View<{ cardWidth: number; cardHeight: number }>(
+  ({ cardWidth, cardHeight }) => ({
+    width: cardWidth,
+    height: cardHeight,
+    borderRadius: 12,
+    overflow: 'hidden',
+    backgroundColor: colors.gray05,
+  }),
+);
 
 const RuntimeChipContainer = styled.View({
   position: 'absolute',
@@ -139,4 +154,3 @@ const ProgressBarWrapper = styled.View({
 });
 
 export const WatchHistoryCard = memo(WatchHistoryCardComponent);
-export { CARD_WIDTH, CARD_HEIGHT, HORIZONTAL_PADDING };

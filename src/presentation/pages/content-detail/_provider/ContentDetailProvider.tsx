@@ -11,14 +11,11 @@ import type { ContentDetailInitialData } from '@/shared/navigation/types';
 interface WatchProgressData {
   progressSeconds: number;
   durationSeconds: number;
-  videoId: string;
+  videoId: string | null;
 }
 
 /** 프리로드된 시청 진행률 데이터 */
-interface PreloadedWatchProgress {
-  progressSeconds: number;
-  durationSeconds: number;
-}
+type PreloadedWatchProgress = Pick<ContentDetailInitialData, 'progressSeconds' | 'durationSeconds'>;
 
 interface ContentDetailContextType {
   videos: VideoDto[];

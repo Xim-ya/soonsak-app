@@ -13,6 +13,11 @@ import type {
 const TABLE_NAME = 'watch_history';
 
 /**
+ * Supabase join으로 가져온 contents 테이블의 부분 타입
+ */
+type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
+
+/**
  * 인증된 사용자 정보 반환
  * @returns 미인증 시 null
  */
@@ -139,8 +144,6 @@ export const watchHistoryApi = {
       console.error('완료된 시청 목록 조회 실패:', error);
       throw new Error(`Failed to fetch fully watched: ${error.message}`);
     }
-
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
 
     const items: WatchHistoryWithContentDto[] = (data ?? []).map((item) => {
       const contents = item.contents as ContentJoin;
@@ -318,8 +321,6 @@ export const watchHistoryApi = {
       throw new Error(`Failed to fetch watch history: ${error.message}`);
     }
 
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
-
     const items: WatchHistoryWithContentDto[] = (data ?? []).map((item) => {
       const contents = item.contents as ContentJoin;
       return {
@@ -378,8 +379,6 @@ export const watchHistoryApi = {
     // 콘텐츠별 중복 제거 (최신 기록만 유지)
     const seenContents = new Set<string>();
     const uniqueItems: WatchHistoryWithContentDto[] = [];
-
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
 
     for (const item of data ?? []) {
       const contentKey = `${item.content_id}-${item.content_type}`;
@@ -547,8 +546,6 @@ export const watchHistoryApi = {
       console.error('날짜별 시청 기록 조회 실패:', error);
       throw new Error(`Failed to fetch history by date: ${error.message}`);
     }
-
-    type ContentJoin = { title?: string; poster_path?: string; backdrop_path?: string } | null;
 
     return (data ?? []).map((item) => {
       const contents = item.contents as ContentJoin;

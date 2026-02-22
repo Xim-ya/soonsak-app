@@ -184,7 +184,13 @@ function WatchHistoryListComponent({
 
   return (
     <Container>
-      <Pressable onPress={onViewAllPress} disabled={!onViewAllPress}>
+      <Pressable
+        onPress={onViewAllPress}
+        disabled={!onViewAllPress}
+        accessibilityRole="button"
+        accessibilityLabel="시청기록 전체보기"
+        accessibilityState={{ disabled: !onViewAllPress }}
+      >
         <SectionHeader>
           <SectionTitle>시청기록</SectionTitle>
           {onViewAllPress && <RightArrowIcon width={20} height={20} color={colors.white} />}

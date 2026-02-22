@@ -114,8 +114,8 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const contentTitle = contentInfo?.title ?? '';
 
   // 이어보기 가능 여부 판단 - 복잡한 조건에 명시적 이름 부여
-  // API 응답 시 videoId 체크, 프리로드 데이터는 WatchHistory에서 왔으므로 유효하다고 간주
-  const isSameVideo = watchProgress ? watchProgress.videoId === primaryVideo?.id : true;
+  // 시청 진행률의 videoId가 primaryVideo의 id와 일치하는지 확인
+  const isSameVideo = (watchProgress ?? preloadedWatchProgress)?.videoId === primaryVideo?.id;
   const hasValidProgress = shouldShowProgressBar(
     effectiveWatchProgress?.progressSeconds ?? 0,
     effectiveWatchProgress?.durationSeconds ?? 0,
