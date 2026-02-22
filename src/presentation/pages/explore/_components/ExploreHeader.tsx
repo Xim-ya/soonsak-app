@@ -80,19 +80,23 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
     return (
       <>
         <FallbackContainer>
-          <TitleRow>
-            <TitleText>탐색</TitleText>
-            <ActionButtonRow>
-              <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                <LightningIcon width={14} height={14} color={colors.main} />
-                <QuickExploreChipText>빠른탐색</QuickExploreChipText>
-              </QuickExploreChip>
-              <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-                <LoginButtonText>로그인</LoginButtonText>
-              </LoginButton>
-            </ActionButtonRow>
-          </TitleRow>
-          <CurationPromptCard />
+          <FallbackContentOverlay>
+            <TitleRow>
+              <TitleText>탐색</TitleText>
+              <ActionButtonRow>
+                <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+                  <LightningIcon width={14} height={14} color={colors.main} />
+                  <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+                </QuickExploreChip>
+                <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
+                  <LoginButtonText>로그인</LoginButtonText>
+                </LoginButton>
+              </ActionButtonRow>
+            </TitleRow>
+            <CardSection>
+              <CurationPromptCard />
+            </CardSection>
+          </FallbackContentOverlay>
         </FallbackContainer>
         <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
       </>
@@ -142,16 +146,26 @@ const Container = styled.View({
 });
 
 const LoggedInContainer = styled.View({
+  minHeight: HEADER_HEIGHT, // 비로그인 상태와 동일한 최소 높이 (레이아웃 점프 방지)
   backgroundColor: colors.black,
   paddingTop: 16,
   paddingBottom: 20,
 });
 
 const FallbackContainer = styled.View({
+  height: HEADER_HEIGHT, // Container와 동일한 높이 (레이아웃 점프 방지)
   backgroundColor: colors.black,
-  paddingTop: 16,
-  paddingBottom: 20,
 });
+
+/** 공통 오버레이 베이스 스타일 */
+const OVERLAY_BASE_STYLE = {
+  flex: 1,
+  justifyContent: 'space-between' as const,
+  paddingTop: AppSize.statusBarHeight + 16,
+  paddingBottom: 24,
+};
+
+const FallbackContentOverlay = styled.View(OVERLAY_BASE_STYLE);
 
 const BackdropImage = styled(ImageBackground)({
   flex: 1,
@@ -159,11 +173,8 @@ const BackdropImage = styled(ImageBackground)({
 });
 
 const ContentOverlay = styled.View({
+  ...OVERLAY_BASE_STYLE,
   position: 'relative',
-  flex: 1,
-  justifyContent: 'space-between',
-  paddingTop: AppSize.statusBarHeight + 16,
-  paddingBottom: 24,
   zIndex: 1,
 });
 

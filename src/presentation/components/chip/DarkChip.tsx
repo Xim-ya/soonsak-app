@@ -6,7 +6,7 @@ import { TouchableOpacity } from 'react-native';
 const DarkChip = ({ content }: { content: string }) => {
   return (
     <Container>
-      <Content>{content}</Content>
+      <Content numberOfLines={1}>{content}</Content>
     </Container>
   );
 };
@@ -18,6 +18,7 @@ const Container = styled(TouchableOpacity)({
   paddingVertical: 4,
   borderRadius: 6,
   alignSelf: 'flex-start',
+  flexShrink: 0, // 부모 레이아웃에 의해 줄어들지 않도록
 });
 
 const Content = styled.Text({
