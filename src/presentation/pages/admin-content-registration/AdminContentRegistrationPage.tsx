@@ -6,14 +6,13 @@
  * - 채널 추가 탭: 채널 URL 입력 후 최근/전체 영상 등록
  */
 
-import { useCallback } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
 import { RegistrationTabBar, VideoRegistrationTab, ChannelRegistrationTab } from './_components';
 import { useContentRegistration } from './_hooks/useContentRegistration';
 
@@ -42,7 +41,15 @@ export default function AdminContentRegistrationPage() {
     error,
   } = useContentRegistration();
 
-  // 탭 변경 핸들러
+  const prevErrorRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      Alert.alert('오류', error);
+    }
+    prevErrorRef.current = error;
+  }, [error]);
+
   const handleTabChange = useCallback(
     (tab: typeof activeTab) => {
       clearResults();
@@ -50,11 +57,6 @@ export default function AdminContentRegistrationPage() {
     },
     [clearResults, setActiveTab],
   );
-
-  // 에러 표시
-  if (error) {
-    Alert.alert('오류', error);
-  }
 
   return (
     <BasePage useSafeArea={false}>

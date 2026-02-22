@@ -116,6 +116,13 @@ export function useContentRegistration(): UseContentRegistrationReturn {
 
   // Register videos
   const registerVideos = useCallback(() => {
+    // 이미 등록 진행 중이면 무시
+    if (contentRegistrationService.isRunning()) {
+      return;
+    }
+
+    setLocalError(null);
+
     if (!videoUrlInput.trim()) {
       setLocalError('URL을 입력해주세요');
       return;
@@ -132,13 +139,19 @@ export function useContentRegistration(): UseContentRegistrationReturn {
       return;
     }
 
-    setLocalError(null);
     // 서비스에서 백그라운드로 실행 (await 하지 않음)
     contentRegistrationService.registerVideos(validVideoIds);
   }, [videoUrlInput]);
 
   // Register channel
   const registerChannel = useCallback(() => {
+    // 이미 등록 진행 중이면 무시
+    if (contentRegistrationService.isRunning()) {
+      return;
+    }
+
+    setLocalError(null);
+
     if (!channelUrlInput.trim()) {
       setLocalError('채널 URL을 입력해주세요');
       return;
@@ -157,7 +170,6 @@ export function useContentRegistration(): UseContentRegistrationReturn {
       return;
     }
 
-    setLocalError(null);
     // 서비스에서 백그라운드로 실행 (await 하지 않음)
     contentRegistrationService.registerChannel(
       channelIdOrHandle,

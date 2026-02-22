@@ -90,6 +90,12 @@ class ContentRegistrationService {
       return;
     }
 
+    // 빈 배열 방어
+    if (videoIds.length === 0) {
+      console.warn('[RegistrationService] 등록할 영상 ID가 없습니다');
+      return;
+    }
+
     // 초기 상태 설정
     this.updateState({
       type: 'video',
