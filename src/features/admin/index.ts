@@ -32,6 +32,12 @@ export {
   formatDate,
   formatDateTime,
   formatCompactNumber,
+  // YouTube URL parsing
+  parseYouTubeVideoUrl,
+  parseYouTubeChannelUrl,
+  parseMultipleVideoUrls,
+  type YouTubeVideoParseResult,
+  type YouTubeChannelParseResult,
 } from './utils';
 
 // Hooks
@@ -59,3 +65,21 @@ export {
   type PushTokenInfo,
   type UserContentItem,
 } from './api/adminUserApi';
+
+// API - Registration
+export {
+  adminRegistrationApi,
+  type VideoRegistrationResult,
+  type ChannelRegistrationResult,
+  type ChannelRegistrationResultItem,
+  type BatchRegistrationResult,
+  type BatchRegistrationResultItem,
+} from './api/adminRegistrationApi';
+
+// Services
+export {
+  contentRegistrationService,
+  type RegistrationState,
+  type VideoRegistrationState,
+  type ChannelRegistrationState,
+} from './services/contentRegistrationService';

@@ -110,6 +110,7 @@ export type RootStackParamList = {
     displayName?: string | null; // 유저 닉네임 (헤더 표시용)
     initialTab?: 0 | 1 | 2; // 초기 탭 (0: 시청기록, 1: 찜, 2: 평가)
   }; // 어드민 유저 콘텐츠 목록 - 시청기록/찜/평가 목록 확인
+  [routePages.adminContentRegistration]: undefined; // 어드민 콘텐츠 등록 - 파라미터 없음
 };
 
 /**

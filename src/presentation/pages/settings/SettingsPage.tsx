@@ -172,6 +172,11 @@ export default function SettingsPage() {
           <AdminOnly>
             <SettingsSection title="관리자">
               <SettingsItem
+                label="콘텐츠 등록"
+                onPress={() => navigation.navigate(routePages.adminContentRegistration)}
+              />
+              <Divider />
+              <SettingsItem
                 label="비디오 처리"
                 onPress={() => navigation.navigate(routePages.adminVideoManagement)}
               />
