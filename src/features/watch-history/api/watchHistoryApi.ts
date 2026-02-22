@@ -519,6 +519,12 @@ export const watchHistoryApi = {
    * 캘린더에서 날짜 클릭 시 해당 날짜의 시청 콘텐츠 목록 반환
    */
   getHistoryByDate: async (date: string): Promise<WatchHistoryWithContentDto[]> => {
+    // 날짜 형식 유효성 검사 (YYYY-MM-DD)
+    const dateFormatRegex = /^\d{4}-\d{2}-\d{2}$/;
+    if (!dateFormatRegex.test(date)) {
+      throw new Error(`Invalid date format: ${date}. Expected YYYY-MM-DD.`);
+    }
+
     const user = await requireAuth();
 
     // NOTE: 날짜 범위는 UTC 기준으로 설정됩니다.

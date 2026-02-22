@@ -153,6 +153,20 @@ function WatchHistoryListComponent({
     );
   }, [isFetchingNextPage]);
 
+  // 초기 로딩 중: 스켈레톤 또는 로딩 인디케이터 표시
+  if (isLoading) {
+    return (
+      <Container>
+        <SectionHeader>
+          <SectionTitle>시청기록</SectionTitle>
+        </SectionHeader>
+        <LoadingContainer>
+          <ActivityIndicator color={colors.gray02} size="small" />
+        </LoadingContainer>
+      </Container>
+    );
+  }
+
   // 비로그인 유저: 빈 상태 메시지
   if (isGuest) {
     return (
@@ -235,6 +249,12 @@ const EmptyStateContainer = styled.View({
   justifyContent: 'center',
   alignItems: 'center',
   paddingHorizontal: HORIZONTAL_PADDING,
+});
+
+const LoadingContainer = styled.View({
+  height: ITEM_HEIGHT,
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 const EmptyStateText = styled.Text({
