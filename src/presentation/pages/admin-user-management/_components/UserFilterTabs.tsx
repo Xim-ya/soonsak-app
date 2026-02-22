@@ -4,7 +4,7 @@
  * 역할별 유저 카운트와 함께 필터 탭을 표시합니다.
  */
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
@@ -24,24 +24,30 @@ interface UserFilterTabsProps {
   readonly onSelectRole: (role: UserRoleFilter) => void;
 }
 
+// ScrollView contentContainerStyle 최적화를 위한 상수
+const SCROLL_CONTENT_STYLE = { paddingHorizontal: 16, gap: 8 };
+
 export const UserFilterTabs = memo(function UserFilterTabs({
   counts,
   selectedRole,
   onSelectRole,
 }: UserFilterTabsProps) {
-  const tabs: FilterTab[] = [
-    { key: 'all', label: '전체', count: counts.total },
-    { key: 'user', label: '일반', count: counts.user },
-    { key: 'admin', label: '관리자', count: counts.admin },
-    { key: 'banned', label: '차단', count: counts.banned },
-  ];
+  const tabs: FilterTab[] = useMemo(
+    () => [
+      { key: 'all', label: '전체', count: counts.total },
+      { key: 'user', label: '일반', count: counts.user },
+      { key: 'admin', label: '관리자', count: counts.admin },
+      { key: 'banned', label: '차단', count: counts.banned },
+    ],
+    [counts],
+  );
 
   return (
     <Container>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 16, gap: 8 }}
+        contentContainerStyle={SCROLL_CONTENT_STYLE}
       >
         {tabs.map((tab) => (
           <TabItem

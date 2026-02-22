@@ -13,13 +13,13 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import type { UserDetailItem } from '@/features/admin';
-import { UserRoleLabel } from '@/features/admin';
+import { UserRoleLabel, getRoleColor, formatDateTime } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 
 const AVATAR_SIZE = AppSize.ratioWidth(80);
 
-// 기본 아바타 아이콘 SVG
-const defaultAvatarSvg = `
+// 기본 아바타 아이콘 SVG (컴포넌트 외부 상수로 최적화)
+const DEFAULT_AVATAR_SVG = `
 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="${colors.gray03}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -30,9 +30,11 @@ interface UserInfoSectionProps {
 }
 
 export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoSectionProps) {
+  // 표시용 데이터 가공
   const displayName = user.displayName || '이름 없음';
-  const createdAtFormatted = formatDateTime(user.createdAt);
-  const lastLoginAtFormatted = user.lastLoginAt ? formatDateTime(user.lastLoginAt) : '-';
+  const createdAtText = formatDateTime(user.createdAt);
+  const lastLoginAtText = user.lastLoginAt ? formatDateTime(user.lastLoginAt) : '-';
+  const providersText = user.providers.join(', ') || '-';
 
   return (
     <Container>
@@ -48,7 +50,7 @@ export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoS
             />
           ) : (
             <DefaultAvatar>
-              <SvgXml xml={defaultAvatarSvg} width={40} height={40} />
+              <SvgXml xml={DEFAULT_AVATAR_SVG} width={40} height={40} />
             </DefaultAvatar>
           )}
         </AvatarContainer>
@@ -68,15 +70,15 @@ export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoS
         </InfoItem>
         <InfoItem>
           <InfoLabel>로그인 방식</InfoLabel>
-          <InfoValue>{user.providers.join(', ') || '-'}</InfoValue>
+          <InfoValue>{providersText}</InfoValue>
         </InfoItem>
         <InfoItem>
           <InfoLabel>가입일</InfoLabel>
-          <InfoValue>{createdAtFormatted}</InfoValue>
+          <InfoValue>{createdAtText}</InfoValue>
         </InfoItem>
         <InfoItem>
           <InfoLabel>최근 로그인</InfoLabel>
-          <InfoValue>{lastLoginAtFormatted}</InfoValue>
+          <InfoValue>{lastLoginAtText}</InfoValue>
         </InfoItem>
         <InfoItem>
           <InfoLabel>앱 방문 횟수</InfoLabel>
@@ -92,34 +94,6 @@ export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoS
     </Container>
   );
 });
-
-/**
- * ISO 날짜 문자열을 YYYY.MM.DD HH:mm 형식으로 변환
- */
-function formatDateTime(isoDate: string): string {
-  const date = new Date(isoDate);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  const hour = String(date.getHours()).padStart(2, '0');
-  const minute = String(date.getMinutes()).padStart(2, '0');
-  return `${year}.${month}.${day} ${hour}:${minute}`;
-}
-
-/**
- * 역할별 색상 반환
- */
-function getRoleColor(role: UserRole): string {
-  switch (role) {
-    case 'admin':
-      return colors.primary;
-    case 'banned':
-      return colors.red;
-    case 'user':
-    default:
-      return colors.gray02;
-  }
-}
 
 /* Styled Components */
 const Container = styled(View)({

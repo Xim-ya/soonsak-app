@@ -11,6 +11,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import type { UserStatistics } from '@/features/admin';
+import { formatCompactNumber } from '@/features/admin';
 
 interface UserStatisticsCardsProps {
   readonly statistics: UserStatistics;
@@ -34,33 +35,20 @@ export const UserStatisticsCards = memo(function UserStatisticsCards({
   return (
     <Container>
       <Card>
-        <CardValue>{formatNumber(statistics.totalUsers)}</CardValue>
+        <CardValue>{formatCompactNumber(statistics.totalUsers)}</CardValue>
         <CardLabel>총 가입자</CardLabel>
       </Card>
       <Card>
-        <CardValue>{formatNumber(statistics.dailyActiveVisitors)}</CardValue>
+        <CardValue>{formatCompactNumber(statistics.dailyActiveVisitors)}</CardValue>
         <CardLabel>오늘 방문자</CardLabel>
       </Card>
       <Card>
-        <CardValue>{formatNumber(statistics.activePushTokens)}</CardValue>
+        <CardValue>{formatCompactNumber(statistics.activePushTokens)}</CardValue>
         <CardLabel>활성 푸시</CardLabel>
       </Card>
     </Container>
   );
 });
-
-/**
- * 숫자 포맷팅 (1000 → 1K, 1000000 → 1M)
- */
-function formatNumber(num: number): string {
-  if (num >= 1000000) {
-    return `${(num / 1000000).toFixed(1)}M`;
-  }
-  if (num >= 1000) {
-    return `${(num / 1000).toFixed(1)}K`;
-  }
-  return num.toString();
-}
 
 /* Styled Components */
 const Container = styled(View)({

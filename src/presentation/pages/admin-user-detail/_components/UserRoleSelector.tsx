@@ -10,7 +10,7 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import { UserRoleLabel } from '@/features/admin';
+import { UserRoleLabel, getRoleColor } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 
 // 체크 아이콘 SVG
@@ -30,7 +30,7 @@ const editIconSvg = `
 interface UserRoleSelectorProps {
   readonly currentRole: UserRole;
   readonly isLoading: boolean;
-  readonly onRoleChange: (newRole: UserRole) => Promise<void>;
+  readonly onRoleChange: (newRole: UserRole) => void;
 }
 
 const ROLE_OPTIONS: UserRole[] = ['user', 'admin', 'banned'];
@@ -67,9 +67,9 @@ export const UserRoleSelector = memo(function UserRoleSelector({
             {
               text: '차단',
               style: 'destructive',
-              onPress: async () => {
+              onPress: () => {
                 setIsModalVisible(false);
-                await onRoleChange(role);
+                onRoleChange(role);
               },
             },
           ],
@@ -83,9 +83,9 @@ export const UserRoleSelector = memo(function UserRoleSelector({
           { text: '취소', style: 'cancel' },
           {
             text: '확인',
-            onPress: async () => {
+            onPress: () => {
               setIsModalVisible(false);
-              await onRoleChange(role);
+              onRoleChange(role);
             },
           },
         ]);
@@ -147,21 +147,6 @@ export const UserRoleSelector = memo(function UserRoleSelector({
     </>
   );
 });
-
-/**
- * 역할별 색상 반환
- */
-function getRoleColor(role: UserRole): string {
-  switch (role) {
-    case 'admin':
-      return colors.primary;
-    case 'banned':
-      return colors.red;
-    case 'user':
-    default:
-      return colors.white;
-  }
-}
 
 /* Styled Components */
 const Container = styled(View)({
@@ -232,7 +217,7 @@ interface RoleOptionLabelProps {
 
 const RoleOptionLabel = styled.Text<RoleOptionLabelProps>(({ isSelected, userRole }) => ({
   ...textStyles.body1,
-  color: isSelected ? getRoleColor(userRole) : colors.white,
+  color: isSelected ? getRoleColor(userRole, { defaultColor: colors.white }) : colors.white,
   fontWeight: isSelected ? '600' : '400',
 }));
 

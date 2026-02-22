@@ -12,15 +12,14 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { type UserSortBy, UserSortByLabel } from '@/features/admin';
 
-// 정렬 아이콘 SVG
-const sortIconSvg = `
+// SVG 아이콘 상수 (컴포넌트 외부로 최적화)
+const SORT_ICON_SVG = `
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M3 6H21M3 12H15M3 18H9" stroke="${colors.gray02}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
-// 체크 아이콘 SVG
-const checkIconSvg = `
+const CHECK_ICON_SVG = `
 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20 6L9 17L4 12" stroke="${colors.primary}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -59,7 +58,7 @@ export const UserSortSelector = memo(function UserSortSelector({
     <>
       <Container>
         <SortButton onPress={handleOpenModal} activeOpacity={0.7}>
-          <SvgXml xml={sortIconSvg} width={20} height={20} />
+          <SvgXml xml={SORT_ICON_SVG} width={20} height={20} />
           <SortLabel>{UserSortByLabel[sortBy]}</SortLabel>
         </SortButton>
       </Container>
@@ -78,7 +77,7 @@ export const UserSortSelector = memo(function UserSortSelector({
                 <SortOptionLabel isSelected={sortBy === option}>
                   {UserSortByLabel[option]}
                 </SortOptionLabel>
-                {sortBy === option && <SvgXml xml={checkIconSvg} width={20} height={20} />}
+                {sortBy === option && <SvgXml xml={CHECK_ICON_SVG} width={20} height={20} />}
               </SortOption>
             ))}
           </ModalContent>

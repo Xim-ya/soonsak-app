@@ -29,12 +29,21 @@ import { useUserManagement } from './_hooks/useUserManagement';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-// 뒤로가기 아이콘 SVG
-const backIconSvg = `
+// FlatList 최적화 상수
+const ITEM_HEIGHT = 86; // UserManagementItem의 예상 높이 (아바타 50 + padding 24 + 여백)
+
+// 뒤로가기 아이콘 SVG (컴포넌트 외부 상수로 최적화)
+const BACK_ICON_SVG = `
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M15 18L9 12L15 6" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
+
+// FlatList contentContainerStyle 상수 (매 렌더마다 객체 재생성 방지)
+const getContentContainerStyle = (bottomInset: number) => ({
+  paddingBottom: bottomInset + 20,
+  flexGrow: 1,
+});
 
 export default function AdminUserManagementPage() {
   const navigation = useNavigation<NavigationProp>();
@@ -92,6 +101,16 @@ export default function AdminUserManagementPage() {
   );
 
   const keyExtractor = useCallback((item: UserManagementItemType) => item.id, []);
+
+  // FlatList 최적화: 아이템 레이아웃 (고정 높이)
+  const getItemLayout = useCallback(
+    (_: any, index: number) => ({
+      length: ITEM_HEIGHT,
+      offset: ITEM_HEIGHT * index,
+      index,
+    }),
+    [],
+  );
 
   const renderHeader = useCallback(
     () => (
@@ -154,7 +173,7 @@ export default function AdminUserManagementPage() {
       {/* 헤더 */}
       <HeaderContainer paddingTop={insets.top}>
         <BackButton onPress={handleGoBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-          <SvgXml xml={backIconSvg} width={24} height={24} />
+          <SvgXml xml={BACK_ICON_SVG} width={24} height={24} />
         </BackButton>
         <HeaderTitle>유저 관리</HeaderTitle>
         <HeaderSpacer />
@@ -170,11 +189,9 @@ export default function AdminUserManagementPage() {
           data={users}
           renderItem={renderItem}
           keyExtractor={keyExtractor}
+          getItemLayout={getItemLayout}
           ListHeaderComponent={renderHeader}
-          contentContainerStyle={{
-            paddingBottom: insets.bottom + 20,
-            flexGrow: 1,
-          }}
+          contentContainerStyle={getContentContainerStyle(insets.bottom)}
           onEndReached={handleEndReached}
           onEndReachedThreshold={0.3}
           ListFooterComponent={renderFooter}
@@ -188,6 +205,10 @@ export default function AdminUserManagementPage() {
           }
           ItemSeparatorComponent={Separator}
           stickyHeaderIndices={[0]}
+          removeClippedSubviews={true}
+          maxToRenderPerBatch={10}
+          windowSize={10}
+          initialNumToRender={15}
         />
       )}
     </BasePage>

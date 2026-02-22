@@ -19,6 +19,14 @@ export {
   type UserSearchField,
 } from './types';
 
+// Utils
+export {
+  getRoleColor,
+  formatDate,
+  formatDateTime,
+  formatCompactNumber,
+} from './utils';
+
 // Hooks
 export { useAdminContentActions } from './hooks/useAdminContentActions';
 

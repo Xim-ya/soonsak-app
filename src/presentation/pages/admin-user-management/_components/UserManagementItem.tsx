@@ -4,7 +4,7 @@
  * 유저 정보를 표시하고, 탭하면 유저 상세 페이지로 이동
  */
 
-import { memo, useCallback } from 'react';
+import { memo, useCallback, useMemo } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
@@ -14,20 +14,19 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import type { UserManagementItem as UserManagementItemType } from '@/features/admin';
-import { UserRoleLabel } from '@/features/admin';
+import { UserRoleLabel, getRoleColor, formatDate } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 
 const AVATAR_SIZE = AppSize.ratioWidth(50);
 
-// 화살표 아이콘 SVG
-const chevronRightSvg = `
+// SVG 아이콘 상수 (컴포넌트 외부로 최적화)
+const CHEVRON_RIGHT_SVG = `
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M9 18L15 12L9 6" stroke="${colors.gray03}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
 `;
 
-// 기본 아바타 아이콘 SVG
-const defaultAvatarSvg = `
+const DEFAULT_AVATAR_SVG = `
 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M20 21V19C20 17.9391 19.5786 16.9217 18.8284 16.1716C18.0783 15.4214 17.0609 15 16 15H8C6.93913 15 5.92172 15.4214 5.17157 16.1716C4.42143 16.9217 4 17.9391 4 19V21M16 7C16 9.20914 14.2091 11 12 11C9.79086 11 8 9.20914 8 7C8 4.79086 9.79086 3 12 3C14.2091 3 16 4.79086 16 7Z" stroke="${colors.gray03}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 </svg>
@@ -38,21 +37,17 @@ interface UserManagementItemProps {
   readonly onPress: (user: UserManagementItemType) => void;
 }
 
-export const UserManagementItem = memo(function UserManagementItem({
-  user,
-  onPress,
-}: UserManagementItemProps) {
-  const handlePress = useCallback(() => {
-    onPress(user);
-  }, [user, onPress]);
+export const UserManagementItem = memo(
+  function UserManagementItem({ user, onPress }: UserManagementItemProps) {
+    const handlePress = useCallback(() => {
+      onPress(user);
+    }, [user, onPress]);
 
-  // 가입일 포맷
-  const formattedDate = formatDate(user.createdAt);
+    // 포맷팅 값 메모이제이션 (리렌더링 방지)
+    const formattedDate = useMemo(() => formatDate(user.createdAt), [user.createdAt]);
+    const displayName = useMemo(() => user.displayName || '이름 없음', [user.displayName]);
 
-  // 표시할 이름
-  const displayName = user.displayName || '이름 없음';
-
-  return (
+    return (
     <Container onPress={handlePress} activeOpacity={0.7}>
       {/* 아바타 */}
       <AvatarContainer>
@@ -65,7 +60,7 @@ export const UserManagementItem = memo(function UserManagementItem({
           />
         ) : (
           <DefaultAvatar>
-            <SvgXml xml={defaultAvatarSvg} width={24} height={24} />
+            <SvgXml xml={DEFAULT_AVATAR_SVG} width={24} height={24} />
           </DefaultAvatar>
         )}
       </AvatarContainer>
@@ -92,37 +87,14 @@ export const UserManagementItem = memo(function UserManagementItem({
 
       {/* 화살표 */}
       <ChevronContainer>
-        <SvgXml xml={chevronRightSvg} width={16} height={16} />
+        <SvgXml xml={CHEVRON_RIGHT_SVG} width={16} height={16} />
       </ChevronContainer>
     </Container>
   );
-});
-
-/**
- * ISO 날짜 문자열을 YYYY.MM.DD 형식으로 변환
- */
-function formatDate(isoDate: string): string {
-  const date = new Date(isoDate);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}.${month}.${day}`;
-}
-
-/**
- * 역할별 색상 반환
- */
-function getRoleColor(role: UserRole): string {
-  switch (role) {
-    case 'admin':
-      return colors.primary;
-    case 'banned':
-      return colors.red;
-    case 'user':
-    default:
-      return colors.gray02;
-  }
-}
+  },
+  // props 비교 최적화: user.id가 같으면 리렌더링 방지
+  (prevProps, nextProps) => prevProps.user.id === nextProps.user.id,
+);
 
 /* Styled Components */
 const Container = styled(TouchableOpacity)({
