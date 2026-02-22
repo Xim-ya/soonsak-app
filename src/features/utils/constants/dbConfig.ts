@@ -27,6 +27,7 @@ export const CONTENT_DATABASE = {
     GET_RECENT_TRENDING_CONTENTS: 'get_recent_trending_contents',
     GET_SOONSAK_TOP_TEN: 'get_soonsak_top_ten',
     GET_CHANNEL_VIDEOS: 'get_channel_videos',
+    GET_EXPLORE_CONTENTS_BY_TRENDING_SCORE: 'get_explore_contents_by_trending_score',
   },
 } as const;
 

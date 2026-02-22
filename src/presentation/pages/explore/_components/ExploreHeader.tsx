@@ -38,7 +38,7 @@ const BOTTOM_GRADIENT_HEIGHT = AppSize.ratioHeight(180);
 
 const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
   const navigation = useNavigation<NavigationProp>();
-  const { status, signOut } = useAuth();
+  const { status } = useAuth();
   const isLoggedIn = status === 'authenticated';
 
   const { backdropUrl } = useRandomBackdrop();
@@ -59,26 +59,16 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
     navigation.navigate(routePages.quickExplore);
   }, [navigation]);
 
-  // TODO: 테스트용 로그아웃 - 개발 완료 후 제거
-  const handleLogoutPress = useCallback(() => {
-    signOut();
-  }, [signOut]);
-
   // 로그인 상태: 캐러셀만 표시 (백드롭/그라데이션 없음)
   if (isLoggedIn) {
     return (
       <LoggedInContainer>
         <TitleRow>
           <TitleText>탐색</TitleText>
-          <ActionButtonRow>
-            <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-              <LightningIcon width={14} height={14} fill={colors.white} />
-              <QuickExploreChipText>빠른탐색</QuickExploreChipText>
-            </QuickExploreChip>
-            <LoginButton onPress={handleLogoutPress} activeOpacity={0.8}>
-              <LoginButtonText>로그아웃</LoginButtonText>
-            </LoginButton>
-          </ActionButtonRow>
+          <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+            <LightningIcon width={14} height={14} color={colors.main} />
+            <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+          </QuickExploreChip>
         </TitleRow>
         <CurationCarousel />
       </LoggedInContainer>
@@ -94,7 +84,7 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
             <TitleText>탐색</TitleText>
             <ActionButtonRow>
               <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                <LightningIcon width={14} height={14} fill={colors.white} />
+                <LightningIcon width={14} height={14} color={colors.main} />
                 <QuickExploreChipText>빠른탐색</QuickExploreChipText>
               </QuickExploreChip>
               <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
@@ -122,7 +112,7 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
               <TitleText>탐색</TitleText>
               <ActionButtonRow>
                 <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                  <LightningIcon width={14} height={14} fill={colors.white} />
+                  <LightningIcon width={14} height={14} color={colors.main} />
                   <QuickExploreChipText>빠른탐색</QuickExploreChipText>
                 </QuickExploreChip>
                 <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
