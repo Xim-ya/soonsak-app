@@ -21,9 +21,9 @@ import Animated, {
   useAnimatedRef,
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
-import { SvgXml } from 'react-native-svg';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
+import FilterIcon from '@assets/icons/filter.svg';
 import textStyles from '@/shared/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { RootStackParamList } from '@/shared/navigation/types';
@@ -43,13 +43,6 @@ import {
 } from './_components/AnimatedChannelSelector';
 import { ChannelVideoCard, CARD_HEIGHT } from './_components/ChannelVideoCard';
 import { SortSelector } from './_components/SortSelector';
-
-// 필터 아이콘 SVG
-const filterIconSvg = `
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-</svg>
-`;
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -149,14 +142,6 @@ export default function ChannelPage() {
       });
     },
     [navigation],
-  );
-
-  // 채널 선택 변경 핸들러 (필터와 동기화)
-  const handleChannelSelectionChange = useCallback(
-    (ids: string[]) => {
-      updateChannelIds(ids);
-    },
-    [updateChannelIds],
   );
 
   // 정렬 변경 핸들러
@@ -349,14 +334,14 @@ export default function ChannelPage() {
               <AnimatedChannelSelector
                 channels={channels}
                 selectedIds={filter.channelIds}
-                onSelectionChange={handleChannelSelectionChange}
+                onSelectionChange={updateChannelIds}
                 isLoading={isChannelsLoading}
                 scrollY={smoothedScrollY}
               />
             </Animated.View>
             <FilterRow style={filterRowStyle}>
               <FilterIconButton onPress={openSheet} activeOpacity={0.7}>
-                <SvgXml xml={filterIconSvg} width={16} height={16} />
+                <FilterIcon width={16} height={16} color={colors.white} />
                 {isCustomFilterActive && <ActiveBadge />}
               </FilterIconButton>
               <SortSelector sortType={sortType} onSortChange={handleSortChange} />

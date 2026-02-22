@@ -78,10 +78,8 @@ export function useChannelFilterSheet(): UseChannelFilterSheetReturn {
     setLoginDialogVisible(false);
   }, []);
 
-  // 로그인 성공 시 실행할 콜백
-  const loginSuccessCallback = useMemo(() => {
-    return undefined;
-  }, []);
+  // 로그인 성공 시 실행할 콜백 (현재 미사용, 추후 필요시 구현)
+  const loginSuccessCallback = undefined;
 
   const openSheet = useCallback(() => {
     setPendingFilter(null);

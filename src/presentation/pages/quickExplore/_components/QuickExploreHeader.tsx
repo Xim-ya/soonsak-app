@@ -55,7 +55,7 @@ function QuickExploreHeader({
       </TopRightContainer>
 
       {/* 하단: 주사위 버튼 (전체 너비) */}
-      <BottomContainer>
+      <BottomContainer style={{ bottom: insets.bottom + 24 }}>
         <DiceButton activeOpacity={0.7} {...(onSearchPress && { onPress: onSearchPress })}>
           <DiceIcon width={20} height={20} color={colors.white} />
           <DiceButtonText>찾기</DiceButtonText>
@@ -86,7 +86,6 @@ const FilterIndicator = styled.View({
 
 const BottomContainer = styled.View({
   position: 'absolute',
-  bottom: AppSize.bottomInset + 24,
   left: 0,
   right: 0,
   paddingHorizontal: 16,

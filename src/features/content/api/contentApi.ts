@@ -47,20 +47,22 @@ function isValidTitleLogoLang(value: string): value is 'ko' | 'en' {
 function mapTrendingRowsToContentDtos(rows: RpcTrendingRow[]): ContentDto[] {
   return rows
     .filter((row) => isValidContentType(row.out_content_type))
-    .map(
-      (row): ContentDto => ({
+    .map((row): ContentDto => {
+      const titleLogoLang =
+        row.out_title_logo_lang && isValidTitleLogoLang(row.out_title_logo_lang)
+          ? row.out_title_logo_lang
+          : undefined;
+
+      return {
         id: row.out_id,
         contentType: row.out_content_type as ContentType,
         title: row.out_title,
         ...(row.out_poster_path && { posterPath: row.out_poster_path }),
         ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
         ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-        ...(row.out_title_logo_lang &&
-          isValidTitleLogoLang(row.out_title_logo_lang) && {
-            titleLogoLang: row.out_title_logo_lang,
-          }),
-      }),
-    );
+        ...(titleLogoLang && { titleLogoLang }),
+      };
+    });
 }
 
 /** 쓰로틀 체크: 최근 호출 이후 충분한 시간이 지났는지 확인 */
@@ -79,6 +81,36 @@ function sanitizeExcludeIds(excludeIds: number[]): number[] {
   return excludeIds.filter((id) => Number.isInteger(id) && id > 0).slice(0, MAX_EXCLUDE_IDS);
 }
 
+/**
+ * 사용자의 시청 기록에서 콘텐츠 ID 목록을 조회
+ * @returns 시청한 콘텐츠 ID 배열 또는 null (비로그인/조회실패/빈 결과)
+ */
+async function getUserWatchedContentIds(): Promise<number[] | null> {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  if (!userData?.user?.id) {
+    return null;
+  }
+
+  const { data: watchedRows, error: watchedError } = await supabaseClient
+    .from('watch_history')
+    .select('content_id')
+    .eq('user_id', userData.user.id);
+
+  if (watchedError) {
+    console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
+    return null;
+  }
+
+  if (!watchedRows || watchedRows.length === 0) {
+    return null;
+  }
+
+  const rawIds = [...new Set(watchedRows.map((w: { content_id: number }) => w.content_id))];
+  const sanitizedIds = sanitizeExcludeIds(rawIds);
+
+  return sanitizedIds.length > 0 ? sanitizedIds : null;
+}
+
 /** Supabase 쿼리 필터 메서드 인터페이스 */
 interface FilterableQuery {
   in(column: string, values: readonly (number | string)[]): this;
@@ -93,7 +125,7 @@ interface FilterableQuery {
 function applyContentFilters<T extends FilterableQuery>(
   query: T,
   filter: ContentFilter,
-  excludeIds: number[],
+  excludeIds: number[] | null,
   channelContentIds: number[] | null,
 ): T {
   let q = query;
@@ -117,9 +149,11 @@ function applyContentFilters<T extends FilterableQuery>(
   if (filter.minStarRating !== null) {
     q = q.gte('vote_average', filter.minStarRating * 2);
   }
-  const safeIds = sanitizeExcludeIds(excludeIds);
-  if (safeIds.length > 0) {
-    q = q.not('id', 'in', `(${safeIds.join(',')})`);
+  if (excludeIds !== null && excludeIds.length > 0) {
+    const safeIds = sanitizeExcludeIds(excludeIds);
+    if (safeIds.length > 0) {
+      q = q.not('id', 'in', `(${safeIds.join(',')})`);
+    }
   }
   return q;
 }
@@ -753,27 +787,7 @@ export const contentApi = {
     }
 
     // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
-    let excludeContentIds: number[] = [];
-    if (filter.excludeWatched) {
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if (userData?.user?.id) {
-        const { data: watchedRows, error: watchedError } = await supabaseClient
-          .from('watch_history')
-          .select('content_id')
-          .eq('user_id', userData.user.id);
-
-        if (watchedError) {
-          console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
-          // 에러 시 필터 무시 (사용자 경험 유지)
-        } else {
-          const rawIds = [
-            ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
-          ];
-          // 유효성 검증 및 제한 적용
-          excludeContentIds = sanitizeExcludeIds(rawIds);
-        }
-      }
-    }
+    const excludeContentIds = filter.excludeWatched ? await getUserWatchedContentIds() : null;
 
     const offset = page * pageSize;
 
@@ -794,7 +808,7 @@ export const contentApi = {
           p_include_ending: filter.includeEnding,
           p_channel_content_ids: channelContentIds,
           p_ending_content_ids: endingContentIds,
-          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
+          p_exclude_content_ids: excludeContentIds,
         },
       );
 
@@ -827,7 +841,7 @@ export const contentApi = {
           p_include_ending: filter.includeEnding,
           p_channel_content_ids: channelContentIds,
           p_ending_content_ids: endingContentIds,
-          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
+          p_exclude_content_ids: excludeContentIds,
           p_limit: pageSize,
           p_offset: offset,
         },
@@ -848,7 +862,9 @@ export const contentApi = {
       return { contents, hasMore, totalCount };
     }
 
-    // 'latest' 정렬: 기존 로직
+    // 'all' 또는 'latest' 정렬: sortType에 따라 정렬 컬럼 결정
+    // - 'all': id 기준 내림차순 (기본값)
+    // - 'latest': uploaded_at 기준 내림차순
     const sortConfig = {
       all: { column: 'id', ascending: false },
       latest: { column: CONTENT_DATABASE.COLUMNS.UPLOADED_AT, ascending: false },
@@ -1091,23 +1107,7 @@ export const contentApi = {
     totalCount: number;
   }> => {
     // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
-    let excludeContentIds: number[] | null = null;
-    if (excludeWatched) {
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if (userData?.user?.id) {
-        const { data: watchedRows, error: watchedError } = await supabaseClient
-          .from('watch_history')
-          .select('content_id')
-          .eq('user_id', userData.user.id);
-
-        if (!watchedError && watchedRows && watchedRows.length > 0) {
-          const rawIds = [
-            ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
-          ];
-          excludeContentIds = sanitizeExcludeIds(rawIds);
-        }
-      }
-    }
+    const excludeContentIds = excludeWatched ? await getUserWatchedContentIds() : null;
 
     const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CHANNEL_VIDEOS, {
       p_channel_ids: channelIds,
