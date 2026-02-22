@@ -40,7 +40,10 @@ const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w780';
 // 가운데 점 구분자
 const DOT_SEPARATOR = ' · ';
 
-function ChannelVideoCard({ video, onPress }: ChannelVideoCardProps) {
+const ChannelVideoCard = React.memo(function ChannelVideoCard({
+  video,
+  onPress,
+}: ChannelVideoCardProps) {
   const handlePress = useCallback(() => {
     onPress(video);
   }, [video, onPress]);
@@ -76,7 +79,7 @@ function ChannelVideoCard({ video, onPress }: ChannelVideoCardProps) {
       <VideoTitle numberOfLines={2}>{video.videoTitle}</VideoTitle>
     </Container>
   );
-}
+});
 
 /* Styled Components */
 const Container = styled.View({

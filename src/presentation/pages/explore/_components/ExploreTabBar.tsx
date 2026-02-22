@@ -79,6 +79,10 @@ const ExploreTabButton = <T extends string>({
 
 const HORIZONTAL_PADDING = 16;
 
+// 스타일 상수 (인라인 객체 생성 방지)
+const FILTER_SCROLL_CONTENT_STYLE = { paddingHorizontal: HORIZONTAL_PADDING };
+const ANDROID_GRADIENT_STYLE = Platform.OS === 'android' ? { bottom: -19 } : undefined;
+
 /** 그라데이션 opacity가 시작되는 스크롤 오프셋 */
 const GRADIENT_OPACITY_START = 240;
 /** 그라데이션 opacity가 1에 도달하는 스크롤 오프셋 (스티키 시점) */
@@ -207,7 +211,7 @@ const ExploreTabBar = <T extends string>({
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: HORIZONTAL_PADDING }}
+            contentContainerStyle={FILTER_SCROLL_CONTENT_STYLE}
           >
             {/* 필터 버튼 */}
             <FilterIconButton onPress={onFilterPress} activeOpacity={0.7}>
@@ -238,11 +242,7 @@ const ExploreTabBar = <T extends string>({
       {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
       {showFilterBar && (
         <AnimatedGradientWrapper
-          style={[
-            gradientAnimatedStyle,
-            // Android: LinearGradient 렌더링 아티팩트 방지를 위해 1px 위로 이동
-            Platform.OS === 'android' && { bottom: -19 },
-          ]}
+          style={[gradientAnimatedStyle, ANDROID_GRADIENT_STYLE]}
           pointerEvents="none"
         >
           <BottomGradient colors={['#000000', '#00000000']} />
