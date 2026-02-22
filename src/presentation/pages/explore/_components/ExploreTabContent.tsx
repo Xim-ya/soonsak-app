@@ -11,6 +11,7 @@ import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { ShimmerSkeleton } from '@/presentation/components/image';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
@@ -47,7 +48,7 @@ interface ExploreTabContentProps {
 
 /** 스켈레톤 카드 컴포넌트 */
 const SkeletonCard = React.memo(function SkeletonCard() {
-  return <SkeletonContainer />;
+  return <ShimmerSkeleton width={CARD_WIDTH} height={CARD_HEIGHT} borderRadius={8} />;
 });
 
 /** 빈 상태 컴포넌트 */
@@ -168,14 +169,6 @@ const SkeletonGrid = styled.View({
   flexWrap: 'wrap',
   paddingHorizontal: HORIZONTAL_PADDING,
   paddingTop: 16,
-});
-
-const SkeletonContainer = styled.View({
-  width: CARD_WIDTH,
-  height: CARD_HEIGHT,
-  borderRadius: 8,
-  backgroundColor: colors.gray05,
-  marginBottom: GRID_GAP,
 });
 
 const EmptyContainer = styled.View({
