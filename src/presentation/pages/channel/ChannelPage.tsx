@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, ListRenderItem, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, ListRenderItem, Platform, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -20,16 +20,21 @@ import Animated, {
   Extrapolation,
   useAnimatedRef,
 } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
+import FilterIcon from '@assets/icons/filter.svg';
 import textStyles from '@/shared/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import Gap from '@/presentation/components/view/Gap';
+import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
+import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import type { ChannelSortType, ChannelVideoModel } from './_types';
 import { useChannelList } from './_hooks/useChannelList';
 import { useChannelVideos } from './_hooks/useChannelVideos';
+import { useChannelFilterSheet } from './_hooks/useChannelFilterSheet';
 import {
   AnimatedChannelSelector,
   CHANNEL_SELECTOR_HEIGHT_MAX,
@@ -41,7 +46,7 @@ import { SortSelector } from './_components/SortSelector';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-const ITEM_SEPARATOR_HEIGHT = 24;
+const ITEM_SEPARATOR_HEIGHT = 32;
 const FILTER_BAR_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 56;
 const FOOTER_HEIGHT = 60;
@@ -52,6 +57,13 @@ const VIDEO_CARD_HEIGHT = CARD_HEIGHT + 10 + VIDEO_TITLE_HEIGHT;
 
 // iOS 스크롤 jitter 방지: exponential smoothing factor (0.15-0.25 권장)
 const SMOOTHING_FACTOR = 0.18;
+
+// 그라데이션 opacity 애니메이션 범위 (스크롤에 따라 나타남)
+const GRADIENT_OPACITY_START = 30;
+const GRADIENT_OPACITY_END = 60;
+
+// Android gradient 위치 보정
+const ANDROID_GRADIENT_STYLE = Platform.OS === 'android' ? { bottom: -19 } : undefined;
 
 // 스타일 상수
 const headerRowWrapperStyle = { height: HEADER_ROW_HEIGHT };
@@ -81,19 +93,35 @@ export default function ChannelPage() {
     }
   });
 
-  // 채널 선택 상태
-  const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([]);
-
   // 정렬 상태 (기본값: 전체/랜덤)
   const [sortType, setSortType] = useState<ChannelSortType>('all');
 
   // 채널 목록 조회
   const { channels, isLoading: isChannelsLoading } = useChannelList();
 
-  // 비디오 목록 조회
+  // 필터 바텀시트 상태 관리
+  const {
+    filter,
+    isVisible: isFilterSheetVisible,
+    sheetFilter,
+    hasPendingFilter,
+    isCustomFilterActive,
+    openSheet,
+    closeSheet,
+    applyFilter,
+    requestChannelSelection,
+    isLoginDialogVisible,
+    loginSuccessCallback,
+    closeLoginDialog,
+    updateChannelIds,
+  } = useChannelFilterSheet();
+
+  // 비디오 목록 조회 (filter.channelIds를 단일 진실 소스로 사용)
   const { videos, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useChannelVideos(
-    selectedChannelIds,
+    filter.channelIds,
     sortType,
+    filter.includeEnding,
+    filter.excludeWatched,
   );
 
   // 스크롤 핸들러 (스냅 없이 순수 스크롤 위치만 추적)
@@ -115,11 +143,6 @@ export default function ChannelPage() {
     },
     [navigation],
   );
-
-  // 채널 선택 변경 핸들러
-  const handleChannelSelectionChange = useCallback((ids: string[]) => {
-    setSelectedChannelIds(ids);
-  }, []);
 
   // 정렬 변경 핸들러
   const handleSortChange = useCallback((newSortType: ChannelSortType) => {
@@ -209,6 +232,45 @@ export default function ChannelPage() {
     };
   });
 
+  // 스티키 헤더 하단 패딩 애니메이션 (스크롤 시 줄어듦)
+  const stickyHeaderPaddingStyle = useAnimatedStyle(() => {
+    const paddingBottom = interpolate(
+      smoothedScrollY.value,
+      [0, CHANNEL_SELECTOR_SCROLL_RANGE],
+      [16, 0],
+      Extrapolation.CLAMP,
+    );
+    return {
+      paddingBottom,
+    };
+  });
+
+  // 필터 행 상단 마진 애니메이션 (스크롤 시 줄어듦)
+  const filterRowStyle = useAnimatedStyle(() => {
+    const marginTop = interpolate(
+      smoothedScrollY.value,
+      [0, CHANNEL_SELECTOR_SCROLL_RANGE],
+      [8, 0],
+      Extrapolation.CLAMP,
+    );
+    return {
+      marginTop,
+    };
+  });
+
+  // 하단 그라데이션 opacity 애니메이션 (스크롤 시 나타남)
+  const gradientStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      smoothedScrollY.value,
+      [GRADIENT_OPACITY_START, GRADIENT_OPACITY_END],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      opacity,
+    };
+  });
+
   // 빈 상태
   const renderListEmpty = useCallback(() => {
     if (isLoading) {
@@ -237,6 +299,22 @@ export default function ChannelPage() {
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
+      {/* 필터 바텀시트 */}
+      <ContentFilterBottomSheet
+        visible={isFilterSheetVisible}
+        currentFilter={sheetFilter}
+        onApply={applyFilter}
+        onClose={closeSheet}
+        onRequestChannelSelection={requestChannelSelection}
+        preserveScrollPosition={hasPendingFilter}
+      />
+
+      {/* 로그인 유도 다이얼로그 */}
+      <LoginPromptDialog
+        visible={isLoginDialogVisible}
+        onClose={closeLoginDialog}
+        onLoginSuccess={loginSuccessCallback}
+      />
       <Container style={containerStyle}>
         {/* 헤더 행: 스크롤 시 사라짐 */}
         <Animated.View style={[headerRowWrapperStyle, headerRowStyle]}>
@@ -251,19 +329,27 @@ export default function ChannelPage() {
         {/* 스티키 + 리스트 영역 (스크롤 시 함께 위로 이동) */}
         <Animated.View style={[stickyContentStyle, stickyHeaderTranslateStyle]}>
           {/* 스티키 영역: 채널 선택기 + 필터 바 */}
-          <StickyHeader>
+          <StickyHeader style={stickyHeaderPaddingStyle}>
             <Animated.View style={channelSelectorStyle}>
               <AnimatedChannelSelector
                 channels={channels}
-                selectedIds={selectedChannelIds}
-                onSelectionChange={handleChannelSelectionChange}
+                selectedIds={filter.channelIds}
+                onSelectionChange={updateChannelIds}
                 isLoading={isChannelsLoading}
                 scrollY={smoothedScrollY}
               />
             </Animated.View>
-            <FilterRow>
+            <FilterRow style={filterRowStyle}>
+              <FilterIconButton onPress={openSheet} activeOpacity={0.7}>
+                <FilterIcon width={16} height={16} color={colors.white} />
+                {isCustomFilterActive && <ActiveBadge />}
+              </FilterIconButton>
               <SortSelector sortType={sortType} onSortChange={handleSortChange} />
             </FilterRow>
+            {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
+            <GradientWrapper style={[gradientStyle, ANDROID_GRADIENT_STYLE]} pointerEvents="none">
+              <BottomGradient colors={['#000000', '#00000000']} />
+            </GradientWrapper>
           </StickyHeader>
 
           {/* 비디오 리스트 */}
@@ -329,17 +415,50 @@ const MoreChipText = styled.Text({
   color: colors.white,
 });
 
-const StickyHeader = styled.View({
+const StickyHeader = styled(Animated.View)({
   zIndex: 10,
   backgroundColor: colors.black,
+  overflow: 'visible',
 });
 
-const FilterRow = styled.View({
+const FilterRow = styled(Animated.View)({
   flexDirection: 'row',
-  justifyContent: 'flex-end',
+  justifyContent: 'space-between',
   alignItems: 'center',
   paddingHorizontal: 16,
   height: FILTER_BAR_HEIGHT,
+});
+
+const FilterIconButton = styled.TouchableOpacity({
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: colors.gray05,
+  justifyContent: 'center',
+  alignItems: 'center',
+  position: 'relative',
+});
+
+const ActiveBadge = styled.View({
+  position: 'absolute',
+  top: 2,
+  right: 2,
+  width: 8,
+  height: 8,
+  borderRadius: 4,
+  backgroundColor: colors.main,
+});
+
+const GradientWrapper = styled(Animated.View)({
+  position: 'absolute',
+  left: 0,
+  right: 0,
+  bottom: -20,
+  height: 20,
+});
+
+const BottomGradient = styled(LinearGradient)({
+  flex: 1,
 });
 
 const LoadingContainer = styled.View({

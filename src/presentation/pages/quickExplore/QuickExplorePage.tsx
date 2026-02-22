@@ -10,6 +10,7 @@ import { useCallback, useRef, useState } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
 import { BasePage } from '@/presentation/components/page/BasePage';
@@ -20,7 +21,6 @@ import { ContentFilterBottomSheet } from '@/presentation/components/filter/Conte
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
-import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
 import CloseIcon from '@assets/icons/close.svg';
 import { QuickExploreHeader } from './_components/QuickExploreHeader';
@@ -28,6 +28,7 @@ import { ContentGrid, ContentGridRef } from './_components/ContentGrid';
 
 export default function QuickExplorePage() {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const insets = useSafeAreaInsets();
   const gridRef = useRef<ContentGridRef>(null);
 
   // 공유 필터 컨텍스트에서 필터 상태 가져오기
@@ -113,7 +114,7 @@ export default function QuickExplorePage() {
         <ContentGrid ref={gridRef} filter={filter} onContentPress={handleContentPress} />
 
         {/* 좌측 상단 닫기 버튼 */}
-        <CloseButtonContainer>
+        <CloseButtonContainer style={{ top: insets.top }}>
           <GlassIconButton size={44} onPress={handleClose}>
             <CloseIcon width={20} height={20} color={colors.white} />
           </GlassIconButton>
@@ -146,7 +147,6 @@ export default function QuickExplorePage() {
 /* Styled Components */
 const CloseButtonContainer = styled.View({
   position: 'absolute',
-  top: AppSize.statusBarHeight + 24,
   left: 16,
   zIndex: 10,
 });

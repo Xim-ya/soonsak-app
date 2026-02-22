@@ -45,6 +45,8 @@ interface UseChannelVideosReturn {
 export function useChannelVideos(
   selectedChannelIds: string[],
   sortType: ChannelSortType,
+  includeEnding: boolean = false,
+  excludeWatched: boolean = false,
 ): UseChannelVideosReturn {
   // 세션 시드 (랜덤 정렬용)
   const sessionSeed = getSessionSeed();
@@ -56,7 +58,14 @@ export function useChannelVideos(
   const effectiveSortType = sortType === 'all' ? 'random' : sortType;
 
   const queryResult = useInfiniteQuery({
-    queryKey: ['channelVideos', channelIdsParam, effectiveSortType, sessionSeed],
+    queryKey: [
+      'channelVideos',
+      channelIdsParam,
+      effectiveSortType,
+      sessionSeed,
+      includeEnding,
+      excludeWatched,
+    ],
     queryFn: async ({ pageParam = 0 }) => {
       return contentApi.getChannelVideos(
         channelIdsParam,
@@ -64,6 +73,8 @@ export function useChannelVideos(
         pageParam,
         PAGE_SIZE,
         sessionSeed,
+        includeEnding,
+        excludeWatched,
       );
     },
     initialPageParam: 0,
