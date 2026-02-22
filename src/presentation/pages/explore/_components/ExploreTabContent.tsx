@@ -29,6 +29,7 @@ const SKELETON_COUNT = 6;
 // 스타일 상수 (인라인 객체 생성 방지)
 const LIST_STYLE = { backgroundColor: colors.black };
 const CONTENT_CONTAINER_STYLE = {
+  flexGrow: 1,
   paddingBottom: 20,
   backgroundColor: colors.black,
 };
@@ -76,6 +77,19 @@ const LoadingFooter = React.memo(function LoadingFooter({
   );
 });
 
+/** 스켈레톤 그리드 컴포넌트 */
+const SkeletonGrid = React.memo(function SkeletonGrid() {
+  return (
+    <SkeletonContainer>
+      {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
+        <SkeletonItemWrapper key={`skeleton-${index}`} isLeftColumn={index % 2 === 0}>
+          <SkeletonCard />
+        </SkeletonItemWrapper>
+      ))}
+    </SkeletonContainer>
+  );
+});
+
 const ExploreTabContent = React.memo(function ExploreTabContent({
   sortType,
   filter,
@@ -109,26 +123,14 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
     [isFetchingNextPage],
   );
 
-  const renderSkeleton = useMemo(() => {
-    return (
-      <SkeletonGrid>
-        {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-          <ItemWrapper key={`skeleton-${index}`} isLeftColumn={index % 2 === 0}>
-            <SkeletonCard />
-          </ItemWrapper>
-        ))}
-      </SkeletonGrid>
-    );
-  }, []);
-
   const renderListEmpty = useCallback(() => {
     if (isLoading) {
-      return renderSkeleton;
+      return <SkeletonGrid />;
     }
     return <EmptyState />;
-  }, [isLoading, renderSkeleton]);
+  }, [isLoading]);
 
-  // columnWrapperStyle 메모이제이션 (contents 존재 여부 변경 시에만 재계산)
+  // contents 존재 여부에 따라 columnWrapperStyle 적용
   const hasContents = contents.length > 0;
   const columnWrapperStyle = useMemo(
     () => (hasContents ? COLUMN_WRAPPER_STYLE : undefined),
@@ -164,12 +166,17 @@ const ItemWrapper = styled.View<{ isLeftColumn: boolean }>(({ isLeftColumn }) =>
   marginRight: isLeftColumn ? GRID_GAP : 0,
 }));
 
-const SkeletonGrid = styled.View({
+const SkeletonContainer = styled.View({
   flexDirection: 'row',
   flexWrap: 'wrap',
   paddingHorizontal: HORIZONTAL_PADDING,
-  paddingTop: 16,
+  rowGap: GRID_GAP,
 });
+
+const SkeletonItemWrapper = styled.View<{ isLeftColumn: boolean }>(({ isLeftColumn }) => ({
+  width: CARD_WIDTH,
+  marginRight: isLeftColumn ? GRID_GAP : 0,
+}));
 
 const EmptyContainer = styled.View({
   justifyContent: 'center',

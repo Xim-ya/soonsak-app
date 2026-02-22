@@ -18,7 +18,7 @@ import Gap from '@/presentation/components/view/Gap';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
-import { CurationVideoItem, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT } from './CurationVideoItem';
+import { CurationVideoItem, THUMBNAIL_WIDTH, ITEM_HEIGHT } from './CurationVideoItem';
 import type { CurationVideoModel } from '../_types/exploreTypes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -79,9 +79,9 @@ function CurationCarousel() {
     );
   }
 
-  // 에러 또는 데이터 없음 시 숨김
+  // 에러 또는 데이터 없음 시 빈 컨테이너 (높이 유지로 레이아웃 점프 방지)
   if (error || videos.length === 0) {
-    return null;
+    return <EmptyPlaceholder />;
   }
 
   return (
@@ -122,9 +122,13 @@ const LoadingContainer = styled.View({
 
 const SkeletonItem = styled.View({
   width: THUMBNAIL_WIDTH,
-  height: THUMBNAIL_HEIGHT + 40,
+  height: ITEM_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 8,
+});
+
+const EmptyPlaceholder = styled.View({
+  height: ITEM_HEIGHT,
 });
 
 export { CurationCarousel };

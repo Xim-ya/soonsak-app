@@ -57,11 +57,11 @@ function CommentSkeleton(): React.ReactElement {
         <SkeletonView width={36} height={36} borderRadius={18} />
       </AvatarContainer>
       <ContentContainer>
-        <SkeletonView width={100} height={14} borderRadius={4} />
+        <SkeletonView width={100} height={18} borderRadius={4} />
         <Gap size={8} />
-        <SkeletonView width={280} height={14} borderRadius={4} />
+        <SkeletonView width={280} height={20} borderRadius={4} />
         <Gap size={4} />
-        <SkeletonView width={220} height={14} borderRadius={4} />
+        <SkeletonView width={220} height={20} borderRadius={4} />
       </ContentContainer>
     </CommentItemContainer>
   );
