@@ -40,3 +40,16 @@ export const ERROR_PLACEHOLDER = {
   /** 최대 아이콘 크기 */
   maxIconSize: 48,
 } as const;
+
+// ============================================================================
+// Shimmer 애니메이션 설정
+// ============================================================================
+
+export const SHIMMER = {
+  /** 애니메이션 duration (ms) */
+  duration: 900,
+  /** 최소 opacity */
+  minOpacity: 0.35,
+  /** 최대 opacity */
+  maxOpacity: 0.75,
+} as const;
