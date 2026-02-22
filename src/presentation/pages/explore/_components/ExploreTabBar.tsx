@@ -205,9 +205,9 @@ const ExploreTabBar = <T extends string>({
         </TabBarContent>
       </TabBarSection>
 
-      {/* 필터 바 (개발자 추천 탭이 아닐 때만 표시) */}
-      {showFilterBar && (
-        <FilterBarSection>
+      {/* 필터 바 - 항상 렌더링하되 내용만 숨김 (tabBarHeight 일관성 유지) */}
+      <FilterBarSection>
+        {showFilterBar && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
@@ -237,17 +237,15 @@ const ExploreTabBar = <T extends string>({
               <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
             </FilterChip>
           </ScrollView>
-        </FilterBarSection>
-      )}
+        )}
+      </FilterBarSection>
       {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
-      {showFilterBar && (
-        <AnimatedGradientWrapper
-          style={[gradientAnimatedStyle, ANDROID_GRADIENT_STYLE]}
-          pointerEvents="none"
-        >
-          <BottomGradient colors={['#000000', '#00000000']} />
-        </AnimatedGradientWrapper>
-      )}
+      <AnimatedGradientWrapper
+        style={[gradientAnimatedStyle, ANDROID_GRADIENT_STYLE, !showFilterBar && { opacity: 0 }]}
+        pointerEvents="none"
+      >
+        <BottomGradient colors={['#000000', '#00000000']} />
+      </AnimatedGradientWrapper>
     </Container>
   );
 };

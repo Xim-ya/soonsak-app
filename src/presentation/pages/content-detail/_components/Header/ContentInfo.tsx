@@ -100,7 +100,7 @@ export const ContentInfo = React.memo(() => {
       {/* 연도/장르 - 로딩 중이면 스켈레톤 */}
       {isContentInfoLoading ? (
         <SubTextView>
-          <SkeletonView width={200} height={16} borderRadius={4} />
+          <SkeletonView width={200} height={18} borderRadius={4} />
         </SubTextView>
       ) : contentInfoError ? null : (
         <SubTextView>
@@ -188,6 +188,7 @@ const Container = styled.View({
 const ChipRow = styled.View({
   flexDirection: 'row',
   alignItems: 'center',
+  minHeight: 26, // DarkChip 높이 기준 (레이아웃 점프 방지)
 });
 
 const Title = styled.Text({
