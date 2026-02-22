@@ -175,6 +175,11 @@ export default function SettingsPage() {
                 label="비디오 처리"
                 onPress={() => navigation.navigate(routePages.adminVideoManagement)}
               />
+              <Divider />
+              <SettingsItem
+                label="유저 관리"
+                onPress={() => navigation.navigate(routePages.adminUserManagement)}
+              />
             </SettingsSection>
           </AdminOnly>
         </ScrollView>

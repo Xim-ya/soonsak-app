@@ -5,3 +5,13 @@
  */
 
 export { adminContentApi, type ContentVideoItem } from './adminContentApi';
+export {
+  adminUserApi,
+  type UserManagementItem,
+  type UserDetailItem,
+  type UserStatistics,
+  type UserRoleCounts,
+  type UserListParams,
+  type UserListResult,
+  type PushTokenInfo,
+} from './adminUserApi';

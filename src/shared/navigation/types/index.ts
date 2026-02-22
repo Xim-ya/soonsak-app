@@ -96,6 +96,11 @@ export type RootStackParamList = {
     contentTitle: string; // 콘텐츠 제목 (UI 표시용)
   }; // 어드민 대표 비디오 선택 - 콘텐츠의 비디오 목록에서 대표 비디오 변경
   [routePages.adminVideoManagement]: undefined; // 어드민 비디오 처리 - 파라미터 없음
+  [routePages.adminUserManagement]: undefined; // 어드민 유저 관리 - 파라미터 없음
+  [routePages.adminUserDetail]: {
+    userId: string; // 유저 ID
+    displayName?: string | null; // 유저 닉네임 (UI 표시용)
+  }; // 어드민 유저 상세 - userId 필수, displayName 선택
 };
 
 /**
