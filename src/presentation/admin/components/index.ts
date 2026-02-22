@@ -7,3 +7,4 @@
 export { AdminActionBottomSheet } from './AdminActionBottomSheet';
 export { BackdropSelectionModal } from './BackdropSelectionModal';
 export { VideoStatusModal } from './VideoStatusModal';
+export { IncludesEndingModal } from './IncludesEndingModal';

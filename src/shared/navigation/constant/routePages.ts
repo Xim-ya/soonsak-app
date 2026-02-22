@@ -15,6 +15,14 @@ export const routePages = {
   quickExplore: 'QuickExplore',
   adminContentSearch: 'AdminContentSearch',
   adminPrimaryVideoSelect: 'AdminPrimaryVideoSelect',
+  adminVideoManagement: 'AdminVideoManagement',
+  adminUserManagement: 'AdminUserManagement',
+  adminUserDetail: 'AdminUserDetail',
+  adminPushContentSelect: 'AdminPushContentSelect',
+  adminUserContentList: 'AdminUserContentList',
+  adminContentRegistration: 'AdminContentRegistration',
+  adminChannelManagement: 'AdminChannelManagement',
+  adminChannelDetail: 'AdminChannelDetail',
 } as const;
 
 export type RoutePages = typeof routePages;

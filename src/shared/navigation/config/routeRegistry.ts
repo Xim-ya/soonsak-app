@@ -55,6 +55,7 @@ export const DEEP_LINK_SCREENS = [
   routePages.search,
   routePages.settings,
   routePages.userContentList,
+  routePages.adminContentRegistration,
 ] as const;
 
 export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
@@ -150,6 +151,15 @@ export const deepLinkConfig = {
         tab ? (Number(tab) as RootStackParamList['UserContentList']['initialTab']) : undefined,
     },
   }),
+
+  /**
+   * 어드민 콘텐츠 등록
+   * @example quickExplore://admin/content-registration
+   */
+  [routePages.adminContentRegistration]: defineDeepLink(
+    routePages.adminContentRegistration,
+    'admin/content-registration',
+  ),
 } satisfies Record<DeepLinkScreen, DeepLinkScreenConfig<DeepLinkScreen>>;
 
 /* ========================================

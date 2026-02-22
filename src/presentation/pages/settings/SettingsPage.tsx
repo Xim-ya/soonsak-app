@@ -21,6 +21,7 @@ import { authApi } from '@/features/auth/api/authApi';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { SettingsSection, SettingsItem, SettingsToggleItem } from './_components';
+import { AdminOnly } from '@/features/auth/guards';
 
 // TODO: react-native-device-info로 실제 버전 가져오기
 const APP_VERSION = '1.0.0';
@@ -37,7 +38,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SettingsPage() {
   const navigation = useNavigation<NavigationProp>();
-  const { signOut } = useAuth();
+  const { signOut, status } = useAuth();
+  const isLoggedIn = status === 'authenticated';
 
   // TODO: 실제 알림 설정 상태 연동 (AsyncStorage 또는 서버)
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
@@ -153,16 +155,43 @@ export default function SettingsPage() {
             />
           </SettingsSection>
 
-          {/* 기타 섹션 */}
-          <SettingsSection title="기타">
-            <SettingsItem label="로그아웃" onPress={handleLogoutPress} />
-            <Divider />
-            <SettingsItem
-              label="회원탈퇴"
-              labelColor={WITHDRAW_TEXT_COLOR}
-              onPress={handleWithdrawPress}
-            />
-          </SettingsSection>
+          {/* 기타 섹션 - 로그인 유저에게만 표시 */}
+          {isLoggedIn && (
+            <SettingsSection title="기타">
+              <SettingsItem label="로그아웃" onPress={handleLogoutPress} />
+              <Divider />
+              <SettingsItem
+                label="회원탈퇴"
+                labelColor={WITHDRAW_TEXT_COLOR}
+                onPress={handleWithdrawPress}
+              />
+            </SettingsSection>
+          )}
+
+          {/* 관리자 섹션 - 어드민에게만 표시 */}
+          <AdminOnly>
+            <SettingsSection title="관리자">
+              <SettingsItem
+                label="콘텐츠 등록"
+                onPress={() => navigation.navigate(routePages.adminContentRegistration)}
+              />
+              <Divider />
+              <SettingsItem
+                label="비디오 처리"
+                onPress={() => navigation.navigate(routePages.adminVideoManagement)}
+              />
+              <Divider />
+              <SettingsItem
+                label="유저 관리"
+                onPress={() => navigation.navigate(routePages.adminUserManagement)}
+              />
+              <Divider />
+              <SettingsItem
+                label="채널 관리"
+                onPress={() => navigation.navigate(routePages.adminChannelManagement)}
+              />
+            </SettingsSection>
+          </AdminOnly>
         </ScrollView>
 
         {/* 회원탈퇴 로딩 오버레이 */}

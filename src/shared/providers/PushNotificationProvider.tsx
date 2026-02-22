@@ -24,7 +24,8 @@ import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { useAuth } from './AuthProvider';
-import { getOrCreateDeviceId, linkDeviceToUser } from '@/shared/utils/deviceId';
+import { getOrCreateDeviceId, linkDeviceToUser, incrementDeviceEntryCount } from '@/shared/utils/deviceId';
+import { userApi } from '@/features/user/api/userApi';
 
 /** PushNotificationContext 값 타입 */
 interface PushNotificationContextValue {
@@ -73,6 +74,36 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
     registerDevice();
   }, []); // 마운트 시 한 번만 실행
+
+  // 앱 진입 카운트 증가 (status 확정 후 한 번만 실행)
+  const hasCountedRef = useRef(false);
+  useEffect(() => {
+    // status가 아직 idle이면 대기
+    if (status === 'idle') return;
+    // 이미 카운트했으면 무시
+    if (hasCountedRef.current) return;
+
+    console.log('[EntryCount] ========== 앱 진입 감지 ==========');
+    console.log('[EntryCount] Auth Status:', status);
+
+    const incrementEntryCount = async () => {
+      try {
+        if (status === 'authenticated' && user) {
+          // 로그인 유저: profiles.entry_count 증가
+          await userApi.incrementEntryCount(user.id);
+        } else {
+          // 비로그인 유저: devices.entry_count 증가
+          await incrementDeviceEntryCount();
+        }
+        hasCountedRef.current = true;
+        console.log('[EntryCount] ================================');
+      } catch (error) {
+        console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+      }
+    };
+
+    incrementEntryCount();
+  }, [status, user]);
 
   // 앱이 종료 상태(Killed)에서 푸시 알림으로 시작된 경우 처리
   // status가 idle이면 AuthProvider 세션 복원이 완료되지 않았으므로 대기
