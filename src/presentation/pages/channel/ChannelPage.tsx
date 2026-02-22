@@ -15,10 +15,12 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
+  useAnimatedReaction,
   interpolate,
   Extrapolation,
   useAnimatedRef,
   runOnJS,
+  withTiming,
 } from 'react-native-reanimated';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
@@ -45,13 +47,28 @@ const ITEM_SEPARATOR_HEIGHT = 24;
 const FILTER_BAR_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 56;
 
+// iOS 스크롤 jitter 방지: smoothing duration
+const SMOOTHING_DURATION = 200;
+
 export default function ChannelPage() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
 
   // 스크롤 값 추적
   const scrollY = useSharedValue(0);
+  const smoothedScrollY = useSharedValue(0);
   const listRef = useAnimatedRef<Animated.FlatList<ChannelVideoModel>>();
+
+  // iOS 스크롤 jitter 방지: 모든 변화에 smoothing 적용
+  useAnimatedReaction(
+    () => scrollY.value,
+    (currentScrollY) => {
+      smoothedScrollY.value = withTiming(currentScrollY, {
+        duration: SMOOTHING_DURATION,
+      });
+    },
+    [],
+  );
 
   // 채널 선택 상태
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([]);
@@ -149,7 +166,7 @@ export default function ChannelPage() {
   // 헤더 행 애니메이션 (스크롤 시 opacity만 변경 - GPU 처리)
   const headerRowStyle = useAnimatedStyle(() => {
     const opacity = interpolate(
-      scrollY.value,
+      smoothedScrollY.value,
       [0, HEADER_ROW_HEIGHT * 0.5],
       [1, 0],
       Extrapolation.CLAMP,
@@ -160,14 +177,14 @@ export default function ChannelPage() {
   // 스티키 헤더 애니메이션 (스크롤 시 위로 이동)
   const stickyHeaderTranslateStyle = useAnimatedStyle(() => {
     const translateY = interpolate(
-      scrollY.value,
+      smoothedScrollY.value,
       [0, HEADER_ROW_HEIGHT],
       [0, -HEADER_ROW_HEIGHT],
       Extrapolation.CLAMP,
     );
     // marginBottom을 음수로 줘서 하단 빈 공간 방지
     const marginBottom = interpolate(
-      scrollY.value,
+      smoothedScrollY.value,
       [0, HEADER_ROW_HEIGHT],
       [0, -HEADER_ROW_HEIGHT],
       Extrapolation.CLAMP,
@@ -181,7 +198,7 @@ export default function ChannelPage() {
   // 스티키 채널 선택기 높이 애니메이션
   const channelSelectorStyle = useAnimatedStyle(() => {
     const height = interpolate(
-      scrollY.value,
+      smoothedScrollY.value,
       [0, CHANNEL_SELECTOR_SCROLL_RANGE],
       [CHANNEL_SELECTOR_HEIGHT_MAX, CHANNEL_SELECTOR_HEIGHT_MIN],
       Extrapolation.CLAMP,
@@ -241,7 +258,7 @@ export default function ChannelPage() {
                 selectedIds={selectedChannelIds}
                 onSelectionChange={handleChannelSelectionChange}
                 isLoading={isChannelsLoading}
-                scrollY={scrollY}
+                scrollY={smoothedScrollY}
               />
             </Animated.View>
             <FilterRow>
