@@ -22,11 +22,12 @@ import { LoadableImageView } from '@/presentation/components/image/LoadableImage
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import {
   useWatchHistoryPreview,
+  WatchHistoryModel,
   type WatchHistoryModelType,
 } from '@/features/watch-history';
 import {
+  WatchProgressBar,
   shouldShowProgressBar,
-  calculateProgressPercent,
 } from '@/presentation/components/progress';
 import DarkChip from '@/presentation/components/chip/DarkChip';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
@@ -62,14 +63,13 @@ const LIST_CONTENT_STYLE = {
 /* Sub-Components */
 
 const WatchHistoryItemComponent = memo(({ item, onItemPress }: WatchHistoryItemProps) => {
-  const imageUrl = item.contentBackdropPath
-    ? formatter.prefixTmdbImgUrl(item.contentBackdropPath, { size: TmdbImageSize.w342 })
-    : item.contentPosterPath
-      ? formatter.prefixTmdbImgUrl(item.contentPosterPath, { size: TmdbImageSize.w185 })
-      : '';
+  // 공통 유틸리티로 이미지 URL 추출 (backdrop > poster)
+  const imageUrl = WatchHistoryModel.getImageUrl(item, {
+    backdropSize: TmdbImageSize.w342,
+    posterSize: TmdbImageSize.w185,
+  });
 
   const showProgressBar = shouldShowProgressBar(item.progressSeconds, item.durationSeconds);
-  const progressPercent = calculateProgressPercent(item.progressSeconds, item.durationSeconds);
 
   const handlePress = useCallback(() => {
     onItemPress?.(item);
@@ -91,10 +91,13 @@ const WatchHistoryItemComponent = memo(({ item, onItemPress }: WatchHistoryItemP
             </RuntimeChipContainer>
           )}
           {showProgressBar && (
-            <ProgressBarContainer>
-              <ProgressBarBackground />
-              <ProgressBarFill style={{ width: `${progressPercent}%` }} />
-            </ProgressBarContainer>
+            <ProgressBarWrapper>
+              <WatchProgressBar
+                progressSeconds={item.progressSeconds}
+                durationSeconds={item.durationSeconds}
+                height={PROGRESS_BAR_HEIGHT}
+              />
+            </ProgressBarWrapper>
           )}
         </ImageWrapper>
         <ItemTitle numberOfLines={1}>{item.contentTitle}</ItemTitle>
@@ -259,25 +262,11 @@ const RuntimeChipContainer = styled.View({
   zIndex: 1,
 });
 
-const ProgressBarContainer = styled.View({
+const ProgressBarWrapper = styled.View({
   position: 'absolute',
   bottom: 0,
   left: 0,
   right: 0,
-  height: PROGRESS_BAR_HEIGHT,
-});
-
-const ProgressBarBackground = styled.View({
-  position: 'absolute',
-  width: '100%',
-  height: '100%',
-  backgroundColor: 'rgba(255, 255, 255, 0.3)',
-});
-
-const ProgressBarFill = styled.View({
-  position: 'absolute',
-  height: '100%',
-  backgroundColor: '#FF0000',
 });
 
 const ItemTitle = styled.Text({

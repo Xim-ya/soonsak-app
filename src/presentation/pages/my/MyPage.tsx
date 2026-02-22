@@ -104,16 +104,23 @@ export default function MyPage() {
   }, [navigation]);
 
   // 시청 기록 아이템 클릭 핸들러 (이어보기: 플레이어로 직접 이동)
+  // videoId가 없는 경우 콘텐츠 상세 페이지로 fallback
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
-      const playerParams = {
+      if (!item.videoId) {
+        navigation.navigate(routePages.contentDetail, {
+          id: item.contentId,
+          type: item.contentType,
+        });
+        return;
+      }
+      navigation.navigate(routePages.player, {
         videoId: item.videoId,
         title: item.contentTitle,
         contentId: item.contentId,
         contentType: item.contentType,
         ...(item.progressSeconds > 0 && { startSeconds: item.progressSeconds }),
-      };
-      navigation.navigate(routePages.player, playerParams);
+      });
     },
     [navigation],
   );
