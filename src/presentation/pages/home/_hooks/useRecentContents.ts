@@ -4,6 +4,7 @@
  * 최근 업로드된 콘텐츠를 페이지네이션하여 조회합니다.
  */
 
+import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { contentApi } from '@/features/content/api/contentApi';
 import { ContentDto } from '@/features/content/types';
@@ -41,8 +42,8 @@ export function useRecentContents(): UseRecentContentsReturn {
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = queryResult;
 
-  // 중복 제거 (id + type 기준)
-  const contents = (() => {
+  // 중복 제거 (id + type 기준) - useMemo로 최적화
+  const contents = useMemo(() => {
     if (!data?.pages) return [];
     const allContents = data.pages.flatMap((page) =>
       page.contents.map(BaseContentModel.fromContentDto),
@@ -54,7 +55,7 @@ export function useRecentContents(): UseRecentContentsReturn {
       seen.add(key);
       return true;
     });
-  })();
+  }, [data?.pages]);
 
   return {
     contents,

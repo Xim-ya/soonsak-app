@@ -159,8 +159,9 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     effectiveWatchProgress?.durationSeconds ?? 0,
   );
 
-  // 배경 이미지 로딩 상태 (TMDB 이미지가 없으면 로딩 중)
-  const isBackdropLoading = !imageUrls.tmdb;
+  // 배경 이미지 로딩 상태 (contentInfo가 로드되지 않았을 때만 로딩 중)
+  // imageUrls.tmdb 대신 contentInfo 존재 여부로 판단 - backdropPath가 없는 콘텐츠에서 shimmer가 영원히 표시되는 문제 방지
+  const isBackdropLoading = !contentInfo;
 
   // 배경 영역 크기 계산 (aspectRatio 375/240 기준)
   const backdropHeight = Math.round(AppSize.screenWidth * (240 / 375));
