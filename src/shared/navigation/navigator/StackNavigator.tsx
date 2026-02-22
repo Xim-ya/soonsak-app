@@ -17,6 +17,14 @@ import WatchHistoryPage from '../../../presentation/pages/watch-history/WatchHis
 import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
 import AdminContentSearchPage from '../../../presentation/pages/admin-content-search/AdminContentSearchPage';
 import AdminPrimaryVideoSelectPage from '../../../presentation/pages/admin-primary-video-select/AdminPrimaryVideoSelectPage';
+import AdminVideoManagementPage from '../../../presentation/pages/admin-video-management/AdminVideoManagementPage';
+import AdminUserManagementPage from '../../../presentation/pages/admin-user-management/AdminUserManagementPage';
+import AdminUserDetailPage from '../../../presentation/pages/admin-user-detail/AdminUserDetailPage';
+import AdminPushContentSelectPage from '../../../presentation/pages/admin-push-content-select/AdminPushContentSelectPage';
+import AdminUserContentListPage from '../../../presentation/pages/admin-user-content-list/AdminUserContentListPage';
+import AdminContentRegistrationPage from '../../../presentation/pages/admin-content-registration/AdminContentRegistrationPage';
+import AdminChannelManagementPage from '../../../presentation/pages/admin-channel-management/AdminChannelManagementPage';
+import AdminChannelDetailPage from '../../../presentation/pages/admin-channel-detail/AdminChannelDetailPage';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -163,6 +171,46 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.adminPrimaryVideoSelect}
         component={AdminPrimaryVideoSelectPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminVideoManagement}
+        component={AdminVideoManagementPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminUserManagement}
+        component={AdminUserManagementPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminUserDetail}
+        component={AdminUserDetailPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminPushContentSelect}
+        component={AdminPushContentSelectPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminUserContentList}
+        component={AdminUserContentListPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminContentRegistration}
+        component={AdminContentRegistrationPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminChannelManagement}
+        component={AdminChannelManagementPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.adminChannelDetail}
+        component={AdminChannelDetailPage}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

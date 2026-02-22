@@ -114,6 +114,27 @@ export type RootStackParamList = {
     contentType: ContentType; // 콘텐츠 타입
     contentTitle: string; // 콘텐츠 제목 (UI 표시용)
   }; // 어드민 대표 비디오 선택 - 콘텐츠의 비디오 목록에서 대표 비디오 변경
+  [routePages.adminVideoManagement]: undefined; // 어드민 비디오 처리 - 파라미터 없음
+  [routePages.adminUserManagement]: undefined; // 어드민 유저 관리 - 파라미터 없음
+  [routePages.adminUserDetail]: {
+    userId: string; // 유저 ID
+    displayName?: string | null; // 유저 닉네임 (UI 표시용)
+  }; // 어드민 유저 상세 - userId 필수, displayName 선택
+  [routePages.adminPushContentSelect]: {
+    userId: string; // 대상 유저 ID (시청기록/찜/평가 조회용)
+    mode: 'content' | 'player'; // content: 콘텐츠만 선택, player: 콘텐츠+비디오 선택
+  }; // 어드민 푸시 콘텐츠 선택 - 푸시 알림 딥링크용 콘텐츠/비디오 선택
+  [routePages.adminUserContentList]: {
+    userId: string; // 대상 유저 ID
+    displayName?: string | null; // 유저 닉네임 (헤더 표시용)
+    initialTab?: 0 | 1 | 2; // 초기 탭 (0: 시청기록, 1: 찜, 2: 평가)
+  }; // 어드민 유저 콘텐츠 목록 - 시청기록/찜/평가 목록 확인
+  [routePages.adminContentRegistration]: undefined; // 어드민 콘텐츠 등록 - 파라미터 없음
+  [routePages.adminChannelManagement]: undefined; // 어드민 채널 관리 - 파라미터 없음
+  [routePages.adminChannelDetail]: {
+    channelId: string; // 채널 ID
+    channelName: string; // 채널명 (헤더 표시용)
+  }; // 어드민 채널 상세 - channelId, channelName 필수
 };
 
 /**

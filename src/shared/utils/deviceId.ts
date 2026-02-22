@@ -93,6 +93,9 @@ export async function linkDeviceToUser(userId: string): Promise<void> {
       throw error;
     }
 
+    // 비로그인 시 누적된 entry_count를 profiles로 이전
+    await transferEntryCountToUser(userId);
+
     if (__DEV__) {
       console.log('[DeviceId] 유저 연결 완료:', { deviceId, userId });
     }
@@ -109,4 +112,62 @@ export async function linkDeviceToUser(userId: string): Promise<void> {
  */
 export async function getStoredDeviceId(): Promise<string | null> {
   return AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
+}
+
+/**
+ * 앱 진입 카운트 증가 (비로그인 유저용)
+ *
+ * devices 테이블의 entry_count를 1 증가시킵니다.
+ */
+export async function incrementDeviceEntryCount(): Promise<void> {
+  const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
+  if (!deviceId) {
+    console.log('[EntryCount] 디바이스 ID 없음, 카운트 스킵');
+    return;
+  }
+
+  console.log('[EntryCount] 비로그인 유저 진입 카운트 +1');
+  console.log('[EntryCount] Device ID:', deviceId);
+
+  try {
+    const { error } = await supabaseClient.rpc(DEVICE_DATABASE.RPC.INCREMENT_DEVICE_ENTRY_COUNT, {
+      p_device_id: deviceId,
+    });
+
+    if (error) throw error;
+
+    console.log('[EntryCount] devices.entry_count 증가 완료');
+  } catch (error) {
+    console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+  }
+}
+
+/**
+ * 비로그인 → 로그인 전환 시 entry_count 이전
+ *
+ * devices 테이블의 entry_count를 profiles 테이블로 이전하고,
+ * devices의 entry_count를 0으로 초기화합니다.
+ *
+ * @param userId 사용자 ID
+ */
+export async function transferEntryCountToUser(userId: string): Promise<void> {
+  const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
+  if (!deviceId) return;
+
+  console.log('[EntryCount] 비로그인 → 로그인 카운트 이전 시작');
+  console.log('[EntryCount] Device ID:', deviceId);
+  console.log('[EntryCount] User ID:', userId);
+
+  try {
+    const { error } = await supabaseClient.rpc(DEVICE_DATABASE.RPC.TRANSFER_DEVICE_ENTRY_COUNT, {
+      p_device_id: deviceId,
+      p_user_id: userId,
+    });
+
+    if (error) throw error;
+
+    console.log('[EntryCount] devices → profiles 카운트 이전 완료');
+  } catch (error) {
+    console.error('[EntryCount] 카운트 이전 실패:', error);
+  }
 }
