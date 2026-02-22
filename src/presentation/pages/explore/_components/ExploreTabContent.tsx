@@ -25,6 +25,17 @@ import {
 const COLUMN_COUNT = 2;
 const SKELETON_COUNT = 6;
 
+// 스타일 상수 (인라인 객체 생성 방지)
+const LIST_STYLE = { backgroundColor: colors.black };
+const CONTENT_CONTAINER_STYLE = {
+  paddingBottom: 20,
+  backgroundColor: colors.black,
+};
+const COLUMN_WRAPPER_STYLE = {
+  marginBottom: GRID_GAP,
+  paddingHorizontal: HORIZONTAL_PADDING,
+};
+
 interface ExploreTabContentProps {
   /** 정렬 타입 */
   readonly sortType: ExploreSortType;
@@ -116,22 +127,22 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
     return <EmptyState />;
   }, [isLoading, renderSkeleton]);
 
+  // columnWrapperStyle 메모이제이션 (contents 존재 여부 변경 시에만 재계산)
+  const hasContents = contents.length > 0;
+  const columnWrapperStyle = useMemo(
+    () => (hasContents ? COLUMN_WRAPPER_STYLE : undefined),
+    [hasContents],
+  );
+
   return (
     <Tabs.FlatList
       data={contents}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       numColumns={COLUMN_COUNT}
-      style={{ backgroundColor: colors.black }}
-      contentContainerStyle={{
-        paddingBottom: 20,
-        backgroundColor: colors.black,
-      }}
-      columnWrapperStyle={
-        contents.length > 0
-          ? { marginBottom: GRID_GAP, paddingHorizontal: HORIZONTAL_PADDING }
-          : undefined
-      }
+      style={LIST_STYLE}
+      contentContainerStyle={CONTENT_CONTAINER_STYLE}
+      columnWrapperStyle={columnWrapperStyle}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       ListFooterComponent={renderFooter}
