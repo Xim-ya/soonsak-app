@@ -5,21 +5,15 @@
  * 최근 영상 또는 전체 영상을 선택할 수 있습니다.
  */
 
-import { memo, useCallback } from 'react';
+import { memo } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { PrimaryButton } from '@/presentation/components/button/PrimaryButton';
-import { PosterImage } from '@/presentation/components/image/PosterImage';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import type { ChannelRegistrationResult, ChannelRegistrationResultItem } from '@/features/admin';
+import type { ChannelRegistrationResult } from '@/features/admin';
 import type { ChannelRegisterMode } from '../_hooks/useContentRegistration';
+import { RegistrationResultItem } from './RegistrationResultItem';
 
 interface ChannelRegistrationTabProps {
   readonly urlInput: string;
@@ -46,42 +40,17 @@ function ChannelRegistrationTabComponent({
   result,
   onRegister,
 }: ChannelRegistrationTabProps) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const buttonState = isRegistering ? 'loading' : urlInput.trim() ? 'enabled' : 'disabled';
-
-  const handleModeChange = useCallback(
-    (mode: ChannelRegisterMode) => {
-      onRegisterModeChange(mode);
-    },
-    [onRegisterModeChange],
-  );
-
-  const handleItemPress = useCallback(
-    (item: ChannelRegistrationResultItem) => {
-      if (!item.contentId || !item.contentType) return;
-
-      const contentType: ContentType = item.contentType === 'movie' ? 'movie' : 'tv';
-
-      navigation.navigate(routePages.contentDetail, {
-        id: item.contentId,
-        title: item.contentTitle ?? null,
-        type: contentType,
-      });
-    },
-    [navigation],
-  );
 
   return (
     <Container>
       <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        {/* 안내 텍스트 */}
         <SectionTitle>YouTube 채널 URL</SectionTitle>
         <Description>
           YouTube 채널 URL을 입력하세요.{'\n'}
           @handle 형식 또는 channel/ID 형식 모두 지원합니다.
         </Description>
 
-        {/* URL 입력 */}
         <UrlInput
           value={urlInput}
           onChangeText={onUrlInputChange}
@@ -92,13 +61,12 @@ function ChannelRegistrationTabComponent({
           editable={!isRegistering}
         />
 
-        {/* 등록 모드 선택 */}
-        <SectionTitle style={{ marginTop: 24 }}>등록 옵션</SectionTitle>
+        <OptionSectionTitle>등록 옵션</OptionSectionTitle>
 
         <ModeSelector>
           <ModeOption
             isActive={registerMode === 'recent'}
-            onPress={() => handleModeChange('recent')}
+            onPress={() => onRegisterModeChange('recent')}
             activeOpacity={0.7}
           >
             <ModeRadio isActive={registerMode === 'recent'}>
@@ -112,7 +80,7 @@ function ChannelRegistrationTabComponent({
 
           <ModeOption
             isActive={registerMode === 'all'}
-            onPress={() => handleModeChange('all')}
+            onPress={() => onRegisterModeChange('all')}
             activeOpacity={0.7}
           >
             <ModeRadio isActive={registerMode === 'all'}>
@@ -125,7 +93,6 @@ function ChannelRegistrationTabComponent({
           </ModeOption>
         </ModeSelector>
 
-        {/* 최근 영상 개수 선택 (recent 모드일 때만) */}
         {registerMode === 'recent' && (
           <>
             <SubSectionTitle>등록할 영상 수</SubSectionTitle>
@@ -144,7 +111,6 @@ function ChannelRegistrationTabComponent({
           </>
         )}
 
-        {/* 등록 버튼 */}
         <ButtonContainer>
           <PrimaryButton
             title={registerMode === 'all' ? '전체 영상 등록' : '채널 영상 등록'}
@@ -153,7 +119,6 @@ function ChannelRegistrationTabComponent({
           />
         </ButtonContainer>
 
-        {/* 결과 표시 */}
         {result && (
           <ResultContainer>
             <ResultTitle>등록 결과</ResultTitle>
@@ -178,57 +143,28 @@ function ChannelRegistrationTabComponent({
                   )}
                   <ResultItem>
                     <ResultLabel>등록</ResultLabel>
-                    <ResultValue style={{ color: colors.green }}>{result.registered}개</ResultValue>
+                    <SuccessResultValue>{result.registered}개</SuccessResultValue>
                   </ResultItem>
                   <ResultItem>
                     <ResultLabel>건너뜀</ResultLabel>
-                    <ResultValue style={{ color: colors.gray02 }}>{result.skipped}개</ResultValue>
+                    <SkippedResultValue>{result.skipped}개</SkippedResultValue>
                   </ResultItem>
                   <ResultItem>
                     <ResultLabel>실패</ResultLabel>
-                    <ResultValue style={{ color: colors.red }}>{result.failed}개</ResultValue>
+                    <FailedResultValue>{result.failed}개</FailedResultValue>
                   </ResultItem>
                 </ResultSummary>
 
-                {/* 등록된 영상 목록 */}
                 {result.results && result.results.length > 0 && (
                   <ResultDetails>
                     <ResultDetailsTitle>등록된 영상</ResultDetailsTitle>
-                    {result.results.slice(0, 10).map((item, index) => {
-                      const isClickable = item.contentId && item.contentType;
-                      const posterUrl = item.posterPath
-                        ? formatter.prefixTmdbImgUrl(item.posterPath, { size: TmdbImageSize.w185 })
-                        : '';
-
-                      const content = (
-                        <ResultDetailItem key={`${item.videoId}-${index}`}>
-                          <PosterContainer>
-                            <PosterImage width={48} source={posterUrl} borderRadius={4} />
-                          </PosterContainer>
-                          <ResultDetailContent>
-                            <ResultDetailContentTitle numberOfLines={1}>
-                              {item.contentTitle || item.videoTitle}
-                            </ResultDetailContentTitle>
-                            <ResultDetailVideoTitle numberOfLines={1}>
-                              {item.videoTitle}
-                            </ResultDetailVideoTitle>
-                          </ResultDetailContent>
-                          {isClickable && <ChevronText>{'>'}</ChevronText>}
-                        </ResultDetailItem>
-                      );
-
-                      return isClickable ? (
-                        <TouchableOpacity
-                          key={`${item.videoId}-${index}`}
-                          onPress={() => handleItemPress(item)}
-                          activeOpacity={0.7}
-                        >
-                          {content}
-                        </TouchableOpacity>
-                      ) : (
-                        content
-                      );
-                    })}
+                    {result.results.slice(0, 10).map((item, index) => (
+                      <RegistrationResultItem
+                        key={`${item.videoId}-${index}`}
+                        item={item}
+                        index={index}
+                      />
+                    ))}
                     {result.results.length > 10 && (
                       <MoreText>... 외 {result.results.length - 10}개</MoreText>
                     )}
@@ -254,6 +190,13 @@ const SectionTitle = styled.Text({
   ...textStyles.title1,
   color: colors.white,
   marginBottom: 8,
+});
+
+const OptionSectionTitle = styled.Text({
+  ...textStyles.title1,
+  color: colors.white,
+  marginBottom: 8,
+  marginTop: 24,
 });
 
 const SubSectionTitle = styled.Text({
@@ -391,6 +334,21 @@ const ResultValue = styled.Text({
   color: colors.white,
 });
 
+const SuccessResultValue = styled.Text({
+  ...textStyles.body1,
+  color: colors.green,
+});
+
+const SkippedResultValue = styled.Text({
+  ...textStyles.body1,
+  color: colors.gray02,
+});
+
+const FailedResultValue = styled.Text({
+  ...textStyles.body1,
+  color: colors.red,
+});
+
 const ResultDetails = styled.View({
   borderTopWidth: 1,
   borderTopColor: colors.gray05,
@@ -401,37 +359,6 @@ const ResultDetailsTitle = styled.Text({
   ...textStyles.body1,
   color: colors.gray02,
   marginBottom: 8,
-});
-
-const ResultDetailItem = styled.View({
-  flexDirection: 'row',
-  alignItems: 'center',
-  paddingVertical: 10,
-});
-
-const PosterContainer = styled.View({
-  marginRight: 12,
-});
-
-const ResultDetailContent = styled.View({
-  flex: 1,
-});
-
-const ResultDetailContentTitle = styled.Text({
-  ...textStyles.body2,
-  color: colors.white,
-});
-
-const ResultDetailVideoTitle = styled.Text({
-  ...textStyles.desc,
-  color: colors.gray03,
-  marginTop: 2,
-});
-
-const ChevronText = styled.Text({
-  ...textStyles.body2,
-  color: colors.gray03,
-  marginLeft: 8,
 });
 
 const MoreText = styled.Text({
