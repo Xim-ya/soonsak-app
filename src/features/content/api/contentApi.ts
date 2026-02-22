@@ -47,20 +47,22 @@ function isValidTitleLogoLang(value: string): value is 'ko' | 'en' {
 function mapTrendingRowsToContentDtos(rows: RpcTrendingRow[]): ContentDto[] {
   return rows
     .filter((row) => isValidContentType(row.out_content_type))
-    .map(
-      (row): ContentDto => ({
+    .map((row): ContentDto => {
+      const titleLogoLang =
+        row.out_title_logo_lang && isValidTitleLogoLang(row.out_title_logo_lang)
+          ? row.out_title_logo_lang
+          : undefined;
+
+      return {
         id: row.out_id,
         contentType: row.out_content_type as ContentType,
         title: row.out_title,
         ...(row.out_poster_path && { posterPath: row.out_poster_path }),
         ...(row.out_backdrop_path && { backdropPath: row.out_backdrop_path }),
         ...(row.out_title_logo && { titleLogo: row.out_title_logo }),
-        ...(row.out_title_logo_lang &&
-          isValidTitleLogoLang(row.out_title_logo_lang) && {
-            titleLogoLang: row.out_title_logo_lang,
-          }),
-      }),
-    );
+        ...(titleLogoLang && { titleLogoLang }),
+      };
+    });
 }
 
 /** 쓰로틀 체크: 최근 호출 이후 충분한 시간이 지났는지 확인 */
@@ -79,6 +81,36 @@ function sanitizeExcludeIds(excludeIds: number[]): number[] {
   return excludeIds.filter((id) => Number.isInteger(id) && id > 0).slice(0, MAX_EXCLUDE_IDS);
 }
 
+/**
+ * 사용자의 시청 기록에서 콘텐츠 ID 목록을 조회
+ * @returns 시청한 콘텐츠 ID 배열 또는 null (비로그인/조회실패/빈 결과)
+ */
+async function getUserWatchedContentIds(): Promise<number[] | null> {
+  const { data: userData } = await supabaseClient.auth.getUser();
+  if (!userData?.user?.id) {
+    return null;
+  }
+
+  const { data: watchedRows, error: watchedError } = await supabaseClient
+    .from('watch_history')
+    .select('content_id')
+    .eq('user_id', userData.user.id);
+
+  if (watchedError) {
+    console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
+    return null;
+  }
+
+  if (!watchedRows || watchedRows.length === 0) {
+    return null;
+  }
+
+  const rawIds = [...new Set(watchedRows.map((w: { content_id: number }) => w.content_id))];
+  const sanitizedIds = sanitizeExcludeIds(rawIds);
+
+  return sanitizedIds.length > 0 ? sanitizedIds : null;
+}
+
 /** Supabase 쿼리 필터 메서드 인터페이스 */
 interface FilterableQuery {
   in(column: string, values: readonly (number | string)[]): this;
@@ -93,7 +125,7 @@ interface FilterableQuery {
 function applyContentFilters<T extends FilterableQuery>(
   query: T,
   filter: ContentFilter,
-  excludeIds: number[],
+  excludeIds: number[] | null,
   channelContentIds: number[] | null,
 ): T {
   let q = query;
@@ -117,9 +149,11 @@ function applyContentFilters<T extends FilterableQuery>(
   if (filter.minStarRating !== null) {
     q = q.gte('vote_average', filter.minStarRating * 2);
   }
-  const safeIds = sanitizeExcludeIds(excludeIds);
-  if (safeIds.length > 0) {
-    q = q.not('id', 'in', `(${safeIds.join(',')})`);
+  if (excludeIds !== null && excludeIds.length > 0) {
+    const safeIds = sanitizeExcludeIds(excludeIds);
+    if (safeIds.length > 0) {
+      q = q.not('id', 'in', `(${safeIds.join(',')})`);
+    }
   }
   return q;
 }
@@ -753,27 +787,7 @@ export const contentApi = {
     }
 
     // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
-    let excludeContentIds: number[] = [];
-    if (filter.excludeWatched) {
-      const { data: userData } = await supabaseClient.auth.getUser();
-      if (userData?.user?.id) {
-        const { data: watchedRows, error: watchedError } = await supabaseClient
-          .from('watch_history')
-          .select('content_id')
-          .eq('user_id', userData.user.id);
-
-        if (watchedError) {
-          console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
-          // 에러 시 필터 무시 (사용자 경험 유지)
-        } else {
-          const rawIds = [
-            ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
-          ];
-          // 유효성 검증 및 제한 적용
-          excludeContentIds = sanitizeExcludeIds(rawIds);
-        }
-      }
-    }
+    const excludeContentIds = filter.excludeWatched ? await getUserWatchedContentIds() : null;
 
     const offset = page * pageSize;
 
@@ -794,7 +808,7 @@ export const contentApi = {
           p_include_ending: filter.includeEnding,
           p_channel_content_ids: channelContentIds,
           p_ending_content_ids: endingContentIds,
-          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
+          p_exclude_content_ids: excludeContentIds,
         },
       );
 
@@ -813,12 +827,48 @@ export const contentApi = {
       return { contents, hasMore, totalCount };
     }
 
-    // latest, popular: 기존 정렬 로직
+    // 'popular' 정렬: 복합 점수 기반 (RPC 함수 사용)
+    if (sortType === 'popular') {
+      const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
+        CONTENT_DATABASE.RPC.GET_EXPLORE_CONTENTS_BY_TRENDING_SCORE,
+        {
+          p_content_type: filter.contentType,
+          p_genre_ids: filter.genreIds.length > 0 ? filter.genreIds : null,
+          p_origin_countries: filter.countryCodes.length > 0 ? filter.countryCodes : null,
+          p_min_year: filter.releaseYearRange?.min ?? null,
+          p_max_year: filter.releaseYearRange?.max ?? null,
+          p_min_rating: filter.minStarRating,
+          p_include_ending: filter.includeEnding,
+          p_channel_content_ids: channelContentIds,
+          p_ending_content_ids: endingContentIds,
+          p_exclude_content_ids: excludeContentIds,
+          p_limit: pageSize,
+          p_offset: offset,
+        },
+      );
+
+      if (rpcError) {
+        console.error('인기순 콘텐츠 조회 실패:', rpcError);
+        throw new Error(`Failed to fetch popular contents: ${rpcError.message}`);
+      }
+
+      const rows = rpcData ?? [];
+      const totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
+      const contents = mapWithField<ContentDto[]>(
+        rows.map((r: { content_row: unknown }) => r.content_row),
+      );
+      const hasMore = (page + 1) * pageSize < totalCount;
+
+      return { contents, hasMore, totalCount };
+    }
+
+    // 'all' 또는 'latest' 정렬: sortType에 따라 정렬 컬럼 결정
+    // - 'all': id 기준 내림차순 (기본값)
+    // - 'latest': uploaded_at 기준 내림차순
     const sortConfig = {
       all: { column: 'id', ascending: false },
       latest: { column: CONTENT_DATABASE.COLUMNS.UPLOADED_AT, ascending: false },
-      popular: { column: 'popularity', ascending: false },
-    }[sortType];
+    }[sortType] ?? { column: 'id', ascending: false };
 
     // 카운트 쿼리
     let countQuery = supabaseClient
@@ -1027,6 +1077,8 @@ export const contentApi = {
    * @param page 페이지 번호 (0부터 시작)
    * @param pageSize 페이지당 항목 수
    * @param seed 랜덤 정렬용 시드 값
+   * @param includeEnding 결말 포함 비디오만 필터링 여부
+   * @param excludeWatched 시청한 콘텐츠 제외 여부
    */
   getChannelVideos: async (
     channelIds: string[] | null = null,
@@ -1034,6 +1086,8 @@ export const contentApi = {
     page: number = 0,
     pageSize: number = 20,
     seed?: number,
+    includeEnding: boolean = false,
+    excludeWatched: boolean = false,
   ): Promise<{
     videos: Array<{
       videoId: string;
@@ -1052,12 +1106,17 @@ export const contentApi = {
     hasMore: boolean;
     totalCount: number;
   }> => {
+    // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
+    const excludeContentIds = excludeWatched ? await getUserWatchedContentIds() : null;
+
     const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CHANNEL_VIDEOS, {
       p_channel_ids: channelIds,
       p_sort_type: sortType,
       p_page: page,
       p_page_size: pageSize,
       p_seed: seed,
+      p_include_ending: includeEnding,
+      p_exclude_content_ids: excludeContentIds,
     });
 
     if (error) {
