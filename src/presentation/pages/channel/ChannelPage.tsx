@@ -103,14 +103,14 @@ export default function ChannelPage() {
     },
   });
 
-  // 비디오 클릭 핸들러
+  // 비디오 클릭 핸들러 → 콘텐츠 상세 페이지로 이동
   const handleVideoPress = useCallback(
     (video: ChannelVideoModel) => {
-      navigation.navigate(routePages.player, {
+      navigation.navigate(routePages.contentDetail, {
+        id: video.contentId,
+        type: video.contentType,
+        title: video.contentTitle,
         videoId: video.videoId,
-        title: video.videoTitle,
-        contentId: video.contentId,
-        contentType: video.contentType,
       });
     },
     [navigation],
