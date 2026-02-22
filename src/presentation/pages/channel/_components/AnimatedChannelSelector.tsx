@@ -19,6 +19,7 @@ import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
+  useDerivedValue,
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
@@ -46,7 +47,28 @@ const SCROLL_RANGE = 60;
 
 // 컨테이너 높이 (텍스트 영역 포함)
 const CONTAINER_HEIGHT_MAX = AVATAR_SIZE_MAX + TEXT_AREA_HEIGHT + 20;
-const CONTAINER_HEIGHT_MIN = AVATAR_SIZE_MAX + 8; // scale 변환 시 잘림 방지
+const CONTAINER_HEIGHT_MIN = AVATAR_SIZE_MAX + 8;
+
+// 스타일 상수 (인라인 객체 생성 방지)
+const itemContainerBaseStyle = { alignItems: 'flex-start' as const };
+const avatarBaseStyle = {
+  justifyContent: 'center' as const,
+  alignItems: 'center' as const,
+  overflow: 'hidden' as const,
+  backgroundColor: colors.gray05,
+};
+const textWrapperBaseStyle = { marginTop: 4, overflow: 'hidden' as const };
+const skeletonBaseStyle = { backgroundColor: colors.gray05 };
+
+// 선택 상태 border 스타일 상수 (useMemo 오버헤드 제거)
+const selectedBorderStyle = {
+  borderWidth: 3,
+  borderColor: colors.main,
+};
+const unselectedBorderStyle = {
+  borderWidth: 0,
+  borderColor: 'transparent',
+};
 
 /** 구독자 수 포맷 (만 단위) */
 function formatSubscriberCount(count?: number): string {
@@ -84,18 +106,19 @@ interface AnimatedChannelSelectorProps {
 
 /**
  * 애니메이션 채널 아이템 컴포넌트
+ * animatedSize를 부모에서 받아 중복 계산 방지
  */
 const AnimatedChannelItem = React.memo(
   ({
     channel,
     isSelected,
     onPress,
-    scrollY,
+    animatedSize,
   }: {
     channel: ChannelItemModel;
     isSelected: boolean;
     onPress: (id: string) => void;
-    scrollY: SharedValue<number>;
+    animatedSize: SharedValue<number>;
   }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
@@ -105,78 +128,51 @@ const AnimatedChannelItem = React.memo(
 
     const subscriberText = formatSubscriberCount(channel.subscriberCount);
 
-    // 컨테이너 너비 애니메이션
-    const animatedContainerStyle = useAnimatedStyle(() => {
+    // 선택 상태 border 스타일 (상수 재사용)
+    const borderStyle = isSelected ? selectedBorderStyle : unselectedBorderStyle;
+
+    // 개별 애니메이션 스타일 (부모에서 전달받은 animatedSize 사용)
+    const containerStyle = useAnimatedStyle(() => {
       'worklet';
-      const width = interpolate(
-        scrollY.value,
-        [0, SCROLL_RANGE],
-        [AVATAR_SIZE_MAX + 6, AVATAR_SIZE_MIN + 6],
-        Extrapolation.CLAMP,
-      );
+      const width = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
       return { width };
     });
 
-    // 아바타 + 이미지 크기 애니메이션
-    const animatedAvatarStyle = useAnimatedStyle(() => {
+    const avatarStyle = useAnimatedStyle(() => {
       'worklet';
-      const size = interpolate(
-        scrollY.value,
-        [0, SCROLL_RANGE],
-        [AVATAR_SIZE_MAX + 6, AVATAR_SIZE_MIN + 6],
-        Extrapolation.CLAMP,
-      );
+      const size = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
       return { width: size, height: size, borderRadius: size / 2 };
     });
 
-    // 이미지 크기 애니메이션 (border 제외)
-    const animatedImageStyle = useAnimatedStyle(() => {
+    const imageStyle = useAnimatedStyle(() => {
       'worklet';
-      const size = interpolate(
-        scrollY.value,
-        [0, SCROLL_RANGE],
-        [AVATAR_SIZE_MAX, AVATAR_SIZE_MIN],
-        Extrapolation.CLAMP,
-      );
+      const size = AVATAR_SIZE_MAX * animatedSize.value;
       return { width: size, height: size, borderRadius: size / 2 };
     });
 
-    // 텍스트 opacity 애니메이션
-    const animatedTextStyle = useAnimatedStyle(() => {
+    const textStyle = useAnimatedStyle(() => {
       'worklet';
       const opacity = interpolate(
-        scrollY.value,
-        [0, SCROLL_RANGE * 0.5],
-        [1, 0],
+        animatedSize.value,
+        [AVATAR_SIZE_MIN / AVATAR_SIZE_MAX, 1],
+        [0, 1],
         Extrapolation.CLAMP,
       );
       return { opacity };
     });
 
     return (
-      <Animated.View style={[{ alignItems: 'flex-start' }, animatedContainerStyle]}>
+      <Animated.View style={[itemContainerBaseStyle, containerStyle]}>
         <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
-          <Animated.View
-            style={[
-              {
-                borderWidth: isSelected ? 3 : 0,
-                borderColor: isSelected ? colors.main : 'transparent',
-                justifyContent: 'center',
-                alignItems: 'center',
-                overflow: 'hidden',
-                backgroundColor: colors.gray05,
-              },
-              animatedAvatarStyle,
-            ]}
-          >
+          <Animated.View style={[avatarBaseStyle, borderStyle, avatarStyle]}>
             <Animated.Image
               source={{ uri: channel.logoUrl }}
-              style={[animatedImageStyle, { opacity: isLoaded ? 1 : 0 }]}
+              style={[imageStyle, { opacity: isLoaded ? 1 : 0 }]}
               onLoad={() => setIsLoaded(true)}
             />
           </Animated.View>
         </TouchableOpacity>
-        <Animated.View style={[{ marginTop: 4, overflow: 'hidden' }, animatedTextStyle]}>
+        <Animated.View style={[textWrapperBaseStyle, textStyle]}>
           <ChannelName numberOfLines={1}>{channel.name}</ChannelName>
           {subscriberText && <SubscriberCount>{subscriberText}</SubscriberCount>}
         </Animated.View>
@@ -188,36 +184,29 @@ AnimatedChannelItem.displayName = 'AnimatedChannelItem';
 
 /**
  * 애니메이션 Skeleton 아이템 컴포넌트
+ * animatedSize를 부모에서 받아 중복 계산 방지
  */
-const AnimatedSkeletonItem = React.memo(({ scrollY }: { scrollY: SharedValue<number> }) => {
-  const animatedContainerStyle = useAnimatedStyle(() => {
-    'worklet';
-    const width = interpolate(
-      scrollY.value,
-      [0, SCROLL_RANGE],
-      [AVATAR_SIZE_MAX + 6, AVATAR_SIZE_MIN + 6],
-      Extrapolation.CLAMP,
-    );
-    return { width };
-  });
+const AnimatedSkeletonItem = React.memo(
+  ({ animatedSize }: { animatedSize: SharedValue<number> }) => {
+    const containerStyle = useAnimatedStyle(() => {
+      'worklet';
+      const width = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
+      return { width };
+    });
 
-  const animatedAvatarStyle = useAnimatedStyle(() => {
-    'worklet';
-    const size = interpolate(
-      scrollY.value,
-      [0, SCROLL_RANGE],
-      [AVATAR_SIZE_MAX, AVATAR_SIZE_MIN],
-      Extrapolation.CLAMP,
-    );
-    return { width: size, height: size, borderRadius: size / 2 };
-  });
+    const avatarStyle = useAnimatedStyle(() => {
+      'worklet';
+      const size = AVATAR_SIZE_MAX * animatedSize.value;
+      return { width: size, height: size, borderRadius: size / 2 };
+    });
 
-  return (
-    <Animated.View style={[{ alignItems: 'flex-start' }, animatedContainerStyle]}>
-      <Animated.View style={[{ backgroundColor: colors.gray05 }, animatedAvatarStyle]} />
-    </Animated.View>
-  );
-});
+    return (
+      <Animated.View style={[itemContainerBaseStyle, containerStyle]}>
+        <Animated.View style={[skeletonBaseStyle, avatarStyle]} />
+      </Animated.View>
+    );
+  },
+);
 AnimatedSkeletonItem.displayName = 'AnimatedSkeletonItem';
 
 /**
@@ -228,6 +217,13 @@ ItemSeparator.displayName = 'ItemSeparator';
 
 const listContentStyle = { paddingHorizontal: 16 };
 
+// 컨테이너 기본 스타일 (컴포넌트 외부로 이동)
+const containerBaseStyle = {
+  backgroundColor: colors.black,
+  justifyContent: 'flex-start' as const,
+  paddingTop: 8,
+};
+
 function AnimatedChannelSelector({
   channels,
   selectedIds,
@@ -235,6 +231,17 @@ function AnimatedChannelSelector({
   isLoading,
   scrollY,
 }: AnimatedChannelSelectorProps) {
+  // 모든 아이템이 공유할 크기 값 (한 번만 계산)
+  const sharedAnimatedSize = useDerivedValue(() => {
+    'worklet';
+    return interpolate(
+      scrollY.value,
+      [0, SCROLL_RANGE],
+      [1, AVATAR_SIZE_MIN / AVATAR_SIZE_MAX],
+      Extrapolation.CLAMP,
+    );
+  });
+
   const handleChannelPress = useCallback(
     (channelId: string) => {
       if (selectedIds.includes(channelId)) {
@@ -249,18 +256,18 @@ function AnimatedChannelSelector({
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<ListItem>) => {
       if (isSkeleton(item)) {
-        return <AnimatedSkeletonItem scrollY={scrollY} />;
+        return <AnimatedSkeletonItem animatedSize={sharedAnimatedSize} />;
       }
       return (
         <AnimatedChannelItem
           channel={item}
           isSelected={selectedIds.includes(item.id)}
           onPress={handleChannelPress}
-          scrollY={scrollY}
+          animatedSize={sharedAnimatedSize}
         />
       );
     },
-    [selectedIds, handleChannelPress, scrollY],
+    [selectedIds, handleChannelPress, sharedAnimatedSize],
   );
 
   const keyExtractor = useCallback((item: ListItem) => item.id, []);
@@ -286,16 +293,7 @@ function AnimatedChannelSelector({
   }
 
   return (
-    <Animated.View
-      style={[
-        {
-          backgroundColor: colors.black,
-          justifyContent: 'flex-start',
-          paddingTop: 8,
-        },
-        animatedContainerStyle,
-      ]}
-    >
+    <Animated.View style={[containerBaseStyle, animatedContainerStyle]}>
       <FlatList
         horizontal
         data={listData}
