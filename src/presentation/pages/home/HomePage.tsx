@@ -67,10 +67,10 @@ export default function HomeScreen() {
         <RecentContentView />
         <TopTenContentListView />
         <FeaturedChannelSectionView />
-        <LongRuntimeContentListView />
         <View onLayout={handleCollectionLayout}>
           <ContentCollectionSectionView isVisible={isCollectionVisible} />
         </View>
+        <LongRuntimeContentListView />
       </Animated.ScrollView>
       <HomeAppBar scrollY={scrollY} />
     </Container>

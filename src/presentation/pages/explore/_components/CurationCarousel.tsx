@@ -134,20 +134,37 @@ const ThumbnailSkeleton = styled.View({
   borderRadius: 8,
 });
 
-/** 타이틀 스켈레톤 - CurationVideoItem의 VideoTitle 영역과 동일한 높이 */
-const TitleSkeleton = styled.View({
-  width: THUMBNAIL_WIDTH * 0.8,
+/** 타이틀 스켈레톤 컨테이너 - 전체 높이 유지 */
+const TitleSkeletonContainer = styled.View({
   height: VIDEO_TITLE_HEIGHT,
+  marginTop: ITEM_GAP,
+  justifyContent: 'space-between',
+});
+
+/** 타이틀 스켈레톤 첫 번째 줄 - 꽉 차게 */
+const TitleSkeletonLine1 = styled.View({
+  width: THUMBNAIL_WIDTH,
+  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
   backgroundColor: colors.gray05,
   borderRadius: 4,
-  marginTop: ITEM_GAP,
+});
+
+/** 타이틀 스켈레톤 두 번째 줄 - 1/3만 */
+const TitleSkeletonLine2 = styled.View({
+  width: THUMBNAIL_WIDTH / 3,
+  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
+  backgroundColor: colors.gray05,
+  borderRadius: 4,
 });
 
 /** 스켈레톤 아이템 컨테이너 */
 const SkeletonItem = () => (
   <SkeletonItemContainer>
     <ThumbnailSkeleton />
-    <TitleSkeleton />
+    <TitleSkeletonContainer>
+      <TitleSkeletonLine1 />
+      <TitleSkeletonLine2 />
+    </TitleSkeletonContainer>
   </SkeletonItemContainer>
 );
 
