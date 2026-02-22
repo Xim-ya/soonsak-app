@@ -1,33 +1,43 @@
 /**
- * WatchHistoryList - 시청 기록 목록
+ * WatchHistoryList - 시청 기록 가로 스크롤 목록
  *
- * 시청한 작품들을 가로 스크롤 리스트로 표시합니다.
- * - 포스터 이미지 + 제목
- * - 중복 제거된 고유 콘텐츠만 표시
+ * Toss Frontend Fundamentals 원칙 적용:
+ * - 응집도: 데이터 fetching과 UI가 함께 위치
+ * - 단일 책임: 시청 기록 프리뷰 표시만 담당
+ * - 추상화: 내부 구현 숨기고 필요한 콜백만 노출
+ *
+ * 기능:
+ * - 가로 무한 스크롤 (최대 12개)
+ * - 6개씩 페이지네이션
+ * - 스크롤 끝 도달 시 자동 로드
  */
 
 import { memo, useCallback } from 'react';
-import { FlatList, ListRenderItem, TouchableOpacity } from 'react-native';
+import { FlatList, ListRenderItem, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import type { WatchHistoryModelType } from '@/features/watch-history';
+import {
+  useWatchHistoryPreview,
+  type WatchHistoryModelType,
+} from '@/features/watch-history';
 import {
   shouldShowProgressBar,
   calculateProgressPercent,
 } from '@/presentation/components/progress';
 import DarkChip from '@/presentation/components/chip/DarkChip';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 
 /* Types */
 
 interface WatchHistoryListProps {
-  readonly items: WatchHistoryModelType[];
-  readonly isLoading?: boolean;
+  /** 아이템 클릭 핸들러 */
   readonly onItemPress?: (item: WatchHistoryModelType) => void;
+  /** 전체보기 클릭 핸들러 */
+  readonly onViewAllPress?: () => void;
 }
 
 interface WatchHistoryItemProps {
@@ -37,8 +47,10 @@ interface WatchHistoryItemProps {
 
 /* Constants */
 
+const PAGE_SIZE = 6;
+const MAX_ITEMS = 12;
 const ITEM_WIDTH = AppSize.ratioWidth(160);
-const ITEM_HEIGHT = ITEM_WIDTH * (9 / 16); // 16:9 비율 (백드롭용)
+const ITEM_HEIGHT = ITEM_WIDTH * (9 / 16);
 const ITEM_GAP = AppSize.ratioWidth(8);
 const HORIZONTAL_PADDING = AppSize.ratioWidth(16);
 const PROGRESS_BAR_HEIGHT = 3;
@@ -47,20 +59,16 @@ const LIST_CONTENT_STYLE = {
   paddingHorizontal: HORIZONTAL_PADDING,
 };
 
-/* Components */
+/* Sub-Components */
 
 const WatchHistoryItemComponent = memo(({ item, onItemPress }: WatchHistoryItemProps) => {
-  // 백드롭 이미지 우선, 없으면 포스터 사용
   const imageUrl = item.contentBackdropPath
     ? formatter.prefixTmdbImgUrl(item.contentBackdropPath, { size: TmdbImageSize.w342 })
     : item.contentPosterPath
       ? formatter.prefixTmdbImgUrl(item.contentPosterPath, { size: TmdbImageSize.w185 })
       : '';
 
-  // YouTube 스타일 프로그레스 바 표시 여부 (공통 정책 적용)
   const showProgressBar = shouldShowProgressBar(item.progressSeconds, item.durationSeconds);
-
-  // 진행률 계산 (0~100) - 공통 유틸리티 사용
   const progressPercent = calculateProgressPercent(item.progressSeconds, item.durationSeconds);
 
   const handlePress = useCallback(() => {
@@ -77,7 +85,6 @@ const WatchHistoryItemComponent = memo(({ item, onItemPress }: WatchHistoryItemP
             height={ITEM_HEIGHT}
             borderRadius={4}
           />
-          {/* 런타임 칩 - 우측 하단 */}
           {item.durationSeconds > 0 && (
             <RuntimeChipContainer>
               <DarkChip content={formatter.formatRuntime(item.durationSeconds)} />
@@ -96,15 +103,33 @@ const WatchHistoryItemComponent = memo(({ item, onItemPress }: WatchHistoryItemP
   );
 });
 
-function WatchHistoryListComponent({
-  items,
-  isLoading = false,
-  onItemPress,
-}: WatchHistoryListProps) {
-  const { status } = useAuth();
+/* Main Component */
 
-  const isGuest = status === 'unauthenticated';
+function WatchHistoryListComponent({
+  onItemPress,
+  onViewAllPress,
+}: WatchHistoryListProps) {
+  // 응집도: 데이터 fetching 로직을 컴포넌트 내부에서 관리
+  const {
+    items,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    isGuest,
+    fetchNextPage,
+  } = useWatchHistoryPreview({
+    pageSize: PAGE_SIZE,
+    maxItems: MAX_ITEMS,
+  });
+
   const hasNoHistory = items.length === 0 && !isLoading;
+
+  // 스크롤 끝 도달 시 다음 페이지 로드
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem: ListRenderItem<WatchHistoryModelType> = useCallback(
     ({ item }) => <WatchHistoryItemComponent item={item} onItemPress={onItemPress} />,
@@ -116,11 +141,23 @@ function WatchHistoryListComponent({
     [],
   );
 
+  // 로딩 인디케이터 (우측 끝)
+  const renderListFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <FooterLoadingContainer>
+        <ActivityIndicator color={colors.gray02} size="small" />
+      </FooterLoadingContainer>
+    );
+  }, [isFetchingNextPage]);
+
   // 비로그인 유저: 빈 상태 메시지
   if (isGuest) {
     return (
       <Container>
-        <SectionTitle>시청기록</SectionTitle>
+        <SectionHeader>
+          <SectionTitle>시청기록</SectionTitle>
+        </SectionHeader>
         <EmptyStateContainer>
           <EmptyStateText>로그인하면 시청기록이 저장돼요</EmptyStateText>
         </EmptyStateContainer>
@@ -132,7 +169,9 @@ function WatchHistoryListComponent({
   if (hasNoHistory) {
     return (
       <Container>
-        <SectionTitle>시청기록</SectionTitle>
+        <SectionHeader>
+          <SectionTitle>시청기록</SectionTitle>
+        </SectionHeader>
         <EmptyStateContainer>
           <EmptyStateText>아직 시청한 작품이 없어요</EmptyStateText>
         </EmptyStateContainer>
@@ -142,7 +181,12 @@ function WatchHistoryListComponent({
 
   return (
     <Container>
-      <SectionTitle>시청기록</SectionTitle>
+      <Pressable onPress={onViewAllPress} disabled={!onViewAllPress}>
+        <SectionHeader>
+          <SectionTitle>시청기록</SectionTitle>
+          {onViewAllPress && <RightArrowIcon width={20} height={20} color={colors.white} />}
+        </SectionHeader>
+      </Pressable>
       <FlatList
         horizontal
         data={items}
@@ -151,6 +195,9 @@ function WatchHistoryListComponent({
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={LIST_CONTENT_STYLE}
         ItemSeparatorComponent={ItemSeparator}
+        ListFooterComponent={renderListFooter}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.3}
       />
     </Container>
   );
@@ -162,11 +209,17 @@ const Container = styled.View({
   paddingVertical: AppSize.ratioHeight(16),
 });
 
+const SectionHeader = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: HORIZONTAL_PADDING,
+  marginBottom: AppSize.ratioHeight(12),
+});
+
 const SectionTitle = styled.Text({
   ...textStyles.title1,
   color: colors.white,
-  marginBottom: AppSize.ratioHeight(12),
-  paddingHorizontal: HORIZONTAL_PADDING,
 });
 
 const EmptyStateContainer = styled.View({
@@ -224,13 +277,20 @@ const ProgressBarBackground = styled.View({
 const ProgressBarFill = styled.View({
   position: 'absolute',
   height: '100%',
-  backgroundColor: '#FF0000', // YouTube 빨간색
+  backgroundColor: '#FF0000',
 });
 
 const ItemTitle = styled.Text({
   ...textStyles.desc,
   color: colors.white,
   marginTop: AppSize.ratioHeight(6),
+});
+
+const FooterLoadingContainer = styled.View({
+  width: 40,
+  height: ITEM_HEIGHT,
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 export const WatchHistoryList = memo(WatchHistoryListComponent);
