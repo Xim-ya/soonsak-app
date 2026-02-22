@@ -47,6 +47,27 @@ function CurationCarousel() {
     [navigation],
   );
 
+  // renderItem 메모이제이션
+  const renderItem = useCallback(
+    ({ item }: { item: CurationVideoModel }) => (
+      <CurationVideoItem video={item} onPress={handleVideoPress} />
+    ),
+    [handleVideoPress],
+  );
+
+  // keyExtractor 메모이제이션
+  const keyExtractor = useCallback((item: CurationVideoModel) => item.videoId, []);
+
+  // getItemLayout - 스크롤 성능 최적화
+  const getItemLayout = useCallback(
+    (_: ArrayLike<CurationVideoModel> | null | undefined, index: number) => ({
+      length: SNAP_INTERVAL,
+      offset: SNAP_INTERVAL * index,
+      index,
+    }),
+    [],
+  );
+
   // 로딩 중 스켈레톤 표시
   if (isLoading) {
     return (
@@ -68,13 +89,18 @@ function CurationCarousel() {
       <VideoList
         horizontal
         data={videos}
-        renderItem={({ item }) => <CurationVideoItem video={item} onPress={handleVideoPress} />}
-        keyExtractor={(item) => item.videoId}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        getItemLayout={getItemLayout}
         ItemSeparatorComponent={ItemSeparator}
         showsHorizontalScrollIndicator={false}
         snapToInterval={SNAP_INTERVAL}
         snapToAlignment="start"
         decelerationRate="fast"
+        removeClippedSubviews
+        maxToRenderPerBatch={5}
+        windowSize={3}
+        initialNumToRender={3}
       />
     </Container>
   );

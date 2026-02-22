@@ -25,6 +25,15 @@ import { useExploreFilterSheet } from './_hooks/useExploreFilterSheet';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+// 스타일 상수 (인라인 객체 생성 방지)
+const TABS_CONTAINER_STYLE = { backgroundColor: colors.black };
+const HEADER_CONTAINER_STYLE = { backgroundColor: colors.black };
+const PAGER_STYLE = { backgroundColor: colors.black };
+const PAGER_PROPS = {
+  style: PAGER_STYLE,
+  overScrollMode: 'never' as const,
+};
+
 export default function ExploreScreen() {
   const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<TabParamList, 'Explore'>>();
@@ -81,16 +90,13 @@ export default function ExploreScreen() {
               gradientOpacity={gradientOpacity}
             />
           )}
-          containerStyle={{ backgroundColor: colors.black }}
-          headerContainerStyle={{ backgroundColor: colors.black }}
+          containerStyle={TABS_CONTAINER_STYLE}
+          headerContainerStyle={HEADER_CONTAINER_STYLE}
           minHeaderHeight={0}
           tabBarHeight={150}
           snapThreshold={null}
           allowHeaderOverscroll={true}
-          pagerProps={{
-            style: { backgroundColor: colors.black },
-            overScrollMode: 'never',
-          }}
+          pagerProps={PAGER_PROPS}
         >
           <Tabs.Tab name="all" label="전체">
             <ExploreTabContent sortType="all" filter={filter} onContentPress={handleContentPress} />
