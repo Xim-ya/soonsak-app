@@ -813,12 +813,46 @@ export const contentApi = {
       return { contents, hasMore, totalCount };
     }
 
-    // latest, popular: 기존 정렬 로직
+    // 'popular' 정렬: 복합 점수 기반 (RPC 함수 사용)
+    if (sortType === 'popular') {
+      const { data: rpcData, error: rpcError } = await supabaseClient.rpc(
+        CONTENT_DATABASE.RPC.GET_EXPLORE_CONTENTS_BY_TRENDING_SCORE,
+        {
+          p_content_type: filter.contentType,
+          p_genre_ids: filter.genreIds.length > 0 ? filter.genreIds : null,
+          p_origin_countries: filter.countryCodes.length > 0 ? filter.countryCodes : null,
+          p_min_year: filter.releaseYearRange?.min ?? null,
+          p_max_year: filter.releaseYearRange?.max ?? null,
+          p_min_rating: filter.minStarRating,
+          p_include_ending: filter.includeEnding,
+          p_channel_content_ids: channelContentIds,
+          p_ending_content_ids: endingContentIds,
+          p_exclude_content_ids: excludeContentIds.length > 0 ? excludeContentIds : null,
+          p_limit: pageSize,
+          p_offset: offset,
+        },
+      );
+
+      if (rpcError) {
+        console.error('인기순 콘텐츠 조회 실패:', rpcError);
+        throw new Error(`Failed to fetch popular contents: ${rpcError.message}`);
+      }
+
+      const rows = rpcData ?? [];
+      const totalCount = rows.length > 0 ? Number(rows[0].total_count) : 0;
+      const contents = mapWithField<ContentDto[]>(
+        rows.map((r: { content_row: unknown }) => r.content_row),
+      );
+      const hasMore = (page + 1) * pageSize < totalCount;
+
+      return { contents, hasMore, totalCount };
+    }
+
+    // 'latest' 정렬: 기존 로직
     const sortConfig = {
       all: { column: 'id', ascending: false },
       latest: { column: CONTENT_DATABASE.COLUMNS.UPLOADED_AT, ascending: false },
-      popular: { column: 'popularity', ascending: false },
-    }[sortType];
+    }[sortType] ?? { column: 'id', ascending: false };
 
     // 카운트 쿼리
     let countQuery = supabaseClient
@@ -1027,6 +1061,8 @@ export const contentApi = {
    * @param page 페이지 번호 (0부터 시작)
    * @param pageSize 페이지당 항목 수
    * @param seed 랜덤 정렬용 시드 값
+   * @param includeEnding 결말 포함 비디오만 필터링 여부
+   * @param excludeWatched 시청한 콘텐츠 제외 여부
    */
   getChannelVideos: async (
     channelIds: string[] | null = null,
@@ -1034,6 +1070,8 @@ export const contentApi = {
     page: number = 0,
     pageSize: number = 20,
     seed?: number,
+    includeEnding: boolean = false,
+    excludeWatched: boolean = false,
   ): Promise<{
     videos: Array<{
       videoId: string;
@@ -1052,12 +1090,33 @@ export const contentApi = {
     hasMore: boolean;
     totalCount: number;
   }> => {
+    // excludeWatched 필터: 시청 기록이 있는 콘텐츠 ID 조회 (제외용)
+    let excludeContentIds: number[] | null = null;
+    if (excludeWatched) {
+      const { data: userData } = await supabaseClient.auth.getUser();
+      if (userData?.user?.id) {
+        const { data: watchedRows, error: watchedError } = await supabaseClient
+          .from('watch_history')
+          .select('content_id')
+          .eq('user_id', userData.user.id);
+
+        if (!watchedError && watchedRows && watchedRows.length > 0) {
+          const rawIds = [
+            ...new Set((watchedRows ?? []).map((w: { content_id: number }) => w.content_id)),
+          ];
+          excludeContentIds = sanitizeExcludeIds(rawIds);
+        }
+      }
+    }
+
     const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CHANNEL_VIDEOS, {
       p_channel_ids: channelIds,
       p_sort_type: sortType,
       p_page: page,
       p_page_size: pageSize,
       p_seed: seed,
+      p_include_ending: includeEnding,
+      p_exclude_content_ids: excludeContentIds,
     });
 
     if (error) {

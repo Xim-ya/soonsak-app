@@ -97,30 +97,43 @@ export default function ExploreScreen() {
           snapThreshold={null}
           allowHeaderOverscroll={true}
           pagerProps={PAGER_PROPS}
+          lazy
         >
           <Tabs.Tab name="all" label="전체">
-            <ExploreTabContent sortType="all" filter={filter} onContentPress={handleContentPress} />
+            <Tabs.Lazy>
+              <ExploreTabContent
+                sortType="all"
+                filter={filter}
+                onContentPress={handleContentPress}
+              />
+            </Tabs.Lazy>
           </Tabs.Tab>
           <Tabs.Tab name="latest" label="최신">
-            <ExploreTabContent
-              sortType="latest"
-              filter={filter}
-              onContentPress={handleContentPress}
-            />
+            <Tabs.Lazy>
+              <ExploreTabContent
+                sortType="latest"
+                filter={filter}
+                onContentPress={handleContentPress}
+              />
+            </Tabs.Lazy>
           </Tabs.Tab>
           <Tabs.Tab name="popular" label="인기">
-            <ExploreTabContent
-              sortType="popular"
-              filter={filter}
-              onContentPress={handleContentPress}
-            />
+            <Tabs.Lazy>
+              <ExploreTabContent
+                sortType="popular"
+                filter={filter}
+                onContentPress={handleContentPress}
+              />
+            </Tabs.Lazy>
           </Tabs.Tab>
           <Tabs.Tab name="recommended" label="개발자 추천">
-            <ExploreTabContent
-              sortType="recommended"
-              filter={filter}
-              onContentPress={handleContentPress}
-            />
+            <Tabs.Lazy>
+              <ExploreTabContent
+                sortType="recommended"
+                filter={filter}
+                onContentPress={handleContentPress}
+              />
+            </Tabs.Lazy>
           </Tabs.Tab>
         </Tabs.Container>
       </TabsContainer>

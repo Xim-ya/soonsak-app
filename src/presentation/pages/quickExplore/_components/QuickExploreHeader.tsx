@@ -13,6 +13,7 @@
  */
 
 import styled from '@emotion/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -36,10 +37,12 @@ function QuickExploreHeader({
   onSearchPress,
   isFilterActive = false,
 }: QuickExploreHeaderProps) {
+  const insets = useSafeAreaInsets();
+
   return (
     <>
       {/* 우측 상단: 필터 버튼 */}
-      <TopRightContainer>
+      <TopRightContainer style={{ top: insets.top }}>
         <FilterButtonWrapper>
           <GlassIconButton
             size={FILTER_BUTTON_SIZE}
@@ -65,7 +68,6 @@ function QuickExploreHeader({
 /* Styled Components */
 const TopRightContainer = styled.View({
   position: 'absolute',
-  top: AppSize.statusBarHeight + 24,
   right: 16,
   zIndex: 10,
 });
