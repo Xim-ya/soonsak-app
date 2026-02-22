@@ -1,19 +1,19 @@
 /**
  * WatchHistoryPage - 시청 기록 페이지
  *
- * 시청 기록을 ChannelPage 스타일의 세로 리스트로 표시합니다.
- * - date 파라미터 없음: 전체 시청 기록
- * - date 파라미터 있음: 해당 날짜의 시청 기록만
+ * 시청 기록을 두 가지 뷰 모드로 표시합니다.
+ * - card: 큰 썸네일 카드 스타일 (기본값: 전체 보기)
+ * - list: 검색 결과 스타일 리스트 (기본값: 캘린더에서 진입 시)
  *
  * @example
- * // 전체 보기
+ * // 전체 보기 (카드 뷰 기본)
  * navigation.navigate(routePages.watchHistory, {});
  *
- * // 특정 날짜
+ * // 특정 날짜 (리스트 뷰 기본)
  * navigation.navigate(routePages.watchHistory, { date: '2024-02-22' });
  */
 
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList, ListRenderItem, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -32,6 +32,7 @@ import {
   useInfiniteUniqueWatchHistory,
   type WatchHistoryModelType,
 } from '@/features/watch-history';
+import { ViewModeToggle, WatchHistoryListItem, type ViewMode } from './_components';
 
 /* Types */
 
@@ -40,7 +41,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 /* Constants */
 
-const ITEM_SEPARATOR_HEIGHT = 24;
+const CARD_SEPARATOR_HEIGHT = 24;
+const LIST_SEPARATOR_HEIGHT = 0; // 리스트 뷰는 아이템 내부에 패딩 있음
 
 /* Component */
 
@@ -50,6 +52,9 @@ export default function WatchHistoryPage() {
   const insets = useSafeAreaInsets();
 
   const { date } = route.params ?? {};
+
+  // 뷰 모드 상태: 캘린더에서 진입 시(date 있음) 리스트 뷰 기본
+  const [viewMode, setViewMode] = useState<ViewMode>(date ? 'list' : 'card');
 
   // 날짜 여부에 따라 다른 Hook 사용
   const byDateQuery = useWatchHistoryByDate(date ?? '', { enabled: !!date });
@@ -82,8 +87,6 @@ export default function WatchHistoryPage() {
     }
   }, [date, hasNextPage, isFetchingNextPage, infiniteQuery]);
 
-  const appBarTitle = '시청 기록';
-
   // 아이템 클릭 핸들러 (이어보기: 플레이어로 직접 이동)
   // videoId가 없는 경우 콘텐츠 상세 페이지로 fallback
   const handleItemPress = useCallback(
@@ -106,10 +109,15 @@ export default function WatchHistoryPage() {
     [navigation],
   );
 
-  // 아이템 렌더
+  // 아이템 렌더 (뷰 모드에 따라 다른 컴포넌트)
   const renderItem: ListRenderItem<WatchHistoryModelType> = useCallback(
-    ({ item }) => <WatchHistoryCard item={item} onPress={handleItemPress} />,
-    [handleItemPress],
+    ({ item }) => {
+      if (viewMode === 'list') {
+        return <WatchHistoryListItem item={item} onPress={handleItemPress} />;
+      }
+      return <WatchHistoryCard item={item} onPress={handleItemPress} />;
+    },
+    [viewMode, handleItemPress],
   );
 
   // 키 추출
@@ -118,8 +126,12 @@ export default function WatchHistoryPage() {
     [],
   );
 
-  // 아이템 분리자
-  const renderItemSeparator = useCallback(() => <Gap size={ITEM_SEPARATOR_HEIGHT} />, []);
+  // 아이템 분리자 (뷰 모드에 따라 다른 높이)
+  const separatorHeight = viewMode === 'card' ? CARD_SEPARATOR_HEIGHT : LIST_SEPARATOR_HEIGHT;
+  const renderItemSeparator = useCallback(
+    () => (separatorHeight > 0 ? <Gap size={separatorHeight} /> : null),
+    [separatorHeight],
+  );
 
   // 빈 상태
   const renderListEmpty = useCallback(() => {
@@ -150,10 +162,16 @@ export default function WatchHistoryPage() {
     );
   }, [isFetchingNextPage]);
 
+  // 앱바 액션: 뷰 모드 토글
+  const appBarActions = useMemo(
+    () => [<ViewModeToggle key="view-toggle" mode={viewMode} onModeChange={setViewMode} />],
+    [viewMode],
+  );
+
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
       <Container style={{ paddingTop: insets.top }}>
-        <BackButtonAppBar title={appBarTitle} />
+        <BackButtonAppBar title="시청 기록" actions={appBarActions} />
         <FlatList
           data={items}
           renderItem={renderItem}
@@ -163,7 +181,7 @@ export default function WatchHistoryPage() {
           ListFooterComponent={renderListFooter}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: 16,
+            paddingTop: viewMode === 'card' ? 16 : 8,
             paddingBottom: insets.bottom + 20,
           }}
           onEndReached={handleEndReached}
