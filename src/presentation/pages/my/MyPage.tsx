@@ -22,12 +22,10 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import {
   useWatchHistoryCalendar,
-  useUniqueWatchHistory,
   useFullyWatchedCount,
   type WatchHistoryModelType,
 } from '@/features/watch-history';
 import { useFavoritesCount } from '@/features/favorites';
-import { useSocialLogin } from '@/presentation/pages/login/_hooks/useSocialLogin';
 import { useCalendarNavigation, useRatingsCount } from './_hooks';
 import {
   MyPageHeader,
@@ -49,9 +47,6 @@ export default function MyPage() {
   const { status, displayName, avatarUrl } = useAuth();
   const isGuest = status === 'unauthenticated';
 
-  // 소셜 로그인
-  const { handleLogin, loadingProvider } = useSocialLogin();
-
   // 프로필 클릭 시 로그인 다이얼로그 상태
   const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
 
@@ -69,9 +64,6 @@ export default function MyPage() {
 
   // 캘린더 시청 기록 조회
   const { data: calendarData } = useWatchHistoryCalendar(selectedYear, selectedMonth);
-
-  // 고유 콘텐츠 시청 기록 조회 (하단 목록용)
-  const { data: watchHistoryData, isLoading: isHistoryLoading } = useUniqueWatchHistory(10, 0);
 
   // 통계 데이터 조회
   const { data: favoritesCount = 0 } = useFavoritesCount();
@@ -97,27 +89,21 @@ export default function MyPage() {
     setLoginDialogVisible(false);
   }, []);
 
-  const handleKakaoLogin = useCallback(() => {
-    handleLogin('kakao');
-    setLoginDialogVisible(false);
-  }, [handleLogin]);
-
-  const handleOtherLogin = useCallback(() => {
-    navigation.navigate(routePages.login, { canGoBack: true });
-    setLoginDialogVisible(false);
-  }, [navigation]);
-
-  // 시청 기록 아이템 클릭 핸들러 (이어보기: 플레이어로 직접 이동)
+  // 시청 기록 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
+  // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
-      const playerParams = {
-        videoId: item.videoId,
+      navigation.navigate(routePages.contentDetail, {
+        id: item.contentId,
+        type: item.contentType,
         title: item.contentTitle,
-        contentId: item.contentId,
-        contentType: item.contentType,
-        ...(item.progressSeconds > 0 && { startSeconds: item.progressSeconds }),
-      };
-      navigation.navigate(routePages.player, playerParams);
+        initialData: {
+          backdropPath: item.contentBackdropPath,
+          posterPath: item.contentPosterPath,
+          progressSeconds: item.progressSeconds,
+          durationSeconds: item.durationSeconds,
+        },
+      });
     },
     [navigation],
   );
@@ -147,6 +133,27 @@ export default function MyPage() {
     navigation.navigate(routePages.userContentList, { initialTab: 2 });
   }, [isGuest, navigation]);
 
+  // 시청기록 전체 보기 핸들러
+  const handleViewAllWatchHistory = useCallback(() => {
+    if (isGuest) {
+      setLoginDialogVisible(true);
+      return;
+    }
+    navigation.navigate(routePages.watchHistory, {});
+  }, [isGuest, navigation]);
+
+  // 캘린더 날짜 클릭 핸들러 (해당 날짜의 시청기록 페이지로 이동)
+  const handleCalendarDatePress = useCallback(
+    (date: string) => {
+      if (isGuest) {
+        setLoginDialogVisible(true);
+        return;
+      }
+      navigation.navigate(routePages.watchHistory, { date });
+    },
+    [isGuest, navigation],
+  );
+
   return (
     <BasePage touchableWithoutFeedback={false}>
       <Container>
@@ -173,13 +180,10 @@ export default function MyPage() {
 
           <Gap size={20} />
 
-          {watchHistoryData && (
-            <WatchHistoryList
-              items={watchHistoryData.items}
-              isLoading={isHistoryLoading}
-              onItemPress={handleWatchHistoryItemPress}
-            />
-          )}
+          <WatchHistoryList
+            onItemPress={handleWatchHistoryItemPress}
+            onViewAllPress={handleViewAllWatchHistory}
+          />
 
           <WatchCalendar
             year={selectedYear}
@@ -188,6 +192,7 @@ export default function MyPage() {
             onPrevMonth={handlePrevMonth}
             onNextMonth={handleNextMonth}
             onOpenMonthPicker={handleOpenMonthPicker}
+            onDatePress={handleCalendarDatePress}
           />
         </ScrollView>
       </Container>
@@ -200,13 +205,7 @@ export default function MyPage() {
         onClose={handleCloseMonthPicker}
       />
 
-      <LoginPromptDialog
-        visible={isLoginDialogVisible}
-        onClose={handleCloseLoginDialog}
-        onKakaoLogin={handleKakaoLogin}
-        onOtherLogin={handleOtherLogin}
-        isKakaoLoading={loadingProvider === 'kakao'}
-      />
+      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseLoginDialog} />
     </BasePage>
   );
 }

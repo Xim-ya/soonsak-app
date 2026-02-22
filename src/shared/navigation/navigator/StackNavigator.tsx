@@ -13,6 +13,7 @@ import LoginPage from '../../../presentation/pages/login/LoginPage';
 import ProfileSetupPage from '../../../presentation/pages/profile-setup/ProfileSetupPage';
 import SettingsPage from '../../../presentation/pages/settings/SettingsPage';
 import UserContentListPage from '../../../presentation/pages/user-content-list/UserContentListPage';
+import WatchHistoryPage from '../../../presentation/pages/watch-history/WatchHistoryPage';
 import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
 import AdminContentSearchPage from '../../../presentation/pages/admin-content-search/AdminContentSearchPage';
 import AdminPrimaryVideoSelectPage from '../../../presentation/pages/admin-primary-video-select/AdminPrimaryVideoSelectPage';
@@ -142,6 +143,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.userContentList}
         component={UserContentListPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.watchHistory}
+        component={WatchHistoryPage}
         options={{ headerShown: false }}
       />
       <Stack.Screen

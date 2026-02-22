@@ -23,6 +23,19 @@ export type RouteNames = (typeof routePages)[keyof typeof routePages];
 export type UserContentListTabIndex = 0 | 1 | 2; // 0: 찜했어요, 1: 평가했어요, 2: 봤어요
 
 /**
+ * 콘텐츠 상세 페이지 초기 데이터
+ * 이전 화면에서 알고 있는 데이터를 전달하여 API 응답 전에 미리 표시
+ */
+export interface ContentDetailInitialData {
+  backdropPath?: string;
+  posterPath?: string;
+  /** 시청 진행률 (초) - 이어보기 표시용 */
+  progressSeconds?: number;
+  /** 전체 재생 시간 (초) - 진행률 계산용 */
+  durationSeconds?: number;
+}
+
+/**
  * 스택 네비게이션의 파라미터 타입 정의
  *
  * routePages 객체의 키를 사용하여 하드코딩을 방지합니다.
@@ -45,7 +58,8 @@ export type RootStackParamList = {
     title?: string | null; // 콘텐츠 제목 (선택)
     type: ContentType; // 콘텐츠 타입 (movie | series | unknown)
     videoId?: string; // 특정 비디오 ID (선택 - 없으면 primary 비디오 사용)
-  }; // 콘텐츠 상세 - id, type 필수, title, videoId 선택
+    initialData?: ContentDetailInitialData; // 프리로드 데이터 (선택 - 배경 이미지 등)
+  }; // 콘텐츠 상세 - id, type 필수, title, videoId, initialData 선택
   [routePages.player]: {
     videoId: string;
     title: string;
@@ -81,6 +95,11 @@ export type RootStackParamList = {
   [routePages.userContentList]: {
     initialTab?: UserContentListTabIndex; // 초기 활성화 탭 인덱스 (기본값: 0)
   }; // 사용자 콘텐츠 목록 - 탭 인덱스 선택
+  [routePages.watchHistory]:
+    | {
+        date?: string; // 특정 날짜 필터 (YYYY-MM-DD 형식, 없으면 전체 시청 기록)
+      }
+    | undefined; // 시청 기록 - 날짜 필터 선택, 파라미터 전체 생략 가능
   [routePages.quickExplore]: undefined; // 빠른탐색 - 파라미터 없음
   [routePages.adminContentSearch]: {
     videoId: string; // 교체할 비디오 ID

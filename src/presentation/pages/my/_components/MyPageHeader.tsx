@@ -8,17 +8,12 @@
 
 import { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
-import { useSocialLogin } from '@/presentation/pages/login/_hooks/useSocialLogin';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
 import GearIcon from '@assets/icons/gear.svg';
 
 interface MyPageHeaderProps {
@@ -26,15 +21,10 @@ interface MyPageHeaderProps {
   readonly onSettingsPress?: () => void;
 }
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 const ICON_SIZE = 20;
 
 function MyPageHeader({ onSettingsPress }: MyPageHeaderProps) {
-  const navigation = useNavigation<NavigationProp>();
   const { status } = useAuth();
-  const { handleLogin, loadingProvider } = useSocialLogin();
-
   const isGuest = status === 'unauthenticated';
 
   // 로그인 다이얼로그 상태
@@ -47,16 +37,6 @@ function MyPageHeader({ onSettingsPress }: MyPageHeaderProps) {
   const handleCloseDialog = useCallback(() => {
     setLoginDialogVisible(false);
   }, []);
-
-  const handleKakaoLogin = useCallback(() => {
-    handleLogin('kakao');
-    setLoginDialogVisible(false);
-  }, [handleLogin]);
-
-  const handleOtherLogin = useCallback(() => {
-    navigation.navigate(routePages.login, { canGoBack: true });
-    setLoginDialogVisible(false);
-  }, [navigation]);
 
   return (
     <>
@@ -73,13 +53,7 @@ function MyPageHeader({ onSettingsPress }: MyPageHeaderProps) {
           </TouchableOpacity>
         </RightSection>
       </Container>
-      <LoginPromptDialog
-        visible={isLoginDialogVisible}
-        onClose={handleCloseDialog}
-        onKakaoLogin={handleKakaoLogin}
-        onOtherLogin={handleOtherLogin}
-        isKakaoLoading={loadingProvider === 'kakao'}
-      />
+      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
     </>
   );
 }
