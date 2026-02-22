@@ -62,6 +62,10 @@ export const AUTH_DATABASE = {
     CREATED_AT: 'created_at',
     UPDATED_AT: 'updated_at',
     LAST_LOGIN_AT: 'last_login_at',
+    ENTRY_COUNT: 'entry_count',
+  },
+  RPC: {
+    INCREMENT_PROFILE_ENTRY_COUNT: 'increment_profile_entry_count',
   },
 } as const;
 
@@ -93,5 +97,10 @@ export const DEVICE_DATABASE = {
     LINKED_AT: 'linked_at',
     CREATED_AT: 'created_at',
     UPDATED_AT: 'updated_at',
+    ENTRY_COUNT: 'entry_count',
+  },
+  RPC: {
+    INCREMENT_DEVICE_ENTRY_COUNT: 'increment_device_entry_count',
+    TRANSFER_DEVICE_ENTRY_COUNT: 'transfer_device_entry_count',
   },
 } as const;

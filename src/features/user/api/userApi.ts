@@ -168,4 +168,28 @@ export const userApi = {
 
     return data.display_name !== null;
   },
+
+  /**
+   * 앱 진입 카운트 증가 (로그인 유저용)
+   *
+   * profiles 테이블의 entry_count를 1 증가시킵니다.
+   *
+   * @param userId 사용자 ID
+   */
+  incrementEntryCount: async (userId: string): Promise<void> => {
+    console.log('[EntryCount] 로그인 유저 진입 카운트 +1');
+    console.log('[EntryCount] User ID:', userId);
+
+    try {
+      const { error } = await supabaseClient.rpc(AUTH_DATABASE.RPC.INCREMENT_PROFILE_ENTRY_COUNT, {
+        p_user_id: userId,
+      });
+
+      if (error) throw error;
+
+      console.log('[EntryCount] profiles.entry_count 증가 완료');
+    } catch (error) {
+      console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+    }
+  },
 };
