@@ -24,7 +24,7 @@ import DarkChip from '@/presentation/components/chip/DarkChip';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import type { WatchHistoryModel } from '../types/watchHistoryModel';
+import { WatchHistoryModel } from '../types/watchHistoryModel';
 
 /* Types */
 
@@ -48,12 +48,11 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
     onPress?.(item);
   }, [item, onPress]);
 
-  // backdrop 이미지 우선, 없으면 poster 사용
-  const imageUrl = item.contentBackdropPath
-    ? formatter.prefixTmdbImgUrl(item.contentBackdropPath, { size: TmdbImageSize.w780 })
-    : item.contentPosterPath
-      ? formatter.prefixTmdbImgUrl(item.contentPosterPath, { size: TmdbImageSize.w342 })
-      : '';
+  // 공통 유틸리티로 이미지 URL 추출 (backdrop > poster)
+  const imageUrl = WatchHistoryModel.getImageUrl(item, {
+    backdropSize: TmdbImageSize.w780,
+    posterSize: TmdbImageSize.w342,
+  });
 
   return (
     <Container>

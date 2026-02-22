@@ -255,13 +255,20 @@ export const useWatchHistoryPreview = (config?: {
   // 더 로드할 수 있는지 여부
   const canLoadMore = query.hasNextPage && items.length < maxItems && !query.isFetchingNextPage;
 
+  // 빈 상태 여부 (로딩 완료 후 데이터 없음)
+  const isEmpty = !query.isLoading && items.length === 0;
+
   return {
     items,
     isLoading: query.isLoading,
+    isError: query.isError,
+    error: query.error,
+    isEmpty,
     isFetchingNextPage: query.isFetchingNextPage,
     hasNextPage: canLoadMore,
     isGuest,
     fetchNextPage: query.fetchNextPage,
+    refetch: query.refetch,
   };
 };
 

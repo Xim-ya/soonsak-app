@@ -1,5 +1,6 @@
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
 import type { WatchHistoryWithContentDto, WatchHistoryCalendarItemDto } from './index';
+import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 
 /**
  * WatchHistoryModel - 시청 기록 UI 모델
@@ -37,6 +38,25 @@ export namespace WatchHistoryModel {
 
   export function fromDtoList(dtoList: WatchHistoryWithContentDto[]): WatchHistoryModel[] {
     return dtoList.map(fromDto);
+  }
+
+  /**
+   * 선호 이미지 URL 반환 (backdrop > poster)
+   * 이미지 URL 선택 로직을 중앙화하여 일관성 보장
+   */
+  export function getImageUrl(
+    model: WatchHistoryModel,
+    options?: { backdropSize?: TmdbImageSize; posterSize?: TmdbImageSize },
+  ): string {
+    const { backdropSize = TmdbImageSize.w780, posterSize = TmdbImageSize.w342 } = options ?? {};
+
+    if (model.contentBackdropPath) {
+      return formatter.prefixTmdbImgUrl(model.contentBackdropPath, { size: backdropSize });
+    }
+    if (model.contentPosterPath) {
+      return formatter.prefixTmdbImgUrl(model.contentPosterPath, { size: posterSize });
+    }
+    return '';
   }
 }
 
