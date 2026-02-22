@@ -52,9 +52,9 @@ function ChannelInfoView() {
           <ColumnWrapper>
             {isLoading ? (
               <>
-                <SkeletonView width={90} height={18} borderRadius={4} />
+                <SkeletonView width={90} height={22} borderRadius={4} />
                 <Gap size={4} />
-                <SkeletonView width={40} height={14} borderRadius={4} />
+                <SkeletonView width={40} height={20} borderRadius={4} />
               </>
             ) : (
               <>

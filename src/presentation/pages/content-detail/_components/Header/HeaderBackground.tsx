@@ -22,6 +22,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { useContentDetail } from '../../_hooks/useContentDetail';
 import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
+import { ShimmerSkeleton } from '@/presentation/components/image';
 import { AppSize } from '@/shared/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
 import { routePages } from '@/shared/navigation/constant/routePages';
@@ -158,8 +159,21 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     effectiveWatchProgress?.durationSeconds ?? 0,
   );
 
+  // 배경 이미지 로딩 상태 (TMDB 이미지가 없으면 로딩 중)
+  const isBackdropLoading = !imageUrls.tmdb;
+
+  // 배경 영역 크기 계산 (aspectRatio 375/240 기준)
+  const backdropHeight = Math.round(AppSize.screenWidth * (240 / 375));
+
   return (
     <Container>
+      {/* 배경 이미지 로딩 중 shimmer 스켈레톤 */}
+      {isBackdropLoading && (
+        <BackdropSkeletonWrapper>
+          <ShimmerSkeleton width={AppSize.screenWidth} height={backdropHeight} borderRadius={0} />
+        </BackdropSkeletonWrapper>
+      )}
+
       <Animated.View
         style={[
           { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
@@ -285,6 +299,15 @@ const ImageWrapper = styled.View({
   right: 0,
   bottom: 0,
   pointerEvents: 'none' as const,
+});
+
+const BackdropSkeletonWrapper = styled.View({
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  zIndex: 0,
 });
 
 const GradientWrapper = styled.View({

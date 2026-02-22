@@ -89,6 +89,7 @@ const Container = styled.View({
 });
 
 const ColumnContainer = styled.View({
+  width: 80, // 고정 너비 (레이아웃 점프 방지)
   height: 54,
   alignItems: 'center',
   justifyContent: 'center',

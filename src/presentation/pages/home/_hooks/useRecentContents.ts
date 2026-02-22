@@ -41,8 +41,20 @@ export function useRecentContents(): UseRecentContentsReturn {
 
   const { data, isLoading, isError, fetchNextPage, hasNextPage, isFetchingNextPage } = queryResult;
 
-  const contents =
-    data?.pages.flatMap((page) => page.contents.map(BaseContentModel.fromContentDto)) ?? [];
+  // 중복 제거 (id + type 기준)
+  const contents = (() => {
+    if (!data?.pages) return [];
+    const allContents = data.pages.flatMap((page) =>
+      page.contents.map(BaseContentModel.fromContentDto),
+    );
+    const seen = new Set<string>();
+    return allContents.filter((item) => {
+      const key = `${item.id}-${item.type}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  })();
 
   return {
     contents,

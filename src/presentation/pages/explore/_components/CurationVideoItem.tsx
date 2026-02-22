@@ -34,6 +34,11 @@ interface CurationVideoItemProps {
 // 크기 상수
 const THUMBNAIL_WIDTH = AppSize.ratioWidth(280);
 const THUMBNAIL_HEIGHT = THUMBNAIL_WIDTH * (157 / 280);
+const VIDEO_TITLE_LINE_HEIGHT = 22; // body2 lineHeight
+const VIDEO_TITLE_MAX_LINES = 2;
+const VIDEO_TITLE_HEIGHT = VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES;
+const GAP_SIZE = 8;
+const ITEM_HEIGHT = THUMBNAIL_HEIGHT + GAP_SIZE + VIDEO_TITLE_HEIGHT;
 
 // TMDB backdrop 이미지 URL 생성
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w780';
@@ -108,6 +113,7 @@ function CurationVideoItem({ video, onPress }: CurationVideoItemProps) {
 /* Styled Components */
 const Container = styled.View({
   width: THUMBNAIL_WIDTH,
+  height: ITEM_HEIGHT,
 });
 
 const ThumbnailTouchable = styled(TouchableOpacity)({
@@ -145,6 +151,7 @@ const ContentTitle = styled.Text({
 const VideoTitle = styled.Text({
   ...textStyles.body2,
   color: colors.white,
+  height: VIDEO_TITLE_HEIGHT,
 });
 
 const MetaInfo = styled.Text({
@@ -152,4 +159,4 @@ const MetaInfo = styled.Text({
   color: colors.gray02,
 });
 
-export { CurationVideoItem, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT };
+export { CurationVideoItem, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, ITEM_HEIGHT };
