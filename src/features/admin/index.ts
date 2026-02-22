@@ -5,12 +5,24 @@
  */
 
 // Types
-export { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } from './types';
+export {
+  AdminContentAction,
+  ADMIN_CONTENT_ACTIONS,
+  type AdminActionConfig,
+  // User Management Types
+  UserRoleLabel,
+  UserRoleFilterLabel,
+  UserSortByLabel,
+  UserSearchFieldLabel,
+  type UserRoleFilter,
+  type UserSortBy,
+  type UserSearchField,
+} from './types';
 
 // Hooks
 export { useAdminContentActions } from './hooks/useAdminContentActions';
 
-// API
+// API - Content
 export {
   adminContentApi,
   adminVideoApi,
@@ -19,3 +31,15 @@ export {
   type VideoStatusCounts,
   type VideoManagementListResult,
 } from './api/adminContentApi';
+
+// API - User
+export {
+  adminUserApi,
+  type UserManagementItem,
+  type UserDetailItem,
+  type UserStatistics,
+  type UserRoleCounts,
+  type UserListParams,
+  type UserListResult,
+  type PushTokenInfo,
+} from './api/adminUserApi';

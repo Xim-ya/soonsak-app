@@ -4,6 +4,67 @@
  * 어드민 전용 타입 정의
  */
 
+import type { UserRole } from '@/features/auth/types';
+
+// ============================================================================
+// User Management Types
+// ============================================================================
+
+/**
+ * 유저 역할 라벨
+ */
+export const UserRoleLabel: Record<UserRole, string> = {
+  user: '일반',
+  admin: '관리자',
+  banned: '차단',
+} as const;
+
+/**
+ * 유저 역할 필터 타입 (전체 포함)
+ */
+export type UserRoleFilter = UserRole | 'all';
+
+/**
+ * 유저 역할 필터 라벨
+ */
+export const UserRoleFilterLabel: Record<UserRoleFilter, string> = {
+  all: '전체',
+  user: '일반',
+  admin: '관리자',
+  banned: '차단',
+} as const;
+
+/**
+ * 유저 목록 정렬 기준
+ */
+export type UserSortBy = 'createdAt' | 'lastLoginAt' | 'entryCount';
+
+/**
+ * 유저 목록 정렬 라벨
+ */
+export const UserSortByLabel: Record<UserSortBy, string> = {
+  createdAt: '가입일순',
+  lastLoginAt: '최근 로그인순',
+  entryCount: '방문 횟수순',
+} as const;
+
+/**
+ * 유저 검색 필드
+ */
+export type UserSearchField = 'email' | 'displayName';
+
+/**
+ * 유저 검색 필드 라벨
+ */
+export const UserSearchFieldLabel: Record<UserSearchField, string> = {
+  email: '이메일',
+  displayName: '닉네임',
+} as const;
+
+// ============================================================================
+// Content Management Types
+// ============================================================================
+
 /**
  * 어드민 콘텐츠 액션 타입
  *
