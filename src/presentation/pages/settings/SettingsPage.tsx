@@ -38,7 +38,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 export default function SettingsPage() {
   const navigation = useNavigation<NavigationProp>();
-  const { signOut } = useAuth();
+  const { signOut, status } = useAuth();
+  const isLoggedIn = status === 'authenticated';
 
   // TODO: 실제 알림 설정 상태 연동 (AsyncStorage 또는 서버)
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
@@ -154,16 +155,18 @@ export default function SettingsPage() {
             />
           </SettingsSection>
 
-          {/* 기타 섹션 */}
-          <SettingsSection title="기타">
-            <SettingsItem label="로그아웃" onPress={handleLogoutPress} />
-            <Divider />
-            <SettingsItem
-              label="회원탈퇴"
-              labelColor={WITHDRAW_TEXT_COLOR}
-              onPress={handleWithdrawPress}
-            />
-          </SettingsSection>
+          {/* 기타 섹션 - 로그인 유저에게만 표시 */}
+          {isLoggedIn && (
+            <SettingsSection title="기타">
+              <SettingsItem label="로그아웃" onPress={handleLogoutPress} />
+              <Divider />
+              <SettingsItem
+                label="회원탈퇴"
+                labelColor={WITHDRAW_TEXT_COLOR}
+                onPress={handleWithdrawPress}
+              />
+            </SettingsSection>
+          )}
 
           {/* 관리자 섹션 - 어드민에게만 표시 */}
           <AdminOnly>
