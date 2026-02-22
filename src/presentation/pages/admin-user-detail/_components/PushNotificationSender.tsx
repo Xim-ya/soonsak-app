@@ -64,6 +64,40 @@ const SEARCH_ICON_SVG = `
 `;
 
 // ============================================================================
+// Validation Helpers
+// ============================================================================
+
+/**
+ * URL 유효성 검증 (http/https만 허용)
+ */
+function isValidUrl(url: string): boolean {
+  try {
+    const parsed = new URL(url);
+    return parsed.protocol === 'http:' || parsed.protocol === 'https:';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * 양의 정수 문자열 검증
+ */
+function isValidPositiveInt(value: string | undefined): boolean {
+  if (!value?.trim()) return false;
+  const num = Number(value);
+  return Number.isFinite(num) && num > 0 && Number.isInteger(num);
+}
+
+/**
+ * 음이 아닌 정수 문자열 검증 (0 허용)
+ */
+function isValidNonNegativeInt(value: string | undefined): boolean {
+  if (!value?.trim()) return false;
+  const num = Number(value);
+  return Number.isFinite(num) && num >= 0 && Number.isInteger(num);
+}
+
+// ============================================================================
 // Types
 // ============================================================================
 
@@ -182,11 +216,21 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     if (selectedAction.type === 'navigation') {
       switch (selectedAction.screen) {
         case 'ContentDetail':
-          return !!(actionParams.contentId && actionParams.contentType);
+          // contentId는 양의 정수여야 함
+          return isValidPositiveInt(actionParams.contentId) && !!actionParams.contentType;
         case 'Player':
-          return !!(actionParams.videoId && actionParams.playerContentId && actionParams.playerContentType);
+          // playerContentId는 양의 정수, startSeconds는 음이 아닌 정수(선택적)
+          return !!(
+            actionParams.videoId &&
+            isValidPositiveInt(actionParams.playerContentId) &&
+            actionParams.playerContentType &&
+            // startSeconds가 입력된 경우에만 검증
+            (actionParams.startSeconds === undefined ||
+              actionParams.startSeconds === '' ||
+              isValidNonNegativeInt(actionParams.startSeconds))
+          );
         case 'ChannelDetail':
-          return !!actionParams.channelId;
+          return !!actionParams.channelId?.trim();
         case 'Search':
         case 'Settings':
           return true;
@@ -199,8 +243,11 @@ export const PushNotificationSender = memo(function PushNotificationSender({
 
     if (selectedAction.type === 'action') {
       switch (selectedAction.action) {
-        case 'OPEN_URL':
-          return !!actionParams.url?.trim();
+        case 'OPEN_URL': {
+          const url = actionParams.url?.trim() ?? '';
+          // URL이 비어있거나 유효하지 않으면 false
+          return url.length > 0 && isValidUrl(url);
+        }
         case 'REFRESH_DATA':
           return !!actionParams.refreshTarget?.trim();
         case 'REQUEST_REVIEW':
@@ -269,15 +316,22 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             type: actionParams.contentType,
           };
           break;
-        case 'Player':
+        case 'Player': {
+          // startSeconds 검증 및 파싱
+          const startSecondsValue = actionParams.startSeconds?.trim();
+          const startSeconds =
+            startSecondsValue && isValidNonNegativeInt(startSecondsValue)
+              ? Number(startSecondsValue)
+              : undefined;
           params = {
             videoId: actionParams.videoId,
             title: actionParams.videoTitle || '',
             contentId: Number(actionParams.playerContentId),
             contentType: actionParams.playerContentType,
-            ...(actionParams.startSeconds && { startSeconds: Number(actionParams.startSeconds) }),
+            ...(startSeconds !== undefined && { startSeconds }),
           };
           break;
+        }
         case 'ChannelDetail':
           params = {
             channelId: actionParams.channelId,

@@ -28,14 +28,6 @@ import type { UserContentItem } from '@/features/admin';
 export const GRID_ITEM_WIDTH = (AppSize.screenWidth - 32 - 18) / 3;
 export const GRID_POSTER_HEIGHT = GRID_ITEM_WIDTH * 1.5;
 
-const MORE_ICON_SVG = `
-<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-<circle cx="12" cy="5" r="2" fill="${colors.white}"/>
-<circle cx="12" cy="12" r="2" fill="${colors.white}"/>
-<circle cx="12" cy="19" r="2" fill="${colors.white}"/>
-</svg>
-`;
-
 const BELL_ICON_SVG = `
 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M18 8A6 6 0 1 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -175,4 +167,3 @@ const ActionButtonText = styled.Text({
 });
 
 export const MemoizedAdminContentGridItem = React.memo(AdminContentGridItem);
-export { AdminContentGridItem };

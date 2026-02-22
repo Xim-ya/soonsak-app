@@ -252,6 +252,17 @@ export const adminUserApi = {
         .eq('role', 'banned'),
     ]);
 
+    // 개별 쿼리 에러 로깅 (치명적이지 않으므로 경고만)
+    if (userResult.error) {
+      console.warn('user 역할 카운트 조회 실패:', userResult.error);
+    }
+    if (adminResult.error) {
+      console.warn('admin 역할 카운트 조회 실패:', adminResult.error);
+    }
+    if (bannedResult.error) {
+      console.warn('banned 역할 카운트 조회 실패:', bannedResult.error);
+    }
+
     return {
       total: total ?? 0,
       user: userResult.count ?? 0,
@@ -357,6 +368,17 @@ export const adminUserApi = {
         .eq('user_id', userId)
         .gt('rating', 0),
     ]);
+
+    // 부분 실패 로깅 (치명적이지 않으므로 경고만)
+    if (watchHistoryResult.error) {
+      console.warn('시청기록 통계 조회 실패:', watchHistoryResult.error);
+    }
+    if (favoritesResult.error) {
+      console.warn('찜 통계 조회 실패:', favoritesResult.error);
+    }
+    if (ratingsResult.error) {
+      console.warn('평가 통계 조회 실패:', ratingsResult.error);
+    }
 
     return {
       id: user.id,
@@ -561,13 +583,15 @@ export const adminUserApi = {
       const content = item.contents as ContentJoin;
       const progressSeconds = item.progress_seconds ?? 0;
       const durationSeconds = item.duration_seconds ?? 1;
+      // 0으로 나누기 방지
+      const safeDuration = durationSeconds > 0 ? durationSeconds : 1;
       return {
         contentId: item.content_id as number,
         contentType: item.content_type as 'movie' | 'tv',
         contentTitle: content?.title ?? '알 수 없음',
         contentPosterPath: content?.poster_path ?? null,
         createdAt: item.created_at as string,
-        progressPercent: Math.round((progressSeconds / durationSeconds) * 100),
+        progressPercent: Math.round((progressSeconds / safeDuration) * 100),
         progressSeconds,
       };
     });
