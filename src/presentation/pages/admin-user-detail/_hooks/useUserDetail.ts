@@ -140,8 +140,8 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
       const trimmedTitle = title?.trim() ?? '';
       const trimmedBody = body?.trim() ?? '';
 
-      if (trimmedTitle.length === 0 || trimmedBody.length === 0) {
-        Alert.alert('입력 오류', '제목과 내용을 모두 입력해주세요.');
+      if (trimmedBody.length === 0) {
+        Alert.alert('입력 오류', '내용을 입력해주세요.');
         return false;
       }
 

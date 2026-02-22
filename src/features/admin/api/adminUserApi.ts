@@ -452,9 +452,7 @@ export const adminUserApi = {
     const trimmedTitle = title?.trim() ?? '';
     const trimmedBody = body?.trim() ?? '';
 
-    if (trimmedTitle.length === 0) {
-      throw new Error('Push notification title is required');
-    }
+    // body는 필수, title은 선택적 (없으면 앱 이름이 표시됨)
     if (trimmedBody.length === 0) {
       throw new Error('Push notification body is required');
     }
@@ -484,7 +482,8 @@ export const adminUserApi = {
     // Expo Push API로 발송 (검증된 값 사용)
     const messages = tokens.map((t) => ({
       to: t.token,
-      title: trimmedTitle,
+      // title이 있을 때만 포함 (없으면 앱 이름 표시)
+      ...(trimmedTitle.length > 0 && { title: trimmedTitle }),
       body: trimmedBody,
       sound: 'default' as const,
       // 딥링크 데이터 포함 (있을 경우)
