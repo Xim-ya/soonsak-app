@@ -54,7 +54,7 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
 // ============================================================================
 // Types & Constants (응집도: 관련 타입을 함께 정의)
@@ -313,11 +313,7 @@ function AppImageComponent({
 
       {/* 에러 상태 표시 */}
       {shouldShowError && (
-        <ErrorContainer width={width} height={height} borderRadius={borderRadius}>
-          <ErrorIcon width={width} height={height}>
-            ?
-          </ErrorIcon>
-        </ErrorContainer>
+        <ImageErrorPlaceholder width={width} height={height} borderRadius={borderRadius} />
       )}
 
       {/* 실제 이미지 (현재: RN Animated.Image) */}
@@ -366,28 +362,6 @@ const PlaceholderView = styled.View<{
   borderRadius,
 }));
 
-const ErrorContainer = styled.View<{
-  width: number;
-  height: number;
-  borderRadius: number;
-}>(({ width, height, borderRadius }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width,
-  height,
-  backgroundColor: colors.gray05,
-  borderRadius,
-  justifyContent: 'center',
-  alignItems: 'center',
-}));
-
-const ErrorIcon = styled.Text<{ width: number; height: number }>(({ width, height }) => ({
-  ...textStyles.body1,
-  color: colors.gray02,
-  fontSize: Math.min(width, height) * 0.15,
-  fontWeight: 'bold',
-}));
 
 // ============================================================================
 // Export (결합도: 명확한 export로 외부 의존성 최소화)

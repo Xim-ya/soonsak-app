@@ -1,18 +1,18 @@
 /**
- * PosterImage - 포스터 비율(2:3)을 가진 이미지 컴포넌트
+ * BackdropImage - 배경 비율(16:9)을 가진 이미지 컴포넌트
  *
- * - 포스터 비율(2:3) 기본값: width만 전달하면 height 자동 계산
+ * - 배경 비율(16:9) 기본값: width만 전달하면 height 자동 계산
  * - aspectRatio props로 비율 오버라이드 가능
  * - shimmer 스켈레톤 로딩 애니메이션
  * - source가 없거나 에러일 때 logo_placeholder 표시
  *
  * @example
- * // 기본 사용 (2:3)
- * <PosterImage width={110} source="https://image.tmdb.org/..." />
+ * // 기본 사용 (16:9)
+ * <BackdropImage width={196} source="https://image.tmdb.org/..." />
  *
  * @example
  * // 비율 오버라이드
- * <PosterImage width={110} aspectRatio={109/165} source={url} />
+ * <BackdropImage width={196} aspectRatio={4/3} source={url} />
  */
 
 import { memo } from 'react';
@@ -24,12 +24,12 @@ import { IMAGE_RATIO, IMAGE_DEFAULTS } from './imageConstants';
 // Types
 // ============================================================================
 
-export interface PosterImageProps {
+export interface BackdropImageProps {
   /** 이미지 너비 (필수). 높이는 aspectRatio로 자동 계산됩니다. */
   readonly width: number;
   /** 이미지 URL. 전달하지 않으면 placeholder를 표시합니다. */
   readonly source?: string;
-  /** 이미지 비율 (기본값: 2/3). 오버라이드 가능. */
+  /** 이미지 비율 (기본값: 16/9). 오버라이드 가능. */
   readonly aspectRatio?: number;
   /** 모서리 둥글기 (기본값: 4) */
   readonly borderRadius?: number;
@@ -41,13 +41,13 @@ export interface PosterImageProps {
 // Component
 // ============================================================================
 
-function PosterImageComponent({
+function BackdropImageComponent({
   width,
   source,
-  aspectRatio = IMAGE_RATIO.poster,
+  aspectRatio = IMAGE_RATIO.backdrop,
   borderRadius = IMAGE_DEFAULTS.borderRadius,
   enableCache = IMAGE_DEFAULTS.enableCache,
-}: PosterImageProps) {
+}: BackdropImageProps) {
   return (
     <BaseRatioImage
       width={width}
@@ -60,20 +60,20 @@ function PosterImageComponent({
 }
 
 // ============================================================================
-// PosterSkeleton (API 로딩 시 사용)
+// BackdropSkeleton (API 로딩 시 사용)
 // ============================================================================
 
-interface PosterSkeletonProps {
+interface BackdropSkeletonProps {
   width: number;
   aspectRatio?: number;
   borderRadius?: number;
 }
 
-function PosterSkeletonComponent({
+function BackdropSkeletonComponent({
   width,
-  aspectRatio = IMAGE_RATIO.poster,
+  aspectRatio = IMAGE_RATIO.backdrop,
   borderRadius = IMAGE_DEFAULTS.borderRadius,
-}: PosterSkeletonProps) {
+}: BackdropSkeletonProps) {
   const height = Math.round(width / aspectRatio);
   return <ShimmerSkeleton width={width} height={height} borderRadius={borderRadius} />;
 }
@@ -82,7 +82,7 @@ function PosterSkeletonComponent({
 // Export
 // ============================================================================
 
-export const PosterImage = memo(PosterImageComponent, (prevProps, nextProps) => {
+export const BackdropImage = memo(BackdropImageComponent, (prevProps, nextProps) => {
   return (
     prevProps.source === nextProps.source &&
     prevProps.width === nextProps.width &&
@@ -92,7 +92,7 @@ export const PosterImage = memo(PosterImageComponent, (prevProps, nextProps) => 
   );
 });
 
-export const PosterSkeleton = memo(PosterSkeletonComponent, (prevProps, nextProps) => {
+export const BackdropSkeleton = memo(BackdropSkeletonComponent, (prevProps, nextProps) => {
   return (
     prevProps.width === nextProps.width &&
     prevProps.aspectRatio === nextProps.aspectRatio &&
