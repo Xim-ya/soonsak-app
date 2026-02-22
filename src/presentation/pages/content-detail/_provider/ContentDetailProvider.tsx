@@ -5,12 +5,19 @@ import { ContentType } from '@/presentation/types/content/contentType.enum';
 import { usePrefetchCommentToken } from '@/features/youtube';
 import { useContentProgress } from '@/features/watch-history';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import type { ContentDetailInitialData } from '@/shared/navigation/types';
 
 /** 시청 진행률 데이터 */
 interface WatchProgressData {
   progressSeconds: number;
   durationSeconds: number;
   videoId: string;
+}
+
+/** 프리로드된 시청 진행률 데이터 */
+interface PreloadedWatchProgress {
+  progressSeconds: number;
+  durationSeconds: number;
 }
 
 interface ContentDetailContextType {
@@ -27,6 +34,12 @@ interface ContentDetailContextType {
   isCommentTokenLoading: boolean;
   /** 시청 진행률 (이어보기용, 페이지 진입 시 미리 조회) */
   watchProgress: WatchProgressData | null;
+  /** 프리로드된 배경 이미지 경로 (API 응답 전에 사용) */
+  preloadedBackdropPath: string | null;
+  /** 프리로드된 포스터 이미지 경로 (API 응답 전에 사용) */
+  preloadedPosterPath: string | null;
+  /** 프리로드된 시청 진행률 (API 응답 전에 사용) */
+  preloadedWatchProgress: PreloadedWatchProgress | null;
 }
 
 const ContentDetailContext = createContext<ContentDetailContextType | undefined>(undefined);
@@ -36,6 +49,7 @@ interface ContentDetailProviderProps {
   contentId: number;
   contentType: ContentType;
   videoId?: string | undefined; // 특정 비디오 ID (채널 상세에서 전달받은 경우)
+  initialData?: ContentDetailInitialData | undefined; // 프리로드 데이터 (이전 화면에서 전달)
 }
 
 /**
@@ -53,6 +67,7 @@ export function ContentDetailProvider({
   contentId,
   contentType,
   videoId,
+  initialData,
 }: ContentDetailProviderProps) {
   const [videos, setVideos] = useState<VideoDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -119,6 +134,17 @@ export function ContentDetailProvider({
     enabled: isAuthenticated,
   });
 
+  // 프리로드된 시청 진행률 (progressSeconds와 durationSeconds 둘 다 있어야 유효)
+  const preloadedWatchProgress: PreloadedWatchProgress | null = useMemo(() => {
+    if (initialData?.progressSeconds != null && initialData?.durationSeconds != null) {
+      return {
+        progressSeconds: initialData.progressSeconds,
+        durationSeconds: initialData.durationSeconds,
+      };
+    }
+    return null;
+  }, [initialData?.progressSeconds, initialData?.durationSeconds]);
+
   const contextValue: ContentDetailContextType = {
     videos,
     primaryVideo,
@@ -129,6 +155,9 @@ export function ContentDetailProvider({
     commentTotalCountText,
     isCommentTokenLoading,
     watchProgress: watchProgress ?? null,
+    preloadedBackdropPath: initialData?.backdropPath ?? null,
+    preloadedPosterPath: initialData?.posterPath ?? null,
+    preloadedWatchProgress,
   };
 
   return (
