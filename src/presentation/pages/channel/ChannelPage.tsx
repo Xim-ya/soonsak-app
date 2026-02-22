@@ -15,12 +15,10 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
   useAnimatedStyle,
-  useAnimatedReaction,
+  useFrameCallback,
   interpolate,
   Extrapolation,
   useAnimatedRef,
-  runOnJS,
-  withTiming,
 } from 'react-native-reanimated';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
@@ -38,7 +36,7 @@ import {
   CHANNEL_SELECTOR_HEIGHT_MIN,
   CHANNEL_SELECTOR_SCROLL_RANGE,
 } from './_components/AnimatedChannelSelector';
-import { ChannelVideoCard } from './_components/ChannelVideoCard';
+import { ChannelVideoCard, CARD_HEIGHT } from './_components/ChannelVideoCard';
 import { SortSelector } from './_components/SortSelector';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -46,9 +44,18 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const ITEM_SEPARATOR_HEIGHT = 24;
 const FILTER_BAR_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 56;
+const FOOTER_HEIGHT = 60;
 
-// iOS 스크롤 jitter 방지: smoothing duration
-const SMOOTHING_DURATION = 200;
+// 비디오 카드 전체 높이 (썸네일 + Gap + 제목 영역)
+const VIDEO_TITLE_HEIGHT = 48;
+const VIDEO_CARD_HEIGHT = CARD_HEIGHT + 10 + VIDEO_TITLE_HEIGHT;
+
+// iOS 스크롤 jitter 방지: exponential smoothing factor (0.15-0.25 권장)
+const SMOOTHING_FACTOR = 0.18;
+
+// 스타일 상수
+const headerRowWrapperStyle = { height: HEADER_ROW_HEIGHT };
+const stickyContentStyle = { flex: 1 } as const;
 
 export default function ChannelPage() {
   const navigation = useNavigation<NavigationProp>();
@@ -59,16 +66,20 @@ export default function ChannelPage() {
   const smoothedScrollY = useSharedValue(0);
   const listRef = useAnimatedRef<Animated.FlatList<ChannelVideoModel>>();
 
-  // iOS 스크롤 jitter 방지: 모든 변화에 smoothing 적용
-  useAnimatedReaction(
-    () => scrollY.value,
-    (currentScrollY) => {
-      smoothedScrollY.value = withTiming(currentScrollY, {
-        duration: SMOOTHING_DURATION,
-      });
-    },
-    [],
-  );
+  // iOS 스크롤 jitter 방지: 매 프레임마다 exponential smoothing 적용
+  useFrameCallback(() => {
+    'worklet';
+    const target = scrollY.value;
+    const current = smoothedScrollY.value;
+    const diff = target - current;
+
+    // 차이가 0.5px 미만이면 목표값으로 스냅 (무한 접근 방지)
+    if (Math.abs(diff) < 0.5) {
+      smoothedScrollY.value = target;
+    } else {
+      smoothedScrollY.value = current + diff * SMOOTHING_FACTOR;
+    }
+  });
 
   // 채널 선택 상태
   const [selectedChannelIds, setSelectedChannelIds] = useState<string[]>([]);
@@ -85,34 +96,10 @@ export default function ChannelPage() {
     sortType,
   );
 
-  // 스냅 임계값 (이 값보다 작으면 0으로, 크면 SCROLL_RANGE로 스냅)
-  const SNAP_THRESHOLD = CHANNEL_SELECTOR_SCROLL_RANGE / 2;
-
-  // 스크롤 스냅 함수
-  const snapToPosition = useCallback((targetY: number) => {
-    listRef.current?.scrollToOffset({ offset: targetY, animated: true });
-  }, []);
-
-  // 스크롤 핸들러
+  // 스크롤 핸들러 (스냅 없이 순수 스크롤 위치만 추적)
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
       scrollY.value = event.contentOffset.y;
-    },
-    onEndDrag: (event) => {
-      const y = event.contentOffset.y;
-      // 스크롤 범위 내에서만 스냅 적용
-      if (y > 0 && y < CHANNEL_SELECTOR_SCROLL_RANGE) {
-        const targetY = y < SNAP_THRESHOLD ? 0 : CHANNEL_SELECTOR_SCROLL_RANGE;
-        runOnJS(snapToPosition)(targetY);
-      }
-    },
-    onMomentumEnd: (event) => {
-      const y = event.contentOffset.y;
-      // 모멘텀 스크롤 후에도 스냅 적용
-      if (y > 0 && y < CHANNEL_SELECTOR_SCROLL_RANGE) {
-        const targetY = y < SNAP_THRESHOLD ? 0 : CHANNEL_SELECTOR_SCROLL_RANGE;
-        runOnJS(snapToPosition)(targetY);
-      }
     },
   });
 
@@ -162,6 +149,20 @@ export default function ChannelPage() {
 
   // 아이템 분리자
   const renderItemSeparator = useCallback(() => <Gap size={ITEM_SEPARATOR_HEIGHT} />, []);
+
+  // getItemLayout - 스크롤 성능 최적화
+  const getItemLayout = useCallback(
+    (_: ArrayLike<ChannelVideoModel> | null | undefined, index: number) => ({
+      length: VIDEO_CARD_HEIGHT,
+      offset: (VIDEO_CARD_HEIGHT + ITEM_SEPARATOR_HEIGHT) * index,
+      index,
+    }),
+    [],
+  );
+
+  // 스타일 (insets는 앱 실행 중 거의 변하지 않아 useMemo 오버헤드가 더 큼)
+  const containerStyle = { paddingTop: insets.top };
+  const listContentStyle = { paddingBottom: insets.bottom + 20 };
 
   // 헤더 행 애니메이션 (스크롤 시 opacity만 변경 - GPU 처리)
   const headerRowStyle = useAnimatedStyle(() => {
@@ -225,21 +226,20 @@ export default function ChannelPage() {
     );
   }, [isLoading]);
 
-  // 리스트 푸터 (로딩)
+  // 리스트 푸터 (로딩) - 높이 고정으로 스크롤 점프 방지
   const renderListFooter = useCallback(() => {
-    if (!isFetchingNextPage) return null;
     return (
       <FooterContainer>
-        <ActivityIndicator color={colors.gray02} />
+        {isFetchingNextPage && <ActivityIndicator color={colors.gray02} />}
       </FooterContainer>
     );
   }, [isFetchingNextPage]);
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
-      <Container style={{ paddingTop: insets.top }}>
+      <Container style={containerStyle}>
         {/* 헤더 행: 스크롤 시 사라짐 */}
-        <Animated.View style={[{ height: HEADER_ROW_HEIGHT }, headerRowStyle]}>
+        <Animated.View style={[headerRowWrapperStyle, headerRowStyle]}>
           <HeaderRow>
             <HeaderTitle>채널</HeaderTitle>
             <MoreChip onPress={handleViewAllChannels} activeOpacity={0.8}>
@@ -249,7 +249,7 @@ export default function ChannelPage() {
         </Animated.View>
 
         {/* 스티키 + 리스트 영역 (스크롤 시 함께 위로 이동) */}
-        <Animated.View style={[{ flex: 1 }, stickyHeaderTranslateStyle]}>
+        <Animated.View style={[stickyContentStyle, stickyHeaderTranslateStyle]}>
           {/* 스티키 영역: 채널 선택기 + 필터 바 */}
           <StickyHeader>
             <Animated.View style={channelSelectorStyle}>
@@ -272,18 +272,22 @@ export default function ChannelPage() {
             data={videos}
             renderItem={renderVideoItem}
             keyExtractor={keyExtractor}
+            getItemLayout={getItemLayout}
             ItemSeparatorComponent={renderItemSeparator}
             ListEmptyComponent={renderListEmpty}
             ListFooterComponent={renderListFooter}
             onEndReached={handleEndReached}
             onEndReachedThreshold={0.5}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingBottom: insets.bottom + 20 }}
-            maxToRenderPerBatch={5}
-            windowSize={5}
-            initialNumToRender={5}
+            contentContainerStyle={listContentStyle}
+            removeClippedSubviews={true}
+            maxToRenderPerBatch={3}
+            windowSize={7}
+            initialNumToRender={3}
+            updateCellsBatchingPeriod={100}
             onScroll={scrollHandler}
             scrollEventThrottle={16}
+            maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
           />
         </Animated.View>
       </Container>
@@ -360,6 +364,7 @@ const EmptySubText = styled.Text({
 });
 
 const FooterContainer = styled.View({
-  paddingVertical: 20,
+  height: FOOTER_HEIGHT,
+  justifyContent: 'center',
   alignItems: 'center',
 });
