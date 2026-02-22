@@ -7,7 +7,7 @@
  */
 
 import { memo, useCallback } from 'react';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 
@@ -29,12 +29,24 @@ function ViewModeToggleComponent({ mode, onModeChange }: ViewModeToggleProps) {
 
   return (
     <Container>
-      <ToggleButton onPress={handleCardPress} activeOpacity={0.7}>
+      <ToggleButton
+        onPress={handleCardPress}
+        activeOpacity={0.7}
+        accessibilityLabel="View mode: cards"
+        accessibilityRole="button"
+        accessibilityState={{ selected: mode === 'card' }}
+      >
         <IconBox isActive={mode === 'card'}>
           <CardIcon isActive={mode === 'card'} />
         </IconBox>
       </ToggleButton>
-      <ToggleButton onPress={handleListPress} activeOpacity={0.7}>
+      <ToggleButton
+        onPress={handleListPress}
+        activeOpacity={0.7}
+        accessibilityLabel="View mode: list"
+        accessibilityRole="button"
+        accessibilityState={{ selected: mode === 'list' }}
+      >
         <IconBox isActive={mode === 'list'}>
           <ListIconContainer>
             <ListIconLine isActive={mode === 'list'} />

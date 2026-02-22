@@ -11,7 +11,7 @@
 export { watchHistoryApi } from './api/watchHistoryApi';
 
 // Components
-export { WatchHistoryCard, CARD_WIDTH, CARD_HEIGHT, HORIZONTAL_PADDING } from './components';
+export { WatchHistoryCard } from './components';
 
 // Hooks
 export {

@@ -8,7 +8,6 @@ import {
   useQueryClient,
   useInfiniteQuery,
   UseQueryResult,
-  UseInfiniteQueryResult,
 } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { watchHistoryApi } from '../api/watchHistoryApi';
@@ -255,8 +254,8 @@ export const useWatchHistoryPreview = (config?: {
   // 더 로드할 수 있는지 여부
   const canLoadMore = query.hasNextPage && items.length < maxItems && !query.isFetchingNextPage;
 
-  // 빈 상태 여부 (로딩 완료 후 데이터 없음)
-  const isEmpty = !query.isLoading && items.length === 0;
+  // 빈 상태 여부 (로딩 완료 후 에러 없이 데이터 없음)
+  const isEmpty = !query.isLoading && !query.isError && items.length === 0;
 
   return {
     items,
@@ -281,17 +280,7 @@ export const useInfiniteUniqueWatchHistory = (
   options?: {
     enabled?: boolean;
   },
-): UseInfiniteQueryResult<
-  {
-    pages: Array<{
-      items: WatchHistoryModel[];
-      hasMore: boolean;
-      nextOffset: number;
-    }>;
-    pageParams: number[];
-  },
-  Error
-> => {
+) => {
   const { user } = useAuth();
   const userId = user?.id ?? null;
 

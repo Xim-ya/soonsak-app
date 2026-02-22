@@ -17,7 +17,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { contentTypeConfigs } from '@/presentation/types/content/contentType.enum';
-import type { WatchHistoryModel } from '@/features/watch-history';
+import { WatchHistoryModel } from '@/features/watch-history';
 
 /** 포스터 비율 (2:3) */
 const POSTER_ASPECT_RATIO = 1.5;
@@ -39,11 +39,11 @@ function WatchHistoryListItemComponent({ item, onPress }: WatchHistoryListItemPr
   }, [onPress, item]);
 
   // 포스터 이미지 URL (poster 우선)
-  const posterUrl = item.contentPosterPath
-    ? formatter.prefixTmdbImgUrl(item.contentPosterPath, { size: TmdbImageSize.w185 })
-    : item.contentBackdropPath
-      ? formatter.prefixTmdbImgUrl(item.contentBackdropPath, { size: TmdbImageSize.w342 })
-      : '';
+  const posterUrl = WatchHistoryModel.getImageUrl(item, {
+    preferImage: 'poster',
+    posterSize: TmdbImageSize.w185,
+    backdropSize: TmdbImageSize.w342,
+  });
 
   // 콘텐츠 타입 라벨
   const typeLabel = contentTypeConfigs[item.contentType]?.label ?? '';

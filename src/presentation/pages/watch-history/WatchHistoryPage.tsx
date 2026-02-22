@@ -78,14 +78,23 @@ export default function WatchHistoryPage() {
       isFetchingNextPage: infiniteQuery.isFetchingNextPage,
       hasNextPage: infiniteQuery.hasNextPage ?? false,
     };
-  }, [date, byDateQuery.data, byDateQuery.isLoading, infiniteQuery.data, infiniteQuery.isLoading, infiniteQuery.isFetchingNextPage, infiniteQuery.hasNextPage]);
+  }, [
+    date,
+    byDateQuery.data,
+    byDateQuery.isLoading,
+    infiniteQuery.data,
+    infiniteQuery.isLoading,
+    infiniteQuery.isFetchingNextPage,
+    infiniteQuery.hasNextPage,
+  ]);
 
   // 다음 페이지 로드
+  const fetchNextPage = infiniteQuery.fetchNextPage;
   const handleEndReached = useCallback(() => {
     if (!date && hasNextPage && !isFetchingNextPage) {
-      infiniteQuery.fetchNextPage();
+      fetchNextPage();
     }
-  }, [date, hasNextPage, isFetchingNextPage, infiniteQuery]);
+  }, [date, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
   // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시

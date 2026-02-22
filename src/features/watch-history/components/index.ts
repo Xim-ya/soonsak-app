@@ -4,4 +4,4 @@
  * 시청 기록 관련 공통 컴포넌트
  */
 
-export { WatchHistoryCard, CARD_WIDTH, CARD_HEIGHT, HORIZONTAL_PADDING } from './WatchHistoryCard';
+export { WatchHistoryCard } from './WatchHistoryCard';

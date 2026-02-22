@@ -145,9 +145,13 @@ export default function MyPage() {
   // 캘린더 날짜 클릭 핸들러 (해당 날짜의 시청기록 페이지로 이동)
   const handleCalendarDatePress = useCallback(
     (date: string) => {
+      if (isGuest) {
+        setLoginDialogVisible(true);
+        return;
+      }
       navigation.navigate(routePages.watchHistory, { date });
     },
-    [navigation],
+    [isGuest, navigation],
   );
 
   return (
@@ -201,10 +205,7 @@ export default function MyPage() {
         onClose={handleCloseMonthPicker}
       />
 
-      <LoginPromptDialog
-        visible={isLoginDialogVisible}
-        onClose={handleCloseLoginDialog}
-      />
+      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseLoginDialog} />
     </BasePage>
   );
 }

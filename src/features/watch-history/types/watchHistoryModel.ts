@@ -41,21 +41,47 @@ export namespace WatchHistoryModel {
   }
 
   /**
-   * 선호 이미지 URL 반환 (backdrop > poster)
+   * 선호 이미지 URL 반환
    * 이미지 URL 선택 로직을 중앙화하여 일관성 보장
+   *
+   * @param model - WatchHistoryModel 인스턴스
+   * @param options - 이미지 선택 옵션
+   * @param options.preferImage - 선호하는 이미지 타입 ('backdrop' | 'poster', 기본값: 'backdrop')
+   * @param options.backdropSize - backdrop 이미지 크기
+   * @param options.posterSize - poster 이미지 크기
    */
   export function getImageUrl(
     model: WatchHistoryModel,
-    options?: { backdropSize?: TmdbImageSize; posterSize?: TmdbImageSize },
+    options?: {
+      preferImage?: 'backdrop' | 'poster';
+      backdropSize?: TmdbImageSize;
+      posterSize?: TmdbImageSize;
+    },
   ): string {
-    const { backdropSize = TmdbImageSize.w780, posterSize = TmdbImageSize.w342 } = options ?? {};
+    const {
+      preferImage = 'backdrop',
+      backdropSize = TmdbImageSize.w780,
+      posterSize = TmdbImageSize.w342,
+    } = options ?? {};
 
-    if (model.contentBackdropPath) {
-      return formatter.prefixTmdbImgUrl(model.contentBackdropPath, { size: backdropSize });
+    if (preferImage === 'poster') {
+      // poster 우선
+      if (model.contentPosterPath) {
+        return formatter.prefixTmdbImgUrl(model.contentPosterPath, { size: posterSize });
+      }
+      if (model.contentBackdropPath) {
+        return formatter.prefixTmdbImgUrl(model.contentBackdropPath, { size: backdropSize });
+      }
+    } else {
+      // backdrop 우선 (기본 동작)
+      if (model.contentBackdropPath) {
+        return formatter.prefixTmdbImgUrl(model.contentBackdropPath, { size: backdropSize });
+      }
+      if (model.contentPosterPath) {
+        return formatter.prefixTmdbImgUrl(model.contentPosterPath, { size: posterSize });
+      }
     }
-    if (model.contentPosterPath) {
-      return formatter.prefixTmdbImgUrl(model.contentPosterPath, { size: posterSize });
-    }
+
     return '';
   }
 }
