@@ -2,15 +2,20 @@
  * UserActivityStats - 유저 활동 통계
  *
  * 시청기록, 찜, 평점 통계를 표시합니다.
+ * 각 항목 클릭 시 해당 목록 페이지로 이동합니다.
  */
 
-import { memo } from 'react';
-import { View } from 'react-native';
+import { memo, useCallback } from 'react';
+import { View, TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import type { UserDetailItem } from '@/features/admin';
+import type { RootStackParamList } from '@/shared/navigation/types';
+import { routePages } from '@/shared/navigation/constant/routePages';
 
 // SVG 아이콘 상수 (컴포넌트 외부로 최적화)
 const PLAY_ICON_SVG = `
@@ -35,32 +40,60 @@ interface UserActivityStatsProps {
   readonly user: UserDetailItem;
 }
 
+type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 export const UserActivityStats = memo(function UserActivityStats({ user }: UserActivityStatsProps) {
+  const navigation = useNavigation<NavigationProp>();
+
+  const handleWatchHistoryPress = useCallback(() => {
+    navigation.navigate(routePages.adminUserContentList, {
+      userId: user.id,
+      displayName: user.displayName,
+      initialTab: 0, // 시청기록
+    });
+  }, [navigation, user.id, user.displayName]);
+
+  const handleFavoritesPress = useCallback(() => {
+    navigation.navigate(routePages.adminUserContentList, {
+      userId: user.id,
+      displayName: user.displayName,
+      initialTab: 1, // 찜
+    });
+  }, [navigation, user.id, user.displayName]);
+
+  const handleRatingsPress = useCallback(() => {
+    navigation.navigate(routePages.adminUserContentList, {
+      userId: user.id,
+      displayName: user.displayName,
+      initialTab: 2, // 평가
+    });
+  }, [navigation, user.id, user.displayName]);
+
   return (
     <Container>
       <SectionTitle>활동 통계</SectionTitle>
       <StatsGrid>
-        <StatItem>
+        <StatItemButton onPress={handleWatchHistoryPress} activeOpacity={0.7}>
           <IconContainer>
             <SvgXml xml={PLAY_ICON_SVG} width={24} height={24} />
           </IconContainer>
           <StatValue>{user.watchHistoryCount}</StatValue>
           <StatLabel>시청기록</StatLabel>
-        </StatItem>
-        <StatItem>
+        </StatItemButton>
+        <StatItemButton onPress={handleFavoritesPress} activeOpacity={0.7}>
           <IconContainer>
             <SvgXml xml={HEART_ICON_SVG} width={24} height={24} />
           </IconContainer>
           <StatValue>{user.favoritesCount}</StatValue>
           <StatLabel>찜한 콘텐츠</StatLabel>
-        </StatItem>
-        <StatItem>
+        </StatItemButton>
+        <StatItemButton onPress={handleRatingsPress} activeOpacity={0.7}>
           <IconContainer>
             <SvgXml xml={STAR_ICON_SVG} width={24} height={24} />
           </IconContainer>
           <StatValue>{user.ratingsCount}</StatValue>
           <StatLabel>평가한 콘텐츠</StatLabel>
-        </StatItem>
+        </StatItemButton>
       </StatsGrid>
     </Container>
   );
@@ -86,7 +119,7 @@ const StatsGrid = styled(View)({
   gap: 12,
 });
 
-const StatItem = styled(View)({
+const StatItemButton = styled(TouchableOpacity)({
   flex: 1,
   backgroundColor: colors.gray06,
   borderRadius: 12,

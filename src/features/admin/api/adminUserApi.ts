@@ -7,6 +7,7 @@
 import { supabaseClient } from '@/features/utils/clients/superBaseClient';
 import { AUTH_DATABASE, PUSH_DATABASE } from '@/features/utils/constants/dbConfig';
 import type { UserRole } from '@/features/auth/types';
+import type { PushData } from '../types/pushAction';
 
 // ============================================================================
 // Types
@@ -72,6 +73,21 @@ export interface UserListResult {
   users: UserManagementItem[];
   hasMore: boolean;
   nextCursor: string | null;
+}
+
+/** 유저 콘텐츠 아이템 (시청기록/찜/평가) */
+export interface UserContentItem {
+  contentId: number;
+  contentType: 'movie' | 'tv';
+  contentTitle: string;
+  contentPosterPath: string | null;
+  createdAt: string;
+  /** 평가 점수 (ratings에만 존재) */
+  rating?: number;
+  /** 시청 진행률 퍼센트 (watch_history에만 존재) */
+  progressPercent?: number;
+  /** 시청 진행 시간 초 (watch_history에만 존재) */
+  progressSeconds?: number;
 }
 
 // ============================================================================
@@ -328,7 +344,7 @@ export const adminUserApi = {
     // 활동 통계 조회 (시청기록, 찜, 평점)
     const [watchHistoryResult, favoritesResult, ratingsResult] = await Promise.all([
       supabaseClient
-        .from('watch_histories')
+        .from('watch_history')
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId),
       supabaseClient
@@ -336,9 +352,10 @@ export const adminUserApi = {
         .select('*', { count: 'exact', head: true })
         .eq('user_id', userId),
       supabaseClient
-        .from('ratings')
+        .from('content_ratings')
         .select('*', { count: 'exact', head: true })
-        .eq('user_id', userId),
+        .eq('user_id', userId)
+        .gt('rating', 0),
     ]);
 
     return {
@@ -392,11 +409,17 @@ export const adminUserApi = {
 
   /**
    * 개인 푸시 발송 (Expo Push API)
+   *
+   * @param userId - 발송 대상 유저 ID
+   * @param title - 푸시 알림 제목
+   * @param body - 푸시 알림 내용
+   * @param data - 딥링크 데이터 (선택)
    */
   sendPushNotification: async (
     userId: string,
     title: string,
     body: string,
+    data?: PushData,
   ): Promise<{ success: boolean; sentCount: number; failedCount: number }> => {
     // userId 유효성 검증
     if (!userId || typeof userId !== 'string' || !isValidUUID(userId)) {
@@ -442,6 +465,8 @@ export const adminUserApi = {
       title: trimmedTitle,
       body: trimmedBody,
       sound: 'default' as const,
+      // 딥링크 데이터 포함 (있을 경우)
+      ...(data && { data }),
     }));
 
     try {
@@ -472,12 +497,16 @@ export const adminUserApi = {
         throw new Error('Invalid response from Expo Push API');
       }
 
-      const data = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+      const resultData = Array.isArray(result.data)
+        ? result.data
+        : result.data
+          ? [result.data]
+          : [];
 
-      const sentCount = data.filter(
+      const sentCount = resultData.filter(
         (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'ok',
       ).length;
-      const failedCount = data.filter(
+      const failedCount = resultData.filter(
         (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'error',
       ).length;
 
@@ -493,5 +522,146 @@ export const adminUserApi = {
       console.error('푸시 발송 실패:', error);
       throw error;
     }
+  },
+
+  /**
+   * 유저의 시청기록 조회 (어드민용)
+   */
+  getUserWatchHistory: async (
+    userId: string,
+    limit: number = 50,
+  ): Promise<UserContentItem[]> => {
+    if (!userId || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    const { data, error } = await supabaseClient
+      .from('watch_history')
+      .select(
+        `
+        *,
+        contents!watch_history_content_fkey (
+          title,
+          poster_path
+        )
+      `,
+      )
+      .eq('user_id', userId)
+      .order('last_watched_at', { ascending: false })
+      .limit(normalizeLimit(limit));
+
+    if (error) {
+      console.error('시청기록 조회 실패:', error);
+      throw new Error(`Failed to fetch watch history: ${error.message}`);
+    }
+
+    type ContentJoin = { title?: string; poster_path?: string } | null;
+
+    return (data ?? []).map((item) => {
+      const content = item.contents as ContentJoin;
+      const progressSeconds = item.progress_seconds ?? 0;
+      const durationSeconds = item.duration_seconds ?? 1;
+      return {
+        contentId: item.content_id as number,
+        contentType: item.content_type as 'movie' | 'tv',
+        contentTitle: content?.title ?? '알 수 없음',
+        contentPosterPath: content?.poster_path ?? null,
+        createdAt: item.created_at as string,
+        progressPercent: Math.round((progressSeconds / durationSeconds) * 100),
+        progressSeconds,
+      };
+    });
+  },
+
+  /**
+   * 유저의 찜 목록 조회 (어드민용)
+   */
+  getUserFavorites: async (
+    userId: string,
+    limit: number = 50,
+  ): Promise<UserContentItem[]> => {
+    if (!userId || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    const { data, error } = await supabaseClient
+      .from('favorites')
+      .select(
+        `
+        *,
+        contents!favorites_content_fkey (
+          title,
+          poster_path
+        )
+      `,
+      )
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+      .limit(normalizeLimit(limit));
+
+    if (error) {
+      console.error('찜 목록 조회 실패:', error);
+      throw new Error(`Failed to fetch favorites: ${error.message}`);
+    }
+
+    type ContentJoin = { title?: string; poster_path?: string } | null;
+
+    return (data ?? []).map((item) => {
+      const content = item.contents as ContentJoin;
+      return {
+        contentId: item.content_id as number,
+        contentType: item.content_type as 'movie' | 'tv',
+        contentTitle: content?.title ?? '알 수 없음',
+        contentPosterPath: content?.poster_path ?? null,
+        createdAt: item.created_at as string,
+      };
+    });
+  },
+
+  /**
+   * 유저의 평가 목록 조회 (어드민용)
+   */
+  getUserRatings: async (
+    userId: string,
+    limit: number = 50,
+  ): Promise<UserContentItem[]> => {
+    if (!userId || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    const { data, error } = await supabaseClient
+      .from('content_ratings')
+      .select(
+        `
+        *,
+        contents!content_ratings_content_fkey (
+          title,
+          poster_path
+        )
+      `,
+      )
+      .eq('user_id', userId)
+      .gt('rating', 0)
+      .order('created_at', { ascending: false })
+      .limit(normalizeLimit(limit));
+
+    if (error) {
+      console.error('평가 목록 조회 실패:', error);
+      throw new Error(`Failed to fetch ratings: ${error.message}`);
+    }
+
+    type ContentJoin = { title?: string; poster_path?: string } | null;
+
+    return (data ?? []).map((item) => {
+      const content = item.contents as ContentJoin;
+      return {
+        contentId: item.content_id as number,
+        contentType: item.content_type as 'movie' | 'tv',
+        contentTitle: content?.title ?? '알 수 없음',
+        contentPosterPath: content?.poster_path ?? null,
+        createdAt: item.created_at as string,
+        rating: item.rating as number,
+      };
+    });
   },
 };
