@@ -66,7 +66,7 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
         <TitleRow>
           <TitleText>탐색</TitleText>
           <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-            <LightningIcon width={14} height={14} fill={colors.white} />
+            <LightningIcon width={14} height={14} color={colors.main} />
             <QuickExploreChipText>빠른탐색</QuickExploreChipText>
           </QuickExploreChip>
         </TitleRow>
@@ -85,7 +85,7 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
               <TitleText>탐색</TitleText>
               <ActionButtonRow>
                 <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                  <LightningIcon width={14} height={14} fill={colors.white} />
+                  <LightningIcon width={14} height={14} color={colors.main} />
                   <QuickExploreChipText>빠른탐색</QuickExploreChipText>
                 </QuickExploreChip>
                 <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
@@ -116,7 +116,7 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
               <TitleText>탐색</TitleText>
               <ActionButtonRow>
                 <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                  <LightningIcon width={14} height={14} fill={colors.white} />
+                  <LightningIcon width={14} height={14} color={colors.main} />
                   <QuickExploreChipText>빠른탐색</QuickExploreChipText>
                 </QuickExploreChip>
                 <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
