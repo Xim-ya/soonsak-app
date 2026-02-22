@@ -28,7 +28,7 @@ export interface BackdropImageProps {
   /** 이미지 너비 (필수). 높이는 aspectRatio로 자동 계산됩니다. */
   readonly width: number;
   /** 이미지 URL. 전달하지 않으면 placeholder를 표시합니다. */
-  readonly source?: string;
+  readonly source: string | undefined;
   /** 이미지 비율 (기본값: 16/9). 오버라이드 가능. */
   readonly aspectRatio?: number;
   /** 모서리 둥글기 (기본값: 4) */
