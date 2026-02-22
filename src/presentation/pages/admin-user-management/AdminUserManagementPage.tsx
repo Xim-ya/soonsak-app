@@ -20,7 +20,6 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import type { UserManagementItem as UserManagementItemType } from '@/features/admin';
 import {
   UserStatisticsCards,
-  UserFilterTabs,
   UserSearchBar,
   UserSortSelector,
   UserManagementItem,
@@ -51,10 +50,7 @@ export default function AdminUserManagementPage() {
 
   const {
     users,
-    counts,
     statistics,
-    selectedRole,
-    onSelectRole,
     searchQuery,
     searchField,
     onSearchChange,
@@ -118,9 +114,6 @@ export default function AdminUserManagementPage() {
         {/* 통계 카드 */}
         <UserStatisticsCards statistics={statistics} isLoading={isStatisticsLoading} />
 
-        {/* 필터 탭 */}
-        <UserFilterTabs counts={counts} selectedRole={selectedRole} onSelectRole={onSelectRole} />
-
         {/* 검색바 */}
         <UserSearchBar
           searchQuery={searchQuery}
@@ -137,9 +130,6 @@ export default function AdminUserManagementPage() {
     [
       statistics,
       isStatisticsLoading,
-      counts,
-      selectedRole,
-      onSelectRole,
       searchQuery,
       searchField,
       onSearchChange,

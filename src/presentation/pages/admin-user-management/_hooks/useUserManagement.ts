@@ -43,8 +43,10 @@ const DEFAULT_COUNTS: UserRoleCounts = {
 
 const DEFAULT_STATISTICS: UserStatistics = {
   totalUsers: 0,
-  dailyActiveVisitors: 0,
-  activePushTokens: 0,
+  totalDau: 0,
+  memberDau: 0,
+  nonMemberDau: 0,
+  newUsersToday: 0,
 };
 
 // ============================================================================
@@ -111,7 +113,7 @@ export function useUserManagement(): UseUserManagementReturn {
   const [searchQuery, setSearchQuery] = useState('');
   const [appliedSearchQuery, setAppliedSearchQuery] = useState<string | null>(null);
   const [searchField, setSearchField] = useState<UserSearchField>('email');
-  const [sortBy, setSortBy] = useState<UserSortBy>('createdAt');
+  const [sortBy, setSortBy] = useState<UserSortBy>('lastLoginAt');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 현재 쿼리 파라미터

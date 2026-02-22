@@ -45,9 +45,16 @@ export interface UserDetailItem extends UserManagementItem {
 
 /** 유저 통계 (대시보드용) */
 export interface UserStatistics {
+  /** 총 가입자 수 */
   totalUsers: number;
-  dailyActiveVisitors: number;
-  activePushTokens: number;
+  /** 오늘 총 DAU (회원 + 비회원) */
+  totalDau: number;
+  /** 오늘 회원 DAU */
+  memberDau: number;
+  /** 오늘 비회원 DAU */
+  nonMemberDau: number;
+  /** 오늘 신규 가입자 */
+  newUsersToday: number;
 }
 
 /** 역할별 유저 카운트 */
@@ -275,46 +282,58 @@ export const adminUserApi = {
    * 유저 통계 조회 (대시보드용)
    */
   getUserStatistics: async (): Promise<UserStatistics> => {
-    // 총 유저 수
-    const { count: totalUsers, error: totalError } = await supabaseClient
-      .from(AUTH_DATABASE.TABLES.PROFILES)
-      .select('*', { count: 'exact', head: true });
+    // 오늘 자정 (UTC 기준)
+    const now = new Date();
+    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const todayIso = todayStart.toISOString();
 
-    if (totalError) {
-      console.error('총 유저 수 조회 실패:', totalError);
-      throw new Error(`Failed to count total users: ${totalError.message}`);
+    // 병렬로 모든 통계 조회
+    const [totalResult, memberDauResult, nonMemberDauResult, newUsersResult] = await Promise.all([
+      // 총 가입자 수
+      supabaseClient
+        .from(AUTH_DATABASE.TABLES.PROFILES)
+        .select('*', { count: 'exact', head: true }),
+      // 회원 DAU (오늘 로그인한 회원)
+      supabaseClient
+        .from(AUTH_DATABASE.TABLES.PROFILES)
+        .select('*', { count: 'exact', head: true })
+        .gte('last_login_at', todayIso),
+      // 비회원 DAU (오늘 접속한 비회원 - user_id가 NULL인 devices)
+      supabaseClient
+        .from('devices')
+        .select('*', { count: 'exact', head: true })
+        .is('user_id', null)
+        .gte('updated_at', todayIso),
+      // 오늘 신규 가입자
+      supabaseClient
+        .from(AUTH_DATABASE.TABLES.PROFILES)
+        .select('*', { count: 'exact', head: true })
+        .gte('created_at', todayIso),
+    ]);
+
+    // 에러 로깅 (치명적이지 않으므로 경고만)
+    if (totalResult.error) {
+      console.warn('총 유저 수 조회 실패:', totalResult.error);
+    }
+    if (memberDauResult.error) {
+      console.warn('회원 DAU 조회 실패:', memberDauResult.error);
+    }
+    if (nonMemberDauResult.error) {
+      console.warn('비회원 DAU 조회 실패:', nonMemberDauResult.error);
+    }
+    if (newUsersResult.error) {
+      console.warn('신규 가입자 조회 실패:', newUsersResult.error);
     }
 
-    // 오늘 방문자 수 (last_login_at이 오늘인 유저)
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todayIso = today.toISOString();
-
-    const { count: dailyActiveVisitors, error: dailyError } = await supabaseClient
-      .from(AUTH_DATABASE.TABLES.PROFILES)
-      .select('*', { count: 'exact', head: true })
-      .gte('last_login_at', todayIso);
-
-    if (dailyError) {
-      console.error('일일 방문자 수 조회 실패:', dailyError);
-      throw new Error(`Failed to count daily visitors: ${dailyError.message}`);
-    }
-
-    // 활성 푸시 토큰 수
-    const { count: activePushTokens, error: pushError } = await supabaseClient
-      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
-      .select('*', { count: 'exact', head: true })
-      .eq('is_active', true);
-
-    if (pushError) {
-      console.error('활성 푸시 토큰 수 조회 실패:', pushError);
-      throw new Error(`Failed to count active push tokens: ${pushError.message}`);
-    }
+    const memberDau = memberDauResult.count ?? 0;
+    const nonMemberDau = nonMemberDauResult.count ?? 0;
 
     return {
-      totalUsers: totalUsers ?? 0,
-      dailyActiveVisitors: dailyActiveVisitors ?? 0,
-      activePushTokens: activePushTokens ?? 0,
+      totalUsers: totalResult.count ?? 0,
+      totalDau: memberDau + nonMemberDau,
+      memberDau,
+      nonMemberDau,
+      newUsersToday: newUsersResult.count ?? 0,
     };
   },
 
