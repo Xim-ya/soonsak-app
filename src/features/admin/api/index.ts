@@ -15,3 +15,9 @@ export {
   type UserListResult,
   type PushTokenInfo,
 } from './adminUserApi';
+export {
+  adminRegistrationApi,
+  type VideoRegistrationResult,
+  type ChannelRegistrationResult,
+  type BatchRegistrationResult,
+} from './adminRegistrationApi';
