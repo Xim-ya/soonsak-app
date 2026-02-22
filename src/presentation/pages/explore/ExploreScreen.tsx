@@ -93,7 +93,7 @@ export default function ExploreScreen() {
           containerStyle={TABS_CONTAINER_STYLE}
           headerContainerStyle={HEADER_CONTAINER_STYLE}
           minHeaderHeight={0}
-          tabBarHeight={150}
+          tabBarHeight={100}
           snapThreshold={null}
           allowHeaderOverscroll={true}
           pagerProps={PAGER_PROPS}

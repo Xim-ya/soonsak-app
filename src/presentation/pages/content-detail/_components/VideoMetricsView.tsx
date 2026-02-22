@@ -9,6 +9,9 @@ import Gap from '@/presentation/components/view/Gap';
 import { useYouTubeVideo, buildYouTubeUrl } from '@/features/youtube';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 
+// 레이아웃 상수
+const COLUMN_WIDTH = 80;
+
 export const VideoMetricsView = () => {
   const { primaryVideo } = useContentVideos();
 
@@ -89,6 +92,7 @@ const Container = styled.View({
 });
 
 const ColumnContainer = styled.View({
+  width: COLUMN_WIDTH,
   height: 54,
   alignItems: 'center',
   justifyContent: 'center',
