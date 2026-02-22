@@ -173,10 +173,8 @@ const SkeletonContainer = styled.View({
   rowGap: GRID_GAP,
 });
 
-const SkeletonItemWrapper = styled.View<{ isLeftColumn: boolean }>(({ isLeftColumn }) => ({
-  width: CARD_WIDTH,
-  marginRight: isLeftColumn ? GRID_GAP : 0,
-}));
+// SkeletonItemWrapper는 ItemWrapper와 동일한 스타일이므로 재사용
+const SkeletonItemWrapper = ItemWrapper;
 
 const EmptyContainer = styled.View({
   justifyContent: 'center',

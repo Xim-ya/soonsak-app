@@ -18,7 +18,13 @@ import Gap from '@/presentation/components/view/Gap';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
-import { CurationVideoItem, THUMBNAIL_WIDTH, ITEM_HEIGHT } from './CurationVideoItem';
+import {
+  CurationVideoItem,
+  THUMBNAIL_WIDTH,
+  THUMBNAIL_HEIGHT,
+  VIDEO_TITLE_HEIGHT,
+  ITEM_HEIGHT,
+} from './CurationVideoItem';
 import type { CurationVideoModel } from '../_types/exploreTypes';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -120,11 +126,34 @@ const LoadingContainer = styled.View({
   paddingHorizontal: 16,
 });
 
-const SkeletonItem = styled.View({
+/** 썸네일 스켈레톤 - CurationVideoItem의 ThumbnailWrapper와 동일한 스타일 */
+const ThumbnailSkeleton = styled.View({
   width: THUMBNAIL_WIDTH,
-  height: ITEM_HEIGHT,
+  height: THUMBNAIL_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 8,
+});
+
+/** 타이틀 스켈레톤 - CurationVideoItem의 VideoTitle 영역과 동일한 높이 */
+const TitleSkeleton = styled.View({
+  width: THUMBNAIL_WIDTH * 0.8,
+  height: VIDEO_TITLE_HEIGHT,
+  backgroundColor: colors.gray05,
+  borderRadius: 4,
+  marginTop: ITEM_GAP,
+});
+
+/** 스켈레톤 아이템 컨테이너 */
+const SkeletonItem = () => (
+  <SkeletonItemContainer>
+    <ThumbnailSkeleton />
+    <TitleSkeleton />
+  </SkeletonItemContainer>
+);
+
+const SkeletonItemContainer = styled.View({
+  width: THUMBNAIL_WIDTH,
+  height: ITEM_HEIGHT,
 });
 
 const EmptyPlaceholder = styled.View({

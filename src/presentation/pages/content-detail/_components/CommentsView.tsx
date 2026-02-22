@@ -2,13 +2,13 @@ import React, { useMemo, memo } from 'react';
 import { FlatList } from 'react-native';
 import styled from '@emotion/native';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
-import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { useYouTubeComments } from '@/features/youtube';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { CommentModel } from '../_types/commentModel.cd';
+import { CommentSkeletonView } from './CommentSkeletonView';
 
 interface CommentItemProps {
   readonly comment: CommentModel;
@@ -48,36 +48,16 @@ const CommentItem = memo(function CommentItem({ comment }: CommentItemProps) {
 const ItemSeparator = (): React.ReactElement => <Gap size={16} />;
 
 /**
- * 댓글 스켈레톤 아이템
- */
-function CommentSkeleton(): React.ReactElement {
-  return (
-    <CommentItemContainer>
-      <AvatarContainer>
-        <SkeletonView width={36} height={36} borderRadius={18} />
-      </AvatarContainer>
-      <ContentContainer>
-        <SkeletonView width={100} height={18} borderRadius={4} />
-        <Gap size={8} />
-        <SkeletonView width={280} height={20} borderRadius={4} />
-        <Gap size={4} />
-        <SkeletonView width={220} height={20} borderRadius={4} />
-      </ContentContainer>
-    </CommentItemContainer>
-  );
-}
-
-/**
  * 로딩 스켈레톤 리스트
  */
 function LoadingSkeleton(): React.ReactElement {
   return (
     <>
-      <CommentSkeleton />
+      <CommentSkeletonView />
       <Gap size={16} />
-      <CommentSkeleton />
+      <CommentSkeletonView />
       <Gap size={16} />
-      <CommentSkeleton />
+      <CommentSkeletonView />
     </>
   );
 }

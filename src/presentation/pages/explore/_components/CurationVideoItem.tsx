@@ -34,7 +34,7 @@ interface CurationVideoItemProps {
 // 크기 상수
 const THUMBNAIL_WIDTH = AppSize.ratioWidth(280);
 const THUMBNAIL_HEIGHT = THUMBNAIL_WIDTH * (157 / 280);
-const VIDEO_TITLE_LINE_HEIGHT = 22; // body2 lineHeight
+const VIDEO_TITLE_LINE_HEIGHT = (textStyles.body2.lineHeight as number) ?? 22;
 const VIDEO_TITLE_MAX_LINES = 2;
 const VIDEO_TITLE_HEIGHT = VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES;
 const GAP_SIZE = 8;
@@ -105,7 +105,9 @@ function CurationVideoItem({ video, onPress }: CurationVideoItemProps) {
         </ThumbnailWrapper>
       </ThumbnailTouchable>
       <Gap size={8} />
-      <VideoTitle numberOfLines={2}>{video.videoTitle}</VideoTitle>
+      <VideoTitle numberOfLines={2} allowFontScaling={false}>
+        {video.videoTitle}
+      </VideoTitle>
     </Container>
   );
 }
@@ -159,4 +161,4 @@ const MetaInfo = styled.Text({
   color: colors.gray02,
 });
 
-export { CurationVideoItem, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, ITEM_HEIGHT };
+export { CurationVideoItem, THUMBNAIL_WIDTH, THUMBNAIL_HEIGHT, VIDEO_TITLE_HEIGHT, ITEM_HEIGHT };
