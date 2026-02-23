@@ -1,0 +1,72 @@
+diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
+index 913baa3..6b78d83 100644
+--- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
++++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
+@@ -306,11 +306,18 @@ export const Container = React.memo(
+               true
+             )
+           } else {
+-            containerRef.current?.setPage(i)
++            // 스마트 탭 이동: 인접 탭은 애니메이션, 멀리 떨어진 탭은 즉시 이동
++            const currentIndex = index.value
++            const distance = Math.abs(i - currentIndex)
++            if (distance > 1) {
++              containerRef.current?.setPageWithoutAnimation(i)
++            } else {
++              containerRef.current?.setPage(i)
++            }
+           }
+         },
+         // eslint-disable-next-line react-hooks/exhaustive-deps
+-        [containerRef, refMap, contentInset]
++        [containerRef, refMap, contentInset, index]
+       )
+ 
+       React.useEffect(() => {
+@@ -326,6 +333,18 @@ export const Container = React.memo(
+         },
+       })
+ 
++      // setPageWithoutAnimation 호출 시에도 indexDecimal 동기화
++      const handlePageSelected = React.useCallback(
++        (e: { nativeEvent: { position: number } }) => {
++          const selectedIndex = e.nativeEvent.position
++          // indexDecimal이 이미 해당 값이 아닌 경우에만 업데이트 (setPageWithoutAnimation 대응)
++          if (Math.round(indexDecimal.value) !== selectedIndex) {
++            indexDecimal.value = selectedIndex
++          }
++        },
++        [indexDecimal]
++      )
++
+       React.useImperativeHandle(
+         ref,
+         () => ({
+@@ -430,6 +449,7 @@ export const Container = React.memo(
+             <AnimatedPagerView
+               ref={containerRef}
+               onPageScroll={pageScrollHandler}
++              onPageSelected={handlePageSelected}
+               initialPage={index.value}
+               {...pagerProps}
+               style={[pagerProps?.style, StyleSheet.absoluteFill]}
+diff --git a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx b/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
+index de81e5c..223e368 100644
+--- a/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
++++ b/node_modules/react-native-collapsible-tab-view/src/hooks.tsx
+@@ -389,7 +389,14 @@ export const useScrollHandlerY = (name: TabName) => {
+                 )
+           } else {
+             const { y } = event.contentOffset
+-            scrollYCurrent.value = y
++            // iOS 스크롤 이벤트 1/3 정밀도 양자화로 인한 jitter 방지
++            const delta = Math.abs(y - scrollYCurrent.value)
++            if (delta > 0 && delta <= 3) {
++              // 작은 변화는 smoothing 적용
++              scrollYCurrent.value = withTiming(y, { duration: 80 })
++            } else {
++              scrollYCurrent.value = y
++            }
+           }
+ 
+           scrollY.value[name] = scrollYCurrent.value
