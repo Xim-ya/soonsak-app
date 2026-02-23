@@ -15,7 +15,7 @@ import {
 /* 상수 정의 */
 const NUM_COLUMNS = 3;
 const HORIZONTAL_PADDING = 16;
-const SKELETON_ROW_COUNT = 3;
+const SKELETON_ROW_COUNT = 5;
 const ITEM_MARGIN_BOTTOM = 12;
 
 interface ContentGridViewProps {
@@ -75,6 +75,9 @@ const LoadingMoreIndicator = () => (
   </LoadingMoreContainer>
 );
 
+/* 리스트 상단 여백 */
+const ListHeaderSpacer = () => <HeaderSpacer />;
+
 /* 스타일 상수 (인라인 객체 재생성 방지) */
 const scrollViewStyle = { flex: 1 };
 
@@ -84,7 +87,6 @@ const columnWrapperStyle = {
 };
 
 const contentContainerStyle = {
-  paddingTop: 20,
   paddingBottom: 40,
 };
 
@@ -149,6 +151,8 @@ function ContentGridView({
       // 무한 스크롤
       onEndReached={onEndReached}
       onEndReachedThreshold={0.5}
+      // 상단 여백 (라이브러리 paddingTop 유지를 위해 ListHeader 사용)
+      ListHeaderComponent={ListHeaderSpacer}
       // 로딩 인디케이터
       ListFooterComponent={ListFooterComponent}
     />
@@ -158,14 +162,13 @@ function ContentGridView({
 /* Styled Components */
 const GridContainer = styled.View({
   paddingHorizontal: HORIZONTAL_PADDING,
-  paddingTop: 20,
+  paddingTop: 12,
   paddingBottom: 40,
 });
 
 const SkeletonRowContainer = styled.View({
   flexDirection: 'row',
   gap: GRID_COLUMN_GAP,
-  paddingHorizontal: HORIZONTAL_PADDING,
 });
 
 const SkeletonItemContainer = styled.View({
@@ -195,6 +198,11 @@ const EmptySubText = styled.Text({
 
 const LoadingMoreContainer = styled.View({
   marginTop: 8,
+  paddingHorizontal: HORIZONTAL_PADDING,
+});
+
+const HeaderSpacer = styled.View({
+  height: 12,
 });
 
 export const MemoizedContentGridView = React.memo(ContentGridView);

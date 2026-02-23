@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import type { UseQueryResult } from '@tanstack/react-query';
 import type { UserContentItem } from '../_types';
 
@@ -63,34 +63,52 @@ export function useInfinitePagination<TSource>({
   mapItem,
 }: UseInfinitePaginationOptions<TSource>): UseInfinitePaginationResult {
   const [offset, setOffset] = useState(0);
-  const [accumulatedItems, setAccumulatedItems] = useState<UserContentItem[]>([]);
   const [isFetchingNextPage, setIsFetchingNextPage] = useState(false);
+
+  // 이전 페이지 아이템을 저장하는 ref (무한 스크롤용)
+  const previousItemsRef = useRef<UserContentItem[]>([]);
 
   const query = useQueryHook(PAGE_SIZE, offset);
 
-  const isInitialLoading = query.isLoading && offset === 0;
+  // 동기적으로 아이템 계산 (useEffect 대신 useMemo 사용으로 깜빡임 방지)
+  const items = useMemo(() => {
+    // 실제 데이터가 아직 없으면 이전 아이템 유지
+    if (!query.data || query.isPlaceholderData) {
+      return previousItemsRef.current;
+    }
 
-  // 데이터가 변경되면 누적
+    const newItems = query.data.items.map(mapItem);
+
+    // 첫 페이지면 새 아이템만, 아니면 이전 + 새 아이템
+    const result = offset === 0 ? newItems : [...previousItemsRef.current, ...newItems];
+
+    // ref 업데이트 (다음 페이지 로딩을 위해)
+    previousItemsRef.current = result;
+
+    return result;
+  }, [query.data, query.isPlaceholderData, offset, mapItem]);
+
+  // isFetchingNextPage 상태 업데이트
   useEffect(() => {
-    if (query.data && !query.isLoading) {
-      const newItems = query.data.items.map(mapItem);
-
-      setAccumulatedItems((prev) => (offset === 0 ? newItems : [...prev, ...newItems]));
+    if (query.data && !query.isPlaceholderData) {
       setIsFetchingNextPage(false);
     }
-  }, [query.data, query.isLoading, offset, mapItem]);
+  }, [query.data, query.isPlaceholderData]);
+
+  // 초기 로딩: 아이템이 없고 데이터를 가져오는 중
+  const isInitialLoading = items.length === 0 && (query.isFetching || query.isPlaceholderData);
 
   const fetchNextPage = useCallback(() => {
-    const canFetchNext = query.data?.hasMore && !query.isLoading && !isFetchingNextPage;
+    const canFetchNext = query.data?.hasMore && !query.isFetching && !isFetchingNextPage;
 
     if (canFetchNext) {
       setIsFetchingNextPage(true);
       setOffset((prev) => prev + PAGE_SIZE);
     }
-  }, [query.data?.hasMore, query.isLoading, isFetchingNextPage]);
+  }, [query.data?.hasMore, query.isFetching, isFetchingNextPage]);
 
   return {
-    items: accumulatedItems,
+    items,
     isLoading: isInitialLoading,
     hasMore: query.data?.hasMore ?? false,
     totalCount: query.data?.totalCount ?? 0,
