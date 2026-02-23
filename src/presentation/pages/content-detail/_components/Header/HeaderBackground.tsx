@@ -22,7 +22,6 @@ import textStyles from '@/shared/styles/textStyles';
 import { useContentDetail } from '../../_hooks/useContentDetail';
 import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import { ShimmerSkeleton } from '@/presentation/components/image';
 import { AppSize } from '@/shared/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
 import { routePages } from '@/shared/navigation/constant/routePages';
@@ -64,6 +63,9 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   // YouTube 데이터 가져오기 - primaryVideo가 있을 때만 요청
   const youtubeUrl = primaryVideo ? buildYouTubeUrl(primaryVideo.id) : null;
   const { data: videoInfo, isLoading: youtubeLoading } = useYouTubeVideo(youtubeUrl ?? '');
+
+  // TMDB 배경 이미지 페이드인 애니메이션
+  const tmdbOpacity = useRef(new RNAnimated.Value(0)).current;
 
   // YouTube 이미지 페이드인 애니메이션
   const youtubeOpacity = useRef(new RNAnimated.Value(0)).current;
@@ -159,24 +161,12 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     effectiveWatchProgress?.durationSeconds ?? 0,
   );
 
-  // 배경 이미지 로딩 상태 (contentInfo가 로드되지 않았을 때만 로딩 중)
-  // imageUrls.tmdb 대신 contentInfo 존재 여부로 판단 - backdropPath가 없는 콘텐츠에서 shimmer가 영원히 표시되는 문제 방지
-  const isBackdropLoading = !contentInfo;
-
   // 배경 영역 크기 계산 - 태블릿에서는 실제 화면 너비 사용
   const isLargeScreen = AppSize.isLargeScreen();
   const backdropWidth = isLargeScreen ? AppSize.actualScreenWidth : AppSize.screenWidth;
-  const backdropHeight = Math.round(backdropWidth * (240 / 375));
 
   return (
     <Container style={isLargeScreen ? { width: backdropWidth } : undefined}>
-      {/* 배경 이미지 로딩 중 shimmer 스켈레톤 */}
-      {isBackdropLoading && (
-        <BackdropSkeletonWrapper>
-          <ShimmerSkeleton width={backdropWidth} height={backdropHeight} borderRadius={0} />
-        </BackdropSkeletonWrapper>
-      )}
-
       <Animated.View
         style={[
           { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
@@ -188,7 +178,16 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
           {imageUrls.tmdb && (
             <RNAnimatedBackgroundImage
               source={{ uri: imageUrls.tmdb }}
-              style={{ opacity: opacityValues.primary }}
+              style={{
+                opacity: RNAnimated.multiply(opacityValues.primary, tmdbOpacity),
+              }}
+              onLoad={() => {
+                RNAnimated.timing(tmdbOpacity, {
+                  toValue: 1,
+                  duration: 200,
+                  useNativeDriver: true,
+                }).start();
+              }}
             />
           )}
           {/* YouTube 배경 이미지 */}
@@ -302,15 +301,6 @@ const ImageWrapper = styled.View({
   right: 0,
   bottom: 0,
   pointerEvents: 'none' as const,
-});
-
-const BackdropSkeletonWrapper = styled.View({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  right: 0,
-  bottom: 0,
-  zIndex: 0,
 });
 
 const GradientWrapper = styled.View({
