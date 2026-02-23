@@ -1,8 +1,8 @@
 diff --git a/node_modules/react-native-collapsible-tab-view/src/Container.tsx b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-index 913baa3..6b78d83 100644
+index 913baa3..aad1708 100644
 --- a/node_modules/react-native-collapsible-tab-view/src/Container.tsx
 +++ b/node_modules/react-native-collapsible-tab-view/src/Container.tsx
-@@ -306,11 +306,18 @@ export const Container = React.memo(
+@@ -306,11 +306,20 @@ export const Container = React.memo(
                true
              )
            } else {
@@ -11,6 +11,8 @@ index 913baa3..6b78d83 100644
 +            const currentIndex = index.value
 +            const distance = Math.abs(i - currentIndex)
 +            if (distance > 1) {
++              // 탭바를 먼저 업데이트하여 언더라인이 즉시 이동하도록 함
++              indexDecimal.value = i
 +              containerRef.current?.setPageWithoutAnimation(i)
 +            } else {
 +              containerRef.current?.setPage(i)
@@ -19,11 +21,11 @@ index 913baa3..6b78d83 100644
          },
          // eslint-disable-next-line react-hooks/exhaustive-deps
 -        [containerRef, refMap, contentInset]
-+        [containerRef, refMap, contentInset, index]
++        [containerRef, refMap, contentInset, index, indexDecimal]
        )
  
        React.useEffect(() => {
-@@ -326,6 +333,18 @@ export const Container = React.memo(
+@@ -326,6 +335,18 @@ export const Container = React.memo(
          },
        })
  
@@ -31,8 +33,8 @@ index 913baa3..6b78d83 100644
 +      const handlePageSelected = React.useCallback(
 +        (e: { nativeEvent: { position: number } }) => {
 +          const selectedIndex = e.nativeEvent.position
-+          // indexDecimal이 이미 해당 값이 아닌 경우에만 업데이트 (setPageWithoutAnimation 대응)
-+          if (Math.round(indexDecimal.value) !== selectedIndex) {
++          // indexDecimal이 이미 목표값과 가까우면 업데이트하지 않음 (onTabPress에서 먼저 설정됨)
++          if (Math.abs(indexDecimal.value - selectedIndex) > 0.5) {
 +            indexDecimal.value = selectedIndex
 +          }
 +        },
@@ -42,7 +44,7 @@ index 913baa3..6b78d83 100644
        React.useImperativeHandle(
          ref,
          () => ({
-@@ -430,6 +449,7 @@ export const Container = React.memo(
+@@ -430,6 +451,7 @@ export const Container = React.memo(
              <AnimatedPagerView
                ref={containerRef}
                onPageScroll={pageScrollHandler}
