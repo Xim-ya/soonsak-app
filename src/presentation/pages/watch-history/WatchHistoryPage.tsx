@@ -63,9 +63,11 @@ export default function WatchHistoryPage() {
   // 데이터 통합
   const { items, isLoading, isFetchingNextPage, hasNextPage } = useMemo(() => {
     if (date) {
+      // placeholderData가 있으므로 isPlaceholderData도 체크
+      const dateItems = byDateQuery.isPlaceholderData ? [] : (byDateQuery.data ?? []);
       return {
-        items: byDateQuery.data ?? [],
-        isLoading: byDateQuery.isLoading,
+        items: dateItems,
+        isLoading: byDateQuery.isFetching && dateItems.length === 0,
         isFetchingNextPage: false,
         hasNextPage: false,
       };
@@ -74,16 +76,18 @@ export default function WatchHistoryPage() {
     const allItems = infiniteQuery.data?.pages.flatMap((page) => page.items) ?? [];
     return {
       items: allItems,
-      isLoading: infiniteQuery.isLoading,
+      // 아이템이 없고 로딩 중일 때만 초기 로딩 상태
+      isLoading: infiniteQuery.isFetching && allItems.length === 0,
       isFetchingNextPage: infiniteQuery.isFetchingNextPage,
       hasNextPage: infiniteQuery.hasNextPage ?? false,
     };
   }, [
     date,
     byDateQuery.data,
-    byDateQuery.isLoading,
+    byDateQuery.isFetching,
+    byDateQuery.isPlaceholderData,
     infiniteQuery.data,
-    infiniteQuery.isLoading,
+    infiniteQuery.isFetching,
     infiniteQuery.isFetchingNextPage,
     infiniteQuery.hasNextPage,
   ]);
@@ -187,6 +191,7 @@ export default function WatchHistoryPage() {
           ListFooterComponent={renderListFooter}
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
+            flexGrow: 1,
             paddingTop: viewMode === 'card' ? 16 : 8,
             paddingBottom: insets.bottom + 20,
           }}
@@ -209,8 +214,9 @@ const Container = styled.View({
 });
 
 const LoadingContainer = styled.View({
-  paddingVertical: 60,
+  flex: 1,
   alignItems: 'center',
+  justifyContent: 'center',
 });
 
 const EmptyContainer = styled.View({
