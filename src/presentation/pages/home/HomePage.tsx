@@ -1,5 +1,7 @@
 import { useCallback, useRef, useState } from 'react';
 import { View, LayoutChangeEvent } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import colors from '../../../shared/styles/colors';
 import { Header } from './_components/Header';
@@ -9,6 +11,9 @@ import { TopTenContentListView } from './_components/TopTenContentListView';
 import { FeaturedChannelSectionView } from './_components/FeaturedChannelSectionView';
 import { LongRuntimeContentListView } from './_components/LongRuntimeContentListView';
 import { ContentCollectionSectionView } from './_components/ContentCollectionSectionView';
+import { WatchHistorySectionView, type WatchHistoryModelType } from '@/features/watch-history';
+import { RootStackParamList } from '@/shared/navigation/types';
+import { routePages } from '@/shared/navigation/constant/routePages';
 import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
@@ -16,10 +21,13 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated';
 
+type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
 /** 뷰포트 진입 판단 여유값 (px) */
 const VIEWPORT_THRESHOLD = 200;
 
 export default function HomeScreen() {
+  const navigation = useNavigation<HomeNavigationProp>();
   const [isCollectionVisible, setIsCollectionVisible] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(0);
   const collectionYRef = useRef(0);
@@ -37,6 +45,24 @@ export default function HomeScreen() {
   const triggerCollectionLoad = useCallback(() => {
     setIsCollectionVisible(true);
   }, []);
+
+  // 시청기록 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
+  const handleWatchHistoryItemPress = useCallback(
+    (item: WatchHistoryModelType) => {
+      navigation.navigate(routePages.contentDetail, {
+        id: item.contentId,
+        type: item.contentType,
+        title: item.contentTitle,
+        initialData: {
+          backdropPath: item.contentBackdropPath,
+          posterPath: item.contentPosterPath,
+          progressSeconds: item.progressSeconds,
+          durationSeconds: item.durationSeconds,
+        },
+      });
+    },
+    [navigation],
+  );
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -64,6 +90,10 @@ export default function HomeScreen() {
     <Container onLayout={handleContainerLayout}>
       <Animated.ScrollView onScroll={scrollHandler} scrollEventThrottle={16}>
         <Header scrollY={scrollY} />
+        <WatchHistorySectionView
+          title="시청 중인 콘텐츠"
+          onItemPress={handleWatchHistoryItemPress}
+        />
         <RecentContentView />
         <TopTenContentListView />
         <FeaturedChannelSectionView />

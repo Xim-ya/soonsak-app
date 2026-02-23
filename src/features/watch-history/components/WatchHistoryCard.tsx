@@ -24,6 +24,7 @@ import DarkChip from '@/presentation/components/chip/DarkChip';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { AppSize } from '@/shared/utils/appSize';
 import { WatchHistoryModel } from '../types/watchHistoryModel';
 
 /* Types */
@@ -38,17 +39,23 @@ interface WatchHistoryCardProps {
 const HORIZONTAL_PADDING = 16;
 const PROGRESS_BAR_HEIGHT = 3;
 
+/** 태블릿에서 카드 고정 너비 */
+const TABLET_CARD_WIDTH = 420;
+
 /* Component */
 
 function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
   const { width: screenWidth } = useWindowDimensions();
+  const isLargeScreen = AppSize.isLargeScreen();
 
-  // Runtime 크기 계산 (ChannelVideoCard와 동일한 크기)
+  // Runtime 크기 계산 - 태블릿에서는 고정 크기 사용
   const dimensions = useMemo(() => {
-    const cardWidth = screenWidth - HORIZONTAL_PADDING * 2;
+    const cardWidth = isLargeScreen
+      ? TABLET_CARD_WIDTH
+      : screenWidth - HORIZONTAL_PADDING * 2;
     const cardHeight = cardWidth * (9 / 16); // 16:9 비율
-    return { cardWidth, cardHeight };
-  }, [screenWidth]);
+    return { cardWidth, cardHeight, isLargeScreen };
+  }, [screenWidth, isLargeScreen]);
 
   const handlePress = useCallback(() => {
     onPress?.(item);
@@ -61,7 +68,7 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
   });
 
   return (
-    <Container cardWidth={dimensions.cardWidth}>
+    <Container cardWidth={dimensions.cardWidth} isLargeScreen={dimensions.isLargeScreen}>
       <ThumbnailTouchable
         onPress={handlePress}
         activeOpacity={0.8}
@@ -105,10 +112,12 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
 
 /* Styled Components */
 
-const Container = styled.View<{ cardWidth: number }>(({ cardWidth }) => ({
-  width: cardWidth,
-  marginHorizontal: HORIZONTAL_PADDING,
-}));
+const Container = styled.View<{ cardWidth: number; isLargeScreen: boolean }>(
+  ({ cardWidth, isLargeScreen }) => ({
+    width: cardWidth,
+    marginHorizontal: isLargeScreen ? 0 : HORIZONTAL_PADDING,
+  }),
+);
 
 const ThumbnailTouchable = styled(TouchableOpacity)<{ cardWidth: number; cardHeight: number }>(
   ({ cardWidth, cardHeight }) => ({

@@ -1,7 +1,9 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import React, { useMemo } from 'react';
+import { View, StyleSheet } from 'react-native';
 import styled from '@emotion/native';
 import type { SharedValue } from 'react-native-reanimated';
+import { AppSize } from '@/shared/utils/appSize';
 
 import { useTabScrollListener } from '../_hooks/useTabScrollListener';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
@@ -17,6 +19,9 @@ import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 
+/** 태블릿 콘텐츠 레이아웃 상수 */
+const TABLET_CONTENT_MAX_WIDTH = 800;
+
 /**
  * RelatedContentTabView - 관련 콘텐츠 탭 뷰
  *
@@ -24,6 +29,7 @@ import textStyles from '@/shared/styles/textStyles';
  */
 function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> }) {
   useTabScrollListener(appBarOpacity);
+  const isLargeScreen = AppSize.isLargeScreen();
 
   const { id: contentId, type: contentType } = useContentDetailRoute();
   const { data: contentDetail, isLoading: isDetailLoading } = useContentDetail(
@@ -54,25 +60,43 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
     return result;
   }, [relatedContents]);
 
+  // 태블릿 콘텐츠 스타일
+  const tabletContentStyle = useMemo(
+    () =>
+      isLargeScreen
+        ? {
+            maxWidth: TABLET_CONTENT_MAX_WIDTH,
+            width: '100%' as const,
+            alignSelf: 'center' as const,
+          }
+        : undefined,
+    [isLargeScreen],
+  );
+
   // 스켈레톤 로딩 UI (3x3 그리드)
   if (isLoading) {
     return (
-      <Tabs.ScrollView style={{ flex: 1 }}>
-        <GridContainer>
-          {Array.from({ length: 3 }).map((_, rowIndex) => (
-            <Row key={rowIndex}>
-              {Array.from({ length: 3 }).map((_, colIndex) => (
-                <SkeletonItemContainer key={colIndex}>
-                  <SkeletonView
-                    width={GRID_ITEM_WIDTH}
-                    height={GRID_POSTER_HEIGHT}
-                    borderRadius={4}
-                  />
-                </SkeletonItemContainer>
-              ))}
-            </Row>
-          ))}
-        </GridContainer>
+      <Tabs.ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+      >
+        <View style={tabletContentStyle}>
+          <GridContainer>
+            {Array.from({ length: 3 }).map((_, rowIndex) => (
+              <Row key={rowIndex}>
+                {Array.from({ length: 3 }).map((_, colIndex) => (
+                  <SkeletonItemContainer key={colIndex}>
+                    <SkeletonView
+                      width={GRID_ITEM_WIDTH}
+                      height={GRID_POSTER_HEIGHT}
+                      borderRadius={4}
+                    />
+                  </SkeletonItemContainer>
+                ))}
+              </Row>
+            ))}
+          </GridContainer>
+        </View>
       </Tabs.ScrollView>
     );
   }
@@ -80,31 +104,41 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
   // 빈 상태 UI
   if (isEmpty) {
     return (
-      <Tabs.ScrollView style={{ flex: 1 }}>
-        <EmptyContainer>
-          <EmptyText>관련 콘텐츠가 없습니다.</EmptyText>
-          <EmptySubText>비슷한 콘텐츠를 찾을 수 없어요.</EmptySubText>
-        </EmptyContainer>
+      <Tabs.ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+      >
+        <View style={tabletContentStyle}>
+          <EmptyContainer>
+            <EmptyText>관련 콘텐츠가 없습니다.</EmptyText>
+            <EmptySubText>비슷한 콘텐츠를 찾을 수 없어요.</EmptySubText>
+          </EmptyContainer>
+        </View>
       </Tabs.ScrollView>
     );
   }
 
   return (
-    <Tabs.ScrollView style={{ flex: 1 }}>
-      <GridContainer>
-        {rows.map((row, rowIndex) => (
-          <Row key={rowIndex}>
-            {row.map((content) => (
-              <MemoizedRelatedContentGridItem key={content.id} content={content} />
-            ))}
-            {/* 마지막 행이 3개 미만일 때 빈 공간 채우기 */}
-            {row.length < 3 &&
-              Array.from({ length: 3 - row.length }).map((_, idx) => (
-                <EmptyGridItem key={`empty-${idx}`} />
+    <Tabs.ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+    >
+      <View style={tabletContentStyle}>
+        <GridContainer>
+          {rows.map((row, rowIndex) => (
+            <Row key={rowIndex}>
+              {row.map((content) => (
+                <MemoizedRelatedContentGridItem key={content.id} content={content} />
               ))}
-          </Row>
-        ))}
-      </GridContainer>
+              {/* 마지막 행이 3개 미만일 때 빈 공간 채우기 */}
+              {row.length < 3 &&
+                Array.from({ length: 3 - row.length }).map((_, idx) => (
+                  <EmptyGridItem key={`empty-${idx}`} />
+                ))}
+            </Row>
+          ))}
+        </GridContainer>
+      </View>
     </Tabs.ScrollView>
   );
 }
@@ -154,5 +188,12 @@ const EmptySubText = styled.Text({
 
 const MemoizedRelatedContentTabView = React.memo(RelatedContentTabView);
 MemoizedRelatedContentTabView.displayName = 'RelatedContentTabView';
+
+/** 태블릿 레이아웃 스타일 */
+const styles = StyleSheet.create({
+  tabletScrollContent: {
+    alignItems: 'center',
+  },
+});
 
 export { MemoizedRelatedContentTabView as RelatedContentTabView };

@@ -163,15 +163,17 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   // imageUrls.tmdb 대신 contentInfo 존재 여부로 판단 - backdropPath가 없는 콘텐츠에서 shimmer가 영원히 표시되는 문제 방지
   const isBackdropLoading = !contentInfo;
 
-  // 배경 영역 크기 계산 (aspectRatio 375/240 기준)
-  const backdropHeight = Math.round(AppSize.screenWidth * (240 / 375));
+  // 배경 영역 크기 계산 - 태블릿에서는 실제 화면 너비 사용
+  const isLargeScreen = AppSize.isLargeScreen();
+  const backdropWidth = isLargeScreen ? AppSize.actualScreenWidth : AppSize.screenWidth;
+  const backdropHeight = Math.round(backdropWidth * (240 / 375));
 
   return (
-    <Container>
+    <Container style={isLargeScreen ? { width: backdropWidth } : undefined}>
       {/* 배경 이미지 로딩 중 shimmer 스켈레톤 */}
       {isBackdropLoading && (
         <BackdropSkeletonWrapper>
-          <ShimmerSkeleton width={AppSize.screenWidth} height={backdropHeight} borderRadius={0} />
+          <ShimmerSkeleton width={backdropWidth} height={backdropHeight} borderRadius={0} />
         </BackdropSkeletonWrapper>
       )}
 
