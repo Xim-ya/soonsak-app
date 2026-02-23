@@ -3,6 +3,10 @@
  *
  * 각 정렬 탭의 콘텐츠를 표시합니다.
  * Tabs.FlatList를 사용하여 collapsible tab view와 통합됩니다.
+ *
+ * 반응형 그리드:
+ * - 고정 카드 너비(MIN_CARD_WIDTH) 기준으로 열 수 자동 계산
+ * - 폰: 2열 / 패블릿: 3열 / 태블릿: 4열+
  */
 
 import React, { useCallback, useMemo } from 'react';
@@ -12,19 +16,30 @@ import { Tabs } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
+import { AppSize } from '@/shared/utils/appSize';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
 import {
   ExploreContentCard,
-  CARD_WIDTH,
-  CARD_HEIGHT,
+  calculateGridLayout,
   GRID_GAP,
   HORIZONTAL_PADDING,
 } from './ExploreContentCard';
 
-const COLUMN_COUNT = 2;
-const SKELETON_COUNT = 6;
+/** 그리드 아이템 타입 (실제 콘텐츠 또는 placeholder) */
+type GridItem = ExploreContentModel | PlaceholderItem;
+
+/** 마지막 행 정렬용 placeholder 아이템 */
+interface PlaceholderItem {
+  readonly id: number;
+  readonly isPlaceholder: true;
+}
+
+/** placeholder 여부 타입 가드 */
+function isPlaceholder(item: GridItem): item is PlaceholderItem {
+  return 'isPlaceholder' in item && item.isPlaceholder === true;
+}
 
 // 스타일 상수 (인라인 객체 생성 방지)
 const LIST_STYLE = { backgroundColor: colors.black };
@@ -32,10 +47,6 @@ const CONTENT_CONTAINER_STYLE = {
   flexGrow: 1,
   paddingBottom: 20,
   backgroundColor: colors.black,
-};
-const COLUMN_WRAPPER_STYLE = {
-  marginBottom: GRID_GAP,
-  paddingHorizontal: HORIZONTAL_PADDING,
 };
 
 interface ExploreTabContentProps {
@@ -47,9 +58,14 @@ interface ExploreTabContentProps {
   readonly onContentPress: (content: ExploreContentModel) => void;
 }
 
+interface SkeletonCardProps {
+  readonly width: number;
+  readonly height: number;
+}
+
 /** 스켈레톤 카드 컴포넌트 */
-const SkeletonCard = React.memo(function SkeletonCard() {
-  return <ShimmerSkeleton width={CARD_WIDTH} height={CARD_HEIGHT} borderRadius={8} />;
+const SkeletonCard = React.memo(function SkeletonCard({ width, height }: SkeletonCardProps) {
+  return <ShimmerSkeleton width={width} height={height} borderRadius={8} />;
 });
 
 /** 빈 상태 컴포넌트 */
@@ -77,13 +93,30 @@ const LoadingFooter = React.memo(function LoadingFooter({
   );
 });
 
+interface SkeletonGridProps {
+  readonly columnCount: number;
+  readonly cardWidth: number;
+  readonly cardHeight: number;
+}
+
 /** 스켈레톤 그리드 컴포넌트 */
-const SkeletonGrid = React.memo(function SkeletonGrid() {
+const SkeletonGrid = React.memo(function SkeletonGrid({
+  columnCount,
+  cardWidth,
+  cardHeight,
+}: SkeletonGridProps) {
+  // 2행 * columnCount개의 스켈레톤 표시
+  const skeletonCount = columnCount * 2;
+
   return (
-    <SkeletonContainer>
-      {Array.from({ length: SKELETON_COUNT }).map((_, index) => (
-        <SkeletonItemWrapper key={`skeleton-${index}`} isLeftColumn={index % 2 === 0}>
-          <SkeletonCard />
+    <SkeletonContainer columnCount={columnCount} cardWidth={cardWidth}>
+      {Array.from({ length: skeletonCount }).map((_, index) => (
+        <SkeletonItemWrapper
+          key={`skeleton-${index}`}
+          cardWidth={cardWidth}
+          isLastInRow={(index + 1) % columnCount === 0}
+        >
+          <SkeletonCard width={cardWidth} height={cardHeight} />
         </SkeletonItemWrapper>
       ))}
     </SkeletonContainer>
@@ -98,19 +131,63 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
   const { contents, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useExploreContents(sortType, filter);
 
-  const renderItem: ListRenderItem<ExploreContentModel> = useCallback(
+  // 동적 그리드 레이아웃 계산 (화면 너비 기반)
+  const { columnCount, cardWidth, cardHeight } = useMemo(
+    () => calculateGridLayout(AppSize.actualScreenWidth),
+    [],
+  );
+
+  // columnWrapperStyle을 동적으로 생성
+  const columnWrapperStyle = useMemo(
+    () => ({
+      marginBottom: GRID_GAP,
+      paddingHorizontal: HORIZONTAL_PADDING,
+    }),
+    [],
+  );
+
+  // 마지막 행 정렬을 위한 placeholder 추가
+  const dataWithPlaceholders = useMemo((): GridItem[] => {
+    if (contents.length === 0) return contents;
+
+    const remainder = contents.length % columnCount;
+    if (remainder === 0) return contents;
+
+    // 마지막 행을 채우기 위한 placeholder 개수
+    const placeholderCount = columnCount - remainder;
+    const placeholders: PlaceholderItem[] = Array.from({ length: placeholderCount }, (_, i) => ({
+      id: -1 - i, // 음수 ID로 placeholder 구분
+      isPlaceholder: true as const,
+    }));
+
+    return [...contents, ...placeholders];
+  }, [contents, columnCount]);
+
+  const renderItem: ListRenderItem<GridItem> = useCallback(
     ({ item, index }) => {
-      const isLeftColumn = index % 2 === 0;
+      const isLastInRow = (index + 1) % columnCount === 0;
+
+      // placeholder인 경우 빈 공간만 렌더링
+      if (isPlaceholder(item)) {
+        return <ItemWrapper cardWidth={cardWidth} isLastInRow={isLastInRow} />;
+      }
+
       return (
-        <ItemWrapper isLeftColumn={isLeftColumn}>
-          <ExploreContentCard content={item} onPress={onContentPress} />
+        <ItemWrapper cardWidth={cardWidth} isLastInRow={isLastInRow}>
+          <ExploreContentCard content={item} onPress={onContentPress} cardWidth={cardWidth} />
         </ItemWrapper>
       );
     },
-    [onContentPress],
+    [onContentPress, columnCount, cardWidth],
   );
 
-  const keyExtractor = useCallback((item: ExploreContentModel) => `${item.id}-${item.type}`, []);
+  const keyExtractor = useCallback((item: GridItem, index: number) => {
+    // placeholder인 경우 index 기반 키 사용
+    if (isPlaceholder(item)) {
+      return `placeholder-${index}`;
+    }
+    return `${item.id}-${item.type}`;
+  }, []);
 
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -125,27 +202,26 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
 
   const renderListEmpty = useCallback(() => {
     if (isLoading) {
-      return <SkeletonGrid />;
+      return (
+        <SkeletonGrid columnCount={columnCount} cardWidth={cardWidth} cardHeight={cardHeight} />
+      );
     }
     return <EmptyState />;
-  }, [isLoading]);
+  }, [isLoading, columnCount, cardWidth, cardHeight]);
 
   // contents 존재 여부에 따라 columnWrapperStyle 적용
-  const hasContents = contents.length > 0;
-  const columnWrapperStyle = useMemo(
-    () => (hasContents ? COLUMN_WRAPPER_STYLE : undefined),
-    [hasContents],
-  );
+  const hasContents = dataWithPlaceholders.length > 0;
 
   return (
-    <Tabs.FlatList
-      data={contents}
+    <Tabs.FlatList<GridItem>
+      key={`grid-${columnCount}`} // 열 수 변경 시 FlatList 재생성
+      data={dataWithPlaceholders}
       renderItem={renderItem}
       keyExtractor={keyExtractor}
-      numColumns={COLUMN_COUNT}
+      numColumns={columnCount}
       style={LIST_STYLE}
       contentContainerStyle={CONTENT_CONTAINER_STYLE}
-      columnWrapperStyle={columnWrapperStyle}
+      columnWrapperStyle={hasContents ? columnWrapperStyle : undefined}
       onEndReached={handleEndReached}
       onEndReachedThreshold={0.5}
       ListFooterComponent={renderFooter}
@@ -161,20 +237,32 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
   );
 });
 
-const ItemWrapper = styled.View<{ isLeftColumn: boolean }>(({ isLeftColumn }) => ({
-  width: CARD_WIDTH,
-  marginRight: isLeftColumn ? GRID_GAP : 0,
+interface ItemWrapperProps {
+  cardWidth: number;
+  isLastInRow: boolean;
+}
+
+const ItemWrapper = styled.View<ItemWrapperProps>(({ cardWidth, isLastInRow }) => ({
+  width: cardWidth,
+  marginRight: isLastInRow ? 0 : GRID_GAP,
 }));
 
-const SkeletonContainer = styled.View({
+interface SkeletonContainerProps {
+  columnCount: number;
+  cardWidth: number;
+}
+
+const SkeletonContainer = styled.View<SkeletonContainerProps>({
   flexDirection: 'row',
   flexWrap: 'wrap',
   paddingHorizontal: HORIZONTAL_PADDING,
   rowGap: GRID_GAP,
 });
 
-// SkeletonItemWrapper는 ItemWrapper와 동일한 스타일이므로 재사용
-const SkeletonItemWrapper = ItemWrapper;
+const SkeletonItemWrapper = styled.View<ItemWrapperProps>(({ cardWidth, isLastInRow }) => ({
+  width: cardWidth,
+  marginRight: isLastInRow ? 0 : GRID_GAP,
+}));
 
 const EmptyContainer = styled.View({
   justifyContent: 'center',
