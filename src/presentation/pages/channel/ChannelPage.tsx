@@ -4,10 +4,14 @@
  * 다양한 채널의 비디오를 탐색할 수 있는 화면입니다.
  * 상단에서 채널을 선택하고, 정렬 옵션을 변경하여 비디오를 필터링할 수 있습니다.
  * 스크롤 시 채널 선택 영역이 축소되며 상단에 고정됩니다.
+ *
+ * 반응형 레이아웃:
+ * - Phone (<600dp): 전체 너비 단일 열 카드 (ChannelVideoCard)
+ * - Phablet/Tablet (>=600dp): YouTube 스타일 2열 그리드 (TabletVideoCard)
  */
 
-import { useCallback, useState } from 'react';
-import { ActivityIndicator, ListRenderItem, Platform, TouchableOpacity } from 'react-native';
+import { useCallback, useState, useMemo } from 'react';
+import { ActivityIndicator, ListRenderItem, Platform, TouchableOpacity, Dimensions } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -31,6 +35,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import Gap from '@/presentation/components/view/Gap';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
+import { AppSize } from '@/shared/utils/appSize';
 import type { ChannelSortType, ChannelVideoModel } from './_types';
 import { useChannelList } from './_hooks/useChannelList';
 import { useChannelVideos } from './_hooks/useChannelVideos';
@@ -42,6 +47,7 @@ import {
   CHANNEL_SELECTOR_SCROLL_RANGE,
 } from './_components/AnimatedChannelSelector';
 import { ChannelVideoCard, CARD_HEIGHT as VIDEO_CARD_HEIGHT } from './_components/ChannelVideoCard';
+import { TabletVideoCard, getTabletCardHeight } from './_components/TabletVideoCard';
 import { SortSelector } from './_components/SortSelector';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -50,6 +56,12 @@ const ITEM_SEPARATOR_HEIGHT = 32;
 const FILTER_BAR_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 56;
 const FOOTER_HEIGHT = 60;
+
+// 태블릿 그리드 레이아웃 상수
+const GRID_COLUMNS = 2;
+const GRID_HORIZONTAL_PADDING = 16;
+const GRID_COLUMN_GAP = 12;
+const GRID_ROW_GAP = 24;
 
 // iOS 스크롤 jitter 방지: exponential smoothing factor (0.15-0.25 권장)
 const SMOOTHING_FACTOR = 0.18;
@@ -68,6 +80,18 @@ const stickyContentStyle = { flex: 1 } as const;
 export default function ChannelPage() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+
+  // 대형 화면 여부 (phablet/tablet)
+  const isLargeScreen = AppSize.isLargeScreen();
+
+  // 태블릿 그리드 카드 너비 계산 (actualScreenWidth 사용)
+  const tabletCardWidth = useMemo(() => {
+    const screenWidth = AppSize.actualScreenWidth || Dimensions.get('window').width;
+    return (screenWidth - GRID_HORIZONTAL_PADDING * 2 - GRID_COLUMN_GAP) / GRID_COLUMNS;
+  }, []);
+
+  // 태블릿 카드 높이
+  const tabletCardHeight = useMemo(() => getTabletCardHeight(tabletCardWidth), [tabletCardWidth]);
 
   // 스크롤 값 추적
   const scrollY = useSharedValue(0);
@@ -157,31 +181,66 @@ export default function ChannelPage() {
     }
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  // 비디오 아이템 렌더
+  // 비디오 아이템 렌더 (폰: 전체 너비 카드, 태블릿: 그리드 카드)
   const renderVideoItem: ListRenderItem<ChannelVideoModel> = useCallback(
-    ({ item }) => <ChannelVideoCard video={item} onPress={handleVideoPress} />,
-    [handleVideoPress],
+    ({ item, index }) => {
+      if (isLargeScreen) {
+        // 태블릿: 2열 그리드 (짝수 인덱스 왼쪽, 홀수 인덱스 오른쪽)
+        const isLeftColumn = index % GRID_COLUMNS === 0;
+        return (
+          <GridItemWrapper style={{ marginLeft: isLeftColumn ? 0 : GRID_COLUMN_GAP }}>
+            <TabletVideoCard video={item} onPress={handleVideoPress} cardWidth={tabletCardWidth} />
+          </GridItemWrapper>
+        );
+      }
+      // 폰: 전체 너비 카드
+      return <ChannelVideoCard video={item} onPress={handleVideoPress} />;
+    },
+    [handleVideoPress, isLargeScreen, tabletCardWidth],
   );
 
   // 아이템 키 추출
   const keyExtractor = useCallback((item: ChannelVideoModel) => item.videoId, []);
 
-  // 아이템 분리자
-  const renderItemSeparator = useCallback(() => <Gap size={ITEM_SEPARATOR_HEIGHT} />, []);
+  // 아이템 분리자 (폰에서만 사용)
+  const renderItemSeparator = useCallback(() => {
+    if (isLargeScreen) return null;
+    return <Gap size={ITEM_SEPARATOR_HEIGHT} />;
+  }, [isLargeScreen]);
 
-  // getItemLayout - 스크롤 성능 최적화
+  // getItemLayout - 스크롤 성능 최적화 (폰 전용, 태블릿은 numColumns로 인해 사용 불가)
   const getItemLayout = useCallback(
-    (_: ArrayLike<ChannelVideoModel> | null | undefined, index: number) => ({
-      length: VIDEO_CARD_HEIGHT,
-      offset: (VIDEO_CARD_HEIGHT + ITEM_SEPARATOR_HEIGHT) * index,
-      index,
-    }),
-    [],
+    (_: ArrayLike<ChannelVideoModel> | null | undefined, index: number) => {
+      if (isLargeScreen) {
+        // 태블릿: 2열 그리드 - 행 기준 계산
+        const rowIndex = Math.floor(index / GRID_COLUMNS);
+        return {
+          length: tabletCardHeight,
+          offset: (tabletCardHeight + GRID_ROW_GAP) * rowIndex,
+          index,
+        };
+      }
+      // 폰: 단일 열
+      return {
+        length: VIDEO_CARD_HEIGHT,
+        offset: (VIDEO_CARD_HEIGHT + ITEM_SEPARATOR_HEIGHT) * index,
+        index,
+      };
+    },
+    [isLargeScreen, tabletCardHeight],
   );
 
   // 스타일 (insets는 앱 실행 중 거의 변하지 않아 useMemo 오버헤드가 더 큼)
   const containerStyle = { paddingTop: insets.top };
-  const listContentStyle = { paddingBottom: insets.bottom + 20 };
+  const listContentStyle = isLargeScreen
+    ? { paddingBottom: insets.bottom + 20, paddingHorizontal: GRID_HORIZONTAL_PADDING }
+    : { paddingBottom: insets.bottom + 20 };
+
+  // 태블릿 그리드 columnWrapperStyle
+  const columnWrapperStyle = useMemo(
+    () => (isLargeScreen ? { marginBottom: GRID_ROW_GAP } : undefined),
+    [isLargeScreen],
+  );
 
   // 헤더 행 애니메이션 (스크롤 시 opacity만 변경 - GPU 처리)
   const headerRowStyle = useAnimatedStyle(() => {
@@ -354,8 +413,8 @@ export default function ChannelPage() {
             data={videos}
             renderItem={renderVideoItem}
             keyExtractor={keyExtractor}
-            getItemLayout={getItemLayout}
-            ItemSeparatorComponent={renderItemSeparator}
+            getItemLayout={isLargeScreen ? undefined : getItemLayout}
+            ItemSeparatorComponent={isLargeScreen ? undefined : renderItemSeparator}
             ListEmptyComponent={renderListEmpty}
             ListFooterComponent={renderListFooter}
             onEndReached={handleEndReached}
@@ -363,13 +422,17 @@ export default function ChannelPage() {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={listContentStyle}
             removeClippedSubviews={true}
-            maxToRenderPerBatch={3}
+            maxToRenderPerBatch={isLargeScreen ? 6 : 3}
             windowSize={7}
-            initialNumToRender={3}
+            initialNumToRender={isLargeScreen ? 6 : 3}
             updateCellsBatchingPeriod={100}
             onScroll={scrollHandler}
             scrollEventThrottle={16}
             maintainVisibleContentPosition={{ minIndexForVisible: 0 }}
+            // 태블릿: 2열 그리드 (numColumns 변경 시 key로 리마운트 필요)
+            numColumns={isLargeScreen ? GRID_COLUMNS : 1}
+            {...(isLargeScreen && { columnWrapperStyle })}
+            key={isLargeScreen ? 'grid' : 'list'}
           />
         </Animated.View>
       </Container>
@@ -483,3 +546,6 @@ const FooterContainer = styled.View({
   justifyContent: 'center',
   alignItems: 'center',
 });
+
+/** 태블릿 그리드 아이템 래퍼 */
+const GridItemWrapper = styled.View({});
