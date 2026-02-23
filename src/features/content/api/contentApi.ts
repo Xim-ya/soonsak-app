@@ -1095,6 +1095,7 @@ export const contentApi = {
       contentType: ContentType;
       videoTitle: string;
       thumbnailUrl?: string;
+      runtime?: number;
       channelId: string;
       channelName: string;
       channelLogoUrl: string;
@@ -1136,6 +1137,7 @@ export const contentApi = {
         content_type: string;
         video_title: string;
         thumbnail_url: string | null;
+        runtime: number | null;
         channel_id: string;
         channel_name: string;
         channel_logo_url: string;
@@ -1149,6 +1151,7 @@ export const contentApi = {
         contentType: item.content_type as ContentType,
         videoTitle: item.video_title,
         thumbnailUrl: item.thumbnail_url ?? undefined,
+        runtime: item.runtime ?? undefined,
         channelId: item.channel_id,
         channelName: item.channel_name,
         channelLogoUrl: item.channel_logo_url,
