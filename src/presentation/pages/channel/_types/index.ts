@@ -34,6 +34,8 @@ interface ChannelVideoModel {
   readonly channelLogoUrl: string;
   readonly releaseYear?: string;
   readonly genreText?: string;
+  /** 비디오 런타임 (초 단위) */
+  readonly runtime?: number;
 }
 
 /**

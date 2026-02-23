@@ -109,6 +109,7 @@ export function useChannelVideos(
             ...(v.backdropPath && { backdropPath: v.backdropPath }),
             ...(releaseYear && { releaseYear }),
             ...(genreText && { genreText }),
+            ...(v.runtime && { runtime: v.runtime }),
           };
         }),
       ) ?? [];

@@ -20,6 +20,7 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 const HORIZONTAL_PADDING = 16;
 const IMAGE_GAP = 6;
 const PREVIEW_COUNT = 5;
+const TABLET_CONTENT_MAX_WIDTH = 800;
 
 function MediaSectionViewComponent() {
   const { id, type } = useContentDetailRoute();
@@ -29,7 +30,12 @@ function MediaSectionViewComponent() {
   const backdropPath = contentInfo?.backdropPath || '';
   const { data: images } = useContentImages(Number(id), type, backdropPath);
 
-  const containerWidth = AppSize.screenWidth - HORIZONTAL_PADDING * 2;
+  // 태블릿에서는 max-width 기준, 모바일에서는 screenWidth 기준
+  const isLargeScreen = AppSize.isLargeScreen();
+  const baseWidth = isLargeScreen
+    ? Math.min(AppSize.actualScreenWidth, TABLET_CONTENT_MAX_WIDTH)
+    : AppSize.screenWidth;
+  const containerWidth = baseWidth - HORIZONTAL_PADDING * 2;
   const gridItemWidth = (containerWidth - IMAGE_GAP) / 2;
   const heroImageHeight = containerWidth * (9 / 16);
   const gridItemHeight = gridItemWidth * (9 / 16);

@@ -14,16 +14,24 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { FlatList, ListRenderItem, ActivityIndicator } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  ScrollView,
+  useWindowDimensions,
+} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar';
+import { ShimmerSkeleton } from '@/presentation/components/image';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { AppSize } from '@/shared/utils/appSize';
 import type { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import {
@@ -43,6 +51,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 const CARD_SEPARATOR_HEIGHT = 24;
 const LIST_SEPARATOR_HEIGHT = 0; // 리스트 뷰는 아이템 내부에 패딩 있음
+const HORIZONTAL_PADDING = 16;
+const TABLET_CARD_WIDTH = 420; // WatchHistoryCard와 동일
 
 /* Component */
 
@@ -61,10 +71,12 @@ export default function WatchHistoryPage() {
   const infiniteQuery = useInfiniteUniqueWatchHistory(20, { enabled: !date });
 
   // 데이터 통합
-  const { items, isLoading, isFetchingNextPage, hasNextPage } = useMemo(() => {
+  const { items, isInitialLoading, isFetchingNextPage, hasNextPage } = useMemo(() => {
     if (date) {
       // placeholderData가 있으므로 isPlaceholderData도 체크
       const dateItems = byDateQuery.isPlaceholderData ? [] : (byDateQuery.data ?? []);
+      // placeholderData가 있어도 isFetching으로 초기 로딩 감지
+      const dataItems = byDateQuery.data ?? [];
       return {
         items: dateItems,
         isLoading: byDateQuery.isFetching && dateItems.length === 0,
@@ -143,24 +155,11 @@ export default function WatchHistoryPage() {
     [separatorHeight],
   );
 
-  // 빈 상태
-  const renderListEmpty = useCallback(() => {
-    if (isLoading) {
-      return (
-        <LoadingContainer>
-          <ActivityIndicator color={colors.gray02} />
-        </LoadingContainer>
-      );
-    }
-    return (
-      <EmptyContainer>
-        <EmptyText>시청 기록이 없어요</EmptyText>
-        <EmptySubText>
-          {date ? '이 날짜에 시청한 콘텐츠가 없어요' : '콘텐츠를 시청해보세요'}
-        </EmptySubText>
-      </EmptyContainer>
-    );
-  }, [isLoading, date]);
+  // 스켈레톤 크기 계산
+  const { width: screenWidth } = useWindowDimensions();
+  const isLargeScreen = AppSize.isLargeScreen();
+  const skeletonWidth = isLargeScreen ? TABLET_CARD_WIDTH : screenWidth - HORIZONTAL_PADDING * 2;
+  const skeletonHeight = skeletonWidth * (9 / 16);
 
   // 로딩 더보기 인디케이터
   const renderListFooter = useCallback(() => {
@@ -178,29 +177,82 @@ export default function WatchHistoryPage() {
     [viewMode],
   );
 
+  // 스켈레톤 UI 렌더링
+  const renderSkeleton = () => {
+    if (viewMode === 'card') {
+      return (
+        <SkeletonContainer isLargeScreen={isLargeScreen}>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonItemWrapper key={index} isLargeScreen={isLargeScreen}>
+              <ShimmerSkeleton width={skeletonWidth} height={skeletonHeight} borderRadius={12} />
+              {index < 2 && <Gap size={CARD_SEPARATOR_HEIGHT} />}
+            </SkeletonItemWrapper>
+          ))}
+        </SkeletonContainer>
+      );
+    }
+    return (
+      <SkeletonContainer isLargeScreen={false}>
+        {Array.from({ length: 5 }).map((_, index) => (
+          <ListSkeletonItem key={index}>
+            <ShimmerSkeleton width={120} height={68} borderRadius={8} />
+            <ListSkeletonInfo>
+              <ShimmerSkeleton width={180} height={14} borderRadius={4} />
+              <Gap size={6} />
+              <ShimmerSkeleton width={120} height={12} borderRadius={4} />
+            </ListSkeletonInfo>
+          </ListSkeletonItem>
+        ))}
+      </SkeletonContainer>
+    );
+  };
+
+  // 빈 상태 컴포넌트
+  const renderEmpty = () => (
+    <EmptyContainer>
+      <EmptyText>시청 기록이 없어요</EmptyText>
+      <EmptySubText>
+        {date ? '이 날짜에 시청한 콘텐츠가 없어요' : '콘텐츠를 시청해보세요'}
+      </EmptySubText>
+    </EmptyContainer>
+  );
+
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
       <Container style={{ paddingTop: insets.top }}>
         <BackButtonAppBar title="시청 기록" actions={appBarActions} />
-        <FlatList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={keyExtractor}
-          ItemSeparatorComponent={renderItemSeparator}
-          ListEmptyComponent={renderListEmpty}
-          ListFooterComponent={renderListFooter}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            flexGrow: 1,
-            paddingTop: viewMode === 'card' ? 16 : 8,
-            paddingBottom: insets.bottom + 20,
-          }}
-          onEndReached={handleEndReached}
-          onEndReachedThreshold={0.5}
-          maxToRenderPerBatch={10}
-          windowSize={7}
-          initialNumToRender={10}
-        />
+        {isInitialLoading ? (
+          <SkeletonScrollView
+            contentContainerStyle={{
+              paddingTop: viewMode === 'card' ? 16 : 8,
+              paddingBottom: insets.bottom + 20,
+              ...(isLargeScreen && viewMode === 'card' && { alignItems: 'center' }),
+            }}
+          >
+            {renderSkeleton()}
+          </SkeletonScrollView>
+        ) : (
+          <FlatList
+            data={items}
+            renderItem={renderItem}
+            keyExtractor={keyExtractor}
+            ItemSeparatorComponent={renderItemSeparator}
+            ListEmptyComponent={renderEmpty}
+            ListFooterComponent={renderListFooter}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingTop: viewMode === 'card' ? 16 : 8,
+              paddingBottom: insets.bottom + 20,
+              ...(isLargeScreen && viewMode === 'card' && { alignItems: 'center' }),
+            }}
+            onEndReached={handleEndReached}
+            onEndReachedThreshold={0.5}
+            maxToRenderPerBatch={10}
+            windowSize={7}
+            initialNumToRender={10}
+          />
+        )}
       </Container>
     </BasePage>
   );
@@ -213,9 +265,29 @@ const Container = styled.View({
   backgroundColor: colors.black,
 });
 
-const LoadingContainer = styled.View({
+const SkeletonScrollView = styled(ScrollView)({
   flex: 1,
-  alignItems: 'center',
+});
+
+/** 스켈레톤 컨테이너 - 태블릿에서 중앙 정렬 */
+const SkeletonContainer = styled.View<{ isLargeScreen: boolean }>(({ isLargeScreen }) => ({
+  paddingHorizontal: HORIZONTAL_PADDING,
+  alignItems: isLargeScreen ? 'center' : 'flex-start',
+}));
+
+const SkeletonItemWrapper = styled.View<{ isLargeScreen: boolean }>(({ isLargeScreen }) => ({
+  alignItems: isLargeScreen ? 'center' : 'flex-start',
+}));
+
+/** 리스트 뷰 스켈레톤 아이템 */
+const ListSkeletonItem = styled.View({
+  flexDirection: 'row',
+  paddingVertical: 12,
+  paddingHorizontal: HORIZONTAL_PADDING,
+});
+
+const ListSkeletonInfo = styled.View({
+  marginLeft: 12,
   justifyContent: 'center',
 });
 

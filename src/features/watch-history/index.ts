@@ -11,7 +11,7 @@
 export { watchHistoryApi } from './api/watchHistoryApi';
 
 // Components
-export { WatchHistoryCard } from './components';
+export { WatchHistoryCard, WatchHistorySectionView } from './components';
 
 // Hooks
 export {
