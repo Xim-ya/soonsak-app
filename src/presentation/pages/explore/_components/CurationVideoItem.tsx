@@ -94,7 +94,7 @@ function CurationVideoItem({ video, onPress }: CurationVideoItemProps) {
             source={backdropUrl}
             width={THUMBNAIL_WIDTH}
             height={THUMBNAIL_HEIGHT}
-            borderRadius={8}
+            borderRadius={12}
           />
           {/* 하단 그라데이션 오버레이 */}
           <DarkedLinearShadow height={THUMBNAIL_HEIGHT} align={LinearAlign.bottomTop} />
@@ -133,7 +133,7 @@ const ThumbnailTouchable = styled(TouchableOpacity)({
 const ThumbnailWrapper = styled.View({
   width: THUMBNAIL_WIDTH,
   height: THUMBNAIL_HEIGHT,
-  borderRadius: 8,
+  borderRadius: 12, // ContentDetailPage와 동일
   overflow: 'hidden',
   backgroundColor: colors.gray05,
 });
