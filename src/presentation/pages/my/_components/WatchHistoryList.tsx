@@ -19,6 +19,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
+import { ShimmerSkeleton } from '@/presentation/components/image';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import {
   useWatchHistoryPreview,
@@ -153,16 +154,21 @@ function WatchHistoryListComponent({
     );
   }, [isFetchingNextPage]);
 
-  // 초기 로딩 중: 스켈레톤 또는 로딩 인디케이터 표시
+  // 초기 로딩 중: 스켈레톤 표시
   if (isLoading) {
     return (
       <Container>
         <SectionHeader>
           <SectionTitle>시청기록</SectionTitle>
         </SectionHeader>
-        <LoadingContainer>
-          <ActivityIndicator color={colors.gray02} size="small" />
-        </LoadingContainer>
+        <SkeletonContainer>
+          {Array.from({ length: 3 }).map((_, index) => (
+            <SkeletonItemWrapper key={index}>
+              <ShimmerSkeleton width={ITEM_WIDTH} height={ITEM_HEIGHT} borderRadius={4} />
+              <SkeletonTitleBar />
+            </SkeletonItemWrapper>
+          ))}
+        </SkeletonContainer>
       </Container>
     );
   }
@@ -251,10 +257,21 @@ const EmptyStateContainer = styled.View({
   paddingHorizontal: HORIZONTAL_PADDING,
 });
 
-const LoadingContainer = styled.View({
-  height: ITEM_HEIGHT,
-  justifyContent: 'center',
-  alignItems: 'center',
+const SkeletonContainer = styled.View({
+  flexDirection: 'row',
+  paddingHorizontal: HORIZONTAL_PADDING,
+});
+
+const SkeletonItemWrapper = styled.View({
+  marginRight: ITEM_GAP,
+});
+
+const SkeletonTitleBar = styled.View({
+  width: ITEM_WIDTH * 0.7,
+  height: 12,
+  backgroundColor: colors.gray05,
+  borderRadius: 4,
+  marginTop: AppSize.ratioHeight(6),
 });
 
 const EmptyStateText = styled.Text({
