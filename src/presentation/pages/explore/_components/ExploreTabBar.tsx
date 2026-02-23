@@ -5,7 +5,7 @@
  * 탭 바 아래에 필터 바도 포함하여 함께 스티키됩니다.
  */
 
-import React, { useCallback } from 'react';
+import { useCallback } from 'react';
 import { ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -15,7 +15,6 @@ import Animated, {
   useAnimatedReaction,
   interpolate,
   Extrapolation,
-  runOnJS,
   SharedValue,
 } from 'react-native-reanimated';
 import { TabBarProps, useCurrentTabScrollY } from 'react-native-collapsible-tab-view';
@@ -88,9 +87,6 @@ const GRADIENT_OPACITY_START = 240;
 /** 그라데이션 opacity가 1에 도달하는 스크롤 오프셋 (스티키 시점) */
 const GRADIENT_OPACITY_END = 290;
 
-/** 개발자 추천 탭 인덱스 (필터 바 숨김 처리용) */
-const RECOMMENDED_TAB_INDEX = 3;
-
 const filterIconSvg = `
 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
 <path d="M22 3H2L10 12.46V19L14 21V12.46L22 3Z" stroke="${colors.white}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -134,9 +130,6 @@ const ExploreTabBar = <T extends string>({
 }: ExploreTabBarProps<T>) => {
   const navigation = useNavigation<NavigationProp>();
 
-  // 개발자 추천 탭(index 3)일 때 필터 바 숨김
-  const [showFilterBar, setShowFilterBar] = React.useState(true);
-
   // 스크롤 위치 추적
   const scrollY = useCurrentTabScrollY();
 
@@ -144,19 +137,6 @@ const ExploreTabBar = <T extends string>({
   const handleSearchPress = useCallback(() => {
     navigation.navigate(routePages.search);
   }, [navigation]);
-
-  // 탭 인덱스 변화 감지하여 필터 바 표시 여부 업데이트
-  // 값이 실제로 변경되었을 때만 runOnJS 호출
-  useAnimatedReaction(
-    () => Math.round(indexDecimal.value),
-    (currentIndex, previousIndex) => {
-      'worklet';
-      if (currentIndex !== previousIndex) {
-        runOnJS(setShowFilterBar)(currentIndex !== RECOMMENDED_TAB_INDEX);
-      }
-    },
-    [indexDecimal],
-  );
 
   // 스크롤 위치 감지하여 그라데이션 opacity 업데이트
   useAnimatedReaction(
@@ -205,43 +185,37 @@ const ExploreTabBar = <T extends string>({
         </TabBarContent>
       </TabBarSection>
 
-      {/* 필터 바 - 항상 렌더링하되 내용만 숨김 (tabBarHeight 일관성 유지) */}
+      {/* 필터 바 */}
       <FilterBarSection>
-        {showFilterBar && (
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={FILTER_SCROLL_CONTENT_STYLE}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={FILTER_SCROLL_CONTENT_STYLE}
+        >
+          {/* 필터 버튼 */}
+          <FilterIconButton onPress={onFilterPress} activeOpacity={0.7}>
+            <SvgXml xml={filterIconSvg} width={16} height={16} />
+            {isCustomFilterActive && <ActiveBadge />}
+          </FilterIconButton>
+
+          {/* 결말포함 칩 */}
+          <FilterChip selected={includeEnding} onPress={onIncludeEndingToggle} activeOpacity={0.7}>
+            <FilterChipText selected={includeEnding}>결말포함</FilterChipText>
+          </FilterChip>
+
+          {/* 본 작품 제외 칩 */}
+          <FilterChip
+            selected={excludeWatched}
+            onPress={onExcludeWatchedToggle}
+            activeOpacity={0.7}
           >
-            {/* 필터 버튼 */}
-            <FilterIconButton onPress={onFilterPress} activeOpacity={0.7}>
-              <SvgXml xml={filterIconSvg} width={16} height={16} />
-              {isCustomFilterActive && <ActiveBadge />}
-            </FilterIconButton>
-
-            {/* 결말포함 칩 */}
-            <FilterChip
-              selected={includeEnding}
-              onPress={onIncludeEndingToggle}
-              activeOpacity={0.7}
-            >
-              <FilterChipText selected={includeEnding}>결말포함</FilterChipText>
-            </FilterChip>
-
-            {/* 본 작품 제외 칩 */}
-            <FilterChip
-              selected={excludeWatched}
-              onPress={onExcludeWatchedToggle}
-              activeOpacity={0.7}
-            >
-              <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
-            </FilterChip>
-          </ScrollView>
-        )}
+            <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
+          </FilterChip>
+        </ScrollView>
       </FilterBarSection>
       {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
       <AnimatedGradientWrapper
-        style={[gradientAnimatedStyle, ANDROID_GRADIENT_STYLE, !showFilterBar && { opacity: 0 }]}
+        style={[gradientAnimatedStyle, ANDROID_GRADIENT_STYLE]}
         pointerEvents="none"
       >
         <BottomGradient colors={['#000000', '#00000000']} />

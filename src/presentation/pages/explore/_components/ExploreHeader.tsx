@@ -83,18 +83,13 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
           <FallbackContentOverlay>
             <TitleRow>
               <TitleText>탐색</TitleText>
-              <ActionButtonRow>
-                <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                  <LightningIcon width={14} height={14} color={colors.main} />
-                  <QuickExploreChipText>빠른탐색</QuickExploreChipText>
-                </QuickExploreChip>
-                <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-                  <LoginButtonText>로그인</LoginButtonText>
-                </LoginButton>
-              </ActionButtonRow>
+              <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+                <LightningIcon width={14} height={14} color={colors.main} />
+                <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+              </QuickExploreChip>
             </TitleRow>
             <CardSection>
-              <CurationPromptCard />
+              <CurationPromptCard onLoginPress={handleLoginPress} />
             </CardSection>
           </FallbackContentOverlay>
         </FallbackContainer>
@@ -114,19 +109,14 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
           <ContentOverlay>
             <TitleRow>
               <TitleText>탐색</TitleText>
-              <ActionButtonRow>
-                <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
-                  <LightningIcon width={14} height={14} color={colors.main} />
-                  <QuickExploreChipText>빠른탐색</QuickExploreChipText>
-                </QuickExploreChip>
-                <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-                  <LoginButtonText>로그인</LoginButtonText>
-                </LoginButton>
-              </ActionButtonRow>
+              <QuickExploreChip onPress={handleQuickExplorePress} activeOpacity={0.8}>
+                <LightningIcon width={14} height={14} color={colors.main} />
+                <QuickExploreChipText>빠른탐색</QuickExploreChipText>
+              </QuickExploreChip>
             </TitleRow>
 
             <CardSection>
-              <CurationPromptCard />
+              <CurationPromptCard onLoginPress={handleLoginPress} />
             </CardSection>
           </ContentOverlay>
 
@@ -196,12 +186,6 @@ const TitleText = styled.Text({
   color: colors.white,
 });
 
-const ActionButtonRow = styled.View({
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: 8,
-});
-
 const QuickExploreChip = styled(TouchableOpacity)({
   flexDirection: 'row',
   alignItems: 'center',
@@ -213,18 +197,6 @@ const QuickExploreChip = styled(TouchableOpacity)({
 });
 
 const QuickExploreChipText = styled.Text({
-  ...textStyles.alert1,
-  color: colors.white,
-});
-
-const LoginButton = styled(TouchableOpacity)({
-  backgroundColor: colors.gray04,
-  paddingHorizontal: 16,
-  paddingVertical: 8,
-  borderRadius: 20,
-});
-
-const LoginButtonText = styled.Text({
   ...textStyles.alert1,
   color: colors.white,
 });

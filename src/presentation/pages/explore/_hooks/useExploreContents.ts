@@ -64,22 +64,20 @@ export function useExploreContents(
   sortType: ExploreSortType,
   filter: ContentFilter,
 ): UseExploreContentsReturn {
-  // 'recommended'는 현재 비활성이므로 'all'로 폴백
-  const effectiveSortType = sortType === 'recommended' ? 'all' : sortType;
   const filterKey = serializeFilter(filter);
 
   // 세션 시드 (앱 재시작 시마다 새로 생성, 'all' 정렬에서 사용)
   const sessionSeed = getSessionSeed();
 
   const queryResult = useInfiniteQuery({
-    queryKey: ['exploreContents', effectiveSortType, filterKey, sessionSeed],
+    queryKey: ['exploreContents', sortType, filterKey, sessionSeed],
     queryFn: async ({ pageParam = 0 }): Promise<ExploreContentsResponse> => {
       return contentApi.getExploreContents(
-        effectiveSortType,
+        sortType,
         filter,
         pageParam,
         PAGE_SIZE,
-        effectiveSortType === 'all' ? sessionSeed : undefined,
+        sortType === 'all' ? sessionSeed : undefined,
       );
     },
     initialPageParam: 0,

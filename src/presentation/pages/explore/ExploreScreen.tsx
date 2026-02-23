@@ -126,15 +126,6 @@ export default function ExploreScreen() {
               />
             </Tabs.Lazy>
           </Tabs.Tab>
-          <Tabs.Tab name="recommended" label="개발자 추천">
-            <Tabs.Lazy>
-              <ExploreTabContent
-                sortType="recommended"
-                filter={filter}
-                onContentPress={handleContentPress}
-              />
-            </Tabs.Lazy>
-          </Tabs.Tab>
         </Tabs.Container>
       </TabsContainer>
 
