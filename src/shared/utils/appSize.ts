@@ -1,4 +1,23 @@
 import { Dimensions, Platform, StatusBar } from 'react-native';
+import * as Device from 'expo-device';
+
+/**
+ * 디바이스 타입 분류
+ * - phone: 일반 스마트폰 (< 600dp)
+ * - phablet: 대형 폰/폴더블 펼침 (600-768dp) - Galaxy Note, iPhone Pro Max, Galaxy Fold 펼침
+ * - tablet: 태블릿 (>= 768dp) - iPad, Galaxy Tab
+ */
+export type DeviceCategory = 'phone' | 'phablet' | 'tablet';
+
+/**
+ * 디바이스 분류 기준 (dp)
+ * - PHABLET: 600dp 이상 - 7인치급 대형 폰/폴더블
+ * - TABLET: 768dp 이상 - 태블릿
+ */
+const BREAKPOINTS = {
+  PHABLET: 600,
+  TABLET: 768,
+} as const;
 
 /**
  *  - 앱에서 필요한 디바이스 사이즈 관련 인스턴스들을 초기화하고 필요한 데이터 생성하는 모듈
@@ -22,8 +41,17 @@ class SizeConfig {
   bottomInset: number = 0; // Safe Area 하단 Inset
   screenWidth: number; // 디바이스 넓이
   screenHeight: number; // 디바이스 높이
+  actualScreenWidth: number; // 실제 화면 넓이 (레이아웃 분기용)
   responsiveBottomInset: number = 0; // 반응형 하단 Safe Area 하단 Inset
+
+  /** @deprecated isTablet 대신 deviceCategory 사용 권장 */
   isTablet: boolean = false;
+
+  /** 디바이스 분류: phone | phablet | tablet */
+  deviceCategory: DeviceCategory = 'phone';
+
+  /** expo-device 네이티브 감지 결과 (PHONE, TABLET, TV, DESKTOP, UNKNOWN) */
+  nativeDeviceType: Device.DeviceType = Device.DeviceType.PHONE;
 
   private constructor() {
     // iOS 전역 Dimensions.get('window') 보호 패치 (서드파티 라이브러리 포함 전체 적용)
@@ -32,14 +60,60 @@ class SizeConfig {
     }
 
     const { width, height } = this.getSafeDimensions();
-    this.isTablet = width > 600;
-    this.screenWidth = this.isTablet ? 375 : width;
-    this.screenHeight = this.isTablet ? 812 : height;
+    this.actualScreenWidth = width;
+    this.updateDeviceCategory(width);
+    this.screenWidth = this.shouldUseFixedLayout() ? 375 : width;
+    this.screenHeight = this.shouldUseFixedLayout() ? 812 : height;
+
+    // expo-device 네이티브 감지 (비동기, 초기화 후 업데이트)
+    this.initNativeDeviceType();
 
     this.dimensionsSubscription = Dimensions.addEventListener(
       'change',
       this.handleDimensionsChange,
     );
+  }
+
+  /**
+   * expo-device를 통한 네이티브 디바이스 타입 감지
+   * - iOS: 정확한 감지
+   * - Android: 화면 대각선 기준 (3-6.9인치: PHONE, 7-18인치: TABLET)
+   */
+  private async initNativeDeviceType(): Promise<void> {
+    try {
+      this.nativeDeviceType = await Device.getDeviceTypeAsync();
+    } catch {
+      this.nativeDeviceType = Device.DeviceType.PHONE;
+    }
+  }
+
+  /**
+   * 화면 너비 기반 디바이스 분류 업데이트
+   * - phone: < 600dp
+   * - phablet: 600-768dp (Galaxy Note, Fold 펼침, iPhone Pro Max)
+   * - tablet: >= 768dp (iPad, Galaxy Tab)
+   */
+  private updateDeviceCategory(width: number): void {
+    if (width >= BREAKPOINTS.TABLET) {
+      this.deviceCategory = 'tablet';
+      this.isTablet = true;
+    } else if (width >= BREAKPOINTS.PHABLET) {
+      this.deviceCategory = 'phablet';
+      this.isTablet = true; // 하위 호환성: phablet도 isTablet = true
+    } else {
+      this.deviceCategory = 'phone';
+      this.isTablet = false;
+    }
+  }
+
+  /**
+   * 고정 레이아웃 사용 여부 (375x812 기준)
+   * - tablet: 고정 레이아웃 사용
+   * - phablet: 고정 레이아웃 사용 (폴더블 펼침 등)
+   * - phone: 실제 화면 크기 사용
+   */
+  private shouldUseFixedLayout(): boolean {
+    return this.deviceCategory !== 'phone';
   }
 
   /**
@@ -141,7 +215,7 @@ class SizeConfig {
   }
 
   /**
-   * Dimensions 변경 핸들러
+   * Dimensions 변경 핸들러 (폴더블 기기 펼침/접힘 대응)
    * iOS: screen 값 사용 (window는 WKWebView 전체화면 버그로 손상 가능)
    * 추가 안전장치: portrait 모드에서 width > height인 경우 무시
    */
@@ -157,9 +231,10 @@ class SizeConfig {
     // Portrait 앱에서 width > height이면 비정상 → 무시
     if (width > height) return;
 
-    this.isTablet = width > 600;
-    this.screenWidth = this.isTablet ? 375 : width;
-    this.screenHeight = this.isTablet ? 812 : height;
+    this.actualScreenWidth = width;
+    this.updateDeviceCategory(width);
+    this.screenWidth = this.shouldUseFixedLayout() ? 375 : width;
+    this.screenHeight = this.shouldUseFixedLayout() ? 812 : height;
   };
 
   /**
@@ -169,9 +244,34 @@ class SizeConfig {
   forceRefreshDimensions(): void {
     const { width, height } = this.getSafeDimensions();
     if (width > height) return;
-    this.isTablet = width > 600;
-    this.screenWidth = this.isTablet ? 375 : width;
-    this.screenHeight = this.isTablet ? 812 : height;
+
+    this.actualScreenWidth = width;
+    this.updateDeviceCategory(width);
+    this.screenWidth = this.shouldUseFixedLayout() ? 375 : width;
+    this.screenHeight = this.shouldUseFixedLayout() ? 812 : height;
+  }
+
+  /**
+   * 현재 디바이스가 대형 화면인지 확인 (phablet 또는 tablet)
+   * 레이아웃 분기에 사용
+   */
+  isLargeScreen(): boolean {
+    return this.deviceCategory !== 'phone';
+  }
+
+  /**
+   * 디바이스 카테고리별 값 반환 헬퍼
+   * @example AppSize.byDevice({ phone: 1, phablet: 2, tablet: 2 })
+   */
+  byDevice<T>(values: { phone: T; phablet?: T; tablet: T }): T {
+    switch (this.deviceCategory) {
+      case 'tablet':
+        return values.tablet;
+      case 'phablet':
+        return values.phablet ?? values.tablet;
+      default:
+        return values.phone;
+    }
   }
 
   // 정리 메서드
@@ -184,3 +284,6 @@ export default SizeConfig;
 
 // 편의를 위한 익스포트
 export const AppSize = SizeConfig.to;
+
+// 타입 및 상수 익스포트
+export { BREAKPOINTS };

@@ -22,7 +22,7 @@ import {
   CurationVideoItem,
   THUMBNAIL_WIDTH,
   THUMBNAIL_HEIGHT,
-  VIDEO_TITLE_HEIGHT,
+  INFO_SECTION_HEIGHT,
   ITEM_HEIGHT,
 } from './CurationVideoItem';
 import type { CurationVideoModel } from '../_types/exploreTypes';
@@ -126,45 +126,70 @@ const LoadingContainer = styled.View({
   paddingHorizontal: 16,
 });
 
-/** 썸네일 스켈레톤 - CurationVideoItem의 ThumbnailWrapper와 동일한 스타일 */
+/**
+ * 스켈레톤 레이아웃 (CurationVideoItem과 동일하게 맞춤)
+ *
+ * VideoTitle: body2 (fontSize 15, lineHeight 22) × 2줄 = 44px
+ * MetaInfo: alert2 (fontSize 13, lineHeight 16), marginTop 2
+ * INFO_SECTION_HEIGHT = 44 + 2 + 16 = 62px
+ *
+ * 스켈레톤 바 높이는 fontSize 기준으로 설정
+ */
+const TITLE_SKELETON_HEIGHT = 15; // body2 fontSize
+const TITLE_LINE_HEIGHT = 22; // body2 lineHeight
+const META_SKELETON_HEIGHT = 16; // alert2 lineHeight (전체 높이 맞춤)
+const META_MARGIN_TOP = 2; // MetaInfo marginTop
+
+/** 썸네일 스켈레톤 */
 const ThumbnailSkeleton = styled.View({
   width: THUMBNAIL_WIDTH,
   height: THUMBNAIL_HEIGHT,
   backgroundColor: colors.gray05,
-  borderRadius: 8,
+  borderRadius: 12,
 });
 
-/** 타이틀 스켈레톤 컨테이너 - 전체 높이 유지 */
-const TitleSkeletonContainer = styled.View({
-  height: VIDEO_TITLE_HEIGHT,
-  marginTop: ITEM_GAP,
-  justifyContent: 'space-between',
+/** 정보 영역 스켈레톤 컨테이너 */
+const InfoSkeletonContainer = styled.View({
+  marginTop: 8,
+  height: INFO_SECTION_HEIGHT,
 });
 
-/** 타이틀 스켈레톤 첫 번째 줄 - 꽉 차게 */
+/** 타이틀 스켈레톤 첫 번째 줄 - lineHeight 22 중 fontSize 15 영역 */
 const TitleSkeletonLine1 = styled.View({
-  width: THUMBNAIL_WIDTH,
-  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
+  width: THUMBNAIL_WIDTH * 0.9,
+  height: TITLE_SKELETON_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 4,
+  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT, // 22 - 15 = 7
 });
 
-/** 타이틀 스켈레톤 두 번째 줄 - 1/3만 */
+/** 타이틀 스켈레톤 두 번째 줄 - lineHeight 22 맞춤 */
 const TitleSkeletonLine2 = styled.View({
-  width: THUMBNAIL_WIDTH / 3,
-  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
+  width: THUMBNAIL_WIDTH * 0.6,
+  height: TITLE_SKELETON_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 4,
+  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT, // 22 - 15 = 7
+});
+
+/** 메타 스켈레톤 (제목 아래) */
+const MetaSkeleton = styled.View({
+  width: THUMBNAIL_WIDTH * 0.4,
+  height: META_SKELETON_HEIGHT,
+  backgroundColor: colors.gray05,
+  borderRadius: 4,
+  marginTop: META_MARGIN_TOP, // 2
 });
 
 /** 스켈레톤 아이템 컨테이너 */
 const SkeletonItem = () => (
   <SkeletonItemContainer>
     <ThumbnailSkeleton />
-    <TitleSkeletonContainer>
+    <InfoSkeletonContainer>
       <TitleSkeletonLine1 />
       <TitleSkeletonLine2 />
-    </TitleSkeletonContainer>
+      <MetaSkeleton />
+    </InfoSkeletonContainer>
   </SkeletonItemContainer>
 );
 

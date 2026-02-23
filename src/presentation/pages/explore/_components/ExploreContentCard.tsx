@@ -1,12 +1,14 @@
 /**
  * ExploreContentCard - 그리드 아이템 카드
  *
- * 2열 그리드용 포스터 카드로, 이미지 위에 그라데이션 오버레이와 함께
+ * 반응형 그리드용 포스터 카드로, 이미지 위에 그라데이션 오버레이와 함께
  * ContentTypeChip과 제목을 표시합니다.
+ *
+ * 태블릿에서는 카드 너비가 props로 전달되어 가변 열 수를 지원합니다.
  */
 
 import React, { useCallback } from 'react';
-import { Image } from 'react-native';
+import { Image, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BackdropImage } from '@/presentation/components/image';
@@ -18,29 +20,53 @@ import type { ExploreContentModel } from '../_types/exploreTypes';
 
 /** 그리드 레이아웃 상수 */
 const HORIZONTAL_PADDING = 16;
-const GRID_GAP = 8;
-const COLUMN_COUNT = 2;
+const GRID_GAP = 12;
+
+/** 카드 최소 너비 (이 값 기준으로 열 수 계산) */
+const MIN_CARD_WIDTH = 150;
+
 /** 카드 비율 168:240 (참고 UI 기준) - width/height */
 const CARD_ASPECT_RATIO = 168 / 240;
 
-/** AppSize 기반 반응형 카드 크기 계산 */
-const CARD_WIDTH = (AppSize.screenWidth - HORIZONTAL_PADDING * 2 - GRID_GAP) / COLUMN_COUNT;
-const CARD_HEIGHT = Math.round(CARD_WIDTH / CARD_ASPECT_RATIO);
+/**
+ * 화면 너비 기반 그리드 레이아웃 계산
+ * - 최소 카드 너비 기준으로 열 수 결정
+ * - 카드가 공간을 균등하게 채우도록 실제 너비 계산
+ */
+function calculateGridLayout(screenWidth: number) {
+  const availableWidth = screenWidth - HORIZONTAL_PADDING * 2;
+  const columnCount = Math.max(2, Math.floor((availableWidth + GRID_GAP) / (MIN_CARD_WIDTH + GRID_GAP)));
+  const cardWidth = (availableWidth - GRID_GAP * (columnCount - 1)) / columnCount;
+  const cardHeight = Math.round(cardWidth / CARD_ASPECT_RATIO);
+
+  return { columnCount, cardWidth, cardHeight };
+}
+
+/** 실제 화면 너비 기반 기본 레이아웃 (폰용) */
+const DEFAULT_SCREEN_WIDTH = AppSize.actualScreenWidth || Dimensions.get('window').width;
+const DEFAULT_LAYOUT = calculateGridLayout(DEFAULT_SCREEN_WIDTH);
 
 interface ExploreContentCardProps {
   /** 콘텐츠 데이터 */
   readonly content: ExploreContentModel;
   /** 카드 클릭 콜백 */
   readonly onPress: (content: ExploreContentModel) => void;
+  /** 동적 카드 너비 (태블릿 그리드용) */
+  readonly cardWidth?: number;
 }
 
 const ExploreContentCard = React.memo(function ExploreContentCard({
   content,
   onPress,
+  cardWidth: propCardWidth,
 }: ExploreContentCardProps): React.ReactElement {
   const handlePress = useCallback(() => {
     onPress(content);
   }, [content, onPress]);
+
+  // 동적 카드 크기 (props 우선, 없으면 기본값)
+  const cardWidth = propCardWidth ?? DEFAULT_LAYOUT.cardWidth;
+  const cardHeight = Math.round(cardWidth / CARD_ASPECT_RATIO);
 
   // backdropPath 우선, 없으면 posterPath 사용
   const imageUrl = content.backdropPath
@@ -55,9 +81,13 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
     : null;
 
   return (
-    <CardContainer onPress={handlePress} activeOpacity={0.8}>
+    <CardContainer
+      onPress={handlePress}
+      activeOpacity={0.8}
+      style={{ width: cardWidth, height: cardHeight }}
+    >
       <BackdropImage
-        width={CARD_WIDTH}
+        width={cardWidth}
         source={imageUrl ?? undefined}
         aspectRatio={CARD_ASPECT_RATIO}
         borderRadius={8}
@@ -70,7 +100,7 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
       <GradientOverlay colors={['transparent', 'rgba(0, 0, 0, 0.8)']} />
       <TitleContainer>
         {titleLogoUrl ? (
-          <TitleLogoImage source={{ uri: titleLogoUrl }} resizeMode="contain" />
+          <TitleLogoImage source={{ uri: titleLogoUrl }} style={{ width: cardWidth - 16 }} resizeMode="contain" />
         ) : (
           <CardTitle numberOfLines={2}>{content.title}</CardTitle>
         )}
@@ -80,8 +110,6 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
 });
 
 const CardContainer = styled.TouchableOpacity({
-  width: CARD_WIDTH,
-  height: CARD_HEIGHT,
   borderRadius: 8,
   overflow: 'hidden',
   position: 'relative',
@@ -119,8 +147,15 @@ const CardTitle = styled.Text({
 });
 
 const TitleLogoImage = styled(Image)({
-  width: CARD_WIDTH - 16,
   height: 40,
 });
 
-export { ExploreContentCard, CARD_WIDTH, CARD_HEIGHT, GRID_GAP, HORIZONTAL_PADDING };
+export {
+  ExploreContentCard,
+  calculateGridLayout,
+  GRID_GAP,
+  HORIZONTAL_PADDING,
+  MIN_CARD_WIDTH,
+  CARD_ASPECT_RATIO,
+  DEFAULT_LAYOUT,
+};

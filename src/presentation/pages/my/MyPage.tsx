@@ -23,6 +23,7 @@ import { useAuth } from '@/shared/providers/AuthProvider';
 import {
   useWatchHistoryCalendar,
   useFullyWatchedCount,
+  WatchHistorySectionView,
   type WatchHistoryModelType,
 } from '@/features/watch-history';
 import { useFavoritesCount } from '@/features/favorites';
@@ -32,7 +33,6 @@ import {
   UserProfileSection,
   UserStatsSection,
   WatchCalendar,
-  WatchHistoryList,
   MonthYearPickerBottomSheet,
 } from './_components';
 
@@ -180,7 +180,7 @@ export default function MyPage() {
 
           <Gap size={20} />
 
-          <WatchHistoryList
+          <WatchHistorySectionView
             onItemPress={handleWatchHistoryItemPress}
             onViewAllPress={handleViewAllWatchHistory}
           />

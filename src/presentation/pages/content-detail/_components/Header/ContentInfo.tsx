@@ -7,6 +7,7 @@ import { videoTagConfigs } from '@/presentation/types/content/videoTag.enum';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { AppSize } from '@/shared/utils/appSize';
 import { StartRateView } from '../StartRateView';
 import { useContentDetail } from '../../_hooks/useContentDetail';
 import { useContentVideos } from '../../_provider/ContentDetailProvider';
@@ -22,6 +23,9 @@ import StarBlankSvg from '@assets/icons/star_blank.svg';
 import StarFilledSvg from '@assets/icons/star_filled.svg';
 
 const ICON_SIZE = 14;
+
+/** 태블릿 레이아웃 상수 */
+const TABLET_CONTENT_MAX_WIDTH = 600;
 
 /**
  * 콘텐츠 기본 정보 표시 컴포넌트
@@ -39,6 +43,7 @@ const ICON_SIZE = 14;
 export const ContentInfo = React.memo(() => {
   const { id, title, type } = useContentDetailRoute();
   const contentId = Number(id);
+  const isLargeScreen = AppSize.isLargeScreen();
 
   const {
     data: contentInfo,
@@ -79,8 +84,18 @@ export const ContentInfo = React.memo(() => {
   // 결말 포함 칩 표시 여부
   const showEndingChip = primaryVideo?.includesEnding;
 
+  // 태블릿 중앙 정렬 스타일
+  const tabletContainerStyle = isLargeScreen
+    ? { width: '100%' as const, alignItems: 'center' as const }
+    : undefined;
+
+  const tabletContentStyle = isLargeScreen
+    ? { maxWidth: TABLET_CONTENT_MAX_WIDTH, width: '100%' as const }
+    : undefined;
+
   return (
-    <Container>
+    <Container style={tabletContainerStyle}>
+      <ContentWrapper style={tabletContentStyle}>
       {/* 콘텐츠 타입 및 결말 포함 칩 */}
       <ChipRow>
         <ContentTypeChip contentType={type} />
@@ -154,6 +169,7 @@ export const ContentInfo = React.memo(() => {
           <ActionButtonText>평점</ActionButtonText>
         </ActionButton>
       </ActionButtonRow>
+      </ContentWrapper>
 
       {/* 로그인 유도 다이얼로그 */}
       <LoginPromptDialog
@@ -183,6 +199,12 @@ const Container = styled.View({
   paddingVertical: 20,
   paddingHorizontal: 16,
   pointerEvents: 'box-none' as const,
+});
+
+/** 태블릿에서 max-width 적용을 위한 래퍼 */
+const ContentWrapper = styled.View({
+  justifyContent: 'center',
+  alignItems: 'center',
 });
 
 const ChipRow = styled.View({
