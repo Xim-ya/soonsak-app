@@ -14,7 +14,13 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { ActivityIndicator, FlatList, ListRenderItem, ScrollView, useWindowDimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  ScrollView,
+  useWindowDimensions,
+} from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -67,11 +73,13 @@ export default function WatchHistoryPage() {
   // 데이터 통합
   const { items, isInitialLoading, isFetchingNextPage, hasNextPage } = useMemo(() => {
     if (date) {
+      // placeholderData가 있으므로 isPlaceholderData도 체크
+      const dateItems = byDateQuery.isPlaceholderData ? [] : (byDateQuery.data ?? []);
       // placeholderData가 있어도 isFetching으로 초기 로딩 감지
       const dataItems = byDateQuery.data ?? [];
       return {
-        items: dataItems,
-        isInitialLoading: byDateQuery.isFetching && dataItems.length === 0,
+        items: dateItems,
+        isLoading: byDateQuery.isFetching && dateItems.length === 0,
         isFetchingNextPage: false,
         hasNextPage: false,
       };
@@ -80,7 +88,8 @@ export default function WatchHistoryPage() {
     const allItems = infiniteQuery.data?.pages.flatMap((page) => page.items) ?? [];
     return {
       items: allItems,
-      isInitialLoading: infiniteQuery.isFetching && allItems.length === 0,
+      // 아이템이 없고 로딩 중일 때만 초기 로딩 상태
+      isLoading: infiniteQuery.isFetching && allItems.length === 0,
       isFetchingNextPage: infiniteQuery.isFetchingNextPage,
       hasNextPage: infiniteQuery.hasNextPage ?? false,
     };
@@ -88,6 +97,7 @@ export default function WatchHistoryPage() {
     date,
     byDateQuery.data,
     byDateQuery.isFetching,
+    byDateQuery.isPlaceholderData,
     infiniteQuery.data,
     infiniteQuery.isFetching,
     infiniteQuery.isFetchingNextPage,
@@ -174,11 +184,7 @@ export default function WatchHistoryPage() {
         <SkeletonContainer isLargeScreen={isLargeScreen}>
           {Array.from({ length: 3 }).map((_, index) => (
             <SkeletonItemWrapper key={index} isLargeScreen={isLargeScreen}>
-              <ShimmerSkeleton
-                width={skeletonWidth}
-                height={skeletonHeight}
-                borderRadius={12}
-              />
+              <ShimmerSkeleton width={skeletonWidth} height={skeletonHeight} borderRadius={12} />
               {index < 2 && <Gap size={CARD_SEPARATOR_HEIGHT} />}
             </SkeletonItemWrapper>
           ))}
@@ -235,6 +241,7 @@ export default function WatchHistoryPage() {
             ListFooterComponent={renderListFooter}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{
+              flexGrow: 1,
               paddingTop: viewMode === 'card' ? 16 : 8,
               paddingBottom: insets.bottom + 20,
               ...(isLargeScreen && viewMode === 'card' && { alignItems: 'center' }),

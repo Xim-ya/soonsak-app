@@ -18,12 +18,16 @@ export default function TabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
+        tabBarActiveTintColor: colors.main,
+        tabBarInactiveTintColor: colors.gray04,
         tabBarLabel: ({ color }) => {
           return <Text style={{ color }}>{TabConfig[route.name as TabRoutes].label}</Text>;
         },
         tabBarIcon: ({ color, size }) => {
           const Icon = TabConfig[route.name as TabRoutes].icon;
-          return <Icon width={size} height={size} fill={color} />;
+          // 채널 아이콘만 약간 작게
+          const iconSize = route.name === TabRoutes.Channel ? size - 2 : size;
+          return <Icon width={iconSize} height={iconSize} color={color} fill={color} />;
         },
         tabBarStyle: {
           backgroundColor: colors.black,

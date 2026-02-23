@@ -6,7 +6,7 @@ import { ContentType } from '@/presentation/types/content/contentType.enum';
 import type { LogoLanguage } from '@/features/content/types';
 
 /** 정렬 타입 */
-type ExploreSortType = 'all' | 'latest' | 'popular' | 'recommended';
+type ExploreSortType = 'all' | 'latest' | 'popular';
 
 /** 정렬 탭 설정 */
 interface ExploreSortTabConfig {
@@ -20,7 +20,6 @@ const EXPLORE_SORT_TABS: readonly ExploreSortTabConfig[] = [
   { key: 'all', label: '전체' },
   { key: 'latest', label: '최신' },
   { key: 'popular', label: '인기' },
-  { key: 'recommended', label: '개발자 추천', isDisabled: true },
 ] as const;
 
 /** Explore 콘텐츠 모델 */
