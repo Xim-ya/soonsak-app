@@ -41,7 +41,7 @@ import {
   CHANNEL_SELECTOR_HEIGHT_MIN,
   CHANNEL_SELECTOR_SCROLL_RANGE,
 } from './_components/AnimatedChannelSelector';
-import { ChannelVideoCard, CARD_HEIGHT } from './_components/ChannelVideoCard';
+import { ChannelVideoCard, CARD_HEIGHT as VIDEO_CARD_HEIGHT } from './_components/ChannelVideoCard';
 import { SortSelector } from './_components/SortSelector';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -50,10 +50,6 @@ const ITEM_SEPARATOR_HEIGHT = 32;
 const FILTER_BAR_HEIGHT = 44;
 const HEADER_ROW_HEIGHT = 56;
 const FOOTER_HEIGHT = 60;
-
-// 비디오 카드 전체 높이 (썸네일 + Gap + 제목 영역)
-const VIDEO_TITLE_HEIGHT = 48;
-const VIDEO_CARD_HEIGHT = CARD_HEIGHT + 10 + VIDEO_TITLE_HEIGHT;
 
 // iOS 스크롤 jitter 방지: exponential smoothing factor (0.15-0.25 권장)
 const SMOOTHING_FACTOR = 0.18;

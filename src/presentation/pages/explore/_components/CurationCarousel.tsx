@@ -22,7 +22,7 @@ import {
   CurationVideoItem,
   THUMBNAIL_WIDTH,
   THUMBNAIL_HEIGHT,
-  VIDEO_TITLE_HEIGHT,
+  INFO_SECTION_HEIGHT,
   ITEM_HEIGHT,
 } from './CurationVideoItem';
 import type { CurationVideoModel } from '../_types/exploreTypes';
@@ -134,25 +134,34 @@ const ThumbnailSkeleton = styled.View({
   borderRadius: 8,
 });
 
-/** 타이틀 스켈레톤 컨테이너 - 전체 높이 유지 */
-const TitleSkeletonContainer = styled.View({
-  height: VIDEO_TITLE_HEIGHT,
-  marginTop: ITEM_GAP,
-  justifyContent: 'space-between',
+/** 정보 영역 스켈레톤 컨테이너 (채널 아바타 없음) */
+const InfoSkeletonContainer = styled.View({
+  marginTop: 8,
+  height: INFO_SECTION_HEIGHT,
 });
 
-/** 타이틀 스켈레톤 첫 번째 줄 - 꽉 차게 */
+/** 타이틀 스켈레톤 첫 번째 줄 */
 const TitleSkeletonLine1 = styled.View({
-  width: THUMBNAIL_WIDTH,
-  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
+  width: THUMBNAIL_WIDTH * 0.9,
+  height: 18,
   backgroundColor: colors.gray05,
   borderRadius: 4,
+  marginBottom: 4,
 });
 
-/** 타이틀 스켈레톤 두 번째 줄 - 1/3만 */
+/** 타이틀 스켈레톤 두 번째 줄 */
 const TitleSkeletonLine2 = styled.View({
-  width: THUMBNAIL_WIDTH / 3,
-  height: (VIDEO_TITLE_HEIGHT - 4) / 2,
+  width: THUMBNAIL_WIDTH * 0.6,
+  height: 18,
+  backgroundColor: colors.gray05,
+  borderRadius: 4,
+  marginBottom: 4,
+});
+
+/** 메타 스켈레톤 (제목 아래) */
+const MetaSkeleton = styled.View({
+  width: THUMBNAIL_WIDTH * 0.4,
+  height: 14,
   backgroundColor: colors.gray05,
   borderRadius: 4,
 });
@@ -161,10 +170,11 @@ const TitleSkeletonLine2 = styled.View({
 const SkeletonItem = () => (
   <SkeletonItemContainer>
     <ThumbnailSkeleton />
-    <TitleSkeletonContainer>
+    <InfoSkeletonContainer>
       <TitleSkeletonLine1 />
       <TitleSkeletonLine2 />
-    </TitleSkeletonContainer>
+      <MetaSkeleton />
+    </InfoSkeletonContainer>
   </SkeletonItemContainer>
 );
 
