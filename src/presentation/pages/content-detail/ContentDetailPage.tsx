@@ -208,7 +208,7 @@ function ContentDetailContent({
             headerHeight={480}
             tabBarHeight={48}
             minHeaderHeight={48}
-            width={AppSize.screenWidth}
+            width={AppSize.isLargeScreen() ? AppSize.actualScreenWidth : AppSize.screenWidth}
           >
             <Tabs.Tab name="영상" label="videoInfo">
               <ContentTabView appBarOpacity={appBarOpacity} />

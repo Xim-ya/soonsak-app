@@ -29,6 +29,9 @@ const TabItem = ({ name, label, index, indexDecimal, onPress }: TabItemProps) =>
   );
 };
 
+/** 태블릿 탭바 레이아웃 상수 */
+const TABLET_TAB_MAX_WIDTH = 600;
+
 export const TabBar = <T extends string>({
   tabNames,
   indexDecimal,
@@ -36,8 +39,11 @@ export const TabBar = <T extends string>({
   tabProps,
 }: TabBarProps<T>) => {
   // 컴포넌트 내부에서 읽어 AppSize 갱신 반영
-  const screenWidth = AppSize.screenWidth;
-  const tabWidth = screenWidth / tabNames.length;
+  const isLargeScreen = AppSize.isLargeScreen();
+  const screenWidth = isLargeScreen ? AppSize.actualScreenWidth : AppSize.screenWidth;
+  // 태블릿에서는 탭바 max-width 적용
+  const effectiveWidth = isLargeScreen ? Math.min(screenWidth, TABLET_TAB_MAX_WIDTH) : screenWidth;
+  const tabWidth = effectiveWidth / tabNames.length;
   const indicatorWidth = tabWidth * 0.38;
 
   const indicatorStyle = useAnimatedStyle(() => {
@@ -52,9 +58,18 @@ export const TabBar = <T extends string>({
     };
   });
 
+  // 태블릿 중앙 정렬 스타일
+  const tabletContainerStyle = isLargeScreen
+    ? { alignItems: 'center' as const }
+    : undefined;
+
+  const tabletTabsStyle = isLargeScreen
+    ? { width: effectiveWidth }
+    : undefined;
+
   return (
-    <TabBarContainer>
-      <TabsContainer>
+    <TabBarContainer style={tabletContainerStyle}>
+      <TabsContainer style={tabletTabsStyle}>
         {tabNames.map((name, index) => {
           const tabProp = tabProps?.[name as keyof typeof tabProps];
           const label = (tabProp as { label?: string })?.label || name;
@@ -70,9 +85,9 @@ export const TabBar = <T extends string>({
             />
           );
         })}
+        {/* 인디케이터를 TabsContainer 안에 배치하여 중앙 정렬 대응 */}
+        <Indicator style={indicatorStyle} width={indicatorWidth} />
       </TabsContainer>
-
-      <Indicator style={indicatorStyle} width={indicatorWidth} />
     </TabBarContainer>
   );
 };
@@ -88,6 +103,7 @@ const TabBarContainer = styled.View({
 const TabsContainer = styled.View({
   flexDirection: 'row',
   height: 48,
+  position: 'relative',
 });
 
 const Tab = styled(TouchableOpacity)({

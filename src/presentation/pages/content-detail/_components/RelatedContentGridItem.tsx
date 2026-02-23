@@ -16,8 +16,22 @@ interface RelatedContentGridItemProps {
   content: RelatedContentModel;
 }
 
+// 태블릿 레이아웃 상수
+const TABLET_CONTENT_MAX_WIDTH = 800;
+const HORIZONTAL_PADDING = 32;
+const TOTAL_GAP = 18; // 3열 간격 합계
+
+// 3열 그리드 상수 계산 함수 (태블릿 대응)
+function calculateGridWidth(): number {
+  const isLargeScreen = AppSize.isLargeScreen();
+  const baseWidth = isLargeScreen
+    ? Math.min(AppSize.actualScreenWidth, TABLET_CONTENT_MAX_WIDTH)
+    : AppSize.screenWidth;
+  return (baseWidth - HORIZONTAL_PADDING - TOTAL_GAP) / 3;
+}
+
 // 3열 그리드 상수 (OriginContentTabView에서도 사용)
-export const GRID_ITEM_WIDTH = (AppSize.screenWidth - 32 - 18) / 3;
+export const GRID_ITEM_WIDTH = calculateGridWidth();
 export const GRID_POSTER_HEIGHT = GRID_ITEM_WIDTH * 1.5;
 export const GRID_COLUMN_GAP = 9;
 

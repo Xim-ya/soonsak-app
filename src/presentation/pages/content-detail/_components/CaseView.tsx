@@ -11,11 +11,18 @@ import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { AppSize } from '@/shared/utils/appSize';
 
+const TABLET_CONTENT_MAX_WIDTH = 800;
+
 function CaseView() {
   const { id, type } = useContentDetailRoute();
   const { data: creditList, isLoading, error } = useCredits(id, type);
-  const screenWidth = AppSize.screenWidth;
-  const pageWidth = screenWidth * 0.93; // viewportFraction: 0.93과 동일
+
+  // 태블릿에서는 max-width 기준, 모바일에서는 screenWidth 기준
+  const isLargeScreen = AppSize.isLargeScreen();
+  const baseWidth = isLargeScreen
+    ? Math.min(AppSize.actualScreenWidth, TABLET_CONTENT_MAX_WIDTH)
+    : AppSize.screenWidth;
+  const pageWidth = baseWidth * 0.93; // viewportFraction: 0.93과 동일
 
   // 에러 발생 시 아무것도 렌더링하지 않음
   if (error) {
