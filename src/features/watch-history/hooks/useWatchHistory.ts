@@ -214,20 +214,19 @@ export const useUniqueWatchHistory = (
 /**
  * 시청 기록 프리뷰 무한 스크롤 Hook (가로 리스트용)
  * MyPage 등 프리뷰 섹션에서 사용
- * 최대 아이템 수 제한을 지원하며, 스크롤 끝에서 다음 페이지 로드
+ * 무한 스크롤 지원
  */
 export const useWatchHistoryPreview = (config?: {
   pageSize?: number;
-  maxItems?: number;
   enabled?: boolean;
 }) => {
-  const { pageSize = 6, maxItems = 12, enabled = true } = config ?? {};
+  const { pageSize = 6, enabled = true } = config ?? {};
   const { user, status } = useAuth();
   const userId = user?.id ?? null;
   const isGuest = status === 'unauthenticated';
 
   const query = useInfiniteQuery({
-    queryKey: [...watchHistoryKeys.uniqueList(userId), 'preview', pageSize, maxItems],
+    queryKey: [...watchHistoryKeys.uniqueList(userId), 'preview', pageSize],
     queryFn: async ({ pageParam = 0 }) => {
       const data = await watchHistoryApi.getUniqueContentHistory(pageSize, pageParam);
       return {
@@ -237,10 +236,7 @@ export const useWatchHistoryPreview = (config?: {
       };
     },
     initialPageParam: 0,
-    getNextPageParam: (lastPage, allPages) => {
-      // 최대 아이템 수 도달 시 더 이상 로드하지 않음
-      const totalLoaded = allPages.reduce((sum, page) => sum + page.items.length, 0);
-      if (totalLoaded >= maxItems) return undefined;
+    getNextPageParam: (lastPage) => {
       return lastPage.hasMore ? lastPage.nextOffset : undefined;
     },
     enabled: enabled && !!userId,
@@ -248,11 +244,8 @@ export const useWatchHistoryPreview = (config?: {
     gcTime: TEN_MINUTES,
   });
 
-  // 평탄화된 아이템 목록 (최대 개수 제한 적용)
-  const items = (query.data?.pages.flatMap((page) => page.items) ?? []).slice(0, maxItems);
-
-  // 더 로드할 수 있는지 여부
-  const canLoadMore = query.hasNextPage && items.length < maxItems && !query.isFetchingNextPage;
+  // 평탄화된 아이템 목록
+  const items = query.data?.pages.flatMap((page) => page.items) ?? [];
 
   // 빈 상태 여부 (로딩 완료 후 에러 없이 데이터 없음)
   const isEmpty = !query.isLoading && !query.isError && items.length === 0;
@@ -264,7 +257,7 @@ export const useWatchHistoryPreview = (config?: {
     error: query.error,
     isEmpty,
     isFetchingNextPage: query.isFetchingNextPage,
-    hasNextPage: canLoadMore,
+    hasNextPage: query.hasNextPage ?? false,
     isGuest,
     fetchNextPage: query.fetchNextPage,
     refetch: query.refetch,
