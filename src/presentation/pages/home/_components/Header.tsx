@@ -233,10 +233,7 @@ export function Header({ scrollY }: HeaderProps) {
           )}
 
           {/* 하단 그라데이션 */}
-          <TabletGradientOverlay
-            colors={['transparent', 'rgba(0,0,0,0.8)']}
-            locations={[0.3, 1]}
-          />
+          <TabletGradientOverlay colors={['transparent', 'rgba(0,0,0,0.8)']} locations={[0.3, 1]} />
 
           {/* 카드 내부 콘텐츠 정보 */}
           <TabletCardInfoContainer>
@@ -246,9 +243,7 @@ export function Header({ scrollY }: HeaderProps) {
               </TabletPointDescription>
             )}
             <TabletTitleWithLogo title={item.title} logoUrl={item.logoUrl ?? null} />
-            {keywordText && (
-              <TabletKeywords numberOfLines={1}>{keywordText}</TabletKeywords>
-            )}
+            {keywordText && <TabletKeywords numberOfLines={1}>{keywordText}</TabletKeywords>}
           </TabletCardInfoContainer>
         </TabletCardContainer>
       );
@@ -487,7 +482,6 @@ const Indicator = styled.View({
 
 /* Tablet Styles (왓차 스타일) */
 const TabletHeaderBox = styled.View({
-  height: tabletHeight + 40, // 인디케이터 공간 포함
   width: '100%',
   overflow: 'visible',
 });

@@ -140,7 +140,6 @@ const PlaceholderView = styled.View<{
   borderRadius,
 }));
 
-
 // memo로 감싸서 source가 같으면 리렌더링 방지
 const LoadableImageView = memo(LoadableImageViewComponent, (prevProps, nextProps) => {
   return (

@@ -81,10 +81,7 @@ export default function AdminChannelManagementPage() {
     [handleChannelPress],
   );
 
-  const keyExtractor = useCallback(
-    (item: ChannelManagementItemType) => item.id,
-    [],
-  );
+  const keyExtractor = useCallback((item: ChannelManagementItemType) => item.id, []);
 
   // FlatList 최적화: 아이템 레이아웃 (고정 높이)
   const getItemLayout = useCallback(

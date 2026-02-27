@@ -11,7 +11,15 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
-import { ActivityIndicator, ListRenderItem, Platform, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  ListRenderItem,
+  Platform,
+  TouchableOpacity,
+  Dimensions,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -46,8 +54,8 @@ import {
   CHANNEL_SELECTOR_HEIGHT_MIN,
   CHANNEL_SELECTOR_SCROLL_RANGE,
 } from './_components/AnimatedChannelSelector';
-import { ChannelVideoCard, CARD_HEIGHT as VIDEO_CARD_HEIGHT } from './_components/ChannelVideoCard';
-import { TabletVideoCard, getTabletCardHeight } from './_components/TabletVideoCard';
+import { ChannelVideoCard, calculateCardHeight } from './_components/ChannelVideoCard';
+import { TabletVideoCard } from './_components/TabletVideoCard';
 import { SortSelector } from './_components/SortSelector';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -80,18 +88,17 @@ const stickyContentStyle = { flex: 1 } as const;
 export default function ChannelPage() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const { width: windowWidth } = useWindowDimensions();
 
   // 대형 화면 여부 (phablet/tablet)
   const isLargeScreen = AppSize.isLargeScreen();
 
   // 태블릿 그리드 카드 너비 계산 (actualScreenWidth 사용)
+  // 의도적 빈 의존성: 태블릿 모드에서 화면 너비는 앱 시작 시 결정되며 런타임 중 변경되지 않음
   const tabletCardWidth = useMemo(() => {
     const screenWidth = AppSize.actualScreenWidth || Dimensions.get('window').width;
     return (screenWidth - GRID_HORIZONTAL_PADDING * 2 - GRID_COLUMN_GAP) / GRID_COLUMNS;
   }, []);
-
-  // 태블릿 카드 높이
-  const tabletCardHeight = useMemo(() => getTabletCardHeight(tabletCardWidth), [tabletCardWidth]);
 
   // 스크롤 값 추적
   const scrollY = useSharedValue(0);
@@ -188,9 +195,9 @@ export default function ChannelPage() {
         // 태블릿: 2열 그리드 (짝수 인덱스 왼쪽, 홀수 인덱스 오른쪽)
         const isLeftColumn = index % GRID_COLUMNS === 0;
         return (
-          <GridItemWrapper style={{ marginLeft: isLeftColumn ? 0 : GRID_COLUMN_GAP }}>
+          <View style={{ marginLeft: isLeftColumn ? 0 : GRID_COLUMN_GAP }}>
             <TabletVideoCard video={item} onPress={handleVideoPress} cardWidth={tabletCardWidth} />
-          </GridItemWrapper>
+          </View>
         );
       }
       // 폰: 전체 너비 카드
@@ -208,26 +215,17 @@ export default function ChannelPage() {
     return <Gap size={ITEM_SEPARATOR_HEIGHT} />;
   }, [isLargeScreen]);
 
+  // 폰 카드 높이 (반응형)
+  const phoneCardHeight = useMemo(() => calculateCardHeight(windowWidth), [windowWidth]);
+
   // getItemLayout - 스크롤 성능 최적화 (폰 전용, 태블릿은 numColumns로 인해 사용 불가)
   const getItemLayout = useCallback(
-    (_: ArrayLike<ChannelVideoModel> | null | undefined, index: number) => {
-      if (isLargeScreen) {
-        // 태블릿: 2열 그리드 - 행 기준 계산
-        const rowIndex = Math.floor(index / GRID_COLUMNS);
-        return {
-          length: tabletCardHeight,
-          offset: (tabletCardHeight + GRID_ROW_GAP) * rowIndex,
-          index,
-        };
-      }
-      // 폰: 단일 열
-      return {
-        length: VIDEO_CARD_HEIGHT,
-        offset: (VIDEO_CARD_HEIGHT + ITEM_SEPARATOR_HEIGHT) * index,
-        index,
-      };
-    },
-    [isLargeScreen, tabletCardHeight],
+    (_: ArrayLike<ChannelVideoModel> | null | undefined, index: number) => ({
+      length: phoneCardHeight,
+      offset: (phoneCardHeight + ITEM_SEPARATOR_HEIGHT) * index,
+      index,
+    }),
+    [phoneCardHeight],
   );
 
   // 스타일 (insets는 앱 실행 중 거의 변하지 않아 useMemo 오버헤드가 더 큼)
@@ -546,6 +544,3 @@ const FooterContainer = styled.View({
   justifyContent: 'center',
   alignItems: 'center',
 });
-
-/** 태블릿 그리드 아이템 래퍼 */
-const GridItemWrapper = styled.View({});

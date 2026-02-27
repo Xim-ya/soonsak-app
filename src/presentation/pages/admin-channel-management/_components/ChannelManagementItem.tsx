@@ -51,10 +51,7 @@ export const ChannelManagementItem = memo(
     }, [channel.videoCount, channel.contentCount]);
 
     // 채널명 (없으면 기본값)
-    const displayName = useMemo(
-      () => channel.name || '이름 없음',
-      [channel.name],
-    );
+    const displayName = useMemo(() => channel.name || '이름 없음', [channel.name]);
 
     return (
       <Container onPress={handlePress} activeOpacity={0.7}>

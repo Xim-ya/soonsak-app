@@ -124,8 +124,7 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
   });
 
   // 콘텐츠 목록 평탄화
-  const contents: ChannelContentItem[] =
-    contentsData?.pages.flatMap((page) => page.contents) ?? [];
+  const contents: ChannelContentItem[] = contentsData?.pages.flatMap((page) => page.contents) ?? [];
 
   // 채널 삭제 뮤테이션
   const deleteMutation = useMutation({

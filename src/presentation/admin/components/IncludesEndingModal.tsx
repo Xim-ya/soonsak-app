@@ -103,9 +103,10 @@ function IncludesEndingModal({
         {/* 옵션 목록 */}
         <OptionsContainer>
           {INCLUDES_ENDING_OPTIONS.map((option) => {
-            const isSelected = selectedValue !== null
-              ? selectedValue === option.value
-              : currentIncludesEnding === option.value;
+            const isSelected =
+              selectedValue !== null
+                ? selectedValue === option.value
+                : currentIncludesEnding === option.value;
             const isCurrent = currentIncludesEnding === option.value;
 
             return (

@@ -1,6 +1,6 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
 import React, { useMemo } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View } from 'react-native';
 import styled from '@emotion/native';
 import type { SharedValue } from 'react-native-reanimated';
 import { AppSize } from '@/shared/utils/appSize';
@@ -21,6 +21,11 @@ import textStyles from '@/shared/styles/textStyles';
 
 /** 태블릿 콘텐츠 레이아웃 상수 */
 const TABLET_CONTENT_MAX_WIDTH = 800;
+const TABLET_CONTENT_STYLE = {
+  maxWidth: TABLET_CONTENT_MAX_WIDTH,
+  width: '100%' as const,
+  alignSelf: 'center' as const,
+};
 
 /**
  * RelatedContentTabView - 관련 콘텐츠 탭 뷰
@@ -61,24 +66,14 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
   }, [relatedContents]);
 
   // 태블릿 콘텐츠 스타일
-  const tabletContentStyle = useMemo(
-    () =>
-      isLargeScreen
-        ? {
-            maxWidth: TABLET_CONTENT_MAX_WIDTH,
-            width: '100%' as const,
-            alignSelf: 'center' as const,
-          }
-        : undefined,
-    [isLargeScreen],
-  );
+  const tabletContentStyle = isLargeScreen ? TABLET_CONTENT_STYLE : undefined;
 
   // 스켈레톤 로딩 UI (3x3 그리드)
   if (isLoading) {
     return (
       <Tabs.ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+        contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
       >
         <View style={tabletContentStyle}>
           <GridContainer>
@@ -106,7 +101,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
     return (
       <Tabs.ScrollView
         style={{ flex: 1 }}
-        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+        contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
       >
         <View style={tabletContentStyle}>
           <EmptyContainer>
@@ -121,7 +116,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
   return (
     <Tabs.ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+      contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
     >
       <View style={tabletContentStyle}>
         <GridContainer>
@@ -186,14 +181,12 @@ const EmptySubText = styled.Text({
   textAlign: 'center',
 });
 
+/** 태블릿 스크롤 콘텐츠 스타일 */
+const tabletScrollContentStyle = {
+  alignItems: 'center' as const,
+};
+
 const MemoizedRelatedContentTabView = React.memo(RelatedContentTabView);
 MemoizedRelatedContentTabView.displayName = 'RelatedContentTabView';
-
-/** 태블릿 레이아웃 스타일 */
-const styles = StyleSheet.create({
-  tabletScrollContent: {
-    alignItems: 'center',
-  },
-});
 
 export { MemoizedRelatedContentTabView as RelatedContentTabView };

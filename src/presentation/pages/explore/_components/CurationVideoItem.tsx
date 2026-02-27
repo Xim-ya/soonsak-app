@@ -41,8 +41,7 @@ const INFO_SECTION_GAP = 8;
 const VIDEO_TITLE_LINE_HEIGHT = 22;
 const VIDEO_TITLE_MAX_LINES = 2;
 const META_LINE_HEIGHT = 16;
-const INFO_SECTION_HEIGHT =
-  VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES + 2 + META_LINE_HEIGHT;
+const INFO_SECTION_HEIGHT = VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES + 2 + META_LINE_HEIGHT;
 
 // 전체 아이템 높이 (썸네일 + Gap + 정보 영역)
 const ITEM_HEIGHT = THUMBNAIL_HEIGHT + INFO_SECTION_GAP + INFO_SECTION_HEIGHT;
@@ -74,7 +73,7 @@ function CurationVideoItem({ video, onPress }: CurationVideoItemProps) {
     onPress(video);
   }, [video, onPress]);
 
-  const backdropUrl = `${TMDB_IMAGE_BASE}${video.backdropPath}`;
+  const backdropUrl = video.backdropPath ? `${TMDB_IMAGE_BASE}${video.backdropPath}` : undefined;
 
   // 메타 정보: 년도 · 장르
   const releaseYear = extractYear(video.releaseDate);
@@ -90,12 +89,14 @@ function CurationVideoItem({ video, onPress }: CurationVideoItemProps) {
       {/* 썸네일 영역 */}
       <ThumbnailTouchable onPress={handlePress} activeOpacity={0.8}>
         <ThumbnailWrapper>
-          <LoadableImageView
-            source={backdropUrl}
-            width={THUMBNAIL_WIDTH}
-            height={THUMBNAIL_HEIGHT}
-            borderRadius={12}
-          />
+          {backdropUrl && (
+            <LoadableImageView
+              source={backdropUrl}
+              width={THUMBNAIL_WIDTH}
+              height={THUMBNAIL_HEIGHT}
+              borderRadius={12}
+            />
+          )}
           {/* 하단 그라데이션 오버레이 */}
           <DarkedLinearShadow height={THUMBNAIL_HEIGHT} align={LinearAlign.bottomTop} />
           {/* 하단 오버레이: 콘텐츠 제목(좌) <-> 런타임(우) */}

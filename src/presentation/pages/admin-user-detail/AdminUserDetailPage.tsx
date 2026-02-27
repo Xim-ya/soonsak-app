@@ -47,16 +47,8 @@ export default function AdminUserDetailPage() {
 
   const { userId, displayName } = route.params;
 
-  const {
-    user,
-    isLoading,
-    error,
-    isUpdatingRole,
-    updateRole,
-    isSendingPush,
-    sendPush,
-    refetch,
-  } = useUserDetail(userId);
+  const { user, isLoading, error, isUpdatingRole, updateRole, isSendingPush, sendPush, refetch } =
+    useUserDetail(userId);
 
   const handleGoBack = useCallback(() => {
     navigation.goBack();
@@ -75,7 +67,11 @@ export default function AdminUserDetailPage() {
   );
 
   return (
-    <BasePage useSafeArea={false} automaticallyAdjustKeyboardInsets={false} touchableWithoutFeedback={false}>
+    <BasePage
+      useSafeArea={false}
+      automaticallyAdjustKeyboardInsets={false}
+      touchableWithoutFeedback={false}
+    >
       {/* 헤더 */}
       <HeaderContainer paddingTop={insets.top}>
         <BackButton onPress={handleGoBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
