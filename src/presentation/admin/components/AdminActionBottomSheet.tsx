@@ -63,7 +63,12 @@ function AdminActionBottomSheet({
   // 시트 높이 계산 (옵션 개수에 따라 동적)
   const optionsHeight = actions.length * OPTION_HEIGHT + (actions.length - 1) * OPTION_GAP;
   const sheetHeight =
-    optionsHeight + SPACING + CLOSE_BUTTON_HEIGHT + AppSize.responsiveBottomInset + 24 + idChipsHeight;
+    optionsHeight +
+    SPACING +
+    CLOSE_BUTTON_HEIGHT +
+    AppSize.responsiveBottomInset +
+    24 +
+    idChipsHeight;
   const closeThreshold = sheetHeight * 0.25;
 
   // 애니메이션 값
@@ -179,10 +184,7 @@ function AdminActionBottomSheet({
                       </IdChip>
                     )}
                     {videoId && (
-                      <IdChip
-                        onPress={() => handleCopyId('Video', videoId)}
-                        activeOpacity={0.7}
-                      >
+                      <IdChip onPress={() => handleCopyId('Video', videoId)} activeOpacity={0.7}>
                         <IdChipLabel>Video</IdChipLabel>
                         <IdChipValue>{videoId}</IdChipValue>
                       </IdChip>

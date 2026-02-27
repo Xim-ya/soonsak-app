@@ -79,9 +79,7 @@ function RegistrationResultItemComponent({
           </>
         ) : (
           <>
-            <ContentTitle numberOfLines={1}>
-              {item.contentTitle || item.videoTitle}
-            </ContentTitle>
+            <ContentTitle numberOfLines={1}>{item.contentTitle || item.videoTitle}</ContentTitle>
             <VideoTitle numberOfLines={1}>{item.videoTitle}</VideoTitle>
           </>
         )}
@@ -92,11 +90,7 @@ function RegistrationResultItemComponent({
 
   if (isClickable) {
     return (
-      <TouchableOpacity
-        key={`${item.videoId}-${index}`}
-        onPress={handlePress}
-        activeOpacity={0.7}
-      >
+      <TouchableOpacity key={`${item.videoId}-${index}`} onPress={handlePress} activeOpacity={0.7}>
         {content}
       </TouchableOpacity>
     );

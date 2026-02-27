@@ -24,7 +24,11 @@ import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { useAuth } from './AuthProvider';
-import { getOrCreateDeviceId, linkDeviceToUser, incrementDeviceEntryCount } from '@/shared/utils/deviceId';
+import {
+  getOrCreateDeviceId,
+  linkDeviceToUser,
+  incrementDeviceEntryCount,
+} from '@/shared/utils/deviceId';
 import { userApi } from '@/features/user/api/userApi';
 
 /** PushNotificationContext 값 타입 */

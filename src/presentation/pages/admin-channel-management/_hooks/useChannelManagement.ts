@@ -58,18 +58,14 @@ export function useChannelManagement(): UseChannelManagementReturn {
     refetch: refetchChannels,
   } = useInfiniteQuery({
     queryKey: QUERY_KEYS.channels,
-    queryFn: ({ pageParam }) =>
-      adminChannelApi.getChannels(pageParam, PAGE_SIZE),
+    queryFn: ({ pageParam }) => adminChannelApi.getChannels(pageParam, PAGE_SIZE),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     staleTime: 30 * 1000, // 30초
   });
 
   // 전체 채널 목록 평탄화
-  const channels = useMemo(
-    () => data?.pages.flatMap((page) => page.channels) ?? [],
-    [data],
-  );
+  const channels = useMemo(() => data?.pages.flatMap((page) => page.channels) ?? [], [data]);
 
   // 다음 페이지 로드
   const fetchNextPage = useCallback(() => {

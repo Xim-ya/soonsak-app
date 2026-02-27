@@ -18,10 +18,7 @@ import colors from '@/shared/styles/colors';
  * @param options - 옵션 (defaultColor: user 역할의 기본 색상)
  * @returns 역할에 해당하는 색상
  */
-export function getRoleColor(
-  role: UserRole,
-  options?: { defaultColor?: string },
-): string {
+export function getRoleColor(role: UserRole, options?: { defaultColor?: string }): string {
   const { defaultColor = colors.gray02 } = options ?? {};
 
   switch (role) {

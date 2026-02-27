@@ -133,9 +133,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
                 <RoleOptionLabel isSelected={currentRole === roleOption} userRole={roleOption}>
                   {UserRoleLabel[roleOption]}
                 </RoleOptionLabel>
-                {currentRole === roleOption && (
-                  <SvgXml xml={checkIconSvg} width={20} height={20} />
-                )}
+                {currentRole === roleOption && <SvgXml xml={checkIconSvg} width={20} height={20} />}
               </RoleOption>
             ))}
             <CancelButton onPress={handleCloseModal} activeOpacity={0.7}>

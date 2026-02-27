@@ -247,9 +247,7 @@ export const adminRegistrationApi = {
     }
 
     // 성공한 결과들에 대해 Supabase에서 posterPath 조회
-    const successResults = results.filter(
-      (r) => r.success && r.contentId && r.contentType,
-    );
+    const successResults = results.filter((r) => r.success && r.contentId && r.contentType);
 
     if (successResults.length > 0) {
       try {

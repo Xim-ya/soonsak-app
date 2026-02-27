@@ -152,18 +152,14 @@ export default function AdminContentSearchPage() {
         return;
       }
 
-      Alert.alert(
-        '콘텐츠 교체',
-        `"${videoTitle}"을(를)\n"${title}"(으)로 교체하시겠습니까?`,
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '교체',
-            style: 'destructive',
-            onPress: () => handleRemap(selectedItem),
-          },
-        ],
-      );
+      Alert.alert('콘텐츠 교체', `"${videoTitle}"을(를)\n"${title}"(으)로 교체하시겠습니까?`, [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '교체',
+          style: 'destructive',
+          onPress: () => handleRemap(selectedItem),
+        },
+      ]);
     },
     [videoTitle, currentContentId, currentContentType],
   );
@@ -203,11 +199,11 @@ export default function AdminContentSearchPage() {
 
         let message = '교체 완료!';
         if (result.newContentCreated && result.oldContentDeleted) {
-          message = `교체 완료!\n새 콘텐츠가 생성되었고, 기존 콘텐츠는 삭제되었습니다.`;
+          message = '교체 완료!\n새 콘텐츠가 생성되었고, 기존 콘텐츠는 삭제되었습니다.';
         } else if (result.newContentCreated) {
-          message = `교체 완료!\n새 콘텐츠가 DB에 생성되었습니다.`;
+          message = '교체 완료!\n새 콘텐츠가 DB에 생성되었습니다.';
         } else if (result.oldContentDeleted) {
-          message = `교체 완료!\n기존 콘텐츠는 다른 비디오가 없어 삭제되었습니다.`;
+          message = '교체 완료!\n기존 콘텐츠는 다른 비디오가 없어 삭제되었습니다.';
         }
 
         Alert.alert('완료', message, [
@@ -241,13 +237,11 @@ export default function AdminContentSearchPage() {
     [handleSelectContent],
   );
 
-  const keyExtractor = useCallback(
-    (item: TmdbContentItem) => `${item.mediaType}-${item.id}`,
-    [],
-  );
+  const keyExtractor = useCallback((item: TmdbContentItem) => `${item.mediaType}-${item.id}`, []);
 
   const hasText = searchText.length > 0;
-  const showEmptyState = debouncedQuery.trim().length > 0 && !isLoading && (searchResults?.length ?? 0) === 0;
+  const showEmptyState =
+    debouncedQuery.trim().length > 0 && !isLoading && (searchResults?.length ?? 0) === 0;
 
   return (
     <BasePage useSafeArea={false}>

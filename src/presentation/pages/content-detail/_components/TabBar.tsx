@@ -59,13 +59,8 @@ export const TabBar = <T extends string>({
   });
 
   // 태블릿 중앙 정렬 스타일
-  const tabletContainerStyle = isLargeScreen
-    ? { alignItems: 'center' as const }
-    : undefined;
-
-  const tabletTabsStyle = isLargeScreen
-    ? { width: effectiveWidth }
-    : undefined;
+  const tabletContainerStyle = isLargeScreen ? { alignItems: 'center' as const } : undefined;
+  const tabletTabsStyle = isLargeScreen ? { width: effectiveWidth } : undefined;
 
   return (
     <TabBarContainer style={tabletContainerStyle}>
