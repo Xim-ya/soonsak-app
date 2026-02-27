@@ -20,6 +20,7 @@ import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
 import { useAppPreload } from '@/shared/hooks/useAppPreload';
+import * as Clarity from '@microsoft/react-native-clarity';
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
@@ -134,6 +135,25 @@ function AppContent() {
     };
   }, [insets]);
 
+  // Microsoft Clarity 초기화
+  useEffect(() => {
+    const clarityProjectId = process.env['EXPO_PUBLIC_CLARITY_PROJECT_ID'];
+    if (!clarityProjectId) {
+      console.warn('[Clarity] 프로젝트 ID가 설정되지 않음');
+      return;
+    }
+
+    try {
+      console.log('[Clarity] 초기화 시작...');
+      Clarity.initialize(clarityProjectId, {
+        logLevel: __DEV__ ? Clarity.LogLevel.Verbose : Clarity.LogLevel.None,
+      });
+      console.log('[Clarity] 초기화 완료');
+    } catch (error) {
+      console.error('[Clarity] 초기화 실패:', error);
+    }
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
@@ -149,15 +169,16 @@ function AppContent() {
 }
 
 export default function App() {
+  /* eslint-disable @typescript-eslint/no-require-imports */
   const [fontsLoaded] = useFonts({
     'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.otf'),
     'Pretendard-SemiBold': require('../assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.otf'),
     staatliches_regular: require('../assets/fonts/Staatliches-Regular.ttf'),
-    // 한글 포스터 폰트
     'DoHyeon-Regular': require('../assets/fonts/DoHyeon-Regular.ttf'),
   });
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const { isReady: isPreloadReady, hideSplash } = useAppPreload();
 
