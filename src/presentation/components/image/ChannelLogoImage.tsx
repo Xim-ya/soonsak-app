@@ -2,25 +2,29 @@
  * ChannelLogoImage - 채널 로고 원형 이미지 컴포넌트
  *
  * - 1:1 비율의 원형 이미지 (borderRadius = size / 2)
- * - AppImage 기반으로 메모리/디스크 캐싱 지원
- * - shimmer 스켈레톤 로딩 애니메이션
+ * - 캐싱된 이미지 즉시 표시 (깜빡임 없음)
  * - source가 없거나 에러일 때 placeholder 표시
  *
  * @example
- * // 기본 사용
  * <ChannelLogoImage size={80} source="https://example.com/logo.jpg" />
- *
- * @example
- * // 캐싱 비활성화
- * <ChannelLogoImage size={80} source={url} enableCache={false} />
  */
 
-import { useState, memo } from 'react';
+import { useState, useRef, useEffect, memo } from 'react';
 import styled from '@emotion/native';
-import { AppImage, CachePolicy } from './AppImage';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  Easing,
+} from 'react-native-reanimated';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 import { ShimmerSkeleton } from './ShimmerSkeleton';
 import colors from '@/shared/styles/colors';
+
+// 캐싱 판단 기준 시간 (ms)
+// 이 시간 내에 로드되면 캐싱된 이미지로 판단하여 애니메이션 생략
+const CACHE_THRESHOLD_MS = 50;
+const FADE_DURATION_MS = 300;
 
 // ============================================================================
 // Types
@@ -31,58 +35,76 @@ export interface ChannelLogoImageProps {
   readonly size: number;
   /** 이미지 URL. 전달하지 않으면 placeholder를 표시합니다. */
   readonly source?: string;
-  /** 캐싱 활성화 여부 (기본값: true) */
-  readonly enableCache?: boolean;
 }
 
 // ============================================================================
 // Component
 // ============================================================================
 
-function ChannelLogoImageComponent({ size, source, enableCache = true }: ChannelLogoImageProps) {
+function ChannelLogoImageComponent({ size, source }: ChannelLogoImageProps) {
   const borderRadius = size / 2;
   const hasSource = typeof source === 'string' && source.trim().length > 0;
 
-  const [isLoading, setIsLoading] = useState(hasSource);
   const [hasError, setHasError] = useState(false);
+  const isLoadedRef = useRef(false);
+  const shouldAnimateRef = useRef(false);
+  const opacity = useSharedValue(1);
+
+  // 50ms 후에도 로드 안 됐으면 새 이미지로 판단 → opacity 0으로 변경
+  useEffect(() => {
+    if (!hasSource) return;
+
+    const timer = setTimeout(() => {
+      if (!isLoadedRef.current) {
+        shouldAnimateRef.current = true;
+        opacity.value = 0;
+      }
+    }, CACHE_THRESHOLD_MS);
+
+    return () => clearTimeout(timer);
+  }, [hasSource, opacity]);
 
   const handleLoad = () => {
-    setIsLoading(false);
+    isLoadedRef.current = true;
+
+    if (shouldAnimateRef.current) {
+      // 새 이미지: fade-in 애니메이션
+      opacity.value = withTiming(1, {
+        duration: FADE_DURATION_MS,
+        easing: Easing.out(Easing.ease),
+      });
+    }
+    // 캐싱된 이미지: 이미 opacity 1이므로 아무것도 안 함
   };
 
-  const handleError = () => {
-    setIsLoading(false);
-    setHasError(true);
-  };
+  const handleError = () => setHasError(true);
 
-  const showPlaceholder = !hasSource || hasError;
+  const animatedStyle = useAnimatedStyle(() => ({
+    opacity: opacity.value,
+  }));
+
+  // source 없으면 배경색만 표시
+  if (!hasSource) {
+    return <OuterContainer size={size} />;
+  }
+
+  // 로드 실패 시에만 에러 플레이스홀더 표시
+  if (hasError) {
+    return (
+      <OuterContainer size={size}>
+        <ImageErrorPlaceholder width={size} height={size} borderRadius={borderRadius} />
+      </OuterContainer>
+    );
+  }
 
   return (
     <OuterContainer size={size}>
-      {/* placeholder: source 없음 또는 에러 */}
-      {showPlaceholder && (
-        <ImageErrorPlaceholder width={size} height={size} borderRadius={borderRadius} />
-      )}
-
-      {/* shimmer: 유효한 source가 있고 이미지 로딩 중일 때 */}
-      {hasSource && isLoading && !hasError && (
-        <AbsoluteWrapper>
-          <ShimmerSkeleton width={size} height={size} borderRadius={borderRadius} />
-        </AbsoluteWrapper>
-      )}
-
-      {/* 실제 이미지 */}
-      {hasSource && !hasError && (
-        <AppImage
-          source={source}
-          width={size}
-          height={size}
-          borderRadius={borderRadius}
-          cachePolicy={enableCache ? CachePolicy.MemoryDisk : CachePolicy.None}
-          onLoad={handleLoad}
-          onError={handleError}
-        />
-      )}
+      <Animated.Image
+        source={{ uri: source }}
+        style={[{ width: size, height: size, borderRadius }, animatedStyle]}
+        onLoad={handleLoad}
+        onError={handleError}
+      />
     </OuterContainer>
   );
 }
@@ -111,18 +133,12 @@ function ChannelLogoSkeletonComponent({ size }: ChannelLogoSkeletonProps) {
 const OuterContainer = styled.View<{ size: number }>(({ size }) => ({
   width: size,
   height: size,
-  position: 'relative',
   borderRadius: size / 2,
   borderWidth: 0.5,
   borderColor: colors.gray04,
+  backgroundColor: colors.gray05,
   overflow: 'hidden',
 }));
-
-const AbsoluteWrapper = styled.View({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-});
 
 const SkeletonContainer = styled.View<{ size: number }>(({ size }) => ({
   width: size,
@@ -138,11 +154,7 @@ const SkeletonContainer = styled.View<{ size: number }>(({ size }) => ({
 // ============================================================================
 
 export const ChannelLogoImage = memo(ChannelLogoImageComponent, (prevProps, nextProps) => {
-  return (
-    prevProps.source === nextProps.source &&
-    prevProps.size === nextProps.size &&
-    prevProps.enableCache === nextProps.enableCache
-  );
+  return prevProps.source === nextProps.source && prevProps.size === nextProps.size;
 });
 
 export const ChannelLogoSkeleton = memo(ChannelLogoSkeletonComponent, (prevProps, nextProps) => {
