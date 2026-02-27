@@ -22,7 +22,15 @@
  */
 
 import { memo, useCallback, useRef } from 'react';
-import { FlatList, ListRenderItem, TouchableOpacity, Pressable, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent } from 'react-native';
+import {
+  FlatList,
+  ListRenderItem,
+  TouchableOpacity,
+  Pressable,
+  ActivityIndicator,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+} from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -127,17 +135,10 @@ function WatchHistorySectionViewComponent({
   pageSize = 6,
 }: WatchHistorySectionViewProps) {
   // 응집도: 데이터 fetching 로직을 컴포넌트 내부에서 관리
-  const {
-    items,
-    isLoading,
-    isEmpty,
-    isFetchingNextPage,
-    hasNextPage,
-    isGuest,
-    fetchNextPage,
-  } = useWatchHistoryPreview({
-    pageSize,
-  });
+  const { items, isLoading, isEmpty, isFetchingNextPage, hasNextPage, isGuest, fetchNextPage } =
+    useWatchHistoryPreview({
+      pageSize,
+    });
 
   // 중복 호출 방지용 ref
   const isLoadingMore = useRef(false);
@@ -147,7 +148,8 @@ function WatchHistorySectionViewComponent({
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const { contentOffset, layoutMeasurement, contentSize } = event.nativeEvent;
       const paddingToRight = 50; // 오른쪽 여유 거리
-      const isCloseToRight = layoutMeasurement.width + contentOffset.x >= contentSize.width - paddingToRight;
+      const isCloseToRight =
+        layoutMeasurement.width + contentOffset.x >= contentSize.width - paddingToRight;
 
       if (isCloseToRight && hasNextPage && !isFetchingNextPage && !isLoadingMore.current) {
         isLoadingMore.current = true;

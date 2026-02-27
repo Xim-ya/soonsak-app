@@ -216,10 +216,7 @@ export const useUniqueWatchHistory = (
  * MyPage 등 프리뷰 섹션에서 사용
  * 무한 스크롤 지원
  */
-export const useWatchHistoryPreview = (config?: {
-  pageSize?: number;
-  enabled?: boolean;
-}) => {
+export const useWatchHistoryPreview = (config?: { pageSize?: number; enabled?: boolean }) => {
   const { pageSize = 6, enabled = true } = config ?? {};
   const { user, status } = useAuth();
   const userId = user?.id ?? null;

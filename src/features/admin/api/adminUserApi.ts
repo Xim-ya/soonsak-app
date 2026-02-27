@@ -284,7 +284,9 @@ export const adminUserApi = {
   getUserStatistics: async (): Promise<UserStatistics> => {
     // 오늘 자정 (UTC 기준)
     const now = new Date();
-    const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+    const todayStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()),
+    );
     const todayIso = todayStart.toISOString();
 
     // 병렬로 모든 통계 조회
@@ -567,10 +569,7 @@ export const adminUserApi = {
   /**
    * 유저의 시청기록 조회 (어드민용)
    */
-  getUserWatchHistory: async (
-    userId: string,
-    limit: number = 50,
-  ): Promise<UserContentItem[]> => {
+  getUserWatchHistory: async (userId: string, limit: number = 50): Promise<UserContentItem[]> => {
     if (!userId || !isValidUUID(userId)) {
       throw new Error('Invalid user ID format');
     }
@@ -618,10 +617,7 @@ export const adminUserApi = {
   /**
    * 유저의 찜 목록 조회 (어드민용)
    */
-  getUserFavorites: async (
-    userId: string,
-    limit: number = 50,
-  ): Promise<UserContentItem[]> => {
+  getUserFavorites: async (userId: string, limit: number = 50): Promise<UserContentItem[]> => {
     if (!userId || !isValidUUID(userId)) {
       throw new Error('Invalid user ID format');
     }
@@ -663,10 +659,7 @@ export const adminUserApi = {
   /**
    * 유저의 평가 목록 조회 (어드민용)
    */
-  getUserRatings: async (
-    userId: string,
-    limit: number = 50,
-  ): Promise<UserContentItem[]> => {
+  getUserRatings: async (userId: string, limit: number = 50): Promise<UserContentItem[]> => {
     if (!userId || !isValidUUID(userId)) {
       throw new Error('Invalid user ID format');
     }

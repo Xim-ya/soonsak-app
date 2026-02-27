@@ -73,12 +73,15 @@ function BackdropSelectionModal({
   }, [selectedPath, onSelect]);
 
   // 선택 상태 확인
-  const isSelected = (filePath: string) => {
-    if (selectedPath) {
-      return selectedPath === filePath;
-    }
-    return currentBackdropPath === filePath;
-  };
+  const isSelected = useCallback(
+    (filePath: string) => {
+      if (selectedPath) {
+        return selectedPath === filePath;
+      }
+      return currentBackdropPath === filePath;
+    },
+    [selectedPath, currentBackdropPath],
+  );
 
   // 이미지 렌더링
   const renderImage = useCallback(
@@ -118,7 +121,15 @@ function BackdropSelectionModal({
         </ImageItemContainer>
       );
     },
-    [imageWidth, imageHeight, currentBackdropPath, selectedPath, handleImagePress, isSaving],
+    [
+      imageWidth,
+      imageHeight,
+      currentBackdropPath,
+      selectedPath,
+      handleImagePress,
+      isSaving,
+      isSelected,
+    ],
   );
 
   // 빈 상태 렌더링
@@ -172,9 +183,7 @@ function BackdropSelectionModal({
             </AdminBadge>
             <HeaderTitle>메인 이미지 선택</HeaderTitle>
           </HeaderRow>
-          <HeaderSubtitle>
-            콘텐츠 상세 페이지에 표시될 배경 이미지를 선택하세요
-          </HeaderSubtitle>
+          <HeaderSubtitle>콘텐츠 상세 페이지에 표시될 배경 이미지를 선택하세요</HeaderSubtitle>
         </HeaderContainer>
 
         {/* 이미지 그리드 */}

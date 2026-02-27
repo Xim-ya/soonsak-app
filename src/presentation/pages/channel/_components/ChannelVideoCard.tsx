@@ -9,8 +9,8 @@
  * <ChannelVideoCard video={video} onPress={handlePress} />
  */
 
-import React, { useCallback } from 'react';
-import { TouchableOpacity, Dimensions } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
+import { TouchableOpacity, useWindowDimensions, View, StyleSheet } from 'react-native';
 import styled from '@emotion/native';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
@@ -30,11 +30,6 @@ interface ChannelVideoCardProps {
   readonly onPress: (video: ChannelVideoModel) => void;
 }
 
-// 크기 상수 (YouTube 스타일: 썸네일 전체 너비)
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const THUMBNAIL_WIDTH = SCREEN_WIDTH;
-const THUMBNAIL_HEIGHT = THUMBNAIL_WIDTH * (9 / 16); // 16:9 비율
-
 // 정보 영역 패딩
 const INFO_HORIZONTAL_PADDING = 12;
 
@@ -44,11 +39,16 @@ const INFO_SECTION_GAP = 12;
 const VIDEO_TITLE_LINE_HEIGHT = 22;
 const VIDEO_TITLE_MAX_LINES = 2;
 const META_LINE_HEIGHT = 18;
-const INFO_SECTION_HEIGHT =
-  VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES + 2 + META_LINE_HEIGHT;
+const INFO_SECTION_HEIGHT = VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES + 2 + META_LINE_HEIGHT;
 
-// 전체 카드 높이 (썸네일 + Gap + 정보 영역)
-const CARD_HEIGHT = THUMBNAIL_HEIGHT + INFO_SECTION_GAP + INFO_SECTION_HEIGHT;
+// 16:9 썸네일 비율
+const THUMBNAIL_ASPECT_RATIO = 9 / 16;
+
+/** 화면 너비 기반 카드 높이 계산 (getItemLayout에서 사용) */
+function calculateCardHeight(screenWidth: number): number {
+  const thumbnailHeight = screenWidth * THUMBNAIL_ASPECT_RATIO;
+  return thumbnailHeight + INFO_SECTION_GAP + INFO_SECTION_HEIGHT;
+}
 
 // TMDB backdrop 이미지 URL 생성
 const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w780';
@@ -60,6 +60,13 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
   video,
   onPress,
 }: ChannelVideoCardProps) {
+  // 반응형 화면 너비 (폴드/회전 대응)
+  const { width: screenWidth } = useWindowDimensions();
+
+  // 썸네일 크기 계산
+  const thumbnailWidth = screenWidth;
+  const thumbnailHeight = screenWidth * THUMBNAIL_ASPECT_RATIO;
+
   const handlePress = useCallback(() => {
     onPress(video);
   }, [video, onPress]);
@@ -74,26 +81,37 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
   // 런타임 포맷팅
   const runtimeText = video.runtime ? formatter.formatRuntime(video.runtime) : undefined;
 
+  // 동적 스타일 (썸네일 크기)
+  const containerStyle = useMemo(() => ({ width: screenWidth }), [screenWidth]);
+  const thumbnailTouchableStyle = useMemo(
+    () => ({ width: thumbnailWidth, height: thumbnailHeight }),
+    [thumbnailWidth, thumbnailHeight],
+  );
+  const thumbnailWrapperStyle = useMemo(
+    () => [styles.thumbnailWrapper, { width: thumbnailWidth, height: thumbnailHeight }],
+    [thumbnailWidth, thumbnailHeight],
+  );
+
   return (
-    <Container>
+    <View style={containerStyle}>
       {/* 썸네일 영역 */}
-      <ThumbnailTouchable onPress={handlePress} activeOpacity={0.8}>
-        <ThumbnailWrapper>
+      <TouchableOpacity onPress={handlePress} activeOpacity={0.8} style={thumbnailTouchableStyle}>
+        <View style={thumbnailWrapperStyle}>
           <LoadableImageView
             source={backdropUrl}
-            width={THUMBNAIL_WIDTH}
-            height={THUMBNAIL_HEIGHT}
+            width={thumbnailWidth}
+            height={thumbnailHeight}
             borderRadius={0}
           />
           {/* 하단 그라데이션 오버레이 */}
-          <DarkedLinearShadow height={THUMBNAIL_HEIGHT} align={LinearAlign.bottomTop} />
+          <DarkedLinearShadow height={thumbnailHeight} align={LinearAlign.bottomTop} />
           {/* 하단 오버레이: 콘텐츠 제목(좌) <-> 런타임(우) */}
           <OverlayRow>
             <ContentTitle numberOfLines={1}>{video.contentTitle}</ContentTitle>
             {runtimeText && <DarkChip content={runtimeText} />}
           </OverlayRow>
-        </ThumbnailWrapper>
-      </ThumbnailTouchable>
+        </View>
+      </TouchableOpacity>
 
       <Gap size={INFO_SECTION_GAP} />
 
@@ -106,27 +124,19 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
           {metaInfo && <MetaInfo numberOfLines={1}>{metaInfo}</MetaInfo>}
         </InfoColumn>
       </InfoSection>
-    </Container>
+    </View>
   );
 });
 
+/* StyleSheet for dynamic styles */
+const styles = StyleSheet.create({
+  thumbnailWrapper: {
+    overflow: 'hidden',
+    backgroundColor: colors.gray05,
+  },
+});
+
 /* Styled Components */
-const Container = styled.View({
-  width: SCREEN_WIDTH,
-});
-
-const ThumbnailTouchable = styled(TouchableOpacity)({
-  width: THUMBNAIL_WIDTH,
-  height: THUMBNAIL_HEIGHT,
-});
-
-const ThumbnailWrapper = styled.View({
-  width: THUMBNAIL_WIDTH,
-  height: THUMBNAIL_HEIGHT,
-  overflow: 'hidden',
-  backgroundColor: colors.gray05,
-});
-
 const OverlayRow = styled.View({
   position: 'absolute',
   bottom: 12,
@@ -167,4 +177,4 @@ const MetaInfo = styled.Text({
   lineHeight: META_LINE_HEIGHT,
 });
 
-export { ChannelVideoCard, CARD_HEIGHT, THUMBNAIL_HEIGHT, THUMBNAIL_WIDTH };
+export { ChannelVideoCard, calculateCardHeight, THUMBNAIL_ASPECT_RATIO };

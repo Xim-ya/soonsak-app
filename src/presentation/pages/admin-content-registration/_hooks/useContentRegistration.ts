@@ -93,26 +93,18 @@ export function useContentRegistration(): UseContentRegistrationReturn {
   );
 
   // 서비스 상태에서 파생된 값들
-  const isRegisteringVideos =
-    serviceState?.type === 'video' && serviceState.isRunning;
-  const isRegisteringChannel =
-    serviceState?.type === 'channel' && serviceState.isRunning;
+  const isRegisteringVideos = serviceState?.type === 'video' && serviceState.isRunning;
+  const isRegisteringChannel = serviceState?.type === 'channel' && serviceState.isRunning;
 
-  const videoProgress =
-    serviceState?.type === 'video' ? serviceState.progress : null;
+  const videoProgress = serviceState?.type === 'video' ? serviceState.progress : null;
 
   const videoRegistrationResult =
-    serviceState?.type === 'video' && !serviceState.isRunning
-      ? serviceState.result
-      : null;
+    serviceState?.type === 'video' && !serviceState.isRunning ? serviceState.result : null;
 
   const channelRegistrationResult =
-    serviceState?.type === 'channel' && !serviceState.isRunning
-      ? serviceState.result
-      : null;
+    serviceState?.type === 'channel' && !serviceState.isRunning ? serviceState.result : null;
 
-  const serviceError =
-    serviceState && !serviceState.isRunning ? serviceState.error : null;
+  const serviceError = serviceState && !serviceState.isRunning ? serviceState.error : null;
 
   // Register videos
   const registerVideos = useCallback(() => {

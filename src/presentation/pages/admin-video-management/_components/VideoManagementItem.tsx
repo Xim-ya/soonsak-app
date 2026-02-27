@@ -68,9 +68,7 @@ export const VideoManagementItem = memo(function VideoManagementItem({
         <Gap size={4} />
         <ContentTitle numberOfLines={1}>{video.contentTitle}</ContentTitle>
         <Gap size={2} />
-        {video.channelName && (
-          <ChannelName numberOfLines={1}>{video.channelName}</ChannelName>
-        )}
+        {video.channelName && <ChannelName numberOfLines={1}>{video.channelName}</ChannelName>}
         <Gap size={6} />
         <MetaRow>
           <DateText>{formattedDate}</DateText>
