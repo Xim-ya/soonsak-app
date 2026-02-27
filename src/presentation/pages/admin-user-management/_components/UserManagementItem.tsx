@@ -48,49 +48,49 @@ export const UserManagementItem = memo(
     const displayName = useMemo(() => user.displayName || '이름 없음', [user.displayName]);
 
     return (
-    <Container onPress={handlePress} activeOpacity={0.7}>
-      {/* 아바타 */}
-      <AvatarContainer>
-        {user.avatarUrl ? (
-          <LoadableImageView
-            source={user.avatarUrl}
-            width={AVATAR_SIZE}
-            height={AVATAR_SIZE}
-            borderRadius={AVATAR_SIZE / 2}
-          />
-        ) : (
-          <DefaultAvatar>
-            <SvgXml xml={DEFAULT_AVATAR_SVG} width={24} height={24} />
-          </DefaultAvatar>
-        )}
-      </AvatarContainer>
+      <Container onPress={handlePress} activeOpacity={0.7}>
+        {/* 아바타 */}
+        <AvatarContainer>
+          {user.avatarUrl ? (
+            <LoadableImageView
+              source={user.avatarUrl}
+              width={AVATAR_SIZE}
+              height={AVATAR_SIZE}
+              borderRadius={AVATAR_SIZE / 2}
+            />
+          ) : (
+            <DefaultAvatar>
+              <SvgXml xml={DEFAULT_AVATAR_SVG} width={24} height={24} />
+            </DefaultAvatar>
+          )}
+        </AvatarContainer>
 
-      <Gap size={12} />
+        <Gap size={12} />
 
-      {/* 정보 */}
-      <InfoContainer>
-        <NameRow>
-          <UserName numberOfLines={1}>{displayName}</UserName>
-          <RoleBadge userRole={user.role}>
-            <RoleText userRole={user.role}>{UserRoleLabel[user.role]}</RoleText>
-          </RoleBadge>
-        </NameRow>
-        <Gap size={2} />
-        {user.email && <UserEmail numberOfLines={1}>{user.email}</UserEmail>}
-        <Gap size={4} />
-        <MetaRow>
-          <MetaText>가입: {formattedDate}</MetaText>
-          <MetaDot />
-          <MetaText>방문: {user.entryCount}회</MetaText>
-        </MetaRow>
-      </InfoContainer>
+        {/* 정보 */}
+        <InfoContainer>
+          <NameRow>
+            <UserName numberOfLines={1}>{displayName}</UserName>
+            <RoleBadge userRole={user.role}>
+              <RoleText userRole={user.role}>{UserRoleLabel[user.role]}</RoleText>
+            </RoleBadge>
+          </NameRow>
+          <Gap size={2} />
+          {user.email && <UserEmail numberOfLines={1}>{user.email}</UserEmail>}
+          <Gap size={4} />
+          <MetaRow>
+            <MetaText>가입: {formattedDate}</MetaText>
+            <MetaDot />
+            <MetaText>방문: {user.entryCount}회</MetaText>
+          </MetaRow>
+        </InfoContainer>
 
-      {/* 화살표 */}
-      <ChevronContainer>
-        <SvgXml xml={CHEVRON_RIGHT_SVG} width={16} height={16} />
-      </ChevronContainer>
-    </Container>
-  );
+        {/* 화살표 */}
+        <ChevronContainer>
+          <SvgXml xml={CHEVRON_RIGHT_SVG} width={16} height={16} />
+        </ChevronContainer>
+      </Container>
+    );
   },
   // props 비교 최적화: user.id가 같으면 리렌더링 방지
   (prevProps, nextProps) => prevProps.user.id === nextProps.user.id,

@@ -35,7 +35,10 @@ const CARD_ASPECT_RATIO = 168 / 240;
  */
 function calculateGridLayout(screenWidth: number) {
   const availableWidth = screenWidth - HORIZONTAL_PADDING * 2;
-  const columnCount = Math.max(2, Math.floor((availableWidth + GRID_GAP) / (MIN_CARD_WIDTH + GRID_GAP)));
+  const columnCount = Math.max(
+    2,
+    Math.floor((availableWidth + GRID_GAP) / (MIN_CARD_WIDTH + GRID_GAP)),
+  );
   const cardWidth = (availableWidth - GRID_GAP * (columnCount - 1)) / columnCount;
   const cardHeight = Math.round(cardWidth / CARD_ASPECT_RATIO);
 
@@ -84,7 +87,8 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
     <CardContainer
       onPress={handlePress}
       activeOpacity={0.8}
-      style={{ width: cardWidth, height: cardHeight }}
+      cardWidth={cardWidth}
+      cardHeight={cardHeight}
     >
       <BackdropImage
         width={cardWidth}
@@ -100,7 +104,11 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
       <GradientOverlay colors={['transparent', 'rgba(0, 0, 0, 0.8)']} />
       <TitleContainer>
         {titleLogoUrl ? (
-          <TitleLogoImage source={{ uri: titleLogoUrl }} style={{ width: cardWidth - 16 }} resizeMode="contain" />
+          <TitleLogoImage
+            source={{ uri: titleLogoUrl }}
+            style={{ width: cardWidth - 16 }}
+            resizeMode="contain"
+          />
         ) : (
           <CardTitle numberOfLines={2}>{content.title}</CardTitle>
         )}
@@ -109,11 +117,18 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
   );
 });
 
-const CardContainer = styled.TouchableOpacity({
+interface CardContainerProps {
+  cardWidth: number;
+  cardHeight: number;
+}
+
+const CardContainer = styled.TouchableOpacity<CardContainerProps>(({ cardWidth, cardHeight }) => ({
+  width: cardWidth,
+  height: cardHeight,
   borderRadius: 8,
   overflow: 'hidden',
   position: 'relative',
-});
+}));
 
 const ChipContainer = styled.View({
   position: 'absolute',

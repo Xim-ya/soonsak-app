@@ -42,7 +42,6 @@ import {
 
 const MAX_TITLE_LENGTH = 50;
 const MAX_BODY_LENGTH = 200;
-const MIN_TITLE_LENGTH = 1;
 const MIN_BODY_LENGTH = 1;
 
 const SEND_ICON_SVG = `
@@ -199,7 +198,8 @@ export const PushNotificationSender = memo(function PushNotificationSender({
 
   // 선택된 액션 옵션 (항상 존재함을 보장)
   const selectedAction: ActionTypeOption = useMemo(
-    () => ACTION_TYPE_OPTIONS.find((opt) => opt.key === selectedActionKey) ?? ACTION_TYPE_OPTIONS[0]!,
+    () =>
+      ACTION_TYPE_OPTIONS.find((opt) => opt.key === selectedActionKey) ?? ACTION_TYPE_OPTIONS[0]!,
     [selectedActionKey],
   );
 
@@ -284,9 +284,12 @@ export const PushNotificationSender = memo(function PushNotificationSender({
   }, []);
 
   // 파라미터 업데이트
-  const updateParam = useCallback(<K extends keyof ActionParams>(key: K, value: ActionParams[K]) => {
-    setActionParams((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  const updateParam = useCallback(
+    <K extends keyof ActionParams>(key: K, value: ActionParams[K]) => {
+      setActionParams((prev) => ({ ...prev, [key]: value }));
+    },
+    [],
+  );
 
   // 콘텐츠 검색 페이지로 이동
   const handleOpenContentSearch = useCallback(
@@ -642,7 +645,12 @@ export const PushNotificationSender = memo(function PushNotificationSender({
               <PickerContainer>
                 <PickerHeader>
                   <PickerBackButton onPress={() => setIsActionPickerVisible(false)}>
-                    <SvgXml xml={CHEVRON_DOWN_SVG} width={20} height={20} style={{ transform: [{ rotate: '90deg' }] }} />
+                    <SvgXml
+                      xml={CHEVRON_DOWN_SVG}
+                      width={20}
+                      height={20}
+                      style={{ transform: [{ rotate: '90deg' }] }}
+                    />
                   </PickerBackButton>
                   <PickerTitle>딥링크 액션 선택</PickerTitle>
                   <PickerHeaderSpacer />

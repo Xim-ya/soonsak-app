@@ -75,8 +75,7 @@ export default function WatchHistoryPage() {
     if (date) {
       // placeholderData가 있으므로 isPlaceholderData도 체크
       const dateItems = byDateQuery.isPlaceholderData ? [] : (byDateQuery.data ?? []);
-      // placeholderData가 있어도 isFetching으로 초기 로딩 감지
-      const dataItems = byDateQuery.data ?? [];
+      // 초기 로딩 스켈레톤은 isFetching이 true이고 dateItems가 비어있을 때만 표시
       return {
         items: dateItems,
         isLoading: byDateQuery.isFetching && dateItems.length === 0,

@@ -61,28 +61,21 @@ export default function AdminPrimaryVideoSelectPage() {
   }, [navigation]);
 
   // 비디오 선택 핸들러
-  const handleSelectVideo = useCallback(
-    (video: ContentVideoItem) => {
-      // 이미 대표 비디오인 경우
-      if (video.isPrimary) {
-        Alert.alert('알림', '이미 대표 비디오로 설정되어 있습니다.');
-        return;
-      }
+  const handleSelectVideo = useCallback((video: ContentVideoItem) => {
+    // 이미 대표 비디오인 경우
+    if (video.isPrimary) {
+      Alert.alert('알림', '이미 대표 비디오로 설정되어 있습니다.');
+      return;
+    }
 
-      Alert.alert(
-        '대표 비디오 변경',
-        `"${video.title}"을(를) 대표 비디오로 설정하시겠습니까?`,
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '변경',
-            onPress: () => handleChangePrimary(video.id, video.title),
-          },
-        ],
-      );
-    },
-    [],
-  );
+    Alert.alert('대표 비디오 변경', `"${video.title}"을(를) 대표 비디오로 설정하시겠습니까?`, [
+      { text: '취소', style: 'cancel' },
+      {
+        text: '변경',
+        onPress: () => handleChangePrimary(video.id, video.title),
+      },
+    ]);
+  }, []);
 
   // 대표 비디오 변경 처리
   const handleChangePrimary = useCallback(
@@ -191,7 +184,9 @@ const VideoItem = memo(function VideoItem({ video, onPress }: VideoItemProps) {
       <ItemInfoContainer>
         <ItemTitle numberOfLines={2}>{video.title}</ItemTitle>
         <Gap size={4} />
-        {video.channelName && <ItemChannelText numberOfLines={1}>{video.channelName}</ItemChannelText>}
+        {video.channelName && (
+          <ItemChannelText numberOfLines={1}>{video.channelName}</ItemChannelText>
+        )}
         <Gap size={4} />
         <StatusBadge status={video.status}>
           <StatusText>{video.status}</StatusText>

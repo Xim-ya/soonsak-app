@@ -350,7 +350,10 @@ export default function AdminUserContentListPage() {
                 {/* 제목 입력 (선택) */}
                 <InputSection>
                   <InputLabel>
-                    제목 (선택) <CharCount>({pushTitle.length}/{MAX_TITLE_LENGTH})</CharCount>
+                    제목 (선택){' '}
+                    <CharCount>
+                      ({pushTitle.length}/{MAX_TITLE_LENGTH})
+                    </CharCount>
                   </InputLabel>
                   <StyledTextInput
                     value={pushTitle}
@@ -364,7 +367,10 @@ export default function AdminUserContentListPage() {
                 {/* 내용 입력 */}
                 <InputSection>
                   <InputLabel>
-                    내용 <CharCount>({pushBody.length}/{MAX_BODY_LENGTH})</CharCount>
+                    내용{' '}
+                    <CharCount>
+                      ({pushBody.length}/{MAX_BODY_LENGTH})
+                    </CharCount>
                   </InputLabel>
                   <StyledTextInput
                     value={pushBody}

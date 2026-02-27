@@ -50,9 +50,7 @@ function WatchHistoryCardComponent({ item, onPress }: WatchHistoryCardProps) {
 
   // Runtime 크기 계산 - 태블릿에서는 고정 크기 사용
   const dimensions = useMemo(() => {
-    const cardWidth = isLargeScreen
-      ? TABLET_CARD_WIDTH
-      : screenWidth - HORIZONTAL_PADDING * 2;
+    const cardWidth = isLargeScreen ? TABLET_CARD_WIDTH : screenWidth - HORIZONTAL_PADDING * 2;
     const cardHeight = cardWidth * (9 / 16); // 16:9 비율
     return { cardWidth, cardHeight, isLargeScreen };
   }, [screenWidth, isLargeScreen]);

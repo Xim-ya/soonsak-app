@@ -437,10 +437,7 @@ export const adminChannelApi = {
         .eq('content_type', content.contentType);
 
       if (deleteContentError) {
-        console.warn(
-          `콘텐츠 ${content.contentId} 삭제 실패:`,
-          deleteContentError,
-        );
+        console.warn(`콘텐츠 ${content.contentId} 삭제 실패:`, deleteContentError);
       } else {
         deletedContentsCount += 1;
       }

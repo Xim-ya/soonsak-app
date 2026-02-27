@@ -106,19 +106,16 @@ class ContentRegistrationService {
     });
 
     try {
-      const result = await adminRegistrationApi.registerVideos(
-        videoIds,
-        (current, total) => {
-          // 진행 상태 업데이트
-          this.updateState({
-            type: 'video',
-            isRunning: true,
-            progress: { current, total },
-            result: null,
-            error: null,
-          });
-        },
-      );
+      const result = await adminRegistrationApi.registerVideos(videoIds, (current, total) => {
+        // 진행 상태 업데이트
+        this.updateState({
+          type: 'video',
+          isRunning: true,
+          progress: { current, total },
+          result: null,
+          error: null,
+        });
+      });
 
       // 완료 상태 설정
       this.updateState({

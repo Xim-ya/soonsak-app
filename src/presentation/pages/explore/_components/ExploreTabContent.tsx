@@ -10,13 +10,12 @@
  */
 
 import React, { useCallback, useMemo } from 'react';
-import { ActivityIndicator, ListRenderItem, Platform } from 'react-native';
+import { ActivityIndicator, ListRenderItem, Platform, useWindowDimensions } from 'react-native';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
-import { AppSize } from '@/shared/utils/appSize';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
@@ -109,7 +108,7 @@ const SkeletonGrid = React.memo(function SkeletonGrid({
   const skeletonCount = columnCount * 2;
 
   return (
-    <SkeletonContainer columnCount={columnCount} cardWidth={cardWidth}>
+    <SkeletonContainer>
       {Array.from({ length: skeletonCount }).map((_, index) => (
         <SkeletonItemWrapper
           key={`skeleton-${index}`}
@@ -131,10 +130,13 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
   const { contents, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useExploreContents(sortType, filter);
 
+  // 반응형 화면 너비 (화면 크기 변경 시 자동 업데이트)
+  const { width: windowWidth } = useWindowDimensions();
+
   // 동적 그리드 레이아웃 계산 (화면 너비 기반)
   const { columnCount, cardWidth, cardHeight } = useMemo(
-    () => calculateGridLayout(AppSize.actualScreenWidth),
-    [],
+    () => calculateGridLayout(windowWidth),
+    [windowWidth],
   );
 
   // columnWrapperStyle을 동적으로 생성
@@ -247,12 +249,7 @@ const ItemWrapper = styled.View<ItemWrapperProps>(({ cardWidth, isLastInRow }) =
   marginRight: isLastInRow ? 0 : GRID_GAP,
 }));
 
-interface SkeletonContainerProps {
-  columnCount: number;
-  cardWidth: number;
-}
-
-const SkeletonContainer = styled.View<SkeletonContainerProps>({
+const SkeletonContainer = styled.View({
   flexDirection: 'row',
   flexWrap: 'wrap',
   paddingHorizontal: HORIZONTAL_PADDING,
