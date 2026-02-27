@@ -176,8 +176,8 @@ export default function ChannelPage() {
 
   // 더보기(전체 채널) 핸들러
   const handleViewAllChannels = useCallback(() => {
-    // TODO: 전체 채널 리스트 페이지로 이동
-  }, []);
+    navigation.navigate(routePages.channelAll);
+  }, [navigation]);
 
   // 무한 스크롤 핸들러
   const handleEndReached = useCallback(() => {

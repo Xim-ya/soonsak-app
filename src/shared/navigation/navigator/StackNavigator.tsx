@@ -7,6 +7,7 @@ import { PlayerPage } from '../../../presentation/pages/player/PlayerPage';
 import ChannelDetailPage from '../../../presentation/pages/channel-detail/ChannelDetailPage';
 import SearchPage from '../../../presentation/pages/search/SearchPage';
 import ChannelSelectionPage from '../../../presentation/pages/channel-selection/ChannelSelectionPage';
+import ChannelAllPage from '../../../presentation/pages/channel-all/ChannelAllPage';
 import { MediaListPage } from '../../../presentation/pages/media/MediaListPage';
 import { ImageDetailPage } from '../../../presentation/pages/media/ImageDetailPage';
 import LoginPage from '../../../presentation/pages/login/LoginPage';
@@ -122,6 +123,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.channelSelection}
         component={ChannelSelectionPage}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.channelAll}
+        component={ChannelAllPage}
         options={{ headerShown: false }}
       />
       <Stack.Screen
