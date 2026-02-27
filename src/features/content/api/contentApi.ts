@@ -535,7 +535,11 @@ export const contentApi = {
       }
 
       channelContentIds = [
-        ...new Set((videoRows ?? []).map((v: { content_id: number }) => v.content_id)),
+        ...new Set(
+          (videoRows ?? [])
+            .map((v: { content_id: number | null }) => v.content_id)
+            .filter((id): id is number => id !== null),
+        ),
       ];
       if (channelContentIds.length === 0) return [];
     }
@@ -758,7 +762,11 @@ export const contentApi = {
       }
 
       channelContentIds = [
-        ...new Set((videoRows ?? []).map((v: { content_id: number }) => v.content_id)),
+        ...new Set(
+          (videoRows ?? [])
+            .map((v: { content_id: number | null }) => v.content_id)
+            .filter((id): id is number => id !== null),
+        ),
       ];
       if (channelContentIds.length === 0) {
         return { contents: [], hasMore: false, totalCount: 0 };
@@ -779,7 +787,11 @@ export const contentApi = {
       }
 
       endingContentIds = [
-        ...new Set((endingRows ?? []).map((v: { content_id: number }) => v.content_id)),
+        ...new Set(
+          (endingRows ?? [])
+            .map((v: { content_id: number | null }) => v.content_id)
+            .filter((id): id is number => id !== null),
+        ),
       ];
       if (endingContentIds.length === 0) {
         return { contents: [], hasMore: false, totalCount: 0 };
@@ -1079,6 +1091,11 @@ export const contentApi = {
    * @param seed 랜덤 정렬용 시드 값
    * @param includeEnding 결말 포함 비디오만 필터링 여부
    * @param excludeWatched 시청한 콘텐츠 제외 여부
+   * @param contentType 콘텐츠 타입 필터 (movie/tv)
+   * @param genreIds 장르 ID 배열 필터
+   * @param countryCodes 국가 코드 배열 필터
+   * @param releaseYearRange 공개연도 범위 필터
+   * @param minStarRating 최소 평점 필터 (1~5 스케일)
    */
   getChannelVideos: async (
     channelIds: string[] | null = null,
@@ -1088,6 +1105,11 @@ export const contentApi = {
     seed?: number,
     includeEnding: boolean = false,
     excludeWatched: boolean = false,
+    contentType: ContentType | null = null,
+    genreIds: number[] = [],
+    countryCodes: string[] = [],
+    releaseYearRange: { min: number; max: number } | null = null,
+    minStarRating: number | null = null,
   ): Promise<{
     videos: Array<{
       videoId: string;
@@ -1118,6 +1140,13 @@ export const contentApi = {
       p_seed: seed,
       p_include_ending: includeEnding,
       p_exclude_content_ids: excludeContentIds,
+      // 추가 필터 파라미터
+      p_content_type: contentType,
+      p_genre_ids: genreIds.length > 0 ? genreIds : null,
+      p_origin_countries: countryCodes.length > 0 ? countryCodes : null,
+      p_min_year: releaseYearRange?.min ?? null,
+      p_max_year: releaseYearRange?.max ?? null,
+      p_min_rating: minStarRating !== null ? minStarRating * 2 : null,
     });
 
     if (error) {
