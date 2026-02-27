@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const GOOGLE_OAUTH_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_OAUTH_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY;
 
 // URL scheme용 - .apps.googleusercontent.com 제거 (undefined 시 null 반환)
 const GOOGLE_IOS_URL_SCHEME = GOOGLE_OAUTH_IOS_CLIENT_ID
@@ -22,6 +23,7 @@ module.exports = {
       'soonsak',
       GOOGLE_IOS_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
       GOOGLE_ANDROID_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_ANDROID_URL_SCHEME}`,
+      KAKAO_NATIVE_APP_KEY && `kakao${KAKAO_NATIVE_APP_KEY}`,
     ].filter(Boolean),
     version: '1.0.0',
     orientation: 'portrait',
@@ -62,6 +64,14 @@ module.exports = {
       'expo-web-browser',
       'expo-apple-authentication',
       [
+        'expo-build-properties',
+        {
+          android: {
+            kotlinVersion: '2.0.21',
+          },
+        },
+      ],
+      [
         'expo-notifications',
         {
           icon: './assets/notification_icon.png',
@@ -75,6 +85,15 @@ module.exports = {
           iosUrlScheme: `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
         },
       ],
+      KAKAO_NATIVE_APP_KEY && [
+        '@react-native-seoul/kakao-login',
+        {
+          kakaoAppKey: KAKAO_NATIVE_APP_KEY,
+          kotlinVersion: '2.0.21',
+        },
+      ],
+      './plugins/withKakaoMaven',
+      './plugins/withDebugKeystore',
     ].filter(Boolean),
     extra: {
       eas: {
