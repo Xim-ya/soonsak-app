@@ -135,8 +135,12 @@ function AppContent() {
     };
   }, [insets]);
 
-  // Microsoft Clarity 초기화
+  // Microsoft Clarity 초기화 (프로덕션 빌드에서만 활성화)
   useEffect(() => {
+    if (__DEV__) {
+      return;
+    }
+
     const clarityProjectId = process.env['EXPO_PUBLIC_CLARITY_PROJECT_ID'];
     if (!clarityProjectId) {
       console.warn('[Clarity] 프로젝트 ID가 설정되지 않음');
@@ -144,11 +148,9 @@ function AppContent() {
     }
 
     try {
-      console.log('[Clarity] 초기화 시작...');
       Clarity.initialize(clarityProjectId, {
-        logLevel: __DEV__ ? Clarity.LogLevel.Verbose : Clarity.LogLevel.None,
+        logLevel: Clarity.LogLevel.None,
       });
-      console.log('[Clarity] 초기화 완료');
     } catch (error) {
       console.error('[Clarity] 초기화 실패:', error);
     }
