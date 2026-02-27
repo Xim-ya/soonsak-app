@@ -11,7 +11,13 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
-import { ActivityIndicator, ListRenderItem, Platform, TouchableOpacity, Dimensions } from 'react-native';
+import {
+  ActivityIndicator,
+  ListRenderItem,
+  Platform,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -136,12 +142,10 @@ export default function ChannelPage() {
     updateChannelIds,
   } = useChannelFilterSheet();
 
-  // 비디오 목록 조회 (filter.channelIds를 단일 진실 소스로 사용)
+  // 비디오 목록 조회 (filter 전체를 전달하여 모든 필터 조건 적용)
   const { videos, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useChannelVideos(
-    filter.channelIds,
     sortType,
-    filter.includeEnding,
-    filter.excludeWatched,
+    filter,
   );
 
   // 스크롤 핸들러 (스냅 없이 순수 스크롤 위치만 추적)
