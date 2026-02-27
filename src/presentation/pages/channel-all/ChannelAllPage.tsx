@@ -22,7 +22,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { useChannelAll, type ChannelItemModel } from './_hooks/useChannelAll';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -98,7 +98,7 @@ export default function ChannelAllPage(): React.ReactElement {
           onPress={() => handleChannelPress(item)}
           activeOpacity={0.7}
         >
-          <RoundedAvatorView source={item.logoUrl} size={avatarSize} />
+          <ChannelLogoImage source={item.logoUrl} size={avatarSize} />
           <ChannelName numberOfLines={1}>{item.name}</ChannelName>
           {subscriberText !== '' && <SubscriberText>{subscriberText}</SubscriberText>}
         </ChannelItemContainer>
