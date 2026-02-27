@@ -8,6 +8,7 @@ import { useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { contentApi } from '@/features/content/api/contentApi';
 import { getSessionSeed } from '@/shared/utils/sessionSeed';
 import { TMDB_GENRE_MAP } from '@/features/content/constants/genreConstants';
+import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { ChannelSortType, ChannelVideoModel } from '../_types';
 
 const PAGE_SIZE = 20;
@@ -43,29 +44,31 @@ interface UseChannelVideosReturn {
 }
 
 export function useChannelVideos(
-  selectedChannelIds: string[],
   sortType: ChannelSortType,
-  includeEnding: boolean = false,
-  excludeWatched: boolean = false,
+  filter: ContentFilter,
 ): UseChannelVideosReturn {
   // 세션 시드 (랜덤 정렬용)
   const sessionSeed = getSessionSeed();
 
   // 채널 ID가 없으면 전체 조회 (null)
-  const channelIdsParam = selectedChannelIds.length > 0 ? selectedChannelIds : null;
+  const channelIdsParam = filter.channelIds.length > 0 ? filter.channelIds : null;
 
   // 정렬 타입 결정 (all은 random으로 처리)
   const effectiveSortType = sortType === 'all' ? 'random' : sortType;
 
+  // 필터를 queryKey로 변환하기 위한 직렬화
+  const filterKey = JSON.stringify({
+    contentType: filter.contentType,
+    genreIds: filter.genreIds,
+    countryCodes: filter.countryCodes,
+    releaseYearRange: filter.releaseYearRange,
+    minStarRating: filter.minStarRating,
+    includeEnding: filter.includeEnding,
+    excludeWatched: filter.excludeWatched,
+  });
+
   const queryResult = useInfiniteQuery({
-    queryKey: [
-      'channelVideos',
-      channelIdsParam,
-      effectiveSortType,
-      sessionSeed,
-      includeEnding,
-      excludeWatched,
-    ],
+    queryKey: ['channelVideos', channelIdsParam, effectiveSortType, sessionSeed, filterKey],
     queryFn: async ({ pageParam = 0 }) => {
       return contentApi.getChannelVideos(
         channelIdsParam,
@@ -73,8 +76,13 @@ export function useChannelVideos(
         pageParam,
         PAGE_SIZE,
         sessionSeed,
-        includeEnding,
-        excludeWatched,
+        filter.includeEnding,
+        filter.excludeWatched,
+        filter.contentType,
+        filter.genreIds,
+        filter.countryCodes,
+        filter.releaseYearRange,
+        filter.minStarRating,
       );
     },
     initialPageParam: 0,
