@@ -11,7 +11,7 @@ import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import { RoundedAvatorView } from '../../components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '../../components/image/ChannelLogoImage';
 import Gap from '../../components/view/Gap';
 import { AppSize } from '@/shared/utils/appSize';
 import { useChannelContents } from './_hooks/useChannelContents';
@@ -57,7 +57,7 @@ export default function ChannelDetailPage() {
         {isChannelLoading ? (
           <SkeletonView width={90} height={90} borderRadius={45} />
         ) : (
-          <RoundedAvatorView source={displayLogoUrl} size={90} />
+          <ChannelLogoImage source={displayLogoUrl} size={90} />
         )}
         <Gap size={8} />
         {isChannelLoading ? (

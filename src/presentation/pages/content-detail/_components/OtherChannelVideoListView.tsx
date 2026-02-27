@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from 'react';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import {
   DarkedLinearShadow,
@@ -54,7 +54,7 @@ function VideoItemView({ item }: { item: VideoDto }) {
             <PlayButtonSvg width={64} height={64} />
           </PlayButtonContainer>
           <ChannelInfoWrapper>
-            <RoundedAvatorView source={channel?.images?.avatar || ''} size={28} />
+            <ChannelLogoImage source={channel?.images?.avatar || ''} size={28} />
             <Gap size={8} />
             <ChannelName numberOfLines={1}>{channel?.name || ''}</ChannelName>
           </ChannelInfoWrapper>

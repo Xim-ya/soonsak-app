@@ -21,7 +21,7 @@ import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
 import { toggleArrayItem } from '@/shared/utils/arrayUtils';
 import { channelApi } from '@/features/channel/api/channelApi';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { ChannelAvatarWrapper } from '@/presentation/components/channel/ChannelAvatarWrapper';
 import { FilterSectionHeader } from '../FilterSectionHeader';
 
@@ -100,7 +100,7 @@ function ChannelFilterTab({
           return (
             <ChannelItem key={channel.id} onPress={() => handleChannelToggle(channel.id)}>
               <ChannelAvatarWrapper isSelected={isSelected} avatarSize={AVATAR_SIZE}>
-                <RoundedAvatorView source={channel.logoUrl ?? ''} size={AVATAR_SIZE} />
+                <ChannelLogoImage source={channel.logoUrl ?? ''} size={AVATAR_SIZE} />
               </ChannelAvatarWrapper>
               <ChannelName numberOfLines={1} isSelected={isSelected}>
                 {channel.name ?? ''}

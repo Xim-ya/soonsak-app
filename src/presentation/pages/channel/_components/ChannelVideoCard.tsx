@@ -12,7 +12,7 @@
 import React, { useCallback, useMemo } from 'react';
 import { TouchableOpacity, useWindowDimensions, View, StyleSheet } from 'react-native';
 import styled from '@emotion/native';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import {
   DarkedLinearShadow,
@@ -117,7 +117,7 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
 
       {/* 정보 영역: 채널 아바타 + 비디오 제목 + 메타정보 */}
       <InfoSection>
-        <RoundedAvatorView source={video.channelLogoUrl} size={AVATAR_SIZE} />
+        <ChannelLogoImage source={video.channelLogoUrl} size={AVATAR_SIZE} />
         <Gap size={10} />
         <InfoColumn>
           <VideoTitle numberOfLines={VIDEO_TITLE_MAX_LINES}>{video.videoTitle}</VideoTitle>

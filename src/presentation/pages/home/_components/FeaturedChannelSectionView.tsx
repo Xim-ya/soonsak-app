@@ -3,7 +3,7 @@ import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -45,9 +45,7 @@ const ChannelItem = React.memo(({ channel }: { channel: FeaturedChannelModel }) 
   return (
     <ItemContainer>
       <ItemTouchable onPress={handlePress} activeOpacity={0.8}>
-        <AvatarWrapper>
-          <RoundedAvatorView source={channel.logoUrl} size={AVATAR_SIZE} />
-        </AvatarWrapper>
+        <ChannelLogoImage source={channel.logoUrl} size={AVATAR_SIZE} />
         <Gap size={10} />
         <ChannelNameText numberOfLines={1}>{channel.name}</ChannelNameText>
       </ItemTouchable>
@@ -159,15 +157,6 @@ const ItemContainer = styled.View({
 
 const ItemTouchable = styled(TouchableOpacity)({
   alignItems: 'center',
-});
-
-const AvatarWrapper = styled.View({
-  width: AVATAR_SIZE,
-  height: AVATAR_SIZE,
-  borderRadius: AVATAR_SIZE / 2,
-  borderWidth: 0.5,
-  borderColor: colors.gray03,
-  overflow: 'hidden',
 });
 
 const ChannelNameText = styled.Text({

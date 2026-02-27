@@ -60,14 +60,10 @@ const avatarBaseStyle = {
 const textWrapperBaseStyle = { marginTop: 4, overflow: 'hidden' as const };
 const skeletonBaseStyle = { backgroundColor: colors.gray05 };
 
-// 선택 상태 border 스타일 상수 (useMemo 오버헤드 제거)
-const selectedBorderStyle = {
-  borderWidth: 3,
-  borderColor: colors.main,
-};
-const unselectedBorderStyle = {
-  borderWidth: 0,
-  borderColor: 'transparent',
+// 기본 border 스타일 (ChannelLogoImage와 동일)
+const baseBorderStyle = {
+  borderWidth: 0.5,
+  borderColor: colors.gray04,
 };
 
 /** 구독자 수 포맷 (만 단위) */
@@ -128,9 +124,6 @@ const AnimatedChannelItem = React.memo(
 
     const subscriberText = formatSubscriberCount(channel.subscriberCount);
 
-    // 선택 상태 border 스타일 (상수 재사용)
-    const borderStyle = isSelected ? selectedBorderStyle : unselectedBorderStyle;
-
     // 개별 애니메이션 스타일 (부모에서 전달받은 animatedSize 사용)
     const containerStyle = useAnimatedStyle(() => {
       'worklet';
@@ -138,16 +131,35 @@ const AnimatedChannelItem = React.memo(
       return { width };
     });
 
-    const avatarStyle = useAnimatedStyle(() => {
+    // 아바타 + ring을 감싸는 wrapper (ring 크기 기준)
+    const avatarWrapperStyle = useAnimatedStyle(() => {
       'worklet';
       const size = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
-      return { width: size, height: size, borderRadius: size / 2 };
+      return {
+        width: size,
+        height: size,
+        justifyContent: 'center' as const,
+        alignItems: 'center' as const,
+      };
     });
 
-    const imageStyle = useAnimatedStyle(() => {
+    const avatarStyle = useAnimatedStyle(() => {
       'worklet';
       const size = AVATAR_SIZE_MAX * animatedSize.value;
       return { width: size, height: size, borderRadius: size / 2 };
+    });
+
+    const selectionRingStyle = useAnimatedStyle(() => {
+      'worklet';
+      const size = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
+      return {
+        position: 'absolute' as const,
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        borderWidth: 3,
+        borderColor: colors.main,
+      };
     });
 
     const textStyle = useAnimatedStyle(() => {
@@ -164,12 +176,15 @@ const AnimatedChannelItem = React.memo(
     return (
       <Animated.View style={[itemContainerBaseStyle, containerStyle]}>
         <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
-          <Animated.View style={[avatarBaseStyle, borderStyle, avatarStyle]}>
-            <Animated.Image
-              source={{ uri: channel.logoUrl }}
-              style={[imageStyle, { opacity: isLoaded ? 1 : 0 }]}
-              onLoad={() => setIsLoaded(true)}
-            />
+          <Animated.View style={avatarWrapperStyle}>
+            <Animated.View style={[avatarBaseStyle, baseBorderStyle, avatarStyle]}>
+              <Animated.Image
+                source={{ uri: channel.logoUrl }}
+                style={[avatarStyle, { opacity: isLoaded ? 1 : 0 }]}
+                onLoad={() => setIsLoaded(true)}
+              />
+            </Animated.View>
+            {isSelected && <Animated.View style={selectionRingStyle} />}
           </Animated.View>
         </TouchableOpacity>
         <Animated.View style={[textWrapperBaseStyle, textStyle]}>

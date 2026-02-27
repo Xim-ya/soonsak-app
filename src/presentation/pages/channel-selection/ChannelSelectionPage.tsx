@@ -20,7 +20,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { ChannelAvatarWrapper } from '@/presentation/components/channel/ChannelAvatarWrapper';
 import {
   DarkedLinearShadow,
@@ -81,7 +81,7 @@ export default function ChannelSelectionPage(): React.ReactElement {
             avatarSize={AVATAR_SIZE}
             unselectedOpacity={0.5}
           >
-            <RoundedAvatorView source={item.logoUrl ?? ''} size={AVATAR_SIZE} />
+            <ChannelLogoImage source={item.logoUrl ?? ''} size={AVATAR_SIZE} />
           </ChannelAvatarWrapper>
           <ChannelName numberOfLines={1} isSelected={isSelected}>
             {item.name ?? ''}
