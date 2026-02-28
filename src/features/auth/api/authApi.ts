@@ -191,12 +191,8 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
 
     return { user: data.user, session: data.session };
   } catch (error) {
-    // 이미 AuthErrorDto인 경우 그대로 전달
-    if (isAuthError(error)) {
-      throw error;
-    }
-
-    // 사용자 취소 확인
+    // 사용자 취소 확인 (isAuthError보다 먼저 체크해야 함)
+    // 네이티브 SDK 에러는 code/message 속성을 가지므로 isAuthError에 매칭될 수 있음
     // iOS: error.code 또는 nativeError.code로 E_CANCELLED_OPERATION 확인
     // Android: error.message에 CANCELED 문자열 포함 여부 확인
     const errorCode = (error as Error & { code?: string })?.code;
@@ -210,6 +206,11 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
 
     if (isIOSCancelled || isAndroidCancelled) {
       throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, 'kakao');
+    }
+
+    // 이미 AuthErrorDto인 경우 그대로 전달 (취소 체크 이후에 수행)
+    if (isAuthError(error)) {
+      throw error;
     }
 
     throw createAuthError(AUTH_ERROR_CODES.UNKNOWN_ERROR, 'kakao', error);
@@ -346,8 +347,19 @@ export const authApi = {
 
   /**
    * 로그아웃
+   * Supabase 세션과 네이티브 소셜 로그인 세션(카카오)을 모두 정리
    */
   signOut: async (): Promise<void> => {
+    // 카카오 네이티브 세션 정리 (실패해도 Supabase 로그아웃은 진행)
+    try {
+      await KakaoLogin.logout();
+    } catch (kakaoError) {
+      // 카카오 로그인을 사용하지 않았거나 이미 로그아웃된 경우 무시
+      if (isDev) {
+        console.log('[AuthApi] Kakao logout skipped (not logged in via Kakao):', kakaoError);
+      }
+    }
+
     const { error } = await supabaseClient.auth.signOut();
 
     if (error) {
@@ -417,6 +429,15 @@ export const authApi = {
         undefined,
         data?.error ?? '회원탈퇴 처리 중 오류가 발생했습니다.',
       );
+    }
+
+    // 카카오 네이티브 세션 정리 (실패해도 계속 진행)
+    try {
+      await KakaoLogin.logout();
+    } catch (kakaoError) {
+      if (isDev) {
+        console.log('[AuthApi] Kakao logout skipped during withdrawal:', kakaoError);
+      }
     }
 
     // 로컬 세션 클리어 (AsyncStorage의 세션 토큰 삭제)
