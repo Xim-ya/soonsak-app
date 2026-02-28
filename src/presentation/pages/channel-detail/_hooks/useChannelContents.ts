@@ -1,6 +1,8 @@
-import { useInfiniteQuery, InfiniteData } from '@tanstack/react-query';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import { contentApi } from '@/features/content/api/contentApi';
 import { VideoWithContentDto } from '@/features/content/types';
+import { getSessionSeed } from '@/shared/utils/sessionSeed';
+import type { SortType } from '@/shared/types/sort';
 import { ChannelVideoModel } from '../_types';
 
 interface ChannelContentsResponse {
@@ -19,21 +21,21 @@ interface UseChannelContentsReturn {
   totalCount: number;
 }
 
-export function useChannelContents(channelId: string): UseChannelContentsReturn {
+export function useChannelContents(
+  channelId: string,
+  sortType: SortType = 'all',
+): UseChannelContentsReturn {
+  // 랜덤 정렬용 세션 시드
+  const sessionSeed = getSessionSeed();
+
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useInfiniteQuery<
-      ChannelContentsResponse,
-      Error,
-      InfiniteData<ChannelContentsResponse>,
-      string[],
-      number
-    >({
-      queryKey: ['channelVideos', channelId],
-      queryFn: async ({ pageParam = 0 }) => {
-        return contentApi.getDistinctContentsByChannel(channelId, pageParam, 20);
+    useInfiniteQuery({
+      queryKey: ['channelVideos', channelId, sortType, sessionSeed],
+      queryFn: async ({ pageParam = 0 }): Promise<ChannelContentsResponse> => {
+        return contentApi.getDistinctContentsByChannel(channelId, pageParam, 20, sortType);
       },
       initialPageParam: 0,
-      getNextPageParam: (lastPage, pages) => {
+      getNextPageParam: (lastPage: ChannelContentsResponse, pages) => {
         return lastPage.hasMore ? pages.length : undefined;
       },
       enabled: !!channelId,
@@ -47,9 +49,9 @@ export function useChannelContents(channelId: string): UseChannelContentsReturn 
   return {
     videos,
     isLoading,
-    error,
+    error: error as Error | null,
     fetchNextPage,
-    hasNextPage,
+    hasNextPage: hasNextPage ?? false,
     isFetchingNextPage,
     totalCount,
   };

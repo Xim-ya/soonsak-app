@@ -344,13 +344,18 @@ export const contentApi = {
     channelId: string,
     page: number = 0,
     pageSize: number = 20,
+    sortType: 'all' | 'latest' | 'popular' = 'latest',
   ): Promise<{ videos: VideoWithContentDto[]; hasMore: boolean; totalCount: number }> => {
+    // 'all'은 랜덤 정렬로 처리
+    const effectiveSortType = sortType === 'all' ? 'random' : sortType;
+
     const { data, error } = await supabaseClient.rpc(
       CONTENT_DATABASE.RPC.GET_DISTINCT_CONTENTS_BY_CHANNEL,
       {
         p_channel_id: channelId,
         p_page: page,
         p_page_size: pageSize,
+        p_sort_type: effectiveSortType,
       },
     );
 

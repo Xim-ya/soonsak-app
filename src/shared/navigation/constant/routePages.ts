@@ -6,6 +6,7 @@ export const routePages = {
   channelDetail: 'ChannelDetail',
   search: 'Search',
   channelSelection: 'ChannelSelection',
+  channelAll: 'ChannelAll',
   mediaList: 'MediaList',
   imageDetail: 'ImageDetail',
   profileSetup: 'ProfileSetup',

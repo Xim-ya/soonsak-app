@@ -77,6 +77,7 @@ export type RootStackParamList = {
   [routePages.channelSelection]: {
     selectedChannelIds: string[]; // 현재 선택된 채널 ID 목록
   }; // 채널 선택 - 바텀시트에서 전체 채널 선택 시 사용
+  [routePages.channelAll]: undefined; // 전체 채널 목록 - 파라미터 없음
   [routePages.mediaList]: {
     contentId: number;
     contentType: ContentType;

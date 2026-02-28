@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,17 +7,21 @@ import Animated from 'react-native-reanimated';
 import { BasePage } from '../../components/page';
 import { BackButtonAppBar } from '../../components/app-bar';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
+import { SortSelector } from '../../components/sort';
+import { ViewModeToggle, type ViewMode } from '../../components/view-mode';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import { RoundedAvatorView } from '../../components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '../../components/image/ChannelLogoImage';
 import Gap from '../../components/view/Gap';
 import { AppSize } from '@/shared/utils/appSize';
+import type { SortType } from '@/shared/types/sort';
+import { CHANNEL_SORT_OPTIONS } from '../channel/_types';
 import { useChannelContents } from './_hooks/useChannelContents';
 import { useChannelInfo } from './_hooks/useChannelInfo';
 import { useScrollAnimation } from './_hooks/useScrollAnimation';
-import { VideoGridItem } from './_components/VideoGridItem';
+import { VideoGridItem, VideoListItem } from './_components';
 import { ChannelVideoModel } from './_types';
 import { SkeletonView } from '../../components/loading/SkeletonView';
 
@@ -28,6 +32,11 @@ export default function ChannelDetailPage() {
   const { channelId, channelName, channelLogoUrl, subscriberCount } = route.params;
   const insets = useSafeAreaInsets();
 
+  // 정렬 상태 (기본값: 최신순)
+  const [sortType, setSortType] = useState<SortType>('latest');
+  // 뷰 모드 상태 (기본값: 카드 뷰)
+  const [viewMode, setViewMode] = useState<ViewMode>('card');
+
   // 채널 정보 관리
   const { displayName, displayLogoUrl, isChannelLoading, formattedSubscriberCount } =
     useChannelInfo({
@@ -37,16 +46,34 @@ export default function ChannelDetailPage() {
       subscriberCount,
     });
 
-  // 채널 콘텐츠 관리
-  const { videos, isLoading, fetchNextPage, hasNextPage, totalCount } =
-    useChannelContents(channelId);
+  // 채널 콘텐츠 관리 (정렬 타입 전달)
+  const { videos, isLoading, fetchNextPage, hasNextPage, totalCount } = useChannelContents(
+    channelId,
+    sortType,
+  );
+
+  // 정렬 변경 핸들러
+  const handleSortChange = useCallback((newSortType: SortType) => {
+    setSortType(newSortType);
+  }, []);
 
   // 스크롤 애니메이션 관리
   const { handleScroll, gradientAnimatedStyle } = useScrollAnimation();
 
   const renderItem = useCallback(
-    ({ item }: { item: ChannelVideoModel }) => <VideoGridItem video={item} />,
-    [],
+    ({ item }: { item: ChannelVideoModel }) => {
+      if (viewMode === 'list') {
+        return <VideoListItem video={item} />;
+      }
+      return <VideoGridItem video={item} />;
+    },
+    [viewMode],
+  );
+
+  // 앱바 액션: 뷰 모드 토글
+  const appBarActions = useMemo(
+    () => [<ViewModeToggle key="view-toggle" mode={viewMode} onModeChange={setViewMode} />],
+    [viewMode],
   );
 
   const renderHeader = useCallback(() => {
@@ -57,7 +84,7 @@ export default function ChannelDetailPage() {
         {isChannelLoading ? (
           <SkeletonView width={90} height={90} borderRadius={45} />
         ) : (
-          <RoundedAvatorView source={displayLogoUrl} size={90} />
+          <ChannelLogoImage source={displayLogoUrl} size={90} />
         )}
         <Gap size={8} />
         {isChannelLoading ? (
@@ -74,9 +101,14 @@ export default function ChannelDetailPage() {
             <SubscriberText>구독자 {formattedSubscriberCount}명</SubscriberText>
           )
         )}
-        <ContentCountWrapper>
+        <FilterRow>
           <ContentCountText>{totalCount}개의 콘텐츠</ContentCountText>
-        </ContentCountWrapper>
+          <SortSelector
+            sortType={sortType}
+            onSortChange={handleSortChange}
+            options={CHANNEL_SORT_OPTIONS}
+          />
+        </FilterRow>
       </HeaderContainer>
     );
   }, [
@@ -86,6 +118,8 @@ export default function ChannelDetailPage() {
     displayName,
     formattedSubscriberCount,
     totalCount,
+    sortType,
+    handleSortChange,
   ]);
 
   const handleEndReached = useCallback(() => {
@@ -94,7 +128,10 @@ export default function ChannelDetailPage() {
     }
   }, [hasNextPage, isLoading, fetchNextPage]);
 
-  const keyExtractor = useCallback((item: ChannelVideoModel) => item.id, []);
+  const keyExtractor = useCallback(
+    (item: ChannelVideoModel) => `${item.id}-${item.contentId}`,
+    [],
+  );
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
@@ -114,16 +151,21 @@ export default function ChannelDetailPage() {
 
       {/* 앱바 */}
       <AppBarContainer safeAreaTop={insets.top}>
-        <BackButtonAppBar position="relative" backgroundColor="transparent" />
+        <BackButtonAppBar
+          position="relative"
+          backgroundColor="transparent"
+          actions={appBarActions}
+        />
       </AppBarContainer>
 
       <FlatList
+        key={viewMode}
         data={videos}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        numColumns={3}
+        numColumns={viewMode === 'card' ? 3 : 1}
         contentContainerStyle={{ paddingHorizontal: 16 }}
-        columnWrapperStyle={{ gap: 9 }}
+        columnWrapperStyle={viewMode === 'card' ? { gap: 9 } : undefined}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={<Gap size={106} />}
         onScroll={handleScroll}
@@ -191,10 +233,13 @@ const SubscriberText = styled.Text({
   color: colors.gray03,
 });
 
-const ContentCountWrapper = styled.View({
+const FilterRow = styled.View({
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  width: '100%',
   paddingTop: 16,
-  paddingBottom: 8,
-  alignSelf: 'flex-end',
+  paddingBottom: 16,
 });
 
 const ContentCountText = styled.Text({

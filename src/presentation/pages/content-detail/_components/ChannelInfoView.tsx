@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -48,7 +48,7 @@ function ChannelInfoView() {
 
       <Pressable onPress={handlePress}>
         <InfoWrapper>
-          <RoundedAvatorView source={channel?.images?.avatar || ''} size={64} />
+          <ChannelLogoImage source={channel?.images?.avatar || ''} size={64} />
           <ColumnWrapper>
             {isLoading ? (
               <>

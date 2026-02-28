@@ -44,7 +44,12 @@ import Gap from '@/presentation/components/view/Gap';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { AppSize } from '@/shared/utils/appSize';
-import type { ChannelSortType, ChannelVideoModel } from './_types';
+import {
+  CHANNEL_SORT_OPTIONS,
+  type ChannelSortType,
+  type ChannelVideoModel,
+  type ChannelItemModel,
+} from './_types';
 import { useChannelList } from './_hooks/useChannelList';
 import { useChannelVideos } from './_hooks/useChannelVideos';
 import { useChannelFilterSheet } from './_hooks/useChannelFilterSheet';
@@ -56,7 +61,7 @@ import {
 } from './_components/AnimatedChannelSelector';
 import { ChannelVideoCard, calculateCardHeight } from './_components/ChannelVideoCard';
 import { TabletVideoCard } from './_components/TabletVideoCard';
-import { SortSelector } from './_components/SortSelector';
+import { SortSelector } from '@/presentation/components/sort';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -140,7 +145,6 @@ export default function ChannelPage() {
     isLoginDialogVisible,
     loginSuccessCallback,
     closeLoginDialog,
-    updateChannelIds,
   } = useChannelFilterSheet();
 
   // 비디오 목록 조회 (filter 전체를 전달하여 모든 필터 조건 적용)
@@ -176,8 +180,23 @@ export default function ChannelPage() {
 
   // 더보기(전체 채널) 핸들러
   const handleViewAllChannels = useCallback(() => {
-    // TODO: 전체 채널 리스트 페이지로 이동
-  }, []);
+    navigation.navigate(routePages.channelAll);
+  }, [navigation]);
+
+  // 채널 클릭 핸들러 → 채널 상세 페이지로 이동
+  const handleChannelPress = useCallback(
+    (channel: ChannelItemModel) => {
+      const params: RootStackParamList[typeof routePages.channelDetail] = {
+        channelId: channel.id,
+      };
+      if (channel.name) params.channelName = channel.name;
+      if (channel.logoUrl) params.channelLogoUrl = channel.logoUrl;
+      if (channel.subscriberCount) params.subscriberCount = channel.subscriberCount;
+
+      navigation.navigate(routePages.channelDetail, params);
+    },
+    [navigation],
+  );
 
   // 무한 스크롤 핸들러
   const handleEndReached = useCallback(() => {
@@ -384,8 +403,7 @@ export default function ChannelPage() {
             <Animated.View style={channelSelectorStyle}>
               <AnimatedChannelSelector
                 channels={channels}
-                selectedIds={filter.channelIds}
-                onSelectionChange={updateChannelIds}
+                onChannelPress={handleChannelPress}
                 isLoading={isChannelsLoading}
                 scrollY={smoothedScrollY}
               />
@@ -395,7 +413,11 @@ export default function ChannelPage() {
                 <FilterIcon width={16} height={16} color={colors.white} />
                 {isCustomFilterActive && <ActiveBadge />}
               </FilterIconButton>
-              <SortSelector sortType={sortType} onSortChange={handleSortChange} />
+              <SortSelector
+                sortType={sortType}
+                onSortChange={handleSortChange}
+                options={CHANNEL_SORT_OPTIONS}
+              />
             </FilterRow>
             {/* 하단 그라데이션 - 스크롤에 따라 opacity 변화 */}
             <GradientWrapper style={[gradientStyle, ANDROID_GRADIENT_STYLE]} pointerEvents="none">

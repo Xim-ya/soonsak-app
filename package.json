@@ -33,6 +33,7 @@
     }
   },
   "dependencies": {
+    "@callstack/liquid-glass": "^0.7.0",
     "@emotion/native": "^11.11.0",
     "@emotion/react": "^11.14.0",
     "@microsoft/react-native-clarity": "^4.5.3",
@@ -57,6 +58,7 @@
     "expo": "^54.0.31",
     "expo-apple-authentication": "~8.0.8",
     "expo-build-properties": "^55.0.9",
+    "expo-blur": "^55.0.8",
     "expo-clipboard": "~8.0.8",
     "expo-constants": "~18.0.13",
     "expo-crypto": "~15.0.8",

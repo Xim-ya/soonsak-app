@@ -16,7 +16,7 @@
 import React, { useCallback } from 'react';
 import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
 import styled from '@emotion/native';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import type { ChannelItemModel } from '../_types';
@@ -66,8 +66,9 @@ const ChannelItem = React.memo(
     return (
       <ItemContainer>
         <ItemTouchable onPress={handlePress} activeOpacity={0.8}>
-          <AvatarWrapper isSelected={isSelected}>
-            <RoundedAvatorView source={channel.logoUrl} size={AVATAR_SIZE} />
+          <AvatarWrapper>
+            <ChannelLogoImage source={channel.logoUrl} size={AVATAR_SIZE} />
+            {isSelected && <SelectionRing />}
           </AvatarWrapper>
         </ItemTouchable>
       </ItemContainer>
@@ -179,16 +180,23 @@ const ItemTouchable = styled(TouchableOpacity)({
   alignItems: 'center',
 });
 
-const AvatarWrapper = styled.View<{ isSelected: boolean }>(({ isSelected }) => ({
-  width: AVATAR_SIZE + 6,
-  height: AVATAR_SIZE + 6,
-  borderRadius: (AVATAR_SIZE + 6) / 2,
-  borderWidth: isSelected ? 3 : 0,
-  borderColor: isSelected ? colors.main : 'transparent',
+const SELECTION_RING_SIZE = AVATAR_SIZE + 6;
+
+const AvatarWrapper = styled.View({
+  width: SELECTION_RING_SIZE,
+  height: SELECTION_RING_SIZE,
   justifyContent: 'center',
   alignItems: 'center',
-  overflow: 'hidden',
-}));
+});
+
+const SelectionRing = styled.View({
+  position: 'absolute',
+  width: SELECTION_RING_SIZE,
+  height: SELECTION_RING_SIZE,
+  borderRadius: SELECTION_RING_SIZE / 2,
+  borderWidth: 3,
+  borderColor: colors.main,
+});
 
 const SkeletonCircle = styled.View({
   width: AVATAR_SIZE,

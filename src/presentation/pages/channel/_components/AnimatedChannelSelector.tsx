@@ -60,14 +60,10 @@ const avatarBaseStyle = {
 const textWrapperBaseStyle = { marginTop: 4, overflow: 'hidden' as const };
 const skeletonBaseStyle = { backgroundColor: colors.gray05 };
 
-// 선택 상태 border 스타일 상수 (useMemo 오버헤드 제거)
-const selectedBorderStyle = {
-  borderWidth: 3,
-  borderColor: colors.main,
-};
-const unselectedBorderStyle = {
-  borderWidth: 0,
-  borderColor: 'transparent',
+// 기본 border 스타일 (ChannelLogoImage와 동일)
+const baseBorderStyle = {
+  borderWidth: 0.5,
+  borderColor: colors.gray04,
 };
 
 /** 구독자 수 포맷 (만 단위) */
@@ -94,10 +90,8 @@ const SKELETON_DATA = createSkeletonData(6);
 interface AnimatedChannelSelectorProps {
   /** 채널 목록 */
   readonly channels: ChannelItemModel[];
-  /** 선택된 채널 ID 목록 */
-  readonly selectedIds: string[];
-  /** 선택 변경 콜백 */
-  readonly onSelectionChange: (ids: string[]) => void;
+  /** 채널 클릭 콜백 (채널 상세 페이지로 이동) */
+  readonly onChannelPress: (channel: ChannelItemModel) => void;
   /** 로딩 상태 */
   readonly isLoading: boolean;
   /** 스크롤 Y 값 (Reanimated SharedValue) */
@@ -111,40 +105,29 @@ interface AnimatedChannelSelectorProps {
 const AnimatedChannelItem = React.memo(
   ({
     channel,
-    isSelected,
     onPress,
     animatedSize,
   }: {
     channel: ChannelItemModel;
-    isSelected: boolean;
-    onPress: (id: string) => void;
+    onPress: (channel: ChannelItemModel) => void;
     animatedSize: SharedValue<number>;
   }) => {
     const [isLoaded, setIsLoaded] = useState(false);
 
     const handlePress = useCallback(() => {
-      onPress(channel.id);
-    }, [channel.id, onPress]);
+      onPress(channel);
+    }, [channel, onPress]);
 
     const subscriberText = formatSubscriberCount(channel.subscriberCount);
-
-    // 선택 상태 border 스타일 (상수 재사용)
-    const borderStyle = isSelected ? selectedBorderStyle : unselectedBorderStyle;
 
     // 개별 애니메이션 스타일 (부모에서 전달받은 animatedSize 사용)
     const containerStyle = useAnimatedStyle(() => {
       'worklet';
-      const width = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
+      const width = AVATAR_SIZE_MAX * animatedSize.value;
       return { width };
     });
 
     const avatarStyle = useAnimatedStyle(() => {
-      'worklet';
-      const size = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
-      return { width: size, height: size, borderRadius: size / 2 };
-    });
-
-    const imageStyle = useAnimatedStyle(() => {
       'worklet';
       const size = AVATAR_SIZE_MAX * animatedSize.value;
       return { width: size, height: size, borderRadius: size / 2 };
@@ -164,10 +147,10 @@ const AnimatedChannelItem = React.memo(
     return (
       <Animated.View style={[itemContainerBaseStyle, containerStyle]}>
         <TouchableOpacity onPress={handlePress} activeOpacity={0.8}>
-          <Animated.View style={[avatarBaseStyle, borderStyle, avatarStyle]}>
+          <Animated.View style={[avatarBaseStyle, baseBorderStyle, avatarStyle]}>
             <Animated.Image
               source={{ uri: channel.logoUrl }}
-              style={[imageStyle, { opacity: isLoaded ? 1 : 0 }]}
+              style={[avatarStyle, { opacity: isLoaded ? 1 : 0 }]}
               onLoad={() => setIsLoaded(true)}
             />
           </Animated.View>
@@ -190,7 +173,7 @@ const AnimatedSkeletonItem = React.memo(
   ({ animatedSize }: { animatedSize: SharedValue<number> }) => {
     const containerStyle = useAnimatedStyle(() => {
       'worklet';
-      const width = (AVATAR_SIZE_MAX + 6) * animatedSize.value;
+      const width = AVATAR_SIZE_MAX * animatedSize.value;
       return { width };
     });
 
@@ -226,8 +209,7 @@ const containerBaseStyle = {
 
 function AnimatedChannelSelector({
   channels,
-  selectedIds,
-  onSelectionChange,
+  onChannelPress,
   isLoading,
   scrollY,
 }: AnimatedChannelSelectorProps) {
@@ -242,17 +224,6 @@ function AnimatedChannelSelector({
     );
   });
 
-  const handleChannelPress = useCallback(
-    (channelId: string) => {
-      if (selectedIds.includes(channelId)) {
-        onSelectionChange(selectedIds.filter((id) => id !== channelId));
-      } else {
-        onSelectionChange([...selectedIds, channelId]);
-      }
-    },
-    [selectedIds, onSelectionChange],
-  );
-
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<ListItem>) => {
       if (isSkeleton(item)) {
@@ -261,13 +232,12 @@ function AnimatedChannelSelector({
       return (
         <AnimatedChannelItem
           channel={item}
-          isSelected={selectedIds.includes(item.id)}
-          onPress={handleChannelPress}
+          onPress={onChannelPress}
           animatedSize={sharedAnimatedSize}
         />
       );
     },
-    [selectedIds, handleChannelPress, sharedAnimatedSize],
+    [onChannelPress, sharedAnimatedSize],
   );
 
   const keyExtractor = useCallback((item: ListItem) => item.id, []);
@@ -315,7 +285,7 @@ const ChannelName = styled.Text({
   ...textStyles.alert2,
   color: colors.white,
   textAlign: 'center',
-  width: AVATAR_SIZE_MAX + 6,
+  width: AVATAR_SIZE_MAX,
 });
 
 const SubscriberCount = styled.Text({
