@@ -1,8 +1,8 @@
 import { Platform } from 'react-native';
 import * as AppleAuthentication from 'expo-apple-authentication';
-import * as WebBrowser from 'expo-web-browser';
 import * as Application from 'expo-application';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
+import * as KakaoLogin from '@react-native-seoul/kakao-login';
 import { supabaseClient } from '@/features/utils/clients/superBaseClient';
 import { mapWithField } from '@/features/utils/mapper/fieldMapper';
 import { AUTH_DATABASE } from '@/features/utils/constants/dbConfig';
@@ -10,18 +10,10 @@ import {
   AUTH_ERROR_CODES,
   AUTH_ERROR_MESSAGES,
   APPLE_ERROR_CODES,
+  KAKAO_ERROR_CODES,
   type AuthErrorCode,
 } from '../constants/authErrors';
-import type {
-  AuthResultDto,
-  ProfileDto,
-  AuthErrorDto,
-  SocialProvider,
-  OAuthProvider,
-} from '../types';
-
-// Expo Go에서 웹 브라우저 세션 정리
-WebBrowser.maybeCompleteAuthSession();
+import type { AuthResultDto, ProfileDto, AuthErrorDto, SocialProvider } from '../types';
 
 /** 개발 모드 여부 */
 const isDev = __DEV__;
@@ -77,141 +69,9 @@ function isUserCancelled(error: unknown, provider: SocialProvider): boolean {
   return false;
 }
 
-/** OAuth 리다이렉트 URL */
-const OAUTH_REDIRECT_URL = 'soonsak://auth/callback';
-
 /** AuthErrorDto 타입 가드 */
 function isAuthError(error: unknown): error is AuthErrorDto {
   return typeof error === 'object' && error !== null && 'code' in error && 'message' in error;
-}
-
-/** OAuth 웹 브라우저 결과가 취소인지 확인 */
-function isOAuthCancelled(result: WebBrowser.WebBrowserAuthSessionResult): boolean {
-  return result.type === 'cancel' || result.type === 'dismiss';
-}
-
-/** OAuth 콜백 URL에서 토큰/코드 추출 */
-interface OAuthTokens {
-  accessToken: string | null;
-  refreshToken: string | null;
-  code: string | null;
-  error: string | null;
-}
-
-function extractOAuthTokens(callbackUrl: string): OAuthTokens {
-  const url = new URL(callbackUrl);
-  const hashParams = new URLSearchParams(url.hash.substring(1));
-
-  return {
-    accessToken: hashParams.get('access_token'),
-    refreshToken: hashParams.get('refresh_token'),
-    code: url.searchParams.get('code'),
-    error: url.searchParams.get('error') || (url.hash.includes('error=') ? 'OAuth error' : null),
-  };
-}
-
-/** Supabase 세션 설정 (토큰 또는 코드 기반) */
-async function setSupabaseSession(
-  tokens: OAuthTokens,
-  provider: SocialProvider,
-): Promise<AuthResultDto> {
-  // 액세스 토큰으로 세션 설정
-  if (tokens.accessToken) {
-    const { data, error } = await supabaseClient.auth.setSession({
-      access_token: tokens.accessToken,
-      refresh_token: tokens.refreshToken ?? '',
-    });
-
-    if (error) {
-      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider, error);
-    }
-
-    return { user: data.user, session: data.session };
-  }
-
-  // 인증 코드로 세션 교환
-  if (tokens.code) {
-    const { data, error } = await supabaseClient.auth.exchangeCodeForSession(tokens.code);
-
-    if (error) {
-      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider, error);
-    }
-
-    return { user: data.user, session: data.session };
-  }
-
-  throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider, 'No token or code received');
-}
-
-/**
- * OAuth 웹 브라우저 방식 공통 로그인
- * Google, Kakao 등 OAuth 프로바이더에서 공통으로 사용
- */
-async function signInWithOAuthBrowser(provider: OAuthProvider): Promise<AuthResultDto> {
-  try {
-    if (__DEV__) {
-      console.log(`[AuthApi] ${provider} OAuth - redirectTo:`, OAUTH_REDIRECT_URL);
-    }
-
-    // Supabase OAuth URL 생성
-    const { data: oauthData, error: oauthError } = await supabaseClient.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: OAUTH_REDIRECT_URL,
-        skipBrowserRedirect: true,
-      },
-    });
-
-    if (oauthError || !oauthData.url) {
-      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider, oauthError);
-    }
-
-    if (__DEV__) {
-      console.log(`[AuthApi] ${provider} OAuth URL:`, oauthData.url);
-    }
-
-    // 웹 브라우저로 OAuth 페이지 열기
-    // preferEphemeralSession: iOS에서 "앱이 supabase.co를 사용하여 로그인" 팝업 제거
-    const result = await WebBrowser.openAuthSessionAsync(oauthData.url, OAUTH_REDIRECT_URL, {
-      preferEphemeralSession: true,
-    });
-
-    if (__DEV__) {
-      console.log(`[AuthApi] ${provider} OAuth result:`, result.type);
-    }
-
-    // 사용자 취소 처리
-    if (isOAuthCancelled(result)) {
-      throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, provider);
-    }
-
-    // 성공 여부 확인
-    if (result.type !== 'success' || !result.url) {
-      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider);
-    }
-
-    // 콜백 URL에서 토큰 추출
-    const tokens = extractOAuthTokens(result.url);
-
-    if (__DEV__) {
-      console.log(`[AuthApi] ${provider} OAuth callback URL:`, result.url);
-    }
-
-    // OAuth 에러 확인
-    if (tokens.error) {
-      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, provider, tokens.error);
-    }
-
-    // Supabase 세션 설정
-    return await setSupabaseSession(tokens, provider);
-  } catch (error) {
-    // 이미 AuthErrorDto인 경우 그대로 전달
-    if (isAuthError(error)) {
-      throw error;
-    }
-
-    throw createAuthError(AUTH_ERROR_CODES.UNKNOWN_ERROR, provider, error);
-  }
 }
 
 /**
@@ -275,6 +135,85 @@ async function signInWithGoogleNative(): Promise<AuthResultDto> {
     }
 
     throw createAuthError(AUTH_ERROR_CODES.UNKNOWN_ERROR, 'google', error);
+  }
+}
+
+/**
+ * Kakao 네이티브 로그인
+ * @react-native-seoul/kakao-login SDK + Supabase signInWithIdToken 방식
+ *
+ * Google 로그인과 동일한 패턴:
+ * 1. 카카오 SDK로 로그인 → OIDC ID Token 획득
+ * 2. Supabase에 ID Token으로 세션 교환
+ */
+async function signInWithKakaoNative(): Promise<AuthResultDto> {
+  try {
+    // Step 1: 카카오 로그인 (카카오톡 앱 또는 웹 로그인)
+    const loginResult = await KakaoLogin.login();
+
+    if (__DEV__) {
+      // 민감한 토큰 정보는 마스킹 처리
+      console.log('[AuthApi] Kakao login result:', {
+        accessTokenExpiresAt: loginResult.accessTokenExpiresAt,
+        refreshTokenExpiresAt: loginResult.refreshTokenExpiresAt,
+        hasIdToken: !!loginResult.idToken,
+        hasAccessToken: !!loginResult.accessToken,
+        hasRefreshToken: !!loginResult.refreshToken,
+        scopes: loginResult.scopes,
+      });
+    }
+
+    // Step 2: OIDC ID Token 획득
+    // Supabase에서 카카오 OIDC를 사용하려면 카카오 개발자 콘솔에서 OIDC 활성화 필요
+    const idToken = loginResult.idToken;
+
+    if (!idToken) {
+      throw createAuthError(
+        AUTH_ERROR_CODES.SUPABASE_ERROR,
+        'kakao',
+        'idToken이 없습니다. 카카오 개발자 콘솔에서 OIDC 활성화가 필요합니다.',
+      );
+    }
+
+    if (__DEV__) {
+      console.log('[AuthApi] Kakao idToken 획득 성공');
+    }
+
+    // Step 3: Supabase에 ID 토큰으로 세션 교환
+    const { data, error } = await supabaseClient.auth.signInWithIdToken({
+      provider: 'kakao',
+      token: idToken,
+    });
+
+    if (error) {
+      throw createAuthError(AUTH_ERROR_CODES.SUPABASE_ERROR, 'kakao', error);
+    }
+
+    return { user: data.user, session: data.session };
+  } catch (error) {
+    // 사용자 취소 확인 (isAuthError보다 먼저 체크해야 함)
+    // 네이티브 SDK 에러는 code/message 속성을 가지므로 isAuthError에 매칭될 수 있음
+    // iOS: error.code 또는 nativeError.code로 E_CANCELLED_OPERATION 확인
+    // Android: error.message에 CANCELED 문자열 포함 여부 확인
+    const errorCode = (error as Error & { code?: string })?.code;
+    const nativeErrorCode = (error as Error & { nativeError?: { code?: string } })?.nativeError
+      ?.code;
+    const errorMessage = (error as Error)?.message ?? '';
+
+    const isIOSCancelled =
+      errorCode === 'E_CANCELLED_OPERATION' || nativeErrorCode === 'E_CANCELLED_OPERATION';
+    const isAndroidCancelled = errorMessage.includes(KAKAO_ERROR_CODES.CANCELED);
+
+    if (isIOSCancelled || isAndroidCancelled) {
+      throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, 'kakao');
+    }
+
+    // 이미 AuthErrorDto인 경우 그대로 전달 (취소 체크 이후에 수행)
+    if (isAuthError(error)) {
+      throw error;
+    }
+
+    throw createAuthError(AUTH_ERROR_CODES.UNKNOWN_ERROR, 'kakao', error);
   }
 }
 
@@ -357,10 +296,10 @@ export const authApi = {
 
   /**
    * 카카오 소셜 로그인
-   * OAuth 웹 브라우저를 통한 로그인
+   * 네이티브 SDK 방식: @react-native-seoul/kakao-login + Supabase signInWithIdToken
    */
   signInWithKakao: async (): Promise<AuthResultDto> => {
-    return signInWithOAuthBrowser('kakao');
+    return signInWithKakaoNative();
   },
 
   /**
@@ -408,8 +347,19 @@ export const authApi = {
 
   /**
    * 로그아웃
+   * Supabase 세션과 네이티브 소셜 로그인 세션(카카오)을 모두 정리
    */
   signOut: async (): Promise<void> => {
+    // 카카오 네이티브 세션 정리 (실패해도 Supabase 로그아웃은 진행)
+    try {
+      await KakaoLogin.logout();
+    } catch (kakaoError) {
+      // 카카오 로그인을 사용하지 않았거나 이미 로그아웃된 경우 무시
+      if (isDev) {
+        console.log('[AuthApi] Kakao logout skipped (not logged in via Kakao):', kakaoError);
+      }
+    }
+
     const { error } = await supabaseClient.auth.signOut();
 
     if (error) {
@@ -479,6 +429,15 @@ export const authApi = {
         undefined,
         data?.error ?? '회원탈퇴 처리 중 오류가 발생했습니다.',
       );
+    }
+
+    // 카카오 네이티브 세션 정리 (실패해도 계속 진행)
+    try {
+      await KakaoLogin.logout();
+    } catch (kakaoError) {
+      if (isDev) {
+        console.log('[AuthApi] Kakao logout skipped during withdrawal:', kakaoError);
+      }
     }
 
     // 로컬 세션 클리어 (AsyncStorage의 세션 토큰 삭제)

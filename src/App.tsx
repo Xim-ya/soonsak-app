@@ -20,13 +20,33 @@ import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
 import { useAppPreload } from '@/shared/hooks/useAppPreload';
+import * as Clarity from '@microsoft/react-native-clarity';
+import * as Sentry from '@sentry/react-native';
+
+// Sentry 초기화 (앱 시작 시 가장 먼저 실행)
+const SENTRY_DSN = process.env['EXPO_PUBLIC_SENTRY_DSN'];
+const SENTRY_TRACES_SAMPLE_RATE = process.env['EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE'];
+if (SENTRY_DSN) {
+  // 프로덕션에서는 낮은 샘플링 비율 사용 (기본값 0.5), 개발 모드에서는 1.0
+  const defaultSampleRate = __DEV__ ? 1.0 : 0.5;
+  const tracesSampleRate = SENTRY_TRACES_SAMPLE_RATE
+    ? parseFloat(SENTRY_TRACES_SAMPLE_RATE)
+    : defaultSampleRate;
+
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    debug: __DEV__,
+    enabled: true,
+    tracesSampleRate,
+  });
+}
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
 
 // Google Sign-In 초기화 (모듈 레벨에서 한 번만 호출)
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_WEB_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID'];
+const GOOGLE_IOS_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID'];
 
 // 디버깅: 환경 변수 확인 (개발 모드에서만)
 if (__DEV__) {
@@ -37,7 +57,7 @@ if (__DEV__) {
 if (GOOGLE_WEB_CLIENT_ID) {
   configureGoogleSignin({
     webClientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    ...(GOOGLE_IOS_CLIENT_ID && { iosClientId: GOOGLE_IOS_CLIENT_ID }),
   });
 }
 
@@ -134,6 +154,27 @@ function AppContent() {
     };
   }, [insets]);
 
+  // Microsoft Clarity 초기화 (프로덕션 빌드에서만 활성화)
+  useEffect(() => {
+    if (__DEV__) {
+      return;
+    }
+
+    const clarityProjectId = process.env['EXPO_PUBLIC_CLARITY_PROJECT_ID'];
+    if (!clarityProjectId) {
+      console.warn('[Clarity] 프로젝트 ID가 설정되지 않음');
+      return;
+    }
+
+    try {
+      Clarity.initialize(clarityProjectId, {
+        logLevel: Clarity.LogLevel.None,
+      });
+    } catch (error) {
+      console.error('[Clarity] 초기화 실패:', error);
+    }
+  }, []);
+
   return (
     <>
       <StatusBar style="light" />
@@ -149,15 +190,16 @@ function AppContent() {
 }
 
 export default function App() {
+  /* eslint-disable @typescript-eslint/no-require-imports */
   const [fontsLoaded] = useFonts({
     'Pretendard-Bold': require('../assets/fonts/Pretendard-Bold.otf'),
     'Pretendard-SemiBold': require('../assets/fonts/Pretendard-SemiBold.otf'),
     'Pretendard-Medium': require('../assets/fonts/Pretendard-Medium.otf'),
     'Pretendard-Regular': require('../assets/fonts/Pretendard-Regular.otf'),
     staatliches_regular: require('../assets/fonts/Staatliches-Regular.ttf'),
-    // 한글 포스터 폰트
     'DoHyeon-Regular': require('../assets/fonts/DoHyeon-Regular.ttf'),
   });
+  /* eslint-enable @typescript-eslint/no-require-imports */
 
   const { isReady: isPreloadReady, hideSplash } = useAppPreload();
 

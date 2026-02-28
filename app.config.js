@@ -3,6 +3,7 @@ require('dotenv').config();
 
 const GOOGLE_OAUTH_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
 const GOOGLE_OAUTH_ANDROID_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID;
+const KAKAO_NATIVE_APP_KEY = process.env.EXPO_PUBLIC_KAKAO_NATIVE_APP_KEY;
 
 // URL scheme용 - .apps.googleusercontent.com 제거 (undefined 시 null 반환)
 const GOOGLE_IOS_URL_SCHEME = GOOGLE_OAUTH_IOS_CLIENT_ID
@@ -13,6 +14,7 @@ const GOOGLE_ANDROID_URL_SCHEME = GOOGLE_OAUTH_ANDROID_CLIENT_ID
   : null;
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
 const APP_VARIANT = process.env.APP_VARIANT || 'development';
+const KOTLIN_VERSION = '2.0.21';
 
 module.exports = {
   expo: {
@@ -22,6 +24,7 @@ module.exports = {
       'soonsak',
       GOOGLE_IOS_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
       GOOGLE_ANDROID_URL_SCHEME && `com.googleusercontent.apps.${GOOGLE_ANDROID_URL_SCHEME}`,
+      KAKAO_NATIVE_APP_KEY && `kakao${KAKAO_NATIVE_APP_KEY}`,
     ].filter(Boolean),
     version: '1.0.0',
     orientation: 'portrait',
@@ -37,6 +40,7 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
+      googleServicesFile: './GoogleService-Info.plist',
       entitlements: {
         'aps-environment': APP_VARIANT === 'production' ? 'production' : 'development',
       },
@@ -62,6 +66,14 @@ module.exports = {
       'expo-web-browser',
       'expo-apple-authentication',
       [
+        'expo-build-properties',
+        {
+          android: {
+            kotlinVersion: KOTLIN_VERSION,
+          },
+        },
+      ],
+      [
         'expo-notifications',
         {
           icon: './assets/notification_icon.png',
@@ -75,6 +87,18 @@ module.exports = {
           iosUrlScheme: `com.googleusercontent.apps.${GOOGLE_IOS_URL_SCHEME}`,
         },
       ],
+      KAKAO_NATIVE_APP_KEY && [
+        '@react-native-seoul/kakao-login',
+        {
+          kakaoAppKey: KAKAO_NATIVE_APP_KEY,
+          kotlinVersion: KOTLIN_VERSION,
+        },
+      ],
+      './plugins/withKakaoMaven',
+      './plugins/withDebugKeystore',
+      '@react-native-firebase/app',
+      '@react-native-firebase/crashlytics',
+      './plugins/withFirebaseModularHeaders',
     ].filter(Boolean),
     extra: {
       eas: {

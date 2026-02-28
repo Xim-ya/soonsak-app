@@ -42,6 +42,14 @@ export const GOOGLE_ERROR_CODES = {
   NETWORK_ERROR: 'NETWORK_ERROR',
 } as const;
 
+/** Kakao 에러 코드 맵핑 (@react-native-seoul/kakao-login) */
+export const KAKAO_ERROR_CODES = {
+  /** 사용자가 로그인을 취소한 경우 */
+  CANCELED: 'user cancelled.',
+  /** 카카오톡 앱이 설치되지 않은 경우 */
+  KAKAO_TALK_NOT_INSTALLED: 'KakaoTalk is not installed',
+} as const;
+
 /** 유효한 AuthErrorCode인지 확인하는 타입 가드 */
 export function isValidAuthErrorCode(code: string): code is AuthErrorCode {
   return Object.values(AUTH_ERROR_CODES).includes(code as AuthErrorCode);

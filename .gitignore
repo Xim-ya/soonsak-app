@@ -113,6 +113,10 @@ google-services.json
 GoogleService-Info.plist
 *-firebase-adminsdk-*.json
 
+# Credentials (keystore, signing keys)
+credentials/
+*.keystore
+
 # EAS
 eas-build-*.json
 .eas/
