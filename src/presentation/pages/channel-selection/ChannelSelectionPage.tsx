@@ -14,14 +14,12 @@ import styled from '@emotion/native';
 import textStyles from '@/shared/styles/textStyles';
 import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
-import { formatter } from '@/shared/utils/formatter';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
-import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
-import { ChannelAvatarWrapper } from '@/presentation/components/channel/ChannelAvatarWrapper';
+import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
 import {
   DarkedLinearShadow,
   LinearAlign,
@@ -29,15 +27,16 @@ import {
 import type { ChannelDto } from '@/features/channel/types';
 import { useChannelSelection } from './_hooks/useChannelSelection';
 
-/** 3열 그리드 설정 */
+/** 3열 그리드 설정 (ChannelAllPage와 동일) */
 const COLUMN_COUNT = 3;
-const GRID_HORIZONTAL_PADDING = 20;
-const GRID_GAP = 12;
+const GRID_HORIZONTAL_PADDING = 16;
+const GRID_COLUMN_GAP = AppSize.ratioWidth(31);
+const GRID_ROW_GAP = AppSize.ratioWidth(28);
 const ITEM_WIDTH =
-  (AppSize.screenWidth - GRID_HORIZONTAL_PADDING * 2 - GRID_GAP * (COLUMN_COUNT - 1)) /
+  (AppSize.screenWidth - GRID_HORIZONTAL_PADDING * 2 - GRID_COLUMN_GAP * (COLUMN_COUNT - 1)) /
   COLUMN_COUNT;
-/** 아바타 크기 */
-const AVATAR_SIZE = 72;
+/** 아바타 크기 (ChannelAllPage와 동일: itemWidth - 16) */
+const AVATAR_SIZE = ITEM_WIDTH - 16;
 /** 하단 버튼 영역 높이 */
 const BOTTOM_AREA_HEIGHT = 56 + AppSize.bottomInset + 12;
 /** 그라데이션 높이 */
@@ -70,24 +69,18 @@ export default function ChannelSelectionPage(): React.ReactElement {
   const renderChannelItem = useCallback(
     ({ item }: ListRenderItemInfo<ChannelDto>) => {
       const isSelected = selectedIds.includes(item.id);
-      const subscriberText = item.subscriberCount
-        ? `구독자 ${formatter.formatNumberWithUnit(item.subscriberCount)}`
-        : '';
 
       return (
-        <ChannelItemContainer onPress={() => toggleChannel(item.id)}>
-          <ChannelAvatarWrapper
-            isSelected={isSelected}
-            avatarSize={AVATAR_SIZE}
-            unselectedOpacity={0.5}
-          >
-            <RoundedAvatorView source={item.logoUrl ?? ''} size={AVATAR_SIZE} />
-          </ChannelAvatarWrapper>
-          <ChannelName numberOfLines={1} isSelected={isSelected}>
-            {item.name ?? ''}
-          </ChannelName>
-          {subscriberText !== '' && <SubscriberText>{subscriberText}</SubscriberText>}
-        </ChannelItemContainer>
+        <ChannelGridItem
+          logoUrl={item.logoUrl ?? ''}
+          name={item.name ?? ''}
+          subscriberCount={item.subscriberCount}
+          avatarSize={AVATAR_SIZE}
+          itemWidth={ITEM_WIDTH}
+          selectable
+          isSelected={isSelected}
+          onPress={() => toggleChannel(item.id)}
+        />
       );
     },
     [selectedIds, toggleChannel],
@@ -123,35 +116,17 @@ export default function ChannelSelectionPage(): React.ReactElement {
 
 const GRID_CONTENT_CONTAINER_STYLE = {
   paddingHorizontal: GRID_HORIZONTAL_PADDING,
-  paddingTop: 16,
+  paddingTop: 20,
   paddingBottom: BOTTOM_AREA_HEIGHT + GRADIENT_HEIGHT,
 } as const;
 
-const GRID_COLUMN_WRAPPER_STYLE = { gap: GRID_GAP, marginBottom: 20 } as const;
+const GRID_COLUMN_WRAPPER_STYLE = { gap: GRID_COLUMN_GAP, marginBottom: GRID_ROW_GAP } as const;
 
 /* Styled Components */
 
 const ResetActionText = styled.Text({
   ...textStyles.body2,
   color: colors.gray02,
-});
-
-const ChannelItemContainer = styled.TouchableOpacity({
-  width: ITEM_WIDTH,
-  alignItems: 'center',
-});
-
-const ChannelName = styled.Text<{ isSelected: boolean }>(({ isSelected }) => ({
-  ...textStyles.alert1,
-  color: isSelected ? colors.white : colors.gray03,
-  marginTop: 6,
-  textAlign: 'center',
-}));
-
-const SubscriberText = styled.Text({
-  ...textStyles.desc,
-  color: colors.gray03,
-  marginTop: 2,
 });
 
 const BottomContainer = styled.View({

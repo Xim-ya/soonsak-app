@@ -16,6 +16,10 @@ export type { PosterImageProps } from './PosterImage';
 export { BackdropImage, BackdropSkeleton } from './BackdropImage';
 export type { BackdropImageProps } from './BackdropImage';
 
+// 채널 로고 이미지 (원형)
+export { ChannelLogoImage, ChannelLogoSkeleton } from './ChannelLogoImage';
+export type { ChannelLogoImageProps } from './ChannelLogoImage';
+
 // 에러 플레이스홀더
 export { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
