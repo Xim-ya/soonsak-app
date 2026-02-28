@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import styled from '@emotion/native';
 import { useRoute, RouteProp, useNavigation, useFocusEffect } from '@react-navigation/native';
-import { ActivityIndicator, Platform, Alert, StatusBar, Dimensions } from 'react-native';
+import { ActivityIndicator, Platform, StatusBar, Dimensions } from 'react-native';
 import { YoutubeView, useYouTubePlayer, useYouTubeEvent } from 'react-native-youtube-bridge';
 import WebView from 'react-native-webview';
 import * as ScreenOrientation from 'expo-screen-orientation';
@@ -14,6 +14,7 @@ import { useWatchProgressSync } from '@/features/watch-history';
 import { AppSize } from '@/shared/utils/appSize';
 import { PlayerWatchProviderView } from './_components/PlayerWatchProviderView';
 import { usePlayerReady, useResumePlayback, useFallbackPlayer } from './_hooks';
+import { useDialog } from '@/presentation/components/dialog';
 
 type PlayerPageRouteProp = RouteProp<RootStackParamList, typeof routePages.player>;
 
@@ -27,6 +28,7 @@ export const PlayerPage = () => {
   const navigation = useNavigation();
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
+  const { showDialog, showConfirmDialog } = useDialog();
 
   const [screenDimensions, setScreenDimensions] = useState(Dimensions.get('window'));
   const isAndroid = Platform.OS === 'android';
@@ -141,15 +143,17 @@ export const PlayerPage = () => {
   // 페이지 이탈 시 시청 진행률 저장은 useWatchProgressSync 훅 내부에서 처리됨
 
   // 자동 재생 차단 감지
-  useYouTubeEvent(player, 'autoplayBlocked', () => {
+  useYouTubeEvent(player, 'autoplayBlocked', async () => {
     console.log('자동 재생이 차단되었습니다');
     if (Platform.OS === 'ios') {
-      Alert.alert('자동 재생 차단됨', '재생 버튼을 눌러 영상을 시작하세요', [
-        {
-          text: '재생',
-          onPress: () => player.play(),
-        },
-      ]);
+      const result = await showDialog({
+        title: '자동 재생 차단됨',
+        description: '재생 버튼을 눌러 영상을 시작하세요',
+        buttonText: '재생',
+      });
+      if (result === 'confirm') {
+        player.play();
+      }
     }
   });
 
@@ -184,21 +188,19 @@ export const PlayerPage = () => {
             thirdPartyCookiesEnabled
             sharedCookiesEnabled
             allowsBackForwardNavigationGestures={false}
-            onError={() => {
-              Alert.alert('재생 오류', 'YouTube 앱에서 재생합니다.', [
-                {
-                  text: '취소',
-                  style: 'cancel',
-                  onPress: () => navigation.goBack(),
-                },
-                {
-                  text: 'YouTube 열기',
-                  onPress: async () => {
-                    await openInYouTube();
-                    navigation.goBack();
-                  },
-                },
-              ]);
+            onError={async () => {
+              const result = await showConfirmDialog({
+                title: '재생 오류',
+                description: 'YouTube 앱에서 재생합니다.',
+                leftButtonText: '취소',
+                rightButtonText: 'YouTube 열기',
+              });
+              if (result === 'left') {
+                navigation.goBack();
+              } else if (result === 'right') {
+                await openInYouTube();
+                navigation.goBack();
+              }
             }}
           />
         </FallbackContainer>

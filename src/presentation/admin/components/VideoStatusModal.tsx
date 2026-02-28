@@ -6,9 +6,10 @@
  */
 
 import React, { useCallback, useState } from 'react';
-import { Modal, ActivityIndicator, TouchableWithoutFeedback, Alert } from 'react-native';
+import { Modal, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useDialog } from '@/presentation/components/dialog';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ContentStatus, ContentStatusLabel } from '@/features/content/types';
@@ -61,6 +62,7 @@ function VideoStatusModal({
   isSaving = false,
 }: VideoStatusModalProps) {
   const insets = useSafeAreaInsets();
+  const { showConfirmDialog } = useDialog();
   const [selectedStatus, setSelectedStatus] = useState<ContentStatus | null>(null);
 
   // 상태 선택 핸들러
@@ -69,27 +71,25 @@ function VideoStatusModal({
   }, []);
 
   // 확인 버튼 핸들러
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     if (!selectedStatus) return;
 
     // rejected 선택 시 경고
     if (selectedStatus === ContentStatus.REJECTED) {
-      Alert.alert(
-        '비디오 거부',
-        '비디오를 거부하면:\n• 대표 영상에서 해제됩니다\n• 이 비디오가 유일하면 콘텐츠가 삭제됩니다\n\n계속하시겠습니까?',
-        [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '거부',
-            style: 'destructive',
-            onPress: () => onChangeStatus(selectedStatus),
-          },
-        ],
-      );
+      const result = await showConfirmDialog({
+        title: '비디오 거부',
+        description:
+          '비디오를 거부하면:\n• 대표 영상에서 해제됩니다\n• 이 비디오가 유일하면 콘텐츠가 삭제됩니다\n\n계속하시겠습니까?',
+        leftButtonText: '취소',
+        rightButtonText: '거부',
+      });
+      if (result === 'right') {
+        onChangeStatus(selectedStatus);
+      }
     } else {
       onChangeStatus(selectedStatus);
     }
-  }, [selectedStatus, onChangeStatus]);
+  }, [selectedStatus, onChangeStatus, showConfirmDialog]);
 
   // 모달 닫기 시 선택 초기화
   const handleClose = useCallback(() => {

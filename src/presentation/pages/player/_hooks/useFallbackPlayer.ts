@@ -8,9 +8,10 @@
  */
 
 import { useState, useCallback } from 'react';
-import { Alert, Linking } from 'react-native';
+import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { buildYouTubeUrl, buildYouTubeAppUrl, isEmbeddedRestrictedError } from '@/features/youtube';
+import { useDialog } from '@/presentation/components/dialog';
 
 interface UseFallbackPlayerParams {
   readonly videoId: string;
@@ -27,6 +28,7 @@ interface FallbackPlayerResult {
 export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): FallbackPlayerResult {
   const navigation = useNavigation();
   const [isFallbackMode, setIsFallbackMode] = useState(false);
+  const { showDialog } = useDialog();
 
   const openInYouTube = useCallback(async () => {
     const youtubeUrl = buildYouTubeUrl(videoId);
@@ -41,12 +43,16 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
       }
     } catch (linkingError) {
       console.error('링크 열기 실패:', linkingError);
-      Alert.alert('오류', 'YouTube로 연결할 수 없습니다.');
+      await showDialog({
+        title: '오류',
+        description: 'YouTube로 연결할 수 없습니다.',
+        buttonText: '확인',
+      });
     }
-  }, [videoId]);
+  }, [videoId, showDialog]);
 
   const handleError = useCallback(
-    (error: { code: number; message: string }) => {
+    async (error: { code: number; message: string }) => {
       console.error('플레이어 에러:', error);
 
       const isEmbedRestricted = isEmbeddedRestrictedError(error);
@@ -55,15 +61,17 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
         console.log('임베드 제한 감지 → YouTube 모바일 사이트 fallback 전환');
         setIsFallbackMode(true);
       } else {
-        Alert.alert('재생 오류', `에러 코드: ${error.code}\n${error.message}`, [
-          {
-            text: '확인',
-            onPress: () => navigation.goBack(),
-          },
-        ]);
+        const result = await showDialog({
+          title: '재생 오류',
+          description: `에러 코드: ${error.code}\n${error.message}`,
+          buttonText: '확인',
+        });
+        if (result === 'confirm') {
+          navigation.goBack();
+        }
       }
     },
-    [navigation],
+    [navigation, showDialog],
   );
 
   return {

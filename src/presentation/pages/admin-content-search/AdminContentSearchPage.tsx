@@ -10,10 +10,10 @@ import {
   TextInput,
   FlatList,
   TouchableOpacity,
-  Alert,
   Keyboard,
   ActivityIndicator,
 } from 'react-native';
+import { useDialog } from '@/presentation/components/dialog';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -91,6 +91,7 @@ export default function AdminContentSearchPage() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { showDialog, showConfirmDialog } = useDialog();
 
   const {
     videoId,
@@ -140,7 +141,7 @@ export default function AdminContentSearchPage() {
 
   // 콘텐츠 선택 시 확인 다이얼로그
   const handleSelectContent = useCallback(
-    (selectedItem: TmdbContentItem) => {
+    async (selectedItem: TmdbContentItem) => {
       Keyboard.dismiss();
 
       const newContentType = toContentType(selectedItem.mediaType);
@@ -148,20 +149,25 @@ export default function AdminContentSearchPage() {
 
       // 동일한 콘텐츠 선택 방지
       if (selectedItem.id === currentContentId && newContentType === currentContentType) {
-        Alert.alert('알림', '현재 매핑된 콘텐츠와 동일합니다.');
+        await showDialog({
+          title: '알림',
+          description: '현재 매핑된 콘텐츠와 동일합니다.',
+          buttonText: '확인',
+        });
         return;
       }
 
-      Alert.alert('콘텐츠 교체', `"${videoTitle}"을(를)\n"${title}"(으)로 교체하시겠습니까?`, [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '교체',
-          style: 'destructive',
-          onPress: () => handleRemap(selectedItem),
-        },
-      ]);
+      const result = await showConfirmDialog({
+        title: '콘텐츠 교체',
+        description: `"${videoTitle}"을(를)\n"${title}"(으)로 교체하시겠습니까?`,
+        leftButtonText: '취소',
+        rightButtonText: '교체',
+      });
+      if (result === 'right') {
+        handleRemap(selectedItem);
+      }
     },
-    [videoTitle, currentContentId, currentContentType],
+    [videoTitle, currentContentId, currentContentType, showDialog, showConfirmDialog],
   );
 
   // 실제 재매핑 처리
@@ -206,28 +212,32 @@ export default function AdminContentSearchPage() {
           message = '교체 완료!\n기존 콘텐츠는 다른 비디오가 없어 삭제되었습니다.';
         }
 
-        Alert.alert('완료', message, [
-          {
-            text: '확인',
-            onPress: () => {
-              // 새 콘텐츠 상세 페이지로 이동
-              navigation.replace(routePages.contentDetail, {
-                id: selectedItem.id,
-                type: newContentType,
-                title,
-                videoId,
-              });
-            },
-          },
-        ]);
+        const dialogResult = await showDialog({
+          title: '완료',
+          description: message,
+          buttonText: '확인',
+        });
+        if (dialogResult === 'confirm') {
+          // 새 콘텐츠 상세 페이지로 이동
+          navigation.replace(routePages.contentDetail, {
+            id: selectedItem.id,
+            type: newContentType,
+            title,
+            videoId,
+          });
+        }
       } catch (error) {
         console.error('콘텐츠 교체 실패:', error);
-        Alert.alert('오류', '콘텐츠 교체에 실패했습니다. 다시 시도해주세요.');
+        await showDialog({
+          title: '오류',
+          description: '콘텐츠 교체에 실패했습니다. 다시 시도해주세요.',
+          buttonText: '확인',
+        });
       } finally {
         setIsRemapping(false);
       }
     },
-    [videoId, currentContentId, currentContentType, queryClient, navigation],
+    [videoId, currentContentId, currentContentType, queryClient, navigation, showDialog],
   );
 
   const renderItem = useCallback(

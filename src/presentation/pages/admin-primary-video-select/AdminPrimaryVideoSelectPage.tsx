@@ -5,7 +5,7 @@
  */
 
 import { useCallback, memo } from 'react';
-import { FlatList, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
@@ -20,6 +20,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { adminContentApi, type ContentVideoItem } from '@/features/admin';
+import { useDialog } from '@/presentation/components/dialog';
 
 const THUMBNAIL_WIDTH = AppSize.ratioWidth(120);
 const THUMBNAIL_HEIGHT = THUMBNAIL_WIDTH * (9 / 16);
@@ -43,6 +44,7 @@ export default function AdminPrimaryVideoSelectPage() {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const { showDialog, showConfirmDialog } = useDialog();
 
   const { contentId, contentType, contentTitle } = route.params;
 
@@ -61,21 +63,27 @@ export default function AdminPrimaryVideoSelectPage() {
   }, [navigation]);
 
   // 비디오 선택 핸들러
-  const handleSelectVideo = useCallback((video: ContentVideoItem) => {
+  const handleSelectVideo = useCallback(async (video: ContentVideoItem) => {
     // 이미 대표 비디오인 경우
     if (video.isPrimary) {
-      Alert.alert('알림', '이미 대표 비디오로 설정되어 있습니다.');
+      await showDialog({
+        title: '알림',
+        description: '이미 대표 비디오로 설정되어 있습니다.',
+        buttonText: '확인',
+      });
       return;
     }
 
-    Alert.alert('대표 비디오 변경', `"${video.title}"을(를) 대표 비디오로 설정하시겠습니까?`, [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '변경',
-        onPress: () => handleChangePrimary(video.id, video.title),
-      },
-    ]);
-  }, []);
+    const result = await showConfirmDialog({
+      title: '대표 비디오 변경',
+      description: `"${video.title}"을(를) 대표 비디오로 설정하시겠습니까?`,
+      leftButtonText: '취소',
+      rightButtonText: '변경',
+    });
+    if (result === 'right') {
+      handleChangePrimary(video.id, video.title);
+    }
+  }, [showDialog, showConfirmDialog]);
 
   // 대표 비디오 변경 처리
   const handleChangePrimary = useCallback(
@@ -99,13 +107,21 @@ export default function AdminPrimaryVideoSelectPage() {
         // 목록 새로고침
         await refetch();
 
-        Alert.alert('완료', `"${videoTitle}"이(가) 대표 비디오로 설정되었습니다.`);
+        await showDialog({
+          title: '완료',
+          description: `"${videoTitle}"이(가) 대표 비디오로 설정되었습니다.`,
+          buttonText: '확인',
+        });
       } catch (error) {
         console.error('대표 비디오 변경 실패:', error);
-        Alert.alert('오류', '대표 비디오 변경에 실패했습니다. 다시 시도해주세요.');
+        await showDialog({
+          title: '오류',
+          description: '대표 비디오 변경에 실패했습니다. 다시 시도해주세요.',
+          buttonText: '확인',
+        });
       }
     },
-    [contentId, contentType, queryClient, refetch],
+    [contentId, contentType, queryClient, refetch, showDialog],
   );
 
   const renderItem = useCallback(

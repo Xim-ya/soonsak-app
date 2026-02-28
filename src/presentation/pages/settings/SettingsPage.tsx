@@ -8,7 +8,7 @@
  */
 
 import { useCallback, useState } from 'react';
-import { ScrollView, Alert, Linking, ActivityIndicator } from 'react-native';
+import { ScrollView, Linking, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
@@ -22,6 +22,7 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { SettingsSection, SettingsItem, SettingsToggleItem } from './_components';
 import { AdminOnly } from '@/features/auth/guards';
+import { useDialog } from '@/presentation/components/dialog';
 
 // TODO: react-native-device-info로 실제 버전 가져오기
 const APP_VERSION = '1.0.0';
@@ -40,6 +41,7 @@ export default function SettingsPage() {
   const navigation = useNavigation<NavigationProp>();
   const { signOut, status } = useAuth();
   const isLoggedIn = status === 'authenticated';
+  const { showDialog, showConfirmDialog } = useDialog();
 
   // TODO: 실제 알림 설정 상태 연동 (AsyncStorage 또는 서버)
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
@@ -60,11 +62,20 @@ export default function SettingsPage() {
   }, []);
 
   // 외부 URL 열기 공통 핸들러
-  const openExternalUrl = useCallback((url: string, errorMessage: string) => {
-    Linking.openURL(url).catch(() => {
-      Alert.alert('오류', errorMessage);
-    });
-  }, []);
+  const openExternalUrl = useCallback(
+    async (url: string, errorMessage: string) => {
+      try {
+        await Linking.openURL(url);
+      } catch {
+        await showDialog({
+          title: '오류',
+          description: errorMessage,
+          buttonText: '확인',
+        });
+      }
+    },
+    [showDialog],
+  );
 
   // 로그아웃 처리
   const handleLogout = useCallback(async () => {
@@ -72,21 +83,26 @@ export default function SettingsPage() {
       await signOut();
       resetToLoginScreen();
     } catch {
-      Alert.alert('오류', '로그아웃 중 문제가 발생했습니다.');
+      await showDialog({
+        title: '오류',
+        description: '로그아웃 중 문제가 발생했습니다.',
+        buttonText: '확인',
+      });
     }
-  }, [signOut, resetToLoginScreen]);
+  }, [signOut, resetToLoginScreen, showDialog]);
 
   // 로그아웃 확인 다이얼로그
-  const handleLogoutPress = useCallback(() => {
-    Alert.alert('로그아웃', '정말 로그아웃 하시겠습니까?', [
-      { text: '취소', style: 'cancel' },
-      {
-        text: '로그아웃',
-        style: 'destructive',
-        onPress: handleLogout,
-      },
-    ]);
-  }, [handleLogout]);
+  const handleLogoutPress = useCallback(async () => {
+    const result = await showConfirmDialog({
+      title: '로그아웃',
+      description: '정말 로그아웃 하시겠습니까?',
+      leftButtonText: '취소',
+      rightButtonText: '로그아웃',
+    });
+    if (result === 'right') {
+      await handleLogout();
+    }
+  }, [handleLogout, showConfirmDialog]);
 
   // 회원탈퇴 처리
   const handleWithdraw = useCallback(async () => {
@@ -97,27 +113,28 @@ export default function SettingsPage() {
       await authApi.withdrawUser();
       resetToLoginScreen();
     } catch {
-      Alert.alert('오류', '회원탈퇴 처리 중 문제가 발생했습니다.');
+      await showDialog({
+        title: '오류',
+        description: '회원탈퇴 처리 중 문제가 발생했습니다.',
+        buttonText: '확인',
+      });
     } finally {
       setIsWithdrawing(false);
     }
-  }, [isWithdrawing, resetToLoginScreen]);
+  }, [isWithdrawing, resetToLoginScreen, showDialog]);
 
   // 회원탈퇴 확인 다이얼로그
-  const handleWithdrawPress = useCallback(() => {
-    Alert.alert(
-      '회원탈퇴',
-      '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '탈퇴하기',
-          style: 'destructive',
-          onPress: handleWithdraw,
-        },
-      ],
-    );
-  }, [handleWithdraw]);
+  const handleWithdrawPress = useCallback(async () => {
+    const result = await showConfirmDialog({
+      title: '회원탈퇴',
+      description: '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+      leftButtonText: '취소',
+      rightButtonText: '탈퇴하기',
+    });
+    if (result === 'right') {
+      await handleWithdraw();
+    }
+  }, [handleWithdraw, showConfirmDialog]);
 
   return (
     <BasePage>

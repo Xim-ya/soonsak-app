@@ -6,7 +6,7 @@
 
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
+import { useDialog } from '@/presentation/components/dialog';
 import { adminUserApi, type PushData } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 import {
@@ -88,6 +88,7 @@ const QUERY_KEYS = {
 
 export function useUserDetail(userId: string): UseUserDetailReturn {
   const queryClient = useQueryClient();
+  const { showDialog } = useDialog();
 
   // 유저 상세 정보 조회
   const {
@@ -109,17 +110,25 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
   // 역할 변경 뮤테이션
   const updateRoleMutation = useMutation({
     mutationFn: (newRole: UserRole) => adminUserApi.updateUserRole(userId, newRole),
-    onSuccess: () => {
+    onSuccess: async () => {
       // 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.userDetail(userId) });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.users });
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleCounts });
-      Alert.alert('성공', '역할이 변경되었습니다.');
+      await showDialog({
+        title: '성공',
+        description: '역할이 변경되었습니다.',
+        buttonText: '확인',
+      });
     },
-    onError: (err) => {
+    onError: async (err) => {
       console.error('역할 변경 실패:', err);
       const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.ROLE_UPDATE_FAILED);
-      Alert.alert('오류', errorMessage);
+      await showDialog({
+        title: '오류',
+        description: errorMessage,
+        buttonText: '확인',
+      });
     },
   });
 
@@ -149,7 +158,11 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
       const trimmedBody = body?.trim() ?? '';
 
       if (trimmedBody.length === 0) {
-        Alert.alert('입력 오류', '내용을 입력해주세요.');
+        await showDialog({
+          title: '입력 오류',
+          description: '내용을 입력해주세요.',
+          buttonText: '확인',
+        });
         return false;
       }
 
@@ -167,20 +180,32 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
             result.failedCount > 0
               ? `푸시 알림이 발송되었습니다.${deeplinkInfo}\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
               : `푸시 알림이 발송되었습니다.${deeplinkInfo} (${result.sentCount}건)`;
-          Alert.alert('성공', message);
+          await showDialog({
+            title: '성공',
+            description: message,
+            buttonText: '확인',
+          });
           return true;
         }
 
-        Alert.alert('실패', ERROR_MESSAGES.NO_ACTIVE_TOKENS);
+        await showDialog({
+          title: '실패',
+          description: ERROR_MESSAGES.NO_ACTIVE_TOKENS,
+          buttonText: '확인',
+        });
         return false;
       } catch (err) {
         console.error('푸시 발송 실패:', err);
         const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.PUSH_SEND_FAILED);
-        Alert.alert('오류', errorMessage);
+        await showDialog({
+          title: '오류',
+          description: errorMessage,
+          buttonText: '확인',
+        });
         return false;
       }
     },
-    [sendPushMutation],
+    [sendPushMutation, showDialog],
   );
 
   return {
