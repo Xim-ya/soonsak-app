@@ -128,10 +128,7 @@ export default function ChannelDetailPage() {
     }
   }, [hasNextPage, isLoading, fetchNextPage]);
 
-  const keyExtractor = useCallback(
-    (item: ChannelVideoModel) => `${item.id}-${item.contentId}`,
-    [],
-  );
+  const keyExtractor = useCallback((item: ChannelVideoModel) => `${item.id}-${item.contentId}`, []);
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>

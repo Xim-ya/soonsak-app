@@ -12,9 +12,9 @@ import { LoadableImageView } from '@/presentation/components/image/LoadableImage
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-import type { UserDetailItem } from '@/features/admin';
 import { UserRoleLabel, getRoleColor, formatDateTime } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
+import type { UserDetailModel } from '../_types/userDetailModel';
 
 const AVATAR_SIZE = AppSize.ratioWidth(80);
 
@@ -26,7 +26,7 @@ const DEFAULT_AVATAR_SVG = `
 `;
 
 interface UserInfoSectionProps {
-  readonly user: UserDetailItem;
+  readonly user: UserDetailModel;
 }
 
 export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoSectionProps) {

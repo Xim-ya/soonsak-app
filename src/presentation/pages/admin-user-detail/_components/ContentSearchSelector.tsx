@@ -20,7 +20,12 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { contentApi } from '@/features/content/api/contentApi';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
-import type { ContentDto, VideoDto } from '@/features/content/types';
+import {
+  contentSearchFromDto,
+  videoSearchFromDto,
+  type ContentSearchModel as ContentModel,
+  type VideoSearchModel as VideoModel,
+} from '../_types/contentSearchModel';
 
 // ============================================================================
 // Constants
@@ -88,7 +93,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
 
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<ContentDto[]>([]);
+  const [searchResults, setSearchResults] = useState<ContentModel[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // 유저 콘텐츠 목록 상태
@@ -97,7 +102,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
 
   // 비디오 선택 상태
   const [selectedContent, setSelectedContent] = useState<SelectedContent | null>(null);
-  const [videos, setVideos] = useState<VideoDto[]>([]);
+  const [videos, setVideos] = useState<VideoModel[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
 
   // 검색 실행
@@ -111,7 +116,9 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
     setIsSearching(true);
     try {
       const results = await contentApi.searchContentsKorean(trimmed, 30);
-      setSearchResults(results);
+      // DTO를 Model로 변환
+      const models = results.map(contentSearchFromDto);
+      setSearchResults(models);
     } catch (err) {
       console.error('검색 실패:', err);
       setSearchResults([]);
@@ -174,7 +181,9 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
             content.contentId,
             content.contentType,
           );
-          setVideos(videoList);
+          // DTO를 Model로 변환
+          const models = videoList.map(videoSearchFromDto);
+          setVideos(models);
         } catch (err) {
           console.error('비디오 로드 실패:', err);
           setVideos([]);
@@ -191,7 +200,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
 
   // 비디오 선택 핸들러
   const handleSelectVideo = useCallback(
-    (video: VideoDto) => {
+    (video: VideoModel) => {
       if (!selectedContent) return;
       onSelectContent(selectedContent, {
         videoId: video.id,
@@ -209,13 +218,13 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
 
   // 검색 결과 아이템 렌더링
   const renderSearchItem = useCallback(
-    ({ item }: { item: ContentDto }) => (
+    ({ item }: { item: ContentModel }) => (
       <ContentItem
         onPress={() =>
           handleSelectContent({
             contentId: item.id,
             contentTitle: item.title,
-            contentType: item.contentType as 'movie' | 'tv',
+            contentType: item.contentType,
           })
         }
       >
@@ -269,7 +278,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
 
   // 비디오 아이템 렌더링
   const renderVideoItem = useCallback(
-    ({ item }: { item: VideoDto }) => (
+    ({ item }: { item: VideoModel }) => (
       <VideoItem onPress={() => handleSelectVideo(item)}>
         {item.thumbnailUrl ? (
           <VideoThumbnail source={{ uri: item.thumbnailUrl }} />

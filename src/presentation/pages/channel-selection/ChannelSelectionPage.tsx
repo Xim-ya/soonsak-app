@@ -24,7 +24,7 @@ import {
   DarkedLinearShadow,
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
-import type { ChannelDto } from '@/features/channel/types';
+import type { ChannelSelectionModel } from './_types/channelSelectionModel';
 import { useChannelSelection } from './_hooks/useChannelSelection';
 
 /** 3열 그리드 설정 (ChannelAllPage와 동일) */
@@ -67,13 +67,13 @@ export default function ChannelSelectionPage(): React.ReactElement {
 
   // 채널 아이템 렌더링
   const renderChannelItem = useCallback(
-    ({ item }: ListRenderItemInfo<ChannelDto>) => {
+    ({ item }: ListRenderItemInfo<ChannelSelectionModel>) => {
       const isSelected = selectedIds.includes(item.id);
 
       return (
         <ChannelGridItem
           logoUrl={item.logoUrl ?? ''}
-          name={item.name ?? ''}
+          name={item.name}
           subscriberCount={item.subscriberCount}
           avatarSize={AVATAR_SIZE}
           itemWidth={ITEM_WIDTH}
@@ -86,7 +86,7 @@ export default function ChannelSelectionPage(): React.ReactElement {
     [selectedIds, toggleChannel],
   );
 
-  const keyExtractor = useCallback((item: ChannelDto) => item.id, []);
+  const keyExtractor = useCallback((item: ChannelSelectionModel) => item.id, []);
 
   return (
     <BasePage useSafeArea>

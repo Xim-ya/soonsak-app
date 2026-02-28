@@ -17,7 +17,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
-import type { VideoManagementItem as VideoManagementItemType } from '@/features/admin';
+import type { VideoManagementModel } from './_types';
 import { VideoFilterTabs, VideoManagementItem } from './_components';
 import { useVideoManagement } from './_hooks/useVideoManagement';
 
@@ -53,7 +53,7 @@ export default function AdminVideoManagementPage() {
 
   // 비디오 아이템 탭 → ContentDetailPage로 이동
   const handleVideoPress = useCallback(
-    (video: VideoManagementItemType) => {
+    (video: VideoManagementModel) => {
       navigation.navigate(routePages.contentDetail, {
         id: video.contentId,
         type: video.contentType,
@@ -72,13 +72,13 @@ export default function AdminVideoManagementPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
-    ({ item }: { item: VideoManagementItemType }) => (
+    ({ item }: { item: VideoManagementModel }) => (
       <VideoManagementItem video={item} onPress={handleVideoPress} />
     ),
     [handleVideoPress],
   );
 
-  const keyExtractor = useCallback((item: VideoManagementItemType) => item.id, []);
+  const keyExtractor = useCallback((item: VideoManagementModel) => item.id, []);
 
   const renderFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
