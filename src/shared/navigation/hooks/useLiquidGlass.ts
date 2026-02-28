@@ -5,12 +5,15 @@
  * Xcode 26 SDK로 빌드된 앱에서만 작동합니다.
  */
 
-import { ComponentType } from 'react';
+import { ComponentType, ReactNode } from 'react';
 import { Platform, StyleProp, ViewStyle } from 'react-native';
 
 interface LiquidGlassViewProps {
   effect: 'regular' | 'clear';
   style?: StyleProp<ViewStyle>;
+  colorScheme?: 'light' | 'dark' | 'system';
+  interactive?: boolean;
+  children?: ReactNode;
 }
 
 interface LiquidGlassState {
@@ -18,33 +21,53 @@ interface LiquidGlassState {
   LiquidGlassView: ComponentType<LiquidGlassViewProps> | null;
 }
 
-// TODO: Xcode 26 업데이트 후 아래 주석 해제
 // iOS 26 이상인지 체크 (iOS 26 = version 26.0)
-// const IOS_VERSION = Platform.OS === 'ios' ? parseFloat(Platform.Version as string) : 0;
-// const IS_IOS_26_OR_LATER = IOS_VERSION >= 26;
+const IOS_VERSION = Platform.OS === 'ios' ? parseFloat(Platform.Version as string) : 0;
+const IS_IOS_26_OR_LATER = IOS_VERSION >= 26;
 
-// 현재는 Liquid Glass 비활성화 (Xcode 26 필요)
-// Xcode 업데이트 후 아래 코드 활성화:
-/*
+// 디버그 로그
+if (__DEV__) {
+  console.log('[LiquidGlass] Platform:', Platform.OS);
+  console.log('[LiquidGlass] iOS Version:', IOS_VERSION);
+  console.log('[LiquidGlass] IS_IOS_26_OR_LATER:', IS_IOS_26_OR_LATER);
+}
+
+// Liquid Glass 모듈 초기화
+let liquidGlassModule: LiquidGlassState = { isSupported: false, LiquidGlassView: null };
+
 if (IS_IOS_26_OR_LATER) {
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const liquidGlass = require('@callstack/liquid-glass');
 
-    if (typeof liquidGlass.isLiquidGlassSupported === 'function') {
-      const isSupported = liquidGlass.isLiquidGlassSupported();
-      liquidGlassModule = {
-        isSupported,
-        LiquidGlassView: isSupported ? liquidGlass.LiquidGlassView : null,
-      };
+    if (__DEV__) {
+      console.log('[LiquidGlass] Module loaded:', !!liquidGlass);
+      console.log('[LiquidGlass] isLiquidGlassSupported type:', typeof liquidGlass.isLiquidGlassSupported);
+      console.log('[LiquidGlass] isLiquidGlassSupported value:', liquidGlass.isLiquidGlassSupported);
     }
-  } catch {
+
+    // isLiquidGlassSupported가 함수일 수도 있고 boolean일 수도 있음
+    const isSupported =
+      typeof liquidGlass.isLiquidGlassSupported === 'function'
+        ? liquidGlass.isLiquidGlassSupported()
+        : Boolean(liquidGlass.isLiquidGlassSupported);
+
+    if (__DEV__) {
+      console.log('[LiquidGlass] isSupported:', isSupported);
+      console.log('[LiquidGlass] LiquidGlassView:', !!liquidGlass.LiquidGlassView);
+    }
+
+    liquidGlassModule = {
+      isSupported,
+      LiquidGlassView: isSupported ? liquidGlass.LiquidGlassView : null,
+    };
+  } catch (error) {
     // 네이티브 모듈 로드 실패 시 fallback
+    if (__DEV__) {
+      console.log('[LiquidGlass] Error loading module:', error);
+    }
   }
 }
-*/
-
-// 임시: 항상 BlurView 사용
-const liquidGlassModule: LiquidGlassState = { isSupported: false, LiquidGlassView: null };
 
 /**
  * iOS 26+ Liquid Glass 지원 여부를 확인하는 hook
@@ -55,7 +78,7 @@ const liquidGlassModule: LiquidGlassState = { isSupported: false, LiquidGlassVie
  * @example
  * const { isSupported, LiquidGlassView } = useLiquidGlass();
  * if (isSupported && LiquidGlassView) {
- *   return <LiquidGlassView effect="regular" style={styles.glass} />;
+ *   return <LiquidGlassView effect="regular" colorScheme="dark" style={styles.glass} />;
  * }
  */
 export function useLiquidGlass(): LiquidGlassState {
