@@ -84,7 +84,7 @@ function GlassBottomSheet({
   // 화면 높이 계산
   const screenHeight = AppSize.screenHeight;
   const maxHeight = screenHeight * maxHeightRatio;
-  const sheetHeight = Math.max(minHeight, Math.min(maxHeight, 600));
+  const sheetHeight = Math.max(minHeight, maxHeight);
   const closeThreshold = sheetHeight * 0.3;
 
   // 애니메이션 값
@@ -165,7 +165,7 @@ function GlassBottomSheet({
         {/* 바텀시트 컨테이너 */}
         <SheetContainer style={sheetAnimatedStyle} height={sheetHeight}>
           {isIOS ? (
-            <IOSBlurContainer blurIntensity={blurIntensity} borderRadius={BORDER_RADIUS}>
+            <IOSBlurContainer intensity={blurIntensity} borderRadius={BORDER_RADIUS}>
               <SheetContent
                 gesture={panGesture}
                 title={title}
@@ -196,7 +196,7 @@ function GlassBottomSheet({
 // 바텀시트 컨텐츠 컴포넌트 (iOS/Android 공통)
 interface SheetContentProps {
   gesture: ReturnType<typeof Gesture.Pan>;
-  title?: string;
+  title: string | undefined;
   onClose: () => void;
   enableDragToClose: boolean;
   children: ReactNode;
@@ -263,7 +263,8 @@ const SheetContainer = styled(Animated.View)<{ height: number }>(({ height }) =>
 }));
 
 // iOS: BlurView 컨테이너
-const IOSBlurContainer = styled(BlurView)<{ blurIntensity: number; borderRadius: number }>(
+// Note: intensity prop은 BlurView에 직접 전달됨 (emotion styled가 unconsumed props를 pass-through)
+const IOSBlurContainer = styled(BlurView)<{ intensity: number; borderRadius: number }>(
   ({ borderRadius }) => ({
     flex: 1,
     borderTopLeftRadius: borderRadius,
