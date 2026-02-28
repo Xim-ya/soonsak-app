@@ -16,13 +16,10 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import styled from '@emotion/native';
 import { useQuery } from '@tanstack/react-query';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
 import { toggleArrayItem } from '@/shared/utils/arrayUtils';
 import { channelApi } from '@/features/channel/api/channelApi';
-import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
-import { ChannelAvatarWrapper } from '@/presentation/components/channel/ChannelAvatarWrapper';
+import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
 import { FilterSectionHeader } from '../FilterSectionHeader';
 
 /** 프리뷰에 표시할 최대 채널 수 */
@@ -98,14 +95,16 @@ function ChannelFilterTab({
         {displayChannels.map((channel) => {
           const isSelected = selectedChannelIds.includes(channel.id);
           return (
-            <ChannelItem key={channel.id} onPress={() => handleChannelToggle(channel.id)}>
-              <ChannelAvatarWrapper isSelected={isSelected} avatarSize={AVATAR_SIZE}>
-                <ChannelLogoImage source={channel.logoUrl ?? ''} size={AVATAR_SIZE} />
-              </ChannelAvatarWrapper>
-              <ChannelName numberOfLines={1} isSelected={isSelected}>
-                {channel.name ?? ''}
-              </ChannelName>
-            </ChannelItem>
+            <ChannelGridItem
+              key={channel.id}
+              logoUrl={channel.logoUrl ?? ''}
+              name={channel.name ?? ''}
+              avatarSize={AVATAR_SIZE}
+              itemWidth={ITEM_WIDTH}
+              selectable
+              isSelected={isSelected}
+              onPress={() => handleChannelToggle(channel.id)}
+            />
           );
         })}
       </ChannelGrid>
@@ -122,18 +121,6 @@ const ChannelGrid = styled.View({
   columnGap: COLUMN_GAP,
   rowGap: 12,
 });
-
-const ChannelItem = styled.TouchableOpacity({
-  width: ITEM_WIDTH,
-  alignItems: 'center',
-});
-
-const ChannelName = styled.Text<{ isSelected: boolean }>(({ isSelected }) => ({
-  ...textStyles.desc,
-  color: isSelected ? colors.white : colors.gray03,
-  marginTop: 4,
-  textAlign: 'center',
-}));
 
 export { ChannelFilterTab };
 export type { ChannelFilterTabProps };

@@ -17,12 +17,11 @@ import styled from '@emotion/native';
 import textStyles from '@/shared/styles/textStyles';
 import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
-import { formatter } from '@/shared/utils/formatter';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
-import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
+import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
 import { useChannelAll, type ChannelItemModel } from './_hooks/useChannelAll';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -88,20 +87,15 @@ export default function ChannelAllPage(): React.ReactElement {
   // 채널 아이템 렌더링
   const renderChannelItem = useCallback(
     ({ item }: ListRenderItemInfo<ChannelItemModel>) => {
-      const subscriberText = item.subscriberCount
-        ? `${formatter.formatNumberWithUnit(item.subscriberCount)}명`
-        : '';
-
       return (
-        <ChannelItemContainer
-          style={{ width: itemWidth }}
+        <ChannelGridItem
+          logoUrl={item.logoUrl}
+          name={item.name}
+          subscriberCount={item.subscriberCount}
+          avatarSize={avatarSize}
+          itemWidth={itemWidth}
           onPress={() => handleChannelPress(item)}
-          activeOpacity={0.7}
-        >
-          <ChannelLogoImage source={item.logoUrl} size={avatarSize} />
-          <ChannelName numberOfLines={1}>{item.name}</ChannelName>
-          {subscriberText !== '' && <SubscriberText>{subscriberText}</SubscriberText>}
-        </ChannelItemContainer>
+        />
       );
     },
     [handleChannelPress, itemWidth, avatarSize],
@@ -184,23 +178,6 @@ export default function ChannelAllPage(): React.ReactElement {
 }
 
 /* Styled Components */
-
-const ChannelItemContainer = styled.TouchableOpacity({
-  alignItems: 'center',
-});
-
-const ChannelName = styled.Text({
-  ...textStyles.alert1,
-  color: colors.white,
-  marginTop: 8,
-  textAlign: 'center',
-});
-
-const SubscriberText = styled.Text({
-  ...textStyles.alert2,
-  color: colors.gray03,
-  marginTop: 2,
-});
 
 const EmptyContainer = styled.View({
   paddingVertical: 60,
