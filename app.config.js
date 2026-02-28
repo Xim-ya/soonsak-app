@@ -39,6 +39,7 @@ module.exports = {
       supportsTablet: true,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
+      googleServicesFile: './GoogleService-Info.plist',
       entitlements: {
         'aps-environment': APP_VARIANT === 'production' ? 'production' : 'development',
       },
@@ -94,6 +95,9 @@ module.exports = {
       ],
       './plugins/withKakaoMaven',
       './plugins/withDebugKeystore',
+      '@react-native-firebase/app',
+      '@react-native-firebase/crashlytics',
+      './plugins/withFirebaseModularHeaders',
     ].filter(Boolean),
     extra: {
       eas: {
