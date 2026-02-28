@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { FlatList } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,6 +8,7 @@ import { BasePage } from '../../components/page';
 import { BackButtonAppBar } from '../../components/app-bar';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { SortSelector } from '../../components/sort';
+import { ViewModeToggle, type ViewMode } from '../../components/view-mode';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import colors from '@/shared/styles/colors';
@@ -20,7 +21,7 @@ import { CHANNEL_SORT_OPTIONS } from '../channel/_types';
 import { useChannelContents } from './_hooks/useChannelContents';
 import { useChannelInfo } from './_hooks/useChannelInfo';
 import { useScrollAnimation } from './_hooks/useScrollAnimation';
-import { VideoGridItem } from './_components/VideoGridItem';
+import { VideoGridItem, VideoListItem } from './_components';
 import { ChannelVideoModel } from './_types';
 import { SkeletonView } from '../../components/loading/SkeletonView';
 
@@ -33,6 +34,8 @@ export default function ChannelDetailPage() {
 
   // 정렬 상태 (기본값: 최신순)
   const [sortType, setSortType] = useState<SortType>('latest');
+  // 뷰 모드 상태 (기본값: 카드 뷰)
+  const [viewMode, setViewMode] = useState<ViewMode>('card');
 
   // 채널 정보 관리
   const { displayName, displayLogoUrl, isChannelLoading, formattedSubscriberCount } =
@@ -58,8 +61,19 @@ export default function ChannelDetailPage() {
   const { handleScroll, gradientAnimatedStyle } = useScrollAnimation();
 
   const renderItem = useCallback(
-    ({ item }: { item: ChannelVideoModel }) => <VideoGridItem video={item} />,
-    [],
+    ({ item }: { item: ChannelVideoModel }) => {
+      if (viewMode === 'list') {
+        return <VideoListItem video={item} />;
+      }
+      return <VideoGridItem video={item} />;
+    },
+    [viewMode],
+  );
+
+  // 앱바 액션: 뷰 모드 토글
+  const appBarActions = useMemo(
+    () => [<ViewModeToggle key="view-toggle" mode={viewMode} onModeChange={setViewMode} />],
+    [viewMode],
   );
 
   const renderHeader = useCallback(() => {
@@ -114,7 +128,10 @@ export default function ChannelDetailPage() {
     }
   }, [hasNextPage, isLoading, fetchNextPage]);
 
-  const keyExtractor = useCallback((item: ChannelVideoModel) => item.id, []);
+  const keyExtractor = useCallback(
+    (item: ChannelVideoModel) => `${item.id}-${item.contentId}`,
+    [],
+  );
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
@@ -134,16 +151,21 @@ export default function ChannelDetailPage() {
 
       {/* 앱바 */}
       <AppBarContainer safeAreaTop={insets.top}>
-        <BackButtonAppBar position="relative" backgroundColor="transparent" />
+        <BackButtonAppBar
+          position="relative"
+          backgroundColor="transparent"
+          actions={appBarActions}
+        />
       </AppBarContainer>
 
       <FlatList
+        key={viewMode}
         data={videos}
         renderItem={renderItem}
         keyExtractor={keyExtractor}
-        numColumns={3}
+        numColumns={viewMode === 'card' ? 3 : 1}
         contentContainerStyle={{ paddingHorizontal: 16 }}
-        columnWrapperStyle={{ gap: 9 }}
+        columnWrapperStyle={viewMode === 'card' ? { gap: 9 } : undefined}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={<Gap size={106} />}
         onScroll={handleScroll}
@@ -217,7 +239,7 @@ const FilterRow = styled.View({
   alignItems: 'center',
   width: '100%',
   paddingTop: 16,
-  paddingBottom: 8,
+  paddingBottom: 16,
 });
 
 const ContentCountText = styled.Text({

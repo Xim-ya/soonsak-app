@@ -4,6 +4,9 @@
  * 카드 뷰 / 리스트 뷰 간 전환을 위한 세그먼트 버튼입니다.
  * - 좌측: 카드 뷰 (큰 썸네일)
  * - 우측: 리스트 뷰 (검색 결과 스타일)
+ *
+ * @example
+ * <ViewModeToggle mode={viewMode} onModeChange={setViewMode} />
  */
 
 import { memo, useCallback } from 'react';
@@ -103,3 +106,4 @@ const ListIconLine = styled.View<{ isActive: boolean }>(({ isActive }) => ({
 }));
 
 export const ViewModeToggle = memo(ViewModeToggleComponent);
+export type { ViewModeToggleProps };
