@@ -25,12 +25,19 @@ import * as Sentry from '@sentry/react-native';
 
 // Sentry 초기화 (앱 시작 시 가장 먼저 실행)
 const SENTRY_DSN = process.env['EXPO_PUBLIC_SENTRY_DSN'];
+const SENTRY_TRACES_SAMPLE_RATE = process.env['EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE'];
 if (SENTRY_DSN) {
+  // 프로덕션에서는 낮은 샘플링 비율 사용 (기본값 0.5), 개발 모드에서는 1.0
+  const defaultSampleRate = __DEV__ ? 1.0 : 0.5;
+  const tracesSampleRate = SENTRY_TRACES_SAMPLE_RATE
+    ? parseFloat(SENTRY_TRACES_SAMPLE_RATE)
+    : defaultSampleRate;
+
   Sentry.init({
     dsn: SENTRY_DSN,
     debug: __DEV__,
     enabled: true,
-    tracesSampleRate: 1.0,
+    tracesSampleRate,
   });
 }
 

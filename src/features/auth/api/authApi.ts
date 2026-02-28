@@ -152,7 +152,15 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
     const loginResult = await KakaoLogin.login();
 
     if (__DEV__) {
-      console.log('[AuthApi] Kakao login result:', loginResult);
+      // 민감한 토큰 정보는 마스킹 처리
+      console.log('[AuthApi] Kakao login result:', {
+        accessTokenExpiresAt: loginResult.accessTokenExpiresAt,
+        refreshTokenExpiresAt: loginResult.refreshTokenExpiresAt,
+        hasIdToken: !!loginResult.idToken,
+        hasAccessToken: !!loginResult.accessToken,
+        hasRefreshToken: !!loginResult.refreshToken,
+        scopes: loginResult.scopes,
+      });
     }
 
     // Step 2: OIDC ID Token 획득
@@ -189,8 +197,18 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
     }
 
     // 사용자 취소 확인
+    // iOS: error.code 또는 nativeError.code로 E_CANCELLED_OPERATION 확인
+    // Android: error.message에 CANCELED 문자열 포함 여부 확인
+    const errorCode = (error as Error & { code?: string })?.code;
+    const nativeErrorCode = (error as Error & { nativeError?: { code?: string } })?.nativeError
+      ?.code;
     const errorMessage = (error as Error)?.message ?? '';
-    if (errorMessage.includes(KAKAO_ERROR_CODES.CANCELED)) {
+
+    const isIOSCancelled =
+      errorCode === 'E_CANCELLED_OPERATION' || nativeErrorCode === 'E_CANCELLED_OPERATION';
+    const isAndroidCancelled = errorMessage.includes(KAKAO_ERROR_CODES.CANCELED);
+
+    if (isIOSCancelled || isAndroidCancelled) {
       throw createAuthError(AUTH_ERROR_CODES.USER_CANCELLED, 'kakao');
     }
 

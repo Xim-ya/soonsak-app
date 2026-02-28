@@ -14,6 +14,7 @@ const GOOGLE_ANDROID_URL_SCHEME = GOOGLE_OAUTH_ANDROID_CLIENT_ID
   : null;
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
 const APP_VARIANT = process.env.APP_VARIANT || 'development';
+const KOTLIN_VERSION = '2.0.21';
 
 module.exports = {
   expo: {
@@ -68,7 +69,7 @@ module.exports = {
         'expo-build-properties',
         {
           android: {
-            kotlinVersion: '2.0.21',
+            kotlinVersion: KOTLIN_VERSION,
           },
         },
       ],
@@ -90,7 +91,7 @@ module.exports = {
         '@react-native-seoul/kakao-login',
         {
           kakaoAppKey: KAKAO_NATIVE_APP_KEY,
-          kotlinVersion: '2.0.21',
+          kotlinVersion: KOTLIN_VERSION,
         },
       ],
       './plugins/withKakaoMaven',
