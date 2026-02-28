@@ -5,9 +5,10 @@
  */
 
 import { useCallback, useEffect } from 'react';
-import { Modal, Alert } from 'react-native';
+import { Modal } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import styled from '@emotion/native';
+import { useDialog } from '@/presentation/components/dialog';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
@@ -56,6 +57,8 @@ function AdminActionBottomSheet({
   contentType,
   videoId,
 }: AdminActionBottomSheetProps) {
+  const { showDialog } = useDialog();
+
   // ID 칩 영역 높이 (ID가 있을 때만)
   const hasIds = contentId !== undefined || videoId !== undefined;
   const idChipsHeight = hasIds ? 44 : 0;
@@ -104,8 +107,12 @@ function AdminActionBottomSheet({
   // ID 복사 핸들러
   const handleCopyId = useCallback(async (label: string, value: string) => {
     await Clipboard.setStringAsync(value);
-    Alert.alert('복사됨', `${label}: ${value}`);
-  }, []);
+    await showDialog({
+      title: '복사됨',
+      description: `${label}: ${value}`,
+      buttonText: '확인',
+    });
+  }, [showDialog]);
 
   // 액션 선택 핸들러
   const handleSelectAction = useCallback(

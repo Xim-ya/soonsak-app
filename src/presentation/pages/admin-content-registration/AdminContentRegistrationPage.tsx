@@ -7,17 +7,19 @@
  */
 
 import { useCallback, useEffect, useRef } from 'react';
-import { Alert, KeyboardAvoidingView, Platform } from 'react-native';
+import { KeyboardAvoidingView, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
+import { useDialog } from '@/presentation/components/dialog';
 import colors from '@/shared/styles/colors';
 import { RegistrationTabBar, VideoRegistrationTab, ChannelRegistrationTab } from './_components';
 import { useContentRegistration } from './_hooks/useContentRegistration';
 
 export default function AdminContentRegistrationPage() {
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
 
   const {
     activeTab,
@@ -45,10 +47,14 @@ export default function AdminContentRegistrationPage() {
 
   useEffect(() => {
     if (error && error !== prevErrorRef.current) {
-      Alert.alert('오류', error);
+      showDialog({
+        title: '오류',
+        description: error,
+        buttonText: '확인',
+      });
     }
     prevErrorRef.current = error;
-  }, [error]);
+  }, [error, showDialog]);
 
   const handleTabChange = useCallback(
     (tab: typeof activeTab) => {

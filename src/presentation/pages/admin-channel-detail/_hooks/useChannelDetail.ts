@@ -6,8 +6,8 @@
 
 import { useCallback } from 'react';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { useDialog } from '@/presentation/components/dialog';
 import {
   adminChannelApi,
   type ChannelDetailItem,
@@ -92,6 +92,7 @@ const QUERY_KEYS = {
 export function useChannelDetail(channelId: string): UseChannelDetailReturn {
   const queryClient = useQueryClient();
   const navigation = useNavigation();
+  const { showDialog, showConfirmDialog } = useDialog();
 
   // 채널 상세 정보 조회
   const {
@@ -129,27 +130,29 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
   // 채널 삭제 뮤테이션
   const deleteMutation = useMutation({
     mutationFn: () => adminChannelApi.deleteChannel(channelId),
-    onSuccess: (result) => {
+    onSuccess: async (result) => {
       // 관련 캐시 무효화
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.channels });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.channelDetail(channelId) });
       queryClient.removeQueries({ queryKey: QUERY_KEYS.channelContents(channelId) });
 
-      Alert.alert(
-        '삭제 완료',
-        `채널이 삭제되었습니다.\n영상 ${result.deletedVideosCount}개, 콘텐츠 ${result.deletedContentsCount}개가 함께 삭제되었습니다.`,
-        [
-          {
-            text: '확인',
-            onPress: () => navigation.goBack(),
-          },
-        ],
-      );
+      const dialogResult = await showDialog({
+        title: '삭제 완료',
+        description: `채널이 삭제되었습니다.\n영상 ${result.deletedVideosCount}개, 콘텐츠 ${result.deletedContentsCount}개가 함께 삭제되었습니다.`,
+        buttonText: '확인',
+      });
+      if (dialogResult === 'confirm') {
+        navigation.goBack();
+      }
     },
-    onError: (err) => {
+    onError: async (err) => {
       console.error('채널 삭제 실패:', err);
       const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.DELETE_FAILED);
-      Alert.alert('오류', errorMessage);
+      await showDialog({
+        title: '오류',
+        description: errorMessage,
+        buttonText: '확인',
+      });
     },
   });
 
@@ -160,19 +163,16 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
     const videoCount = channelDetail.videoCount;
     const contentCount = channelDetail.contentCount;
 
-    Alert.alert(
-      '채널 삭제',
-      `이 채널을 삭제하면 ${videoCount}개의 영상이 삭제되고, ${contentCount}개의 콘텐츠도 함께 삭제될 수 있습니다.\n\n정말 삭제하시겠습니까?`,
-      [
-        { text: '취소', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => deleteMutation.mutate(),
-        },
-      ],
-    );
-  }, [deleteMutation, channelDetail]);
+    const result = await showConfirmDialog({
+      title: '채널 삭제',
+      description: `이 채널을 삭제하면 ${videoCount}개의 영상이 삭제되고, ${contentCount}개의 콘텐츠도 함께 삭제될 수 있습니다.\n\n정말 삭제하시겠습니까?`,
+      leftButtonText: '취소',
+      rightButtonText: '삭제',
+    });
+    if (result === 'right') {
+      deleteMutation.mutate();
+    }
+  }, [deleteMutation, channelDetail, showConfirmDialog]);
 
   // 다음 페이지 조회 핸들러
   const fetchNextPage = useCallback(() => {

@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useDialog } from '@/presentation/components/dialog';
 import { authApi } from '@/features/auth/api/authApi';
 import {
   AUTH_ERROR_MESSAGES,
@@ -15,10 +15,21 @@ function isAuthError(error: unknown): error is AuthErrorDto {
 }
 
 /** 인증 에러 처리 */
-function handleAuthError(error: unknown): void {
+async function handleAuthError(
+  error: unknown,
+  showDialog: (options: {
+    title: string;
+    description: string;
+    buttonText: string;
+  }) => Promise<'confirm' | 'backdrop'>,
+): Promise<void> {
   // AuthErrorDto가 아닌 경우 기본 에러 메시지 표시
   if (!isAuthError(error)) {
-    Alert.alert('로그인 오류', AUTH_ERROR_MESSAGES[AUTH_ERROR_CODES.UNKNOWN_ERROR]);
+    await showDialog({
+      title: '로그인 오류',
+      description: AUTH_ERROR_MESSAGES[AUTH_ERROR_CODES.UNKNOWN_ERROR],
+      buttonText: '확인',
+    });
     return;
   }
 
@@ -32,7 +43,11 @@ function handleAuthError(error: unknown): void {
     ? AUTH_ERROR_MESSAGES[error.code]
     : AUTH_ERROR_MESSAGES[AUTH_ERROR_CODES.UNKNOWN_ERROR];
 
-  Alert.alert('로그인 오류', message);
+  await showDialog({
+    title: '로그인 오류',
+    description: message,
+    buttonText: '확인',
+  });
 }
 
 /**
@@ -50,35 +65,39 @@ function handleAuthError(error: unknown): void {
  * />
  */
 export function useSocialLogin() {
+  const { showDialog } = useDialog();
   const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(null);
 
-  const handleLogin = useCallback(async (provider: SocialProvider, onSuccess?: () => void) => {
-    setLoadingProvider(provider);
+  const handleLogin = useCallback(
+    async (provider: SocialProvider, onSuccess?: () => void) => {
+      setLoadingProvider(provider);
 
-    try {
-      switch (provider) {
-        case 'google':
-          await authApi.signInWithGoogle();
-          break;
-        case 'apple':
-          await authApi.signInWithApple();
-          break;
-        case 'kakao':
-          await authApi.signInWithKakao();
-          break;
+      try {
+        switch (provider) {
+          case 'google':
+            await authApi.signInWithGoogle();
+            break;
+          case 'apple':
+            await authApi.signInWithApple();
+            break;
+          case 'kakao':
+            await authApi.signInWithKakao();
+            break;
+        }
+        // 로그인 성공 시 AuthProvider에서 상태 자동 업데이트
+        // 네비게이션 변경도 자동 처리됨
+        onSuccess?.();
+      } catch (error) {
+        if (__DEV__) {
+          console.error('[useSocialLogin] Login error:', error);
+        }
+        await handleAuthError(error, showDialog);
+      } finally {
+        setLoadingProvider(null);
       }
-      // 로그인 성공 시 AuthProvider에서 상태 자동 업데이트
-      // 네비게이션 변경도 자동 처리됨
-      onSuccess?.();
-    } catch (error) {
-      if (__DEV__) {
-        console.error('[useSocialLogin] Login error:', error);
-      }
-      handleAuthError(error);
-    } finally {
-      setLoadingProvider(null);
-    }
-  }, []);
+    },
+    [showDialog],
+  );
 
   return {
     handleLogin,

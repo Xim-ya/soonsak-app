@@ -14,11 +14,11 @@ import {
   Modal,
   TextInput,
   Pressable,
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
 } from 'react-native';
+import { useDialog } from '@/presentation/components/dialog';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
@@ -86,6 +86,7 @@ export default function AdminUserContentListPage() {
   const route = useRoute<ScreenRouteProp<typeof routePages.adminUserContentList>>();
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
+  const { showDialog } = useDialog();
 
   const { userId, displayName, initialTab = 0 } = route.params;
   const initialTabKey = TAB_INDEX_TO_KEY[initialTab] ?? 'history';
@@ -159,7 +160,11 @@ export default function AdminUserContentListPage() {
     const trimmedBody = pushBody.trim();
 
     if (trimmedBody.length === 0) {
-      Alert.alert('입력 오류', '내용을 입력해주세요.');
+      await showDialog({
+        title: '입력 오류',
+        description: '내용을 입력해주세요.',
+        buttonText: '확인',
+      });
       return;
     }
 
@@ -188,18 +193,32 @@ export default function AdminUserContentListPage() {
       );
 
       if (result.success) {
-        Alert.alert('발송 완료', `푸시 알림이 발송되었습니다. (${result.sentCount}건)`);
-        handleClosePushModal();
+        const dialogResult = await showDialog({
+          title: '발송 완료',
+          description: `푸시 알림이 발송되었습니다. (${result.sentCount}건)`,
+          buttonText: '확인',
+        });
+        if (dialogResult === 'confirm') {
+          handleClosePushModal();
+        }
       } else {
-        Alert.alert('발송 실패', '활성화된 푸시 토큰이 없습니다.');
+        await showDialog({
+          title: '발송 실패',
+          description: '활성화된 푸시 토큰이 없습니다.',
+          buttonText: '확인',
+        });
       }
     } catch (err) {
       console.error('푸시 발송 실패:', err);
-      Alert.alert('발송 실패', '푸시 알림 발송에 실패했습니다.');
+      await showDialog({
+        title: '발송 실패',
+        description: '푸시 알림 발송에 실패했습니다.',
+        buttonText: '확인',
+      });
     } finally {
       setIsSending(false);
     }
-  }, [selectedContent, pushTitle, pushBody, userId, isSending, handleClosePushModal]);
+  }, [selectedContent, pushTitle, pushBody, userId, isSending, handleClosePushModal, showDialog]);
 
   // 아이템 렌더링
   const renderItem = useCallback(

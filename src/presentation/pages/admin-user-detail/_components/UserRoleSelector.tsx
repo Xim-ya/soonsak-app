@@ -5,13 +5,14 @@
  */
 
 import { memo, useCallback, useState } from 'react';
-import { TouchableOpacity, Modal, Pressable, View, ActivityIndicator, Alert } from 'react-native';
+import { TouchableOpacity, Modal, Pressable, View, ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { UserRoleLabel, getRoleColor } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
+import { useDialog } from '@/presentation/components/dialog';
 
 // 체크 아이콘 SVG
 const checkIconSvg = `
@@ -40,6 +41,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
   isLoading,
   onRoleChange,
 }: UserRoleSelectorProps) {
+  const { showConfirmDialog } = useDialog();
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const handleOpenModal = useCallback(() => {
@@ -51,7 +53,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
   }, []);
 
   const handleSelect = useCallback(
-    (role: UserRole) => {
+    async (role: UserRole) => {
       if (role === currentRole) {
         setIsModalVisible(false);
         return;
@@ -59,36 +61,31 @@ export const UserRoleSelector = memo(function UserRoleSelector({
 
       // 차단 역할로 변경 시 확인
       if (role === 'banned') {
-        Alert.alert(
-          '차단 확인',
-          '이 유저를 차단하시겠습니까?\n차단된 유저는 앱을 이용할 수 없습니다.',
-          [
-            { text: '취소', style: 'cancel' },
-            {
-              text: '차단',
-              style: 'destructive',
-              onPress: () => {
-                setIsModalVisible(false);
-                onRoleChange(role);
-              },
-            },
-          ],
-        );
+        const result = await showConfirmDialog({
+          title: '차단 확인',
+          description: '이 유저를 차단하시겠습니까?\n차단된 유저는 앱을 이용할 수 없습니다.',
+          leftButtonText: '취소',
+          rightButtonText: '차단',
+        });
+        if (result === 'right') {
+          setIsModalVisible(false);
+          onRoleChange(role);
+        }
         return;
       }
 
       // 관리자 역할로 변경 시 확인
       if (role === 'admin') {
-        Alert.alert('관리자 권한 부여', '이 유저에게 관리자 권한을 부여하시겠습니까?', [
-          { text: '취소', style: 'cancel' },
-          {
-            text: '확인',
-            onPress: () => {
-              setIsModalVisible(false);
-              onRoleChange(role);
-            },
-          },
-        ]);
+        const result = await showConfirmDialog({
+          title: '관리자 권한 부여',
+          description: '이 유저에게 관리자 권한을 부여하시겠습니까?',
+          leftButtonText: '취소',
+          rightButtonText: '확인',
+        });
+        if (result === 'right') {
+          setIsModalVisible(false);
+          onRoleChange(role);
+        }
         return;
       }
 
@@ -96,7 +93,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
       setIsModalVisible(false);
       onRoleChange(role);
     },
-    [currentRole, onRoleChange],
+    [currentRole, onRoleChange, showConfirmDialog],
   );
 
   return (

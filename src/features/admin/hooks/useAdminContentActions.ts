@@ -6,8 +6,8 @@
 
 import { useCallback, useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { Alert } from 'react-native';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { useDialog } from '@/presentation/components/dialog';
 import { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } from '../types';
 import { adminContentApi } from '../api';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
@@ -86,6 +86,7 @@ export function useAdminContentActions({
   currentVideo,
 }: UseAdminContentActionsParams): UseAdminContentActionsReturn {
   const { isAdmin } = useAuth();
+  const { showDialog } = useDialog();
   const queryClient = useQueryClient();
   const [isActionSheetVisible, setActionSheetVisible] = useState(false);
   const [selectedAction, setSelectedAction] = useState<AdminContentAction | null>(null);
@@ -154,16 +155,24 @@ export function useAdminContentActions({
           queryKey: ['contentDetail', contentId, contentType],
         });
 
-        Alert.alert('완료', '메인 이미지가 변경되었습니다.');
+        await showDialog({
+          title: '완료',
+          description: '메인 이미지가 변경되었습니다.',
+          buttonText: '확인',
+        });
         setSelectedAction(null);
       } catch (error) {
         console.error('Backdrop 변경 실패:', error);
-        Alert.alert('오류', '이미지 변경에 실패했습니다. 다시 시도해주세요.');
+        await showDialog({
+          title: '오류',
+          description: '이미지 변경에 실패했습니다. 다시 시도해주세요.',
+          buttonText: '확인',
+        });
       } finally {
         setIsSaving(false);
       }
     },
-    [contentId, contentType, queryClient],
+    [contentId, contentType, queryClient, showDialog],
   );
 
   // 비디오 상태 변경 핸들러
@@ -180,16 +189,24 @@ export function useAdminContentActions({
           queryKey: ['videos', contentId, contentType],
         });
 
-        Alert.alert('완료', '비디오 상태가 변경되었습니다.');
+        await showDialog({
+          title: '완료',
+          description: '비디오 상태가 변경되었습니다.',
+          buttonText: '확인',
+        });
         setSelectedAction(null);
       } catch (error) {
         console.error('비디오 상태 변경 실패:', error);
-        Alert.alert('오류', '상태 변경에 실패했습니다. 다시 시도해주세요.');
+        await showDialog({
+          title: '오류',
+          description: '상태 변경에 실패했습니다. 다시 시도해주세요.',
+          buttonText: '확인',
+        });
       } finally {
         setIsSaving(false);
       }
     },
-    [currentVideo?.id, contentId, contentType, queryClient],
+    [currentVideo?.id, contentId, contentType, queryClient, showDialog],
   );
 
   // 결말포함 여부 변경 핸들러
@@ -207,16 +224,24 @@ export function useAdminContentActions({
         });
 
         const statusText = includesEnding ? 'ON' : 'OFF';
-        Alert.alert('완료', `결말포함 여부가 ${statusText}(으)로 변경되었습니다.`);
+        await showDialog({
+          title: '완료',
+          description: `결말포함 여부가 ${statusText}(으)로 변경되었습니다.`,
+          buttonText: '확인',
+        });
         setSelectedAction(null);
       } catch (error) {
         console.error('결말포함 여부 변경 실패:', error);
-        Alert.alert('오류', '변경에 실패했습니다. 다시 시도해주세요.');
+        await showDialog({
+          title: '오류',
+          description: '변경에 실패했습니다. 다시 시도해주세요.',
+          buttonText: '확인',
+        });
       } finally {
         setIsSaving(false);
       }
     },
-    [currentVideo?.id, contentId, contentType, queryClient],
+    [currentVideo?.id, contentId, contentType, queryClient, showDialog],
   );
 
   // 어드민이 아니면 빈 상태 반환 (일관된 인터페이스)
