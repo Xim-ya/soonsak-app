@@ -59,7 +59,8 @@ export default function TabNavigator() {
         tabBarStyle: {
           ...(Platform.OS === 'ios' && { position: 'absolute' as const }),
           backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.black,
-          borderTopColor: Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
+          borderTopColor:
+            Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
           borderTopWidth: StyleSheet.hairlineWidth,
           paddingBottom: insets.bottom,
           height: TAB_BAR_HEIGHT + insets.bottom,

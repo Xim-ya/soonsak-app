@@ -10,7 +10,7 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import type { PushTokenInfo } from '@/features/admin';
+import type { PushTokenModel } from '../_types/userDetailModel';
 
 // 알림 아이콘 SVG
 const bellIconSvg = `
@@ -21,7 +21,7 @@ const bellIconSvg = `
 `;
 
 interface PushTokenStatusProps {
-  readonly tokens: PushTokenInfo[];
+  readonly tokens: PushTokenModel[];
 }
 
 export const PushTokenStatus = memo(function PushTokenStatus({ tokens }: PushTokenStatusProps) {

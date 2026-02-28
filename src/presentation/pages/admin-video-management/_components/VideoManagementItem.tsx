@@ -14,8 +14,8 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import type { VideoManagementItem as VideoManagementItemType } from '@/features/admin';
 import { ContentStatus, ContentStatusLabel } from '@/features/content/types';
+import type { VideoManagementModel } from '../_types';
 
 const POSTER_WIDTH = AppSize.ratioWidth(70);
 const POSTER_HEIGHT = POSTER_WIDTH * 1.5;
@@ -28,8 +28,8 @@ const chevronRightSvg = `
 `;
 
 interface VideoManagementItemProps {
-  readonly video: VideoManagementItemType;
-  readonly onPress: (video: VideoManagementItemType) => void;
+  readonly video: VideoManagementModel;
+  readonly onPress: (video: VideoManagementModel) => void;
 }
 
 export const VideoManagementItem = memo(function VideoManagementItem({

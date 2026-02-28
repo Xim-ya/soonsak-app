@@ -17,7 +17,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
-import type { UserManagementItem as UserManagementItemType } from '@/features/admin';
+import type { UserManagementModel } from './_types';
 import {
   UserStatisticsCards,
   UserSearchBar,
@@ -73,7 +73,7 @@ export default function AdminUserManagementPage() {
 
   // 유저 아이템 탭 → AdminUserDetailPage로 이동
   const handleUserPress = useCallback(
-    (user: UserManagementItemType) => {
+    (user: UserManagementModel) => {
       navigation.navigate(routePages.adminUserDetail, {
         userId: user.id,
         displayName: user.displayName,
@@ -90,16 +90,17 @@ export default function AdminUserManagementPage() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const renderItem = useCallback(
-    ({ item }: { item: UserManagementItemType }) => (
+    ({ item }: { item: UserManagementModel }) => (
       <UserManagementItem user={item} onPress={handleUserPress} />
     ),
     [handleUserPress],
   );
 
-  const keyExtractor = useCallback((item: UserManagementItemType) => item.id, []);
+  const keyExtractor = useCallback((item: UserManagementModel) => item.id, []);
 
   // FlatList 최적화: 아이템 레이아웃 (고정 높이)
   const getItemLayout = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (_: any, index: number) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,

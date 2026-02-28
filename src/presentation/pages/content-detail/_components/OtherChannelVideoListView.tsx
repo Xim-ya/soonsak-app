@@ -14,16 +14,16 @@ import { FlatList, TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
-import { VideoDto } from '@/features/content/types';
 import { useYouTubeChannel } from '@/features/youtube';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
+import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 // 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
-function VideoItemView({ item }: { item: VideoDto }) {
+function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
   const { data: channel } = useYouTubeChannel(item.channelId);
   const navigation = useNavigation<NavigationProp>();
 
@@ -36,14 +36,14 @@ function VideoItemView({ item }: { item: VideoDto }) {
       contentId: item.contentId,
       contentType: item.contentType,
     });
-  }, [navigation, item.id, item.title, item.contentId, item.contentType]);
+  }, [navigation, item]);
 
   return (
     <VideoItemContainer>
       <ThumbnailTouchable onPress={handlePlayPress} activeOpacity={0.8}>
         <ThumbnailWrapper>
           <LoadableImageView
-            source={item.thumbnailUrl || ''}
+            source={item.thumbnailUrl}
             width={thumbnailWidth}
             height={thumbnailHeight}
             borderRadius={4}
@@ -54,9 +54,9 @@ function VideoItemView({ item }: { item: VideoDto }) {
             <PlayButtonSvg width={64} height={64} />
           </PlayButtonContainer>
           <ChannelInfoWrapper>
-            <ChannelLogoImage source={channel?.images?.avatar || ''} size={28} />
+            <ChannelLogoImage source={channel?.images?.avatar ?? ''} size={28} />
             <Gap size={8} />
-            <ChannelName numberOfLines={1}>{channel?.name || ''}</ChannelName>
+            <ChannelName numberOfLines={1}>{channel?.name ?? ''}</ChannelName>
           </ChannelInfoWrapper>
         </ThumbnailWrapper>
       </ThumbnailTouchable>
@@ -69,11 +69,14 @@ function VideoItemView({ item }: { item: VideoDto }) {
 function OtherChannelVideoListView() {
   const { videos, primaryVideo } = useContentVideos();
 
-  // primaryVideo를 제외한 나머지 비디오들
+  // primaryVideo를 제외한 나머지 비디오들을 Model로 변환
   // 정렬은 DB에서 처리됨 (includes_ending DESC, runtime DESC)
   const otherVideos = useMemo(() => {
-    if (!primaryVideo) return videos;
-    return videos.filter((video) => video.id !== primaryVideo.id);
+    const filteredVideos = primaryVideo
+      ? videos.filter((video) => video.id !== primaryVideo.id)
+      : videos;
+
+    return OtherChannelVideoModel.fromDtoList(filteredVideos);
   }, [videos, primaryVideo]);
 
   // 다른 비디오가 없으면 섹션 숨김
@@ -116,7 +119,7 @@ const VideoItemContainer = styled.View({
   width: thumbnailWidth,
 });
 
-const VideoListView = styled(FlatList<VideoDto>)({
+const VideoListView = styled(FlatList<OtherChannelVideoModel>)({
   paddingLeft: 16,
 });
 

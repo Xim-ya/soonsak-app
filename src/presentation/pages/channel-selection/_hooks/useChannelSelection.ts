@@ -5,14 +5,15 @@
  * ChannelFilterTab과 동일한 queryKey를 사용하여 캐시를 공유합니다.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
-import type { ChannelDto } from '@/features/channel/types';
+import type { ChannelSelectionModel } from '../_types/channelSelectionModel';
+import { channelSelectionFromDtos } from '../_types/channelSelectionModel';
 
 interface UseChannelSelectionReturn {
   /** 전체 채널 목록 */
-  readonly channels: ChannelDto[];
+  readonly channels: ChannelSelectionModel[];
   /** 로딩 상태 */
   readonly isLoading: boolean;
   /** 현재 선택된 채널 ID 목록 */
@@ -26,11 +27,14 @@ interface UseChannelSelectionReturn {
 function useChannelSelection(initialSelectedIds: string[]): UseChannelSelectionReturn {
   const [selectedIds, setSelectedIds] = useState<string[]>(initialSelectedIds);
 
-  const { data: channels = [], isLoading } = useQuery({
+  const { data: channelDtos = [], isLoading } = useQuery({
     queryKey: ['activeChannels'],
     queryFn: () => channelApi.getActiveChannels(),
     staleTime: 5 * 60 * 1000,
   });
+
+  // DTO를 UI 모델로 변환
+  const channels = useMemo(() => channelSelectionFromDtos(channelDtos), [channelDtos]);
 
   const toggleChannel = useCallback((channelId: string) => {
     setSelectedIds((prev) =>
