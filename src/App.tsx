@@ -14,6 +14,7 @@ import { AuthProvider } from '@/shared/providers/AuthProvider';
 import { PushNotificationProvider } from '@/shared/providers/PushNotificationProvider';
 import { ContentFilterProvider } from '@/shared/context/ContentFilterContext';
 import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
+import { DialogProvider } from '@/presentation/components/dialog';
 import { isAppError } from '@/shared/errors';
 import { linkingConfig } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
@@ -220,9 +221,11 @@ export default function App() {
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.black }}>
         <QueryClientProvider client={queryClient}>
           <SnackbarProvider>
-            <ContentFilterProvider>
-              <AppContent />
-            </ContentFilterProvider>
+            <DialogProvider>
+              <ContentFilterProvider>
+                <AppContent />
+              </ContentFilterProvider>
+            </DialogProvider>
           </SnackbarProvider>
         </QueryClientProvider>
       </GestureHandlerRootView>
