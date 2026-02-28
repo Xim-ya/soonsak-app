@@ -21,13 +21,25 @@ import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
 import { useAppPreload } from '@/shared/hooks/useAppPreload';
 import * as Clarity from '@microsoft/react-native-clarity';
+import * as Sentry from '@sentry/react-native';
+
+// Sentry 초기화 (앱 시작 시 가장 먼저 실행)
+const SENTRY_DSN = process.env['EXPO_PUBLIC_SENTRY_DSN'];
+if (SENTRY_DSN) {
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    debug: __DEV__,
+    enabled: true,
+    tracesSampleRate: 1.0,
+  });
+}
 
 // react-native-screens 활성화 (iOS 배경색 문제 해결을 위해)
 enableScreens(true);
 
 // Google Sign-In 초기화 (모듈 레벨에서 한 번만 호출)
-const GOOGLE_WEB_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID;
-const GOOGLE_IOS_CLIENT_ID = process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID;
+const GOOGLE_WEB_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID'];
+const GOOGLE_IOS_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID'];
 
 // 디버깅: 환경 변수 확인 (개발 모드에서만)
 if (__DEV__) {
@@ -38,7 +50,7 @@ if (__DEV__) {
 if (GOOGLE_WEB_CLIENT_ID) {
   configureGoogleSignin({
     webClientId: GOOGLE_WEB_CLIENT_ID,
-    iosClientId: GOOGLE_IOS_CLIENT_ID,
+    ...(GOOGLE_IOS_CLIENT_ID && { iosClientId: GOOGLE_IOS_CLIENT_ID }),
   });
 }
 
