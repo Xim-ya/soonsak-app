@@ -57,9 +57,9 @@ export default function TabNavigator() {
           return <Icon width={iconSize} height={iconSize} color={color} fill={color} />;
         },
         tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: Platform.OS === 'ios' ? 'transparent' : 'rgba(0, 0, 0, 0.85)',
-          borderTopColor: Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.1)' : colors.gray05,
+          ...(Platform.OS === 'ios' && { position: 'absolute' as const }),
+          backgroundColor: Platform.OS === 'ios' ? 'transparent' : colors.black,
+          borderTopColor: Platform.OS === 'ios' ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.2)',
           borderTopWidth: StyleSheet.hairlineWidth,
           paddingBottom: insets.bottom,
           height: TAB_BAR_HEIGHT + insets.bottom,
