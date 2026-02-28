@@ -13,7 +13,7 @@ import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-import type { UserManagementItem as UserManagementItemType } from '@/features/admin';
+import type { UserManagementModel } from '../_types';
 import { UserRoleLabel, getRoleColor, formatDate } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 
@@ -33,8 +33,8 @@ const DEFAULT_AVATAR_SVG = `
 `;
 
 interface UserManagementItemProps {
-  readonly user: UserManagementItemType;
-  readonly onPress: (user: UserManagementItemType) => void;
+  readonly user: UserManagementModel;
+  readonly onPress: (user: UserManagementModel) => void;
 }
 
 export const UserManagementItem = memo(

@@ -6,7 +6,7 @@
  * 선택 완료 시 'adminPushContentSelected' 이벤트를 emit하고 뒤로 이동합니다.
  */
 
-import { memo, useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import {
   View,
   TextInput,
@@ -27,7 +27,12 @@ import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { contentApi } from '@/features/content/api/contentApi';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
-import type { ContentDto, VideoDto } from '@/features/content/types';
+import {
+  type PushContentModel,
+  type PushVideoModel,
+  contentFromDto,
+  videoFromDto,
+} from './_types/pushContentSelectModel';
 
 // ============================================================================
 // Constants
@@ -96,7 +101,7 @@ export default function AdminPushContentSelectPage() {
 
   // 검색 상태
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<ContentDto[]>([]);
+  const [searchResults, setSearchResults] = useState<PushContentModel[]>([]);
   const [isSearching, setIsSearching] = useState(false);
 
   // 유저 콘텐츠 목록 상태
@@ -105,7 +110,7 @@ export default function AdminPushContentSelectPage() {
 
   // 비디오 선택 상태
   const [selectedContent, setSelectedContent] = useState<SelectedContent | null>(null);
-  const [videos, setVideos] = useState<VideoDto[]>([]);
+  const [videos, setVideos] = useState<PushVideoModel[]>([]);
   const [isLoadingVideos, setIsLoadingVideos] = useState(false);
 
   const handleGoBack = useCallback(() => {
@@ -123,7 +128,7 @@ export default function AdminPushContentSelectPage() {
     setIsSearching(true);
     try {
       const results = await contentApi.searchContentsKorean(trimmed, 30);
-      setSearchResults(results);
+      setSearchResults(results.map(contentFromDto));
     } catch (err) {
       console.error('검색 실패:', err);
       setSearchResults([]);
@@ -186,7 +191,7 @@ export default function AdminPushContentSelectPage() {
             content.contentId,
             content.contentType,
           );
-          setVideos(videoList);
+          setVideos(videoList.map(videoFromDto));
         } catch (err) {
           console.error('비디오 로드 실패:', err);
           setVideos([]);
@@ -209,14 +214,14 @@ export default function AdminPushContentSelectPage() {
 
   // 비디오 선택 핸들러
   const handleSelectVideo = useCallback(
-    (video: VideoDto) => {
+    (video: PushVideoModel) => {
       if (!selectedContent) return;
       const result: PushContentSelectResult = {
         contentId: selectedContent.contentId,
         contentTitle: selectedContent.contentTitle,
         contentType: selectedContent.contentType,
-        videoId: video.id,
-        videoTitle: video.title,
+        videoId: video.videoId,
+        videoTitle: video.videoTitle,
         // 시청기록에서 선택한 경우 이어보기 시작 위치 포함
         ...(selectedContent.startSeconds !== undefined && {
           startSeconds: selectedContent.startSeconds,
@@ -236,13 +241,13 @@ export default function AdminPushContentSelectPage() {
 
   // 검색 결과 아이템 렌더링
   const renderSearchItem = useCallback(
-    ({ item }: { item: ContentDto }) => (
+    ({ item }: { item: PushContentModel }) => (
       <ContentItem
         onPress={() =>
           handleSelectContent({
-            contentId: item.id,
-            contentTitle: item.title,
-            contentType: item.contentType as 'movie' | 'tv',
+            contentId: item.contentId,
+            contentTitle: item.contentTitle,
+            contentType: item.contentType,
           })
         }
       >
@@ -252,9 +257,9 @@ export default function AdminPushContentSelectPage() {
           <ContentPosterPlaceholder />
         )}
         <ContentInfo>
-          <ContentTitle numberOfLines={2}>{item.title}</ContentTitle>
+          <ContentTitle numberOfLines={2}>{item.contentTitle}</ContentTitle>
           <ContentMeta>
-            {item.contentType === 'movie' ? '영화' : 'TV'} • {item.releaseDate?.slice(0, 4) ?? '-'}
+            {item.contentType === 'movie' ? '영화' : 'TV'} • {item.releaseYear ?? '-'}
           </ContentMeta>
         </ContentInfo>
       </ContentItem>
@@ -298,7 +303,7 @@ export default function AdminPushContentSelectPage() {
 
   // 비디오 아이템 렌더링
   const renderVideoItem = useCallback(
-    ({ item }: { item: VideoDto }) => (
+    ({ item }: { item: PushVideoModel }) => (
       <VideoItem onPress={() => handleSelectVideo(item)}>
         {item.thumbnailUrl ? (
           <VideoThumbnail source={{ uri: item.thumbnailUrl }} />
@@ -306,7 +311,7 @@ export default function AdminPushContentSelectPage() {
           <VideoThumbnailPlaceholder />
         )}
         <VideoInfo>
-          <VideoTitle numberOfLines={2}>{item.title}</VideoTitle>
+          <VideoTitle numberOfLines={2}>{item.videoTitle}</VideoTitle>
           <VideoMeta>
             {item.runtime ? `${Math.floor(item.runtime / 60)}분` : '시간 미정'}
             {item.includesEnding && ' • 결말포함'}
@@ -345,7 +350,7 @@ export default function AdminPushContentSelectPage() {
         ) : (
           <FlatList
             data={videos}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.videoId}
             renderItem={renderVideoItem}
             contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}
@@ -413,7 +418,7 @@ export default function AdminPushContentSelectPage() {
         ) : (
           <FlatList
             data={searchResults}
-            keyExtractor={(item) => `${item.contentType}-${item.id}`}
+            keyExtractor={(item) => `${item.contentType}-${item.contentId}`}
             renderItem={renderSearchItem}
             contentContainerStyle={{ padding: 12, paddingBottom: insets.bottom + 20 }}
             showsVerticalScrollIndicator={false}

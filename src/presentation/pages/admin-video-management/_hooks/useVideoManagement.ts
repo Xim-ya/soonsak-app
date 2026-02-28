@@ -7,15 +7,16 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useFocusEffect } from '@react-navigation/native';
-import { adminVideoApi, type VideoManagementItem, type VideoStatusCounts } from '@/features/admin';
+import { adminVideoApi, type VideoStatusCounts } from '@/features/admin';
 import { ContentStatus } from '@/features/content/types';
+import { fromVideoManagementDto, type VideoManagementModel } from '../_types';
 import type { FilterStatus } from '../_components';
 
 const PAGE_SIZE = 20;
 
 interface UseVideoManagementReturn {
   /** 비디오 목록 */
-  readonly videos: VideoManagementItem[];
+  readonly videos: VideoManagementModel[];
   /** 상태별 카운트 */
   readonly counts: VideoStatusCounts;
   /** 선택된 필터 상태 */
@@ -67,9 +68,9 @@ export function useVideoManagement(): UseVideoManagementReturn {
     staleTime: 30 * 1000, // 30초
   });
 
-  // 전체 비디오 목록 평탄화
+  // 전체 비디오 목록 평탄화 + DTO → Model 변환
   const videos = useMemo(() => {
-    return data?.pages.flatMap((page) => page.videos) ?? [];
+    return data?.pages.flatMap((page) => page.videos.map(fromVideoManagementDto)) ?? [];
   }, [data]);
 
   // 필터 상태 변경

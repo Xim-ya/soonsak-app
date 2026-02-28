@@ -7,8 +7,12 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDialog } from '@/presentation/components/dialog';
-import { adminUserApi, type UserDetailItem, type PushData } from '@/features/admin';
+import { adminUserApi, type PushData } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
+import {
+  userDetailFromDto,
+  type UserDetailModel as UserDetailModelType,
+} from '../_types/userDetailModel';
 
 // ============================================================================
 // Constants
@@ -51,7 +55,7 @@ function getUserFriendlyErrorMessage(error: unknown, fallback: string): string {
 
 interface UseUserDetailReturn {
   /** 유저 상세 정보 */
-  readonly user: UserDetailItem | null;
+  readonly user: UserDetailModelType | null;
   /** 로딩 중 여부 */
   readonly isLoading: boolean;
   /** 에러 */
@@ -94,7 +98,11 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
     refetch,
   } = useQuery({
     queryKey: QUERY_KEYS.userDetail(userId),
-    queryFn: () => adminUserApi.getUserDetail(userId),
+    queryFn: async () => {
+      const dto = await adminUserApi.getUserDetail(userId);
+      // DTO를 Model로 변환
+      return userDetailFromDto(dto);
+    },
     staleTime: 30 * 1000, // 30초
     enabled: !!userId,
   });

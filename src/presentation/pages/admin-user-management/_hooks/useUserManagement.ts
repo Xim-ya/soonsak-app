@@ -9,13 +9,13 @@ import { useInfiniteQuery, useQuery, useQueryClient } from '@tanstack/react-quer
 import { useFocusEffect } from '@react-navigation/native';
 import {
   adminUserApi,
-  type UserManagementItem,
   type UserRoleCounts,
   type UserStatistics,
   type UserRoleFilter,
   type UserSortBy,
   type UserSearchField,
 } from '@/features/admin';
+import { UserManagementModel } from '../_types';
 
 // ============================================================================
 // Constants
@@ -62,7 +62,7 @@ interface UserListQueryParams {
 
 interface UseUserManagementReturn {
   /** 유저 목록 */
-  readonly users: UserManagementItem[];
+  readonly users: UserManagementModel[];
   /** 역할별 카운트 */
   readonly counts: UserRoleCounts;
   /** 대시보드 통계 */
@@ -165,8 +165,11 @@ export function useUserManagement(): UseUserManagementReturn {
     staleTime: 30 * 1000, // 30초
   });
 
-  // 전체 유저 목록 평탄화
-  const users = useMemo(() => data?.pages.flatMap((page) => page.users) ?? [], [data]);
+  // 전체 유저 목록 평탄화 및 DTO -> Model 변환
+  const users = useMemo(
+    () => data?.pages.flatMap((page) => UserManagementModel.fromDtos(page.users)) ?? [],
+    [data],
+  );
 
   // 역할 필터 변경
   const onSelectRole = useCallback((role: UserRoleFilter) => {

@@ -13,9 +13,9 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import type { UserDetailItem } from '@/features/admin';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import type { UserDetailModel } from '../_types/userDetailModel';
 
 // SVG 아이콘 상수 (컴포넌트 외부로 최적화)
 const PLAY_ICON_SVG = `
@@ -37,7 +37,7 @@ const STAR_ICON_SVG = `
 `;
 
 interface UserActivityStatsProps {
-  readonly user: UserDetailItem;
+  readonly user: UserDetailModel;
 }
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

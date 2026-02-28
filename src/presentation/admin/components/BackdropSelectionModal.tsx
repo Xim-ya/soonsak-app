@@ -5,7 +5,7 @@
  * 관리자가 콘텐츠의 메인 이미지를 선택할 수 있는 모달
  */
 
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Modal, FlatList, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -14,7 +14,8 @@ import textStyles from '@/shared/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
-import type { TmdbImageItemDto } from '@/features/tmdb/types/imageDto';
+import type { BackdropImageModel } from './_types/backdropImageModel';
+import { fromDtos } from './_types/backdropImageModel';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { AppSize } from '@/shared/utils/appSize';
 
@@ -53,7 +54,13 @@ function BackdropSelectionModal({
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
   // TMDB 이미지 목록 조회
-  const { data: images, isLoading, error } = useContentImages(contentId, contentType);
+  const { data: imagesDto, isLoading, error } = useContentImages(contentId, contentType);
+
+  // DTO를 UI 모델로 변환
+  const images = useMemo(() => {
+    if (!imagesDto) return [];
+    return fromDtos(imagesDto);
+  }, [imagesDto]);
 
   // 이미지 너비 계산 (2열 그리드)
   const containerWidth = AppSize.screenWidth - MODAL_HORIZONTAL_PADDING * 2;
@@ -85,7 +92,7 @@ function BackdropSelectionModal({
 
   // 이미지 렌더링
   const renderImage = useCallback(
-    ({ item }: { item: TmdbImageItemDto }) => {
+    ({ item }: { item: BackdropImageModel }) => {
       const imageUrl = formatter.prefixTmdbImgUrl(item.filePath, { size: TmdbImageSize.w500 });
       const selected = isSelected(item.filePath);
       const isCurrent = currentBackdropPath === item.filePath;
