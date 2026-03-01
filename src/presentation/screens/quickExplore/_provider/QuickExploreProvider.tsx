@@ -22,7 +22,7 @@ import {
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
-import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
+import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';

@@ -6,9 +6,9 @@
  */
 
 import { File as ExpoFile } from 'expo-file-system';
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { mapWithField } from '@/features/utils/mapper/fieldMapper';
-import { AUTH_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { mapWithField } from '@/shared/utils/fieldMapper';
+import { AUTH_DATABASE } from '@/shared/config/dbConfig';
 import type { ProfileDto } from '@/features/auth/types';
 import type { ProfileUpdateDto } from '../types';
 

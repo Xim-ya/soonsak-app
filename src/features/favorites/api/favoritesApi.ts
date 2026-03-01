@@ -1,6 +1,6 @@
 import type { User } from '@supabase/supabase-js';
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { mapWithField } from '@/features/utils/mapper/fieldMapper';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { mapWithField } from '@/shared/utils/fieldMapper';
 import type {
   FavoriteDto,
   FavoriteWithContentDto,

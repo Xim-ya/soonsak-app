@@ -4,8 +4,8 @@ import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { MovieDto } from '@/features/tmdb/types/movieDto';
 import { TvSeriesDto } from '@/features/tmdb/types/tvDto';
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { CONTENT_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
 
 /**
  * Supabase에서 커스텀 backdrop_path 조회

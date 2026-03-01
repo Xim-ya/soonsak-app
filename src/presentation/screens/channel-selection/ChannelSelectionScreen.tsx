@@ -16,7 +16,7 @@ import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
-import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
+import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';

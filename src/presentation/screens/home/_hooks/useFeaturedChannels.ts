@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel';
-import { CHANNEL_DATABASE } from '@/features/utils/constants/dbConfig';
+import { CHANNEL_DATABASE } from '@/shared/config/dbConfig';
 import {
   FeaturedChannelModel,
   UseFeaturedChannelsResult,

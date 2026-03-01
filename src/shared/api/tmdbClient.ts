@@ -1,6 +1,6 @@
 import { TMDB_API_KEY, TMDB_BASE_URL } from '@/features/tmdb/config';
 import axios, { AxiosError, AxiosResponse } from 'axios';
-import { snakeToCamel } from '../caseConverter';
+import { snakeToCamel } from '@/shared/utils/caseConverter';
 
 /**
  * TMDB Axios 기본 클라이언트

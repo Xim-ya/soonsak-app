@@ -12,7 +12,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
-import { channelSelectionBridge } from '@/shared/utils/channelSelectionBridge';
+import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
