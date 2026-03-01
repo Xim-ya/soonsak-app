@@ -78,7 +78,7 @@ export default function WatchHistoryPage() {
       // 초기 로딩 스켈레톤은 isFetching이 true이고 dateItems가 비어있을 때만 표시
       return {
         items: dateItems,
-        isLoading: byDateQuery.isFetching && dateItems.length === 0,
+        isInitialLoading: byDateQuery.isFetching && dateItems.length === 0,
         isFetchingNextPage: false,
         hasNextPage: false,
       };
@@ -88,7 +88,7 @@ export default function WatchHistoryPage() {
     return {
       items: allItems,
       // 아이템이 없고 로딩 중일 때만 초기 로딩 상태
-      isLoading: infiniteQuery.isFetching && allItems.length === 0,
+      isInitialLoading: infiniteQuery.isFetching && allItems.length === 0,
       isFetchingNextPage: infiniteQuery.isFetchingNextPage,
       hasNextPage: infiniteQuery.hasNextPage ?? false,
     };

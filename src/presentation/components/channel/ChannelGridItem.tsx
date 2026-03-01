@@ -50,7 +50,7 @@ interface ChannelGridItemProps {
   /** 채널명 */
   readonly name: string;
   /** 구독자 수 (undefined일 경우 미표시) */
-  readonly subscriberCount?: number;
+  readonly subscriberCount?: number | undefined;
   /** 아바타 크기 */
   readonly avatarSize: number;
   /** 아이템 전체 너비 */
