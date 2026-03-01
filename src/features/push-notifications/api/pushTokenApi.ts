@@ -56,7 +56,7 @@ export const pushTokenApi = {
     // device_id 조회 (없으면 생성)
     const deviceId = await getOrCreateDeviceId();
 
-    // 토큰 등록 (upsert) - 항상 실행하여 DB 동기화 보장
+    // 토큰 등록 (upsert) - token이 unique이므로 기존 유저 토큰을 자동으로 덮어씀
     const { error } = await supabaseClient.from(PUSH_DATABASE.TABLES.PUSH_TOKENS).upsert(
       {
         [PUSH_DATABASE.COLUMNS.USER_ID]: userId,
@@ -67,7 +67,7 @@ export const pushTokenApi = {
         [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
       },
       {
-        onConflict: 'user_id,token',
+        onConflict: 'token',
       },
     );
 
