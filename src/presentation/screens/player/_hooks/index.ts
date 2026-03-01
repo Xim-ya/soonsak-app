@@ -7,3 +7,4 @@
 export { usePlayerReady } from './usePlayerReady';
 export { useResumePlayback } from './useResumePlayback';
 export { useFallbackPlayer } from './useFallbackPlayer';
+export { useScreenOrientation } from './useScreenOrientation';

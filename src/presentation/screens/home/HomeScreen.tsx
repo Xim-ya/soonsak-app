@@ -1,9 +1,13 @@
-import { useCallback, useRef, useState } from 'react';
-import { View, LayoutChangeEvent } from 'react-native';
+import { useCallback } from 'react';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
-import colors from '../../../shared/styles/colors';
+import Animated from 'react-native-reanimated';
+import colors from '@/shared/styles/colors';
+import { RootStackParamList } from '@/shared/navigation/types';
+import { routePages } from '@/shared/navigation/constant/routePages';
+import { WatchHistorySectionView, type WatchHistoryModelType } from '@/features/watch-history';
 import { Header } from './_components/Header';
 import HomeAppBar from './_components/HomeAppBar';
 import RecentContentView from './_components/RecentContentView';
@@ -11,42 +15,27 @@ import { TopTenContentListView } from './_components/TopTenContentListView';
 import { FeaturedChannelSectionView } from './_components/FeaturedChannelSectionView';
 import { LongRuntimeContentListView } from './_components/LongRuntimeContentListView';
 import { ContentCollectionSectionView } from './_components/ContentCollectionSectionView';
-import { WatchHistorySectionView, type WatchHistoryModelType } from '@/features/watch-history';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import Animated, {
-  useSharedValue,
-  useAnimatedScrollHandler,
-  useAnimatedReaction,
-  runOnJS,
-} from 'react-native-reanimated';
+import { useScrollLazyLoad } from './_hooks/useScrollLazyLoad';
 
 type HomeNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-/** 뷰포트 진입 판단 여유값 (px) */
-const VIEWPORT_THRESHOLD = 200;
-
+/**
+ * HomeScreen - 홈 탭 화면
+ *
+ * 다양한 콘텐츠 섹션을 표시하는 메인 홈 화면입니다.
+ * 스크롤 시 레이지 로드를 통해 하단 콘텐츠 컬렉션을 지연 로드합니다.
+ */
 export default function HomeScreen() {
   const navigation = useNavigation<HomeNavigationProp>();
-  const [isCollectionVisible, setIsCollectionVisible] = useState(false);
-  const [viewportHeight, setViewportHeight] = useState(0);
-  const collectionYRef = useRef(0);
-  const scrollY = useSharedValue(0);
-  const isTriggered = useSharedValue(false);
+  const {
+    scrollHandler,
+    scrollY,
+    isVisible: isCollectionVisible,
+    handleContainerLayout,
+    handleTargetLayout,
+  } = useScrollLazyLoad();
 
-  const handleContainerLayout = useCallback((event: LayoutChangeEvent) => {
-    setViewportHeight(event.nativeEvent.layout.height);
-  }, []);
-
-  const handleCollectionLayout = useCallback((event: LayoutChangeEvent) => {
-    collectionYRef.current = event.nativeEvent.layout.y;
-  }, []);
-
-  const triggerCollectionLoad = useCallback(() => {
-    setIsCollectionVisible(true);
-  }, []);
-
-  // 시청기록 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
+  // 시청기록 아이템 클릭 핸들러
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
       navigation.navigate(routePages.contentDetail, {
@@ -64,28 +53,6 @@ export default function HomeScreen() {
     [navigation],
   );
 
-  const scrollHandler = useAnimatedScrollHandler({
-    onScroll: (event) => {
-      scrollY.value = event.contentOffset.y;
-    },
-  });
-
-  // 스크롤 위치 감지하여 레이지 로드 트리거 (stale closure 방지)
-  useAnimatedReaction(
-    () => scrollY.value,
-    (currentScrollY) => {
-      if (isTriggered.value) return;
-      if (collectionYRef.current <= 0 || viewportHeight <= 0) return;
-
-      const triggerPoint = collectionYRef.current - viewportHeight - VIEWPORT_THRESHOLD;
-      if (currentScrollY >= triggerPoint) {
-        isTriggered.value = true;
-        runOnJS(triggerCollectionLoad)();
-      }
-    },
-    [viewportHeight],
-  );
-
   return (
     <Container onLayout={handleContainerLayout}>
       <Animated.ScrollView onScroll={scrollHandler} scrollEventThrottle={16}>
@@ -97,7 +64,7 @@ export default function HomeScreen() {
         <RecentContentView />
         <TopTenContentListView />
         <FeaturedChannelSectionView />
-        <View onLayout={handleCollectionLayout}>
+        <View onLayout={handleTargetLayout}>
           <ContentCollectionSectionView isVisible={isCollectionVisible} />
         </View>
         <LongRuntimeContentListView />

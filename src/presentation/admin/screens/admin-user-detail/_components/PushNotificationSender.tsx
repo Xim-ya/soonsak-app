@@ -34,7 +34,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import {
   PUSH_CONTENT_SELECTED_EVENT,
   type PushContentSelectResult,
-} from '../../admin-push-content-select/AdminPushContentSelectScreen';
+} from '../../admin-push-content-select/_hooks';
 
 // ============================================================================
 // Constants

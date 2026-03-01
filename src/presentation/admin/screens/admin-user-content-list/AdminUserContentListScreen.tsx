@@ -5,7 +5,7 @@
  * 각 콘텐츠에 대해 푸시 알림을 보낼 수 있습니다.
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import {
   View,
   FlatList,
@@ -18,24 +18,21 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useDialog } from '@/presentation/components/dialog';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { BasePage } from '@/presentation/components/page';
-import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
+import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { adminUserApi, type UserContentItem } from '@/features/admin';
-import type { PushData } from '@/features/admin/types/pushAction';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { UserContentItem } from '@/features/admin';
 import {
   MemoizedAdminContentGridItem,
-  GRID_ITEM_WIDTH,
   GRID_POSTER_HEIGHT,
 } from './_components/AdminContentGridItem';
+import { useUserContentList } from './_hooks';
 
 // ============================================================================
 // Constants
@@ -67,12 +64,6 @@ const TABS: { key: TabType; label: string }[] = [
   { key: 'ratings', label: '평가' },
 ];
 
-// 탭 인덱스를 탭 키로 변환
-const TAB_INDEX_TO_KEY: TabType[] = ['history', 'favorites', 'ratings'];
-
-const MAX_TITLE_LENGTH = 50;
-const MAX_BODY_LENGTH = 200;
-
 // 그리드 아이템 높이 계산 (포스터 + 버튼 영역 + 마진)
 const GRID_ITEM_HEIGHT = GRID_POSTER_HEIGHT + 30 + 16;
 
@@ -80,145 +71,34 @@ const GRID_ITEM_HEIGHT = GRID_POSTER_HEIGHT + 30 + 16;
 // Component
 // ============================================================================
 
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
 export default function AdminUserContentListScreen() {
   const route = useRoute<ScreenRouteProp<typeof routePages.adminUserContentList>>();
-  const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
-  const { showDialog } = useDialog();
 
   const { userId, displayName, initialTab = 0 } = route.params;
-  const initialTabKey = TAB_INDEX_TO_KEY[initialTab] ?? 'history';
 
-  // 탭 상태
-  const [activeTab, setActiveTab] = useState<TabType>(initialTabKey);
-
-  // 데이터 상태
-  const [items, setItems] = useState<UserContentItem[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  // 푸시 모달 상태
-  const [isPushModalVisible, setIsPushModalVisible] = useState(false);
-  const [selectedContent, setSelectedContent] = useState<UserContentItem | null>(null);
-  const [pushTitle, setPushTitle] = useState('');
-  const [pushBody, setPushBody] = useState('');
-  const [isSending, setIsSending] = useState(false);
-
-  const handleGoBack = useCallback(() => {
-    navigation.goBack();
-  }, [navigation]);
-
-  // 탭 변경 시 데이터 로드
-  useEffect(() => {
-    const loadData = async () => {
-      setIsLoading(true);
-      try {
-        let data: UserContentItem[] = [];
-        switch (activeTab) {
-          case 'history':
-            data = await adminUserApi.getUserWatchHistory(userId, 100);
-            break;
-          case 'favorites':
-            data = await adminUserApi.getUserFavorites(userId, 100);
-            break;
-          case 'ratings':
-            data = await adminUserApi.getUserRatings(userId, 100);
-            break;
-        }
-        setItems(data);
-      } catch (err) {
-        console.error('데이터 로드 실패:', err);
-        setItems([]);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    loadData();
-  }, [activeTab, userId]);
-
-  // 푸시 모달 열기
-  const handleOpenPushModal = useCallback((item: UserContentItem) => {
-    setSelectedContent(item);
-    setPushTitle('');
-    setPushBody('');
-    setIsPushModalVisible(true);
-  }, []);
-
-  // 푸시 모달 닫기
-  const handleClosePushModal = useCallback(() => {
-    setIsPushModalVisible(false);
-    setSelectedContent(null);
-  }, []);
-
-  // 푸시 발송
-  const handleSendPush = useCallback(async () => {
-    if (!selectedContent || isSending) return;
-
-    const trimmedTitle = pushTitle.trim();
-    const trimmedBody = pushBody.trim();
-
-    if (trimmedBody.length === 0) {
-      await showDialog({
-        title: '입력 오류',
-        description: '내용을 입력해주세요.',
-        buttonText: '확인',
-      });
-      return;
-    }
-
-    setIsSending(true);
-
-    try {
-      // ContentDetail 딥링크 데이터 생성
-      const pushData: PushData = {
-        version: '1.0',
-        action: {
-          type: 'NAVIGATION',
-          screen: 'ContentDetail',
-          params: {
-            id: selectedContent.contentId,
-            title: selectedContent.contentTitle,
-            type: selectedContent.contentType,
-          },
-        },
-      };
-
-      const result = await adminUserApi.sendPushNotification(
-        userId,
-        trimmedTitle,
-        trimmedBody,
-        pushData,
-      );
-
-      if (result.success) {
-        const dialogResult = await showDialog({
-          title: '발송 완료',
-          description: `푸시 알림이 발송되었습니다. (${result.sentCount}건)`,
-          buttonText: '확인',
-        });
-        if (dialogResult === 'confirm') {
-          handleClosePushModal();
-        }
-      } else {
-        await showDialog({
-          title: '발송 실패',
-          description: '활성화된 푸시 토큰이 없습니다.',
-          buttonText: '확인',
-        });
-      }
-    } catch (err) {
-      console.error('푸시 발송 실패:', err);
-      await showDialog({
-        title: '발송 실패',
-        description: '푸시 알림 발송에 실패했습니다.',
-        buttonText: '확인',
-      });
-    } finally {
-      setIsSending(false);
-    }
-  }, [selectedContent, pushTitle, pushBody, userId, isSending, handleClosePushModal, showDialog]);
+  const {
+    activeTab,
+    setActiveTab,
+    items,
+    isLoading,
+    isPushModalVisible,
+    selectedContent,
+    pushTitle,
+    setPushTitle,
+    pushBody,
+    setPushBody,
+    isSending,
+    isValidInput,
+    handleGoBack,
+    handleOpenPushModal,
+    handleClosePushModal,
+    handleSendPush,
+    getTitle,
+    getEmptyMessage,
+    MAX_TITLE_LENGTH,
+    MAX_BODY_LENGTH,
+  } = useUserContentList({ userId, displayName, initialTab });
 
   // 아이템 렌더링
   const renderItem = useCallback(
@@ -250,33 +130,6 @@ export default function AdminUserContentListScreen() {
     (item: UserContentItem) => `${item.contentType}-${item.contentId}`,
     [],
   );
-
-  // 탭별 타이틀
-  const getTitle = () => {
-    const userName = displayName || '유저';
-    switch (activeTab) {
-      case 'history':
-        return `${userName}의 시청기록`;
-      case 'favorites':
-        return `${userName}의 찜 목록`;
-      case 'ratings':
-        return `${userName}의 평가`;
-    }
-  };
-
-  // 빈 상태 메시지
-  const getEmptyMessage = () => {
-    switch (activeTab) {
-      case 'history':
-        return '시청기록이 없습니다';
-      case 'favorites':
-        return '찜한 콘텐츠가 없습니다';
-      case 'ratings':
-        return '평가한 콘텐츠가 없습니다';
-    }
-  };
-
-  const isValidInput = pushBody.trim().length > 0;
 
   return (
     <BasePage useSafeArea={false}>
@@ -376,7 +229,7 @@ export default function AdminUserContentListScreen() {
                   </InputLabel>
                   <StyledTextInput
                     value={pushTitle}
-                    onChangeText={(text) => setPushTitle(text.slice(0, MAX_TITLE_LENGTH))}
+                    onChangeText={setPushTitle}
                     placeholder="없으면 앱 이름으로 표시"
                     placeholderTextColor={colors.gray03}
                     maxLength={MAX_TITLE_LENGTH}
@@ -393,7 +246,7 @@ export default function AdminUserContentListScreen() {
                   </InputLabel>
                   <StyledTextInput
                     value={pushBody}
-                    onChangeText={(text) => setPushBody(text.slice(0, MAX_BODY_LENGTH))}
+                    onChangeText={setPushBody}
                     placeholder="푸시 알림 내용"
                     placeholderTextColor={colors.gray03}
                     maxLength={MAX_BODY_LENGTH}
@@ -428,7 +281,7 @@ export default function AdminUserContentListScreen() {
 }
 
 // ============================================================================
-// Styles
+// Styled Components
 // ============================================================================
 
 const columnWrapperStyle = { gap: 9 };
