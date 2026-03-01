@@ -4,6 +4,8 @@
  * 각 정렬 탭의 콘텐츠를 표시합니다.
  * Tabs.FlatList를 사용하여 collapsible tab view와 통합됩니다.
  *
+ * useExplore 훅을 통해 필터 상태와 콘텐츠 클릭 핸들러에 접근합니다.
+ *
  * 반응형 그리드:
  * - 고정 카드 너비(MIN_CARD_WIDTH) 기준으로 열 수 자동 계산
  * - 폰: 2열 / 패블릿: 3열 / 태블릿: 4열+
@@ -16,9 +18,9 @@ import { Tabs } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
+import { useExplore } from '../_provider/ExploreProvider';
 import {
   ExploreContentCard,
   calculateGridLayout,
@@ -51,10 +53,6 @@ const CONTENT_CONTAINER_STYLE = {
 interface ExploreTabContentProps {
   /** 정렬 타입 */
   readonly sortType: ExploreSortType;
-  /** 필터 상태 */
-  readonly filter: ContentFilter;
-  /** 콘텐츠 클릭 콜백 */
-  readonly onContentPress: (content: ExploreContentModel) => void;
 }
 
 interface SkeletonCardProps {
@@ -124,9 +122,10 @@ const SkeletonGrid = React.memo(function SkeletonGrid({
 
 const ExploreTabContent = React.memo(function ExploreTabContent({
   sortType,
-  filter,
-  onContentPress,
 }: ExploreTabContentProps): React.ReactElement {
+  // Context에서 필터 상태와 콘텐츠 클릭 핸들러 가져오기
+  const { filter, handleContentPress } = useExplore();
+
   const { contents, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useExploreContents(sortType, filter);
 
@@ -176,11 +175,11 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
 
       return (
         <ItemWrapper cardWidth={cardWidth} isLastInRow={isLastInRow}>
-          <ExploreContentCard content={item} onPress={onContentPress} cardWidth={cardWidth} />
+          <ExploreContentCard content={item} onPress={handleContentPress} cardWidth={cardWidth} />
         </ItemWrapper>
       );
     },
-    [onContentPress, columnCount, cardWidth],
+    [handleContentPress, columnCount, cardWidth],
   );
 
   const keyExtractor = useCallback((item: GridItem, index: number) => {

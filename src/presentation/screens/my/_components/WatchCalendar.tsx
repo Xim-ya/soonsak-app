@@ -16,24 +16,8 @@ import { AppSize } from '@/shared/utils/appSize';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import type { WatchHistoryCalendarItemDto } from '@/features/watch-history';
+import { useMyScreen } from '../_provider';
 import BackArrowIcon from '@assets/icons/back_arrow.svg';
-
-interface WatchCalendarProps {
-  /** 현재 선택된 년도 */
-  readonly year: number;
-  /** 현재 선택된 월 (1-12) */
-  readonly month: number;
-  /** 해당 월의 시청 기록 */
-  readonly calendarData: WatchHistoryCalendarItemDto[] | undefined;
-  /** 이전 월로 이동 */
-  readonly onPrevMonth: () => void;
-  /** 다음 월로 이동 */
-  readonly onNextMonth: () => void;
-  /** 년/월 선택기 열기 */
-  readonly onOpenMonthPicker: () => void;
-  /** 날짜 클릭 콜백 */
-  readonly onDatePress?: (date: string) => void;
-}
 
 const DAYS_OF_WEEK = ['일', '월', '화', '수', '목', '금', '토'] as const;
 const CALENDAR_PADDING = AppSize.ratioWidth(16);
@@ -42,19 +26,21 @@ const CELL_WIDTH = Math.floor((AppSize.screenWidth - CALENDAR_PADDING * 2 - CELL
 const CELL_HEIGHT = Math.floor(CELL_WIDTH * 1.5); // 포스터 비율 2:3
 const ARROW_SIZE = 24;
 
-function WatchCalendarComponent({
-  year,
-  month,
-  calendarData,
-  onPrevMonth,
-  onNextMonth,
-  onOpenMonthPicker,
-  onDatePress,
-}: WatchCalendarProps) {
+function WatchCalendarComponent() {
+  const {
+    selectedYear,
+    selectedMonth,
+    calendarData,
+    handlePrevMonth,
+    handleNextMonth,
+    handleOpenMonthPicker,
+    handleCalendarDatePress,
+  } = useMyScreen();
+
   // 월의 첫째 날과 마지막 날 계산
   const calendarDays = useMemo(() => {
-    const firstDay = new Date(year, month - 1, 1);
-    const lastDay = new Date(year, month, 0);
+    const firstDay = new Date(selectedYear, selectedMonth - 1, 1);
+    const lastDay = new Date(selectedYear, selectedMonth, 0);
     const startDayOfWeek = firstDay.getDay();
     const totalDays = lastDay.getDate();
 
@@ -74,7 +60,7 @@ function WatchCalendarComponent({
 
     // 현재 달의 날짜들
     for (let day = 1; day <= totalDays; day++) {
-      const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+      const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
       const history = historyMap.get(dateStr);
 
       days.push({
@@ -87,13 +73,13 @@ function WatchCalendarComponent({
     }
 
     return days;
-  }, [year, month, calendarData]);
+  }, [selectedYear, selectedMonth, calendarData]);
 
   const handleDatePress = useCallback(
     (dateStr: string) => {
-      onDatePress?.(dateStr);
+      handleCalendarDatePress(dateStr);
     },
-    [onDatePress],
+    [handleCalendarDatePress],
   );
 
   return (
@@ -101,7 +87,7 @@ function WatchCalendarComponent({
       {/* 월 네비게이션 */}
       <MonthNavigation>
         <NavButton
-          onPress={onPrevMonth}
+          onPress={handlePrevMonth}
           activeOpacity={0.7}
           accessibilityLabel="이전 달"
           accessibilityRole="button"
@@ -109,15 +95,15 @@ function WatchCalendarComponent({
           <BackArrowIcon width={ARROW_SIZE} height={ARROW_SIZE} color={colors.white} />
         </NavButton>
 
-        <MonthPillButton onPress={onOpenMonthPicker} activeOpacity={0.7}>
+        <MonthPillButton onPress={handleOpenMonthPicker} activeOpacity={0.7}>
           <MonthText>
-            {year}년 {month}월
+            {selectedYear}년 {selectedMonth}월
           </MonthText>
           <DropdownIcon>▼</DropdownIcon>
         </MonthPillButton>
 
         <NavButton
-          onPress={onNextMonth}
+          onPress={handleNextMonth}
           activeOpacity={0.7}
           accessibilityLabel="다음 달"
           accessibilityRole="button"

@@ -2,13 +2,10 @@
  * NicknameInput - 닉네임 입력 컴포넌트
  *
  * 닉네임 입력 필드와 유효성 검사 메시지를 표시합니다.
+ * ProfileSetupProvider의 Context를 통해 상태에 접근합니다.
  *
  * @example
- * <NicknameInput
- *   value={nickname}
- *   onChangeText={setNickname}
- *   error={error}
- * />
+ * <NicknameInput autoFocus={true} />
  */
 
 import React, { useCallback, useRef } from 'react';
@@ -17,6 +14,7 @@ import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { NICKNAME_RULES } from '@/features/user/constants/nicknameValidation';
+import { useProfileSetupContext } from '../_provider/ProfileSetupProvider';
 
 /** 레이아웃 상수 */
 const INPUT_HEIGHT = 52;
@@ -24,26 +22,16 @@ const INPUT_BORDER_RADIUS = 12;
 const INPUT_PADDING_HORIZONTAL = 16;
 
 interface NicknameInputProps {
-  /** 현재 입력값 */
-  readonly value: string;
-  /** 입력 변경 핸들러 */
-  readonly onChangeText: (text: string) => void;
-  /** 에러 메시지 */
-  readonly error: string | null;
   /** 포커스 여부 */
   readonly autoFocus?: boolean;
 }
 
-function NicknameInput({
-  value,
-  onChangeText,
-  error,
-  autoFocus = true,
-}: NicknameInputProps): React.ReactElement {
+function NicknameInput({ autoFocus = true }: NicknameInputProps): React.ReactElement {
   const inputRef = useRef<TextInput>(null);
+  const { nickname, setNickname, error } = useProfileSetupContext();
 
   const hasError = error !== null && error.length > 0;
-  const isValid = !hasError && value.length >= NICKNAME_RULES.MIN_LENGTH;
+  const isValid = !hasError && nickname.length >= NICKNAME_RULES.MIN_LENGTH;
 
   // 힌트 메시지
   const hintMessage = `${NICKNAME_RULES.MIN_LENGTH}~${NICKNAME_RULES.MAX_LENGTH}자, 한글/영문/숫자/_/- 사용 가능`;
@@ -58,8 +46,8 @@ function NicknameInput({
       <InputContainer hasError={hasError} isValid={isValid}>
         <StyledTextInput
           ref={inputRef}
-          value={value}
-          onChangeText={onChangeText}
+          value={nickname}
+          onChangeText={setNickname}
           placeholder="닉네임을 입력하세요"
           placeholderTextColor={colors.gray03}
           maxLength={NICKNAME_RULES.MAX_LENGTH}

@@ -10,21 +10,7 @@ import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-
-interface UserStatsSectionProps {
-  /** 찜한 콘텐츠 개수 */
-  readonly favoritesCount: number;
-  /** 평가한 콘텐츠 개수 */
-  readonly ratingsCount: number;
-  /** 시청 완료한 콘텐츠 개수 */
-  readonly watchedCount: number;
-  /** 찜했어요 클릭 핸들러 */
-  readonly onFavoritesPress?: () => void;
-  /** 평가했어요 클릭 핸들러 */
-  readonly onRatingsPress?: () => void;
-  /** 봤어요 클릭 핸들러 */
-  readonly onWatchedPress?: () => void;
-}
+import { useMyScreen } from '../_provider';
 
 interface StatItemProps {
   readonly count: number;
@@ -43,21 +29,23 @@ const StatItem = memo(function StatItem({ count, label, onPress }: StatItemProps
   );
 });
 
-function UserStatsSectionComponent({
-  favoritesCount,
-  ratingsCount,
-  watchedCount,
-  onFavoritesPress,
-  onRatingsPress,
-  onWatchedPress,
-}: UserStatsSectionProps) {
+function UserStatsSectionComponent() {
+  const {
+    favoritesCount,
+    ratingsCount,
+    watchedCount,
+    handleFavoritesPress,
+    handleRatingsPress,
+    handleWatchedPress,
+  } = useMyScreen();
+
   return (
     <Container>
-      <StatItem count={favoritesCount} label="찜했어요" onPress={onFavoritesPress} />
+      <StatItem count={favoritesCount} label="찜했어요" onPress={handleFavoritesPress} />
       <Divider />
-      <StatItem count={ratingsCount} label="평가했어요" onPress={onRatingsPress} />
+      <StatItem count={ratingsCount} label="평가했어요" onPress={handleRatingsPress} />
       <Divider />
-      <StatItem count={watchedCount} label="봤어요" onPress={onWatchedPress} />
+      <StatItem count={watchedCount} label="봤어요" onPress={handleWatchedPress} />
     </Container>
   );
 }

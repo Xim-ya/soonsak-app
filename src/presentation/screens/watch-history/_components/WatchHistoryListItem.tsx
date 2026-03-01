@@ -4,6 +4,8 @@
  * SearchResultItem과 유사한 스타일로 시청 기록을 표시합니다.
  * - 좌측: 포스터 이미지
  * - 우측: 제목, 타입, 프로그레스 정보
+ *
+ * WatchHistoryProvider의 Context를 통해 handleItemPress에 접근합니다.
  */
 
 import { memo, useCallback } from 'react';
@@ -18,6 +20,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import { WatchHistoryModel } from '@/features/watch-history';
+import { useWatchHistoryContext } from '../_provider';
 
 /** 포스터 비율 (2:3) */
 const POSTER_ASPECT_RATIO = 1.5;
@@ -29,14 +32,16 @@ const ITEM_PADDING = 16;
 const PROGRESS_BAR_HEIGHT = 3;
 
 interface WatchHistoryListItemProps {
+  /** 시청 기록 아이템 데이터 */
   readonly item: WatchHistoryModel;
-  readonly onPress?: (item: WatchHistoryModel) => void;
 }
 
-function WatchHistoryListItemComponent({ item, onPress }: WatchHistoryListItemProps) {
+function WatchHistoryListItemComponent({ item }: WatchHistoryListItemProps) {
+  const { handleItemPress } = useWatchHistoryContext();
+
   const handlePress = useCallback(() => {
-    onPress?.(item);
-  }, [onPress, item]);
+    handleItemPress(item);
+  }, [handleItemPress, item]);
 
   // 포스터 이미지 URL (poster 우선)
   const posterUrl = WatchHistoryModel.getImageUrl(item, {

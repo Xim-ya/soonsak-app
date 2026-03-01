@@ -6,55 +6,33 @@
  * - 우측: 로그인 시 설정 아이콘, 비로그인 시 로그인 버튼
  */
 
-import { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
+import { useMyScreen } from '../_provider';
 import GearIcon from '@assets/icons/gear.svg';
-
-interface MyScreenHeaderProps {
-  /** 설정 버튼 클릭 시 콜백 */
-  readonly onSettingsPress?: () => void;
-}
 
 const ICON_SIZE = 20;
 
-function MyScreenHeader({ onSettingsPress }: MyScreenHeaderProps) {
-  const { status } = useAuth();
-  const isGuest = status === 'unauthenticated';
-
-  // 로그인 다이얼로그 상태
-  const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
-
-  const handleLoginPress = useCallback(() => {
-    setLoginDialogVisible(true);
-  }, []);
-
-  const handleCloseDialog = useCallback(() => {
-    setLoginDialogVisible(false);
-  }, []);
+function MyScreenHeader() {
+  const { isGuest, showLoginDialog, handleSettingsPress } = useMyScreen();
 
   return (
-    <>
-      <Container>
-        <TitleText>MY</TitleText>
-        <RightSection>
-          {isGuest && (
-            <LoginButton onPress={handleLoginPress} activeOpacity={0.8}>
-              <LoginButtonText>로그인</LoginButtonText>
-            </LoginButton>
-          )}
-          <TouchableOpacity onPress={onSettingsPress} activeOpacity={0.7}>
-            <GearIcon width={ICON_SIZE} height={ICON_SIZE} color={colors.white} />
-          </TouchableOpacity>
-        </RightSection>
-      </Container>
-      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
-    </>
+    <Container>
+      <TitleText>MY</TitleText>
+      <RightSection>
+        {isGuest && (
+          <LoginButton onPress={showLoginDialog} activeOpacity={0.8}>
+            <LoginButtonText>로그인</LoginButtonText>
+          </LoginButton>
+        )}
+        <TouchableOpacity onPress={handleSettingsPress} activeOpacity={0.7}>
+          <GearIcon width={ICON_SIZE} height={ICON_SIZE} color={colors.white} />
+        </TouchableOpacity>
+      </RightSection>
+    </Container>
   );
 }
 

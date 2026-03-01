@@ -10,7 +10,7 @@
  * - Phablet/Tablet (>=600dp): YouTube 스타일 2열 그리드 (TabletVideoCard)
  */
 
-import { useCallback, useState, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
   ListRenderItem,
@@ -44,15 +44,9 @@ import Gap from '@/presentation/components/view/Gap';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { AppSize } from '@/shared/utils/appSize';
-import {
-  CHANNEL_SORT_OPTIONS,
-  type ChannelSortType,
-  type ChannelVideoModel,
-  type ChannelItemModel,
-} from './_types';
+import { CHANNEL_SORT_OPTIONS, type ChannelVideoModel, type ChannelItemModel } from './_types';
 import { useChannelList } from './_hooks/useChannelList';
 import { useChannelVideos } from './_hooks/useChannelVideos';
-import { useChannelFilterSheet } from './_hooks/useChannelFilterSheet';
 import {
   AnimatedChannelSelector,
   CHANNEL_SELECTOR_HEIGHT_MAX,
@@ -62,6 +56,7 @@ import {
 import { ChannelVideoCard, calculateCardHeight } from './_components/ChannelVideoCard';
 import { TabletVideoCard } from './_components/TabletVideoCard';
 import { SortSelector } from '@/presentation/components/sort';
+import { ChannelProvider, useChannel } from './_provider/ChannelProvider';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -90,10 +85,44 @@ const ANDROID_GRADIENT_STYLE = Platform.OS === 'android' ? { bottom: -19 } : und
 const headerRowWrapperStyle = { height: HEADER_ROW_HEIGHT };
 const stickyContentStyle = { flex: 1 } as const;
 
+/**
+ * ChannelScreen - 채널 탭 화면 (Provider 래퍼)
+ */
 export default function ChannelScreen() {
+  return (
+    <ChannelProvider>
+      <ChannelContent />
+    </ChannelProvider>
+  );
+}
+
+/**
+ * ChannelContent - 실제 채널 탭 화면 내용
+ *
+ * ChannelProvider 내부에서 렌더링되어 채널 컨텍스트에 접근 가능
+ */
+function ChannelContent() {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
   const { width: windowWidth } = useWindowDimensions();
+
+  // Context에서 상태 가져오기
+  const {
+    filter,
+    sheetFilter,
+    hasPendingFilter,
+    isCustomFilterActive,
+    isFilterSheetVisible,
+    openSheet,
+    closeSheet,
+    applyFilter,
+    requestChannelSelection,
+    isLoginDialogVisible,
+    loginSuccessCallback,
+    closeLoginDialog,
+    sortType,
+    handleSortChange,
+  } = useChannel();
 
   // 대형 화면 여부 (phablet/tablet)
   const isLargeScreen = AppSize.isLargeScreen();
@@ -125,27 +154,8 @@ export default function ChannelScreen() {
     }
   });
 
-  // 정렬 상태 (기본값: 전체/랜덤)
-  const [sortType, setSortType] = useState<ChannelSortType>('all');
-
   // 채널 목록 조회
   const { channels, isLoading: isChannelsLoading } = useChannelList();
-
-  // 필터 바텀시트 상태 관리
-  const {
-    filter,
-    isVisible: isFilterSheetVisible,
-    sheetFilter,
-    hasPendingFilter,
-    isCustomFilterActive,
-    openSheet,
-    closeSheet,
-    applyFilter,
-    requestChannelSelection,
-    isLoginDialogVisible,
-    loginSuccessCallback,
-    closeLoginDialog,
-  } = useChannelFilterSheet();
 
   // 비디오 목록 조회 (filter 전체를 전달하여 모든 필터 조건 적용)
   const { videos, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } = useChannelVideos(
@@ -160,7 +170,7 @@ export default function ChannelScreen() {
     },
   });
 
-  // 비디오 클릭 핸들러 → 콘텐츠 상세 페이지로 이동
+  // 비디오 클릭 핸들러 -> 콘텐츠 상세 페이지로 이동
   const handleVideoPress = useCallback(
     (video: ChannelVideoModel) => {
       navigation.navigate(routePages.contentDetail, {
@@ -173,17 +183,12 @@ export default function ChannelScreen() {
     [navigation],
   );
 
-  // 정렬 변경 핸들러
-  const handleSortChange = useCallback((newSortType: ChannelSortType) => {
-    setSortType(newSortType);
-  }, []);
-
   // 더보기(전체 채널) 핸들러
   const handleViewAllChannels = useCallback(() => {
     navigation.navigate(routePages.channelAll);
   }, [navigation]);
 
-  // 채널 클릭 핸들러 → 채널 상세 페이지로 이동
+  // 채널 클릭 핸들러 -> 채널 상세 페이지로 이동
   const handleChannelPress = useCallback(
     (channel: ChannelItemModel) => {
       const params: RootStackParamList[typeof routePages.channelDetail] = {

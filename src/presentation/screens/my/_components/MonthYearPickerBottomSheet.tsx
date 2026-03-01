@@ -23,19 +23,7 @@ import Animated, {
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-
-interface MonthYearPickerBottomSheetProps {
-  /** 바텀시트 표시 여부 */
-  readonly visible: boolean;
-  /** 현재 선택된 년도 */
-  readonly selectedYear: number;
-  /** 현재 선택된 월 */
-  readonly selectedMonth: number;
-  /** 적용 콜백 */
-  readonly onApply: (year: number, month: number) => void;
-  /** 닫기 콜백 */
-  readonly onClose: () => void;
-}
+import { useMyScreen } from '../_provider';
 
 const SHEET_HEIGHT = AppSize.screenHeight * 0.45;
 const CLOSE_THRESHOLD = SHEET_HEIGHT * 0.25;
@@ -43,18 +31,20 @@ const ITEM_HEIGHT = 50;
 const VISIBLE_ITEMS = 5;
 const PICKER_HEIGHT = ITEM_HEIGHT * VISIBLE_ITEMS;
 
-// 년도 범위 (현재 년도 기준 ±10년)
+// 년도 범위 (현재 년도 기준 +-10년)
 const CURRENT_YEAR = new Date().getFullYear();
 const YEARS = Array.from({ length: 21 }, (_, i) => CURRENT_YEAR - 10 + i);
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 
-function MonthYearPickerBottomSheet({
-  visible,
-  selectedYear,
-  selectedMonth,
-  onApply,
-  onClose,
-}: MonthYearPickerBottomSheetProps) {
+function MonthYearPickerBottomSheet() {
+  const {
+    isMonthPickerVisible,
+    selectedYear,
+    selectedMonth,
+    handleApplyMonthYear,
+    handleCloseMonthPicker,
+  } = useMyScreen();
+
   const [tempYear, setTempYear] = useState(selectedYear);
   const [tempMonth, setTempMonth] = useState(selectedMonth);
 
@@ -67,7 +57,7 @@ function MonthYearPickerBottomSheet({
 
   // visible 상태에 따른 초기화
   useEffect(() => {
-    if (visible) {
+    if (isMonthPickerVisible) {
       setTempYear(selectedYear);
       setTempMonth(selectedMonth);
 
@@ -94,7 +84,7 @@ function MonthYearPickerBottomSheet({
         });
       }, 100);
     }
-  }, [visible, selectedYear, selectedMonth, overlayOpacity, sheetTranslateY]);
+  }, [isMonthPickerVisible, selectedYear, selectedMonth, overlayOpacity, sheetTranslateY]);
 
   // 닫기 애니메이션
   const handleClose = useCallback(() => {
@@ -103,16 +93,16 @@ function MonthYearPickerBottomSheet({
       SHEET_HEIGHT,
       { duration: 250, easing: Easing.inOut(Easing.ease) },
       () => {
-        runOnJS(onClose)();
+        runOnJS(handleCloseMonthPicker)();
       },
     );
-  }, [onClose, overlayOpacity, sheetTranslateY]);
+  }, [handleCloseMonthPicker, overlayOpacity, sheetTranslateY]);
 
   // 적용 핸들러
   const handleApply = useCallback(() => {
-    onApply(tempYear, tempMonth);
+    handleApplyMonthYear(tempYear, tempMonth);
     handleClose();
-  }, [tempYear, tempMonth, onApply, handleClose]);
+  }, [tempYear, tempMonth, handleApplyMonthYear, handleClose]);
 
   // 드래그 제스처
   const panGesture = Gesture.Pan()
@@ -219,7 +209,12 @@ function MonthYearPickerBottomSheet({
   const paddingItems = Math.floor(VISIBLE_ITEMS / 2);
 
   return (
-    <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
+    <Modal
+      visible={isMonthPickerVisible}
+      transparent
+      animationType="none"
+      onRequestClose={handleClose}
+    >
       <ModalContainer>
         {/* 배경 오버레이 */}
         <Overlay style={overlayAnimatedStyle} onTouchEnd={handleClose} />

@@ -13,7 +13,7 @@
  * navigation.navigate(routePages.watchHistory, { date: '2024-02-22' });
  */
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -21,9 +21,8 @@ import {
   ScrollView,
   useWindowDimensions,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
+import { useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar';
@@ -32,20 +31,16 @@ import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-import type { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
+import type { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import {
-  WatchHistoryCard,
-  useWatchHistoryByDate,
-  useInfiniteUniqueWatchHistory,
-  type WatchHistoryModelType,
-} from '@/features/watch-history';
-import { ViewModeToggle, WatchHistoryListItem, type ViewMode } from './_components';
+import { WatchHistoryCard, type WatchHistoryModelType } from '@/features/watch-history';
+import { ViewModeToggle } from '@/presentation/components/view-mode';
+import { WatchHistoryListItem } from './_components';
+import { WatchHistoryProvider, useWatchHistoryContext } from './_provider';
 
 /* Types */
 
 type WatchHistoryScreenRouteProp = ScreenRouteProp<typeof routePages.watchHistory>;
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 /* Constants */
 
@@ -58,83 +53,42 @@ const TABLET_CARD_WIDTH = 420; // WatchHistoryCard와 동일
 
 export default function WatchHistoryScreen() {
   const route = useRoute<WatchHistoryScreenRouteProp>();
-  const navigation = useNavigation<NavigationProp>();
-  const insets = useSafeAreaInsets();
-
   const { date } = route.params ?? {};
 
-  // 뷰 모드 상태: 캘린더에서 진입 시(date 있음) 리스트 뷰 기본
-  const [viewMode, setViewMode] = useState<ViewMode>(date ? 'list' : 'card');
-
-  // 날짜 여부에 따라 다른 Hook 사용
-  const byDateQuery = useWatchHistoryByDate(date ?? '', { enabled: !!date });
-  const infiniteQuery = useInfiniteUniqueWatchHistory(20, { enabled: !date });
-
-  // 데이터 통합
-  const { items, isInitialLoading, isFetchingNextPage, hasNextPage } = useMemo(() => {
-    if (date) {
-      // placeholderData가 있으므로 isPlaceholderData도 체크
-      const dateItems = byDateQuery.isPlaceholderData ? [] : (byDateQuery.data ?? []);
-      // 초기 로딩 스켈레톤은 isFetching이 true이고 dateItems가 비어있을 때만 표시
-      return {
-        items: dateItems,
-        isInitialLoading: byDateQuery.isFetching && dateItems.length === 0,
-        isFetchingNextPage: false,
-        hasNextPage: false,
-      };
-    }
-    // 무한 스크롤 데이터 평탄화
-    const allItems = infiniteQuery.data?.pages.flatMap((page) => page.items) ?? [];
-    return {
-      items: allItems,
-      // 아이템이 없고 로딩 중일 때만 초기 로딩 상태
-      isInitialLoading: infiniteQuery.isFetching && allItems.length === 0,
-      isFetchingNextPage: infiniteQuery.isFetchingNextPage,
-      hasNextPage: infiniteQuery.hasNextPage ?? false,
-    };
-  }, [
-    date,
-    byDateQuery.data,
-    byDateQuery.isFetching,
-    byDateQuery.isPlaceholderData,
-    infiniteQuery.data,
-    infiniteQuery.isFetching,
-    infiniteQuery.isFetchingNextPage,
-    infiniteQuery.hasNextPage,
-  ]);
-
-  // 다음 페이지 로드
-  const fetchNextPage = infiniteQuery.fetchNextPage;
-  const handleEndReached = useCallback(() => {
-    if (!date && hasNextPage && !isFetchingNextPage) {
-      fetchNextPage();
-    }
-  }, [date, hasNextPage, isFetchingNextPage, fetchNextPage]);
-
-  // 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
-  // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
-  const handleItemPress = useCallback(
-    (item: WatchHistoryModelType) => {
-      navigation.navigate(routePages.contentDetail, {
-        id: item.contentId,
-        type: item.contentType,
-        title: item.contentTitle,
-        initialData: {
-          backdropPath: item.contentBackdropPath,
-          posterPath: item.contentPosterPath,
-          progressSeconds: item.progressSeconds,
-          durationSeconds: item.durationSeconds,
-        },
-      });
-    },
-    [navigation],
+  return (
+    <WatchHistoryProvider date={date}>
+      <WatchHistoryContent />
+    </WatchHistoryProvider>
   );
+}
+
+/**
+ * WatchHistoryContent - 시청 기록 화면 컨텐츠
+ *
+ * WatchHistoryProvider 내부에서 렌더링되어 Context에 접근 가능합니다.
+ */
+function WatchHistoryContent() {
+  const insets = useSafeAreaInsets();
+
+  // Context에서 상태와 핸들러 가져오기
+  const {
+    viewMode,
+    setViewMode,
+    items,
+    isInitialLoading,
+    isFetchingNextPage,
+    date,
+    handleItemPress,
+    handleEndReached,
+  } = useWatchHistoryContext();
 
   // 아이템 렌더 (뷰 모드에 따라 다른 컴포넌트)
+  // WatchHistoryListItem은 Context에서 handleItemPress를 가져옴
+  // WatchHistoryCard는 공용 컴포넌트이므로 props로 전달
   const renderItem: ListRenderItem<WatchHistoryModelType> = useCallback(
     ({ item }) => {
       if (viewMode === 'list') {
-        return <WatchHistoryListItem item={item} onPress={handleItemPress} />;
+        return <WatchHistoryListItem item={item} />;
       }
       return <WatchHistoryCard item={item} onPress={handleItemPress} />;
     },
@@ -173,7 +127,7 @@ export default function WatchHistoryScreen() {
   // 앱바 액션: 뷰 모드 토글
   const appBarActions = useMemo(
     () => [<ViewModeToggle key="view-toggle" mode={viewMode} onModeChange={setViewMode} />],
-    [viewMode],
+    [viewMode, setViewMode],
   );
 
   // 스켈레톤 UI 렌더링
@@ -232,7 +186,7 @@ export default function WatchHistoryScreen() {
           </SkeletonScrollView>
         ) : (
           <FlatList
-            data={items}
+            data={items as WatchHistoryModelType[]}
             renderItem={renderItem}
             keyExtractor={keyExtractor}
             ItemSeparatorComponent={renderItemSeparator}

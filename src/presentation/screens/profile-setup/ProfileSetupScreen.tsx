@@ -13,7 +13,7 @@
  * navigation.navigate('ProfileSetup', { mode: 'edit' });
  */
 
-import React, { useMemo } from 'react';
+import React from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView } from 'react-native';
 import { useRoute, RouteProp } from '@react-navigation/native';
 import styled from '@emotion/native';
@@ -22,10 +22,10 @@ import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
-import { PrimaryButton, type ButtonState } from '@/presentation/components/button';
+import { PrimaryButton } from '@/presentation/components/button';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { useProfileSetup } from './_hooks/useProfileSetup';
+import { ProfileSetupProvider, useProfileSetupContext } from './_provider/ProfileSetupProvider';
 import { NicknameInput } from './_components/NicknameInput';
 import { ProfileImagePicker } from './_components/ProfileImagePicker';
 
@@ -39,31 +39,20 @@ export default function ProfileSetupScreen(): React.ReactElement {
   const route = useRoute<ProfileSetupRouteProp>();
   const { mode } = route.params;
 
-  const {
-    nickname,
-    setNickname,
-    avatarUrl,
-    error,
-    isLoading,
-    isValid,
-    isChanged,
-    handlePickImage,
-    handleSubmit,
-  } = useProfileSetup({ mode });
+  return (
+    <ProfileSetupProvider mode={mode}>
+      <ProfileSetupContent />
+    </ProfileSetupProvider>
+  );
+}
 
-  // 모드별 UI 텍스트
-  const buttonText = mode === 'initial' ? '시작하기' : '저장';
-  const showBackButton = mode === 'edit';
-
-  // 버튼 활성화 조건
-  const isButtonEnabled = mode === 'initial' ? isValid : isValid && isChanged;
-
-  // 버튼 상태 계산
-  const buttonState: ButtonState = useMemo(() => {
-    if (isLoading) return 'loading';
-    if (isButtonEnabled) return 'enabled';
-    return 'disabled';
-  }, [isLoading, isButtonEnabled]);
+/**
+ * ProfileSetupContent - 실제 프로필 설정 화면 내용
+ *
+ * ProfileSetupProvider 내부에서 렌더링되어 Context에 접근 가능
+ */
+function ProfileSetupContent(): React.ReactElement {
+  const { showBackButton, buttonText, buttonState, handleSubmit, mode } = useProfileSetupContext();
 
   return (
     <BasePage automaticallyAdjustKeyboardInsets={false}>
@@ -84,18 +73,13 @@ export default function ProfileSetupScreen(): React.ReactElement {
             <ContentContainer>
               {/* 프로필 이미지 */}
               <ImageSection>
-                <ProfileImagePicker imageUrl={avatarUrl} onPress={handlePickImage} />
+                <ProfileImagePicker />
               </ImageSection>
 
               {/* 닉네임 입력 */}
               <InputSection>
                 <SectionLabel>닉네임</SectionLabel>
-                <NicknameInput
-                  value={nickname}
-                  onChangeText={setNickname}
-                  error={error}
-                  autoFocus={mode === 'initial'}
-                />
+                <NicknameInput autoFocus={mode === 'initial'} />
               </InputSection>
             </ContentContainer>
 

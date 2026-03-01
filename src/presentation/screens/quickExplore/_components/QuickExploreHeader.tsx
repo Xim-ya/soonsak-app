@@ -4,12 +4,10 @@
  * - 우측 상단: 필터 버튼 (글래스모피즘)
  * - 하단 가운데: 찾기 버튼 (랜덤 탐색)
  *
+ * QuickExploreProvider 내부에서 useQuickExplore() 훅을 통해 상태에 접근합니다.
+ *
  * @example
- * <QuickExploreHeader
- *   onFilterPress={handleFilter}
- *   onSearchPress={handleSearch}
- *   isFilterActive={isFilterActive(filter)}
- * />
+ * <QuickExploreHeader />
  */
 
 import styled from '@emotion/native';
@@ -20,43 +18,31 @@ import { AppSize } from '@/shared/utils/appSize';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
 import FilterIcon from '@assets/icons/filter.svg';
 import DiceIcon from '@assets/icons/dice.svg';
-
-interface QuickExploreHeaderProps {
-  onFilterPress?: () => void;
-  onSearchPress?: () => void;
-  /** 필터 활성화 여부 (인디케이터 표시) */
-  isFilterActive?: boolean;
-}
+import { useQuickExplore } from '../_provider/QuickExploreProvider';
 
 const ICON_SIZE = 20;
 const FILTER_BUTTON_SIZE = 44;
 const DICE_BUTTON_HEIGHT = 52;
 
-function QuickExploreHeader({
-  onFilterPress,
-  onSearchPress,
-  isFilterActive = false,
-}: QuickExploreHeaderProps) {
+function QuickExploreHeader() {
   const insets = useSafeAreaInsets();
+  const { isFilterApplied, handleFilterPress, handleSearchPress } = useQuickExplore();
 
   return (
     <>
       {/* 우측 상단: 필터 버튼 */}
       <TopRightContainer style={{ top: insets.top }}>
         <FilterButtonWrapper>
-          <GlassIconButton
-            size={FILTER_BUTTON_SIZE}
-            {...(onFilterPress && { onPress: onFilterPress })}
-          >
+          <GlassIconButton size={FILTER_BUTTON_SIZE} onPress={handleFilterPress}>
             <FilterIcon width={ICON_SIZE} height={ICON_SIZE} color={colors.white} />
           </GlassIconButton>
-          {isFilterActive && <FilterIndicator />}
+          {isFilterApplied && <FilterIndicator />}
         </FilterButtonWrapper>
       </TopRightContainer>
 
       {/* 하단: 주사위 버튼 (전체 너비) */}
       <BottomContainer style={{ bottom: insets.bottom + 24 }}>
-        <DiceButton activeOpacity={0.7} {...(onSearchPress && { onPress: onSearchPress })}>
+        <DiceButton activeOpacity={0.7} onPress={handleSearchPress}>
           <DiceIcon width={20} height={20} color={colors.white} />
           <DiceButtonText>찾기</DiceButtonText>
         </DiceButton>
@@ -113,4 +99,3 @@ const DiceButtonText = styled.Text({
 });
 
 export { QuickExploreHeader };
-export type { QuickExploreHeaderProps };

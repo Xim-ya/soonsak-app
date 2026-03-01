@@ -5,25 +5,18 @@
  * 스와이프로 탭을 전환할 수 있습니다.
  */
 
-import { useCallback } from 'react';
-import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useRoute, RouteProp } from '@react-navigation/native';
 import styled from '@emotion/native';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useSharedValue } from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
-import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { TabParamList } from '@/shared/navigation/types';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
-import type { ExploreContentModel } from './_types/exploreTypes';
 import { ExploreHeader } from './_components/ExploreHeader';
 import { ExploreTabBar } from './_components/ExploreTabBar';
 import { ExploreTabContent } from './_components/ExploreTabContent';
-import { useExploreFilterSheet } from './_hooks/useExploreFilterSheet';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
+import { ExploreProvider, useExplore } from './_provider/ExploreProvider';
 
 // 스타일 상수 (인라인 객체 생성 방지)
 const TABS_CONTAINER_STYLE = { backgroundColor: colors.black };
@@ -35,39 +28,39 @@ const PAGER_PROPS = {
 };
 
 export default function ExploreScreen() {
-  const navigation = useNavigation<NavigationProp>();
   const route = useRoute<RouteProp<TabParamList, 'Explore'>>();
-  const insets = useSafeAreaInsets();
   const initialTab = route.params?.initialTab ?? 'all';
-  const gradientOpacity = useSharedValue(0);
+
+  return (
+    <ExploreProvider>
+      <ExploreContent initialTab={initialTab} />
+    </ExploreProvider>
+  );
+}
+
+interface ExploreContentProps {
+  readonly initialTab: string;
+}
+
+/**
+ * ExploreContent - 실제 탐색 화면 콘텐츠
+ *
+ * ExploreProvider 내부에서 렌더링되어 Context에 접근 가능
+ */
+function ExploreContent({ initialTab }: ExploreContentProps) {
+  const insets = useSafeAreaInsets();
 
   const {
-    filter,
     isVisible,
     sheetFilter,
     hasPendingFilter,
-    isCustomFilterActive,
-    toggleIncludeEnding,
-    toggleExcludeWatched,
-    openSheet,
-    closeSheet,
     applyFilter,
+    closeSheet,
     requestChannelSelection,
     isLoginDialogVisible,
     loginSuccessCallback,
     closeLoginDialog,
-  } = useExploreFilterSheet();
-
-  const handleContentPress = useCallback(
-    (content: ExploreContentModel) => {
-      navigation.navigate(routePages.contentDetail, {
-        id: content.id,
-        title: content.title,
-        type: content.type,
-      });
-    },
-    [navigation],
-  );
+  } = useExplore();
 
   return (
     <Container>
@@ -78,18 +71,7 @@ export default function ExploreScreen() {
         <Tabs.Container
           initialTabName={initialTab}
           renderHeader={() => <ExploreHeader />}
-          renderTabBar={(props) => (
-            <ExploreTabBar
-              {...props}
-              includeEnding={filter.includeEnding}
-              onIncludeEndingToggle={toggleIncludeEnding}
-              excludeWatched={filter.excludeWatched}
-              onExcludeWatchedToggle={toggleExcludeWatched}
-              isCustomFilterActive={isCustomFilterActive}
-              onFilterPress={openSheet}
-              gradientOpacity={gradientOpacity}
-            />
-          )}
+          renderTabBar={(props) => <ExploreTabBar {...props} />}
           containerStyle={TABS_CONTAINER_STYLE}
           headerContainerStyle={HEADER_CONTAINER_STYLE}
           minHeaderHeight={0}
@@ -101,29 +83,17 @@ export default function ExploreScreen() {
         >
           <Tabs.Tab name="all" label="전체">
             <Tabs.Lazy>
-              <ExploreTabContent
-                sortType="all"
-                filter={filter}
-                onContentPress={handleContentPress}
-              />
+              <ExploreTabContent sortType="all" />
             </Tabs.Lazy>
           </Tabs.Tab>
           <Tabs.Tab name="latest" label="최신">
             <Tabs.Lazy>
-              <ExploreTabContent
-                sortType="latest"
-                filter={filter}
-                onContentPress={handleContentPress}
-              />
+              <ExploreTabContent sortType="latest" />
             </Tabs.Lazy>
           </Tabs.Tab>
           <Tabs.Tab name="popular" label="인기">
             <Tabs.Lazy>
-              <ExploreTabContent
-                sortType="popular"
-                filter={filter}
-                onContentPress={handleContentPress}
-              />
+              <ExploreTabContent sortType="popular" />
             </Tabs.Lazy>
           </Tabs.Tab>
         </Tabs.Container>

@@ -3,6 +3,8 @@
  *
  * react-native-collapsible-tab-view와 함께 사용되는 탭 바입니다.
  * 탭 바 아래에 필터 바도 포함하여 함께 스티키됩니다.
+ *
+ * useExplore 훅을 통해 필터 상태에 접근합니다.
  */
 
 import { useCallback } from 'react';
@@ -25,6 +27,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { EXPLORE_SORT_TABS } from '../_types/exploreTypes';
+import { useExplore } from '../_provider/ExploreProvider';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -99,36 +102,25 @@ const searchIconSvg = `
 </svg>
 `;
 
-interface ExploreTabBarProps<T extends string> extends TabBarProps<T> {
-  /** 결말 포함 필터 활성화 여부 */
-  readonly includeEnding: boolean;
-  /** 결말 포함 필터 토글 콜백 */
-  readonly onIncludeEndingToggle: () => void;
-  /** 본 작품 제외 필터 활성화 여부 */
-  readonly excludeWatched: boolean;
-  /** 본 작품 제외 필터 토글 콜백 (로그인 체크 포함) */
-  readonly onExcludeWatchedToggle: () => void;
-  /** 커스텀 필터 적용 여부 */
-  readonly isCustomFilterActive: boolean;
-  /** 필터 버튼 클릭 콜백 */
-  readonly onFilterPress: () => void;
-  /** 하단 그라데이션 opacity를 제어하는 SharedValue */
-  readonly gradientOpacity: SharedValue<number>;
-}
+/** ExploreTabBar Props - collapsible-tab-view에서 전달받는 props만 포함 */
+type ExploreTabBarProps<T extends string> = TabBarProps<T>;
 
 const ExploreTabBar = <T extends string>({
   tabNames,
   indexDecimal,
   onTabPress,
-  includeEnding,
-  onIncludeEndingToggle,
-  excludeWatched,
-  onExcludeWatchedToggle,
-  isCustomFilterActive,
-  onFilterPress,
-  gradientOpacity,
 }: ExploreTabBarProps<T>) => {
   const navigation = useNavigation<NavigationProp>();
+
+  // Context에서 필터 상태 및 액션 가져오기
+  const {
+    filter,
+    isCustomFilterActive,
+    toggleIncludeEnding,
+    toggleExcludeWatched,
+    openSheet,
+    gradientOpacity,
+  } = useExplore();
 
   // 스크롤 위치 추적
   const scrollY = useCurrentTabScrollY();
@@ -193,23 +185,27 @@ const ExploreTabBar = <T extends string>({
           contentContainerStyle={FILTER_SCROLL_CONTENT_STYLE}
         >
           {/* 필터 버튼 */}
-          <FilterIconButton onPress={onFilterPress} activeOpacity={0.7}>
+          <FilterIconButton onPress={openSheet} activeOpacity={0.7}>
             <SvgXml xml={filterIconSvg} width={16} height={16} />
             {isCustomFilterActive && <ActiveBadge />}
           </FilterIconButton>
 
           {/* 결말포함 칩 */}
-          <FilterChip selected={includeEnding} onPress={onIncludeEndingToggle} activeOpacity={0.7}>
-            <FilterChipText selected={includeEnding}>결말포함</FilterChipText>
+          <FilterChip
+            selected={filter.includeEnding}
+            onPress={toggleIncludeEnding}
+            activeOpacity={0.7}
+          >
+            <FilterChipText selected={filter.includeEnding}>결말포함</FilterChipText>
           </FilterChip>
 
           {/* 본 작품 제외 칩 */}
           <FilterChip
-            selected={excludeWatched}
-            onPress={onExcludeWatchedToggle}
+            selected={filter.excludeWatched}
+            onPress={toggleExcludeWatched}
             activeOpacity={0.7}
           >
-            <FilterChipText selected={excludeWatched}>본 작품 제외</FilterChipText>
+            <FilterChipText selected={filter.excludeWatched}>본 작품 제외</FilterChipText>
           </FilterChip>
         </ScrollView>
       </FilterBarSection>

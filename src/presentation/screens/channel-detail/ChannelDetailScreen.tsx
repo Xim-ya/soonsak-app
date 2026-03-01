@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { FlatList } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -8,7 +8,7 @@ import { BasePage } from '../../components/page';
 import { BackButtonAppBar } from '../../components/app-bar';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { SortSelector } from '../../components/sort';
-import { ViewModeToggle, type ViewMode } from '../../components/view-mode';
+import { ViewModeToggle } from '../../components/view-mode';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import colors from '@/shared/styles/colors';
@@ -16,52 +16,67 @@ import textStyles from '@/shared/styles/textStyles';
 import { ChannelLogoImage } from '../../components/image/ChannelLogoImage';
 import Gap from '../../components/view/Gap';
 import { AppSize } from '@/shared/utils/appSize';
-import type { SortType } from '@/shared/types/sort';
 import { CHANNEL_SORT_OPTIONS } from '../channel/_types';
-import { useChannelContents } from './_hooks/useChannelContents';
-import { useChannelInfo } from './_hooks/useChannelInfo';
 import { useScrollAnimation } from './_hooks/useScrollAnimation';
 import { VideoGridItem, VideoListItem } from './_components';
 import { ChannelVideoModel } from './_types';
 import { SkeletonView } from '../../components/loading/SkeletonView';
+import { ChannelDetailProvider, useChannelDetail } from './_provider/ChannelDetailProvider';
 
 type ChannelDetailRouteParams = ScreenRouteProp<typeof routePages.channelDetail>;
 
+/**
+ * ChannelDetailScreen - 채널 상세 화면
+ *
+ * ChannelDetailProvider로 감싸 하위 컴포넌트에서
+ * useChannelDetail() 훅을 통해 상태에 접근할 수 있습니다.
+ */
 export default function ChannelDetailScreen() {
   const route = useRoute<ChannelDetailRouteParams>();
   const { channelId, channelName, channelLogoUrl, subscriberCount } = route.params;
+
+  return (
+    <ChannelDetailProvider
+      channelId={channelId}
+      channelName={channelName}
+      channelLogoUrl={channelLogoUrl}
+      subscriberCount={subscriberCount}
+    >
+      <ChannelDetailContent />
+    </ChannelDetailProvider>
+  );
+}
+
+/**
+ * ChannelDetailContent - 실제 채널 상세 화면 내용
+ *
+ * ChannelDetailProvider 내부에서 렌더링되어 채널 컨텍스트에 접근 가능
+ */
+function ChannelDetailContent() {
   const insets = useSafeAreaInsets();
 
-  // 정렬 상태 (기본값: 최신순)
-  const [sortType, setSortType] = useState<SortType>('latest');
-  // 뷰 모드 상태 (기본값: 카드 뷰)
-  const [viewMode, setViewMode] = useState<ViewMode>('card');
-
-  // 채널 정보 관리
-  const { displayName, displayLogoUrl, isChannelLoading, formattedSubscriberCount } =
-    useChannelInfo({
-      channelId,
-      channelName,
-      channelLogoUrl,
-      subscriberCount,
-    });
-
-  // 채널 콘텐츠 관리 (정렬 타입 전달)
-  const { videos, isLoading, fetchNextPage, hasNextPage, totalCount } = useChannelContents(
-    channelId,
+  // Provider에서 상태 가져오기
+  const {
     sortType,
-  );
-
-  // 정렬 변경 핸들러
-  const handleSortChange = useCallback((newSortType: SortType) => {
-    setSortType(newSortType);
-  }, []);
+    setSortType,
+    viewMode,
+    setViewMode,
+    displayName,
+    displayLogoUrl,
+    formattedSubscriberCount,
+    isChannelLoading,
+    videos,
+    totalCount,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+  } = useChannelDetail();
 
   // 스크롤 애니메이션 관리
   const { handleScroll, gradientAnimatedStyle } = useScrollAnimation();
 
   const renderItem = useCallback(
-    ({ item }: { item: ChannelVideoModel }) => {
+    ({ item }: { readonly item: ChannelVideoModel }) => {
       if (viewMode === 'list') {
         return <VideoListItem video={item} />;
       }
@@ -73,7 +88,7 @@ export default function ChannelDetailScreen() {
   // 앱바 액션: 뷰 모드 토글
   const appBarActions = useMemo(
     () => [<ViewModeToggle key="view-toggle" mode={viewMode} onModeChange={setViewMode} />],
-    [viewMode],
+    [viewMode, setViewMode],
   );
 
   const renderHeader = useCallback(() => {
@@ -105,7 +120,7 @@ export default function ChannelDetailScreen() {
           <ContentCountText>{totalCount}개의 콘텐츠</ContentCountText>
           <SortSelector
             sortType={sortType}
-            onSortChange={handleSortChange}
+            onSortChange={setSortType}
             options={CHANNEL_SORT_OPTIONS}
           />
         </FilterRow>
@@ -119,7 +134,7 @@ export default function ChannelDetailScreen() {
     formattedSubscriberCount,
     totalCount,
     sortType,
-    handleSortChange,
+    setSortType,
   ]);
 
   const handleEndReached = useCallback(() => {
@@ -177,6 +192,8 @@ export default function ChannelDetailScreen() {
     </BasePage>
   );
 }
+
+/* Styled Components */
 
 // 항상 보이는 상단 그라데이션 (status bar 영역 덮음)
 const FixedGradientContainer = styled.View<{ safeAreaHeight: number }>(({ safeAreaHeight }) => ({

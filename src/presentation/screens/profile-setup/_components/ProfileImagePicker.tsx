@@ -3,12 +3,10 @@
  *
  * 프로필 이미지를 표시하고 변경할 수 있는 컴포넌트입니다.
  * 이미지 터치 시 갤러리에서 새 이미지를 선택할 수 있습니다.
+ * ProfileSetupProvider의 Context를 통해 상태에 접근합니다.
  *
  * @example
- * <ProfileImagePicker
- *   imageUrl={avatarUrl}
- *   onPress={handlePickImage}
- * />
+ * <ProfileImagePicker />
  */
 
 import React, { useState, useRef } from 'react';
@@ -17,6 +15,7 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { useProfileSetupContext } from '../_provider/ProfileSetupProvider';
 
 /** 레이아웃 상수 */
 const IMAGE_SIZE = 100;
@@ -37,19 +36,13 @@ const defaultProfileSvg = `
 </svg>
 `;
 
-interface ProfileImagePickerProps {
-  /** 프로필 이미지 URL */
-  readonly imageUrl: string | undefined;
-  /** 이미지 선택 핸들러 */
-  readonly onPress: () => void;
-}
-
-function ProfileImagePicker({ imageUrl, onPress }: ProfileImagePickerProps): React.ReactElement {
+function ProfileImagePicker(): React.ReactElement {
+  const { avatarUrl, handlePickImage } = useProfileSetupContext();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  const hasValidImage = imageUrl !== undefined && imageUrl.trim() !== '';
+  const hasValidImage = avatarUrl !== undefined && avatarUrl.trim() !== '';
 
   const handleImageLoad = () => {
     setIsLoading(false);
@@ -71,7 +64,7 @@ function ProfileImagePicker({ imageUrl, onPress }: ProfileImagePickerProps): Rea
 
   return (
     <Container>
-      <ImageButton onPress={onPress} activeOpacity={0.8}>
+      <ImageButton onPress={handlePickImage} activeOpacity={0.8}>
         {/* 배경 / 플레이스홀더 */}
         <ImageContainer>
           {/* 로딩 중 또는 이미지 없음 */}
@@ -84,7 +77,7 @@ function ProfileImagePicker({ imageUrl, onPress }: ProfileImagePickerProps): Rea
           {/* 실제 이미지 */}
           {hasValidImage && !hasError && (
             <AnimatedImage
-              source={{ uri: imageUrl }}
+              source={{ uri: avatarUrl }}
               onLoad={handleImageLoad}
               onError={handleImageError}
               style={{ opacity: fadeAnim }}

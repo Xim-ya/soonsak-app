@@ -14,27 +14,21 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
+import { useMyScreen } from '../_provider';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
-
-interface UserProfileSectionProps {
-  /** 사용자 이름 */
-  readonly displayName: string;
-  /** 프로필 이미지 URL */
-  readonly avatarUrl?: string | undefined;
-  /** 프로필 클릭 시 콜백 */
-  readonly onPress?: () => void;
-}
 
 const AVATAR_SIZE = 48;
 const ICON_SIZE = 20;
 
-function UserProfileSectionComponent({ displayName, avatarUrl, onPress }: UserProfileSectionProps) {
+function UserProfileSectionComponent() {
+  const { displayName, avatarUrl, handleProfilePress } = useMyScreen();
+
   // 프로필 이미지가 없는 경우 이니셜 표시용 텍스트
   const initial = displayName.charAt(0).toUpperCase();
 
   return (
     <Container>
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={handleProfilePress} activeOpacity={0.7}>
         <ProfileRow>
           {avatarUrl ? (
             <RoundedAvatorView source={avatarUrl} size={AVATAR_SIZE} />
