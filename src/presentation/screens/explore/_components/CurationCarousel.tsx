@@ -1,7 +1,8 @@
 /**
  * CurationCarousel - 큐레이션 캐러셀 컴포넌트
  *
- * 랜덤으로 선정된 콘텐츠의 대표 비디오를 가로 스크롤로 보여줍니다.
+ * 로그인 사용자: 개인화 추천 콘텐츠의 대표 비디오
+ * 비로그인 사용자: 랜덤 큐레이션 비디오
  * 터치 시 콘텐츠 상세 페이지로 이동합니다.
  *
  * @example
@@ -17,6 +18,7 @@ import colors from '@/shared/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { usePersonalizedCurationVideos } from '@/features/recommendations';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
 import {
   CurationVideoItem,
@@ -39,7 +41,26 @@ ItemSeparator.displayName = 'CurationItemSeparator';
 
 function CurationCarousel() {
   const navigation = useNavigation<NavigationProp>();
-  const { videos, isLoading, error } = useCurationVideos();
+
+  // 개인화 추천 비디오 (로그인 시 사용)
+  const {
+    data: personalizedVideos,
+    isLoading: isPersonalizedLoading,
+    error: personalizedError,
+  } = usePersonalizedCurationVideos(10);
+
+  // 기본 큐레이션 비디오 (개인화 데이터 없을 때 폴백)
+  const {
+    videos: defaultVideos,
+    isLoading: isDefaultLoading,
+    error: defaultError,
+  } = useCurationVideos();
+
+  // 개인화 비디오가 있으면 사용, 없으면 기본 큐레이션 사용
+  const hasPersonalized = personalizedVideos && personalizedVideos.length > 0;
+  const videos = hasPersonalized ? personalizedVideos : defaultVideos;
+  const isLoading = hasPersonalized ? isPersonalizedLoading : isDefaultLoading;
+  const error = hasPersonalized ? personalizedError : defaultError;
 
   const handleVideoPress = useCallback(
     (video: CurationVideoModel) => {
