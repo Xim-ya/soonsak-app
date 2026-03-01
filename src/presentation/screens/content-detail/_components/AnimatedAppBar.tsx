@@ -15,8 +15,8 @@ import type { EdgeInsets } from 'react-native-safe-area-context';
 interface AnimatedAppBarProps {
   insets: EdgeInsets;
   opacity: SharedValue<number>;
-  title?: string;
-  onMorePress?: () => void;
+  title?: string | undefined;
+  onMorePress?: (() => void) | undefined;
 }
 
 // 최적화된 AnimatedBackButtonAppBar 컴포넌트

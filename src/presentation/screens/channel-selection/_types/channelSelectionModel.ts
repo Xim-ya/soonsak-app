@@ -12,9 +12,9 @@ export interface ChannelSelectionModel {
   /** 채널명 */
   readonly name: string;
   /** 채널 로고 URL */
-  readonly logoUrl: string | null;
+  readonly logoUrl: string | undefined;
   /** 구독자 수 */
-  readonly subscriberCount: number | null;
+  readonly subscriberCount: number | undefined;
 }
 
 /**
@@ -27,8 +27,8 @@ export function channelSelectionFromDto(dto: ChannelDto): ChannelSelectionModel 
   return {
     id: dto.id,
     name: dto.name ?? '',
-    logoUrl: dto.logoUrl,
-    subscriberCount: dto.subscriberCount,
+    logoUrl: dto.logoUrl ?? undefined,
+    subscriberCount: dto.subscriberCount ?? undefined,
   };
 }
 

@@ -37,7 +37,7 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
   const borderRadius = AppSize.ratioWidth(40);
   const padding = AppSize.ratioWidth(16);
 
-  const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath, {
+  const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath ?? '', {
     size: TmdbImageSize.w500,
   });
 

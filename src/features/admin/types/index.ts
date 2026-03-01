@@ -97,11 +97,11 @@ export interface AdminActionConfig {
   /** 표시 텍스트 */
   label: string;
   /** 위험한 액션 여부 (삭제 등) */
-  isDestructive?: boolean;
+  isDestructive?: boolean | undefined;
   /** 비활성화 여부 (조건에 따라 동적으로 설정) */
-  disabled?: boolean;
+  disabled?: boolean | undefined;
   /** 비활성화 시 표시할 설명 */
-  disabledReason?: string;
+  disabledReason?: string | undefined;
 }
 
 /**

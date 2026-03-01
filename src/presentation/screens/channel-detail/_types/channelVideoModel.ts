@@ -1,24 +1,17 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { VideoWithContentDto } from '@/features/content/types';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { BaseContentRefModel } from '@/presentation/types/content/baseContentRefModel';
 
 /**
  * ChannelVideoModel - 채널 상세 페이지의 비디오 아이템 모델
  *
- * VideoWithContentDto에서 UI 표시에 필요한 필드만 추출한 Presentation Layer 모델
- * 그리드 뷰와 리스트 뷰 모두에서 사용
+ * BaseContentRefModel을 확장하여 비디오 표시에 필요한 추가 필드를 포함합니다.
+ * VideoWithContentDto에서 UI 표시에 필요한 필드만 추출한 Presentation Layer 모델입니다.
+ * 그리드 뷰와 리스트 뷰 모두에서 사용합니다.
  */
-export interface ChannelVideoModel {
+export interface ChannelVideoModel extends BaseContentRefModel {
   /** YouTube 비디오 ID */
   readonly id: string;
-  /** 연결된 콘텐츠 ID */
-  readonly contentId: number;
-  /** 콘텐츠 타입 (movie/tv) */
-  readonly contentType: ContentType;
-  /** 콘텐츠 제목 */
-  readonly contentTitle: string;
-  /** 콘텐츠 포스터 이미지 경로 */
-  readonly contentPosterPath: string;
   /** 비디오 제목 (YouTube 영상 제목) */
   readonly videoTitle: string;
   /** YouTube 썸네일 URL */

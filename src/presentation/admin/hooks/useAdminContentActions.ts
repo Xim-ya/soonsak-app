@@ -8,7 +8,8 @@ import { useCallback, useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useDialog } from '@/presentation/components/dialog';
-import { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig, adminContentApi } from '@/features/admin';
+import { AdminContentAction, ADMIN_CONTENT_ACTIONS, type AdminActionConfig } from '@/features/admin/types';
+import { adminContentApi } from '@/features/admin/api/adminContentApi';
 import type { ContentType } from '@/presentation/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
 

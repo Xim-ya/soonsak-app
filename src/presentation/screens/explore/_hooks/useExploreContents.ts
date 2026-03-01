@@ -39,7 +39,7 @@ function toExploreContentModel(dto: ContentDto): ExploreContentModel {
     id: dto.id,
     title: dto.title,
     type: dto.contentType,
-    posterPath: dto.posterPath ?? '',
+    posterPath: dto.posterPath,
     backdropPath: dto.backdropPath,
     titleLogo: isKoreanLogo ? dto.titleLogo : undefined,
     titleLogoLang: isKoreanLogo ? dto.titleLogoLang : undefined,

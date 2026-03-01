@@ -1,4 +1,4 @@
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { BaseContentRefModel } from '@/presentation/types/content/baseContentRefModel';
 import type { RatingStatusResponse, RatingWithContentDto } from './index';
 
 /**
@@ -24,14 +24,14 @@ export namespace RatingStatusModel {
 
 /**
  * RatingModel - 평점 UI 모델
- * RatingWithContentDto에서 UI에 필요한 필드만 선택
+ *
+ * BaseContentRefModel을 확장하여 평점 기능에 필요한 추가 필드를 포함합니다.
+ * RatingWithContentDto에서 UI에 필요한 필드만 선택합니다.
  */
-export interface RatingModel {
+export interface RatingModel extends BaseContentRefModel {
+  /** 평점 레코드 ID */
   readonly id: string;
-  readonly contentId: number;
-  readonly contentType: ContentType;
-  readonly contentTitle: string;
-  readonly contentPosterPath: string;
+  /** 사용자가 부여한 평점 (1-5) */
   readonly rating: number;
 }
 

@@ -27,10 +27,10 @@ interface ExploreContentModel {
   readonly id: number;
   readonly title: string;
   readonly type: ContentType;
-  readonly posterPath: string;
-  readonly backdropPath?: string;
-  readonly titleLogo?: string;
-  readonly titleLogoLang?: LogoLanguage;
+  readonly posterPath: string | undefined;
+  readonly backdropPath?: string | undefined;
+  readonly titleLogo?: string | undefined;
+  readonly titleLogoLang?: LogoLanguage | undefined;
 }
 
 /** 큐레이션 캐러셀용 비디오 모델 */

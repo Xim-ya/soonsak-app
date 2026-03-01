@@ -8,8 +8,8 @@ export interface PushContentModel {
   readonly contentId: number;
   readonly contentTitle: string;
   readonly contentType: 'movie' | 'tv';
-  readonly posterPath?: string;
-  readonly releaseYear?: string;
+  readonly posterPath?: string | undefined;
+  readonly releaseYear?: string | undefined;
 }
 
 /**
@@ -19,8 +19,8 @@ export interface PushContentModel {
 export interface PushVideoModel {
   readonly videoId: string;
   readonly videoTitle: string;
-  readonly thumbnailUrl?: string;
-  readonly runtime?: number;
+  readonly thumbnailUrl?: string | undefined;
+  readonly runtime?: number | undefined;
   readonly isPrimary: boolean;
   readonly includesEnding: boolean;
 }

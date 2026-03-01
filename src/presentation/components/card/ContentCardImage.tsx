@@ -55,7 +55,7 @@ const ContentCardImage = React.memo(
       () =>
         item.backdropPath
           ? formatter.prefixTmdbImgUrl(item.backdropPath, { size: TmdbImageSize.w780 })
-          : formatter.prefixTmdbImgUrl(item.posterPath, { size: TmdbImageSize.w500 }),
+          : formatter.prefixTmdbImgUrl(item.posterPath ?? '', { size: TmdbImageSize.w500 }),
       [item.backdropPath, item.posterPath],
     );
 

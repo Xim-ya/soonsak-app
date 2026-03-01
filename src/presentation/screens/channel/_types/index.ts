@@ -27,7 +27,7 @@ interface ChannelItemModel {
   readonly id: string;
   readonly name: string;
   readonly logoUrl: string;
-  readonly subscriberCount?: number;
+  readonly subscriberCount?: number | undefined;
 }
 
 /**
@@ -40,14 +40,14 @@ interface ChannelVideoModel {
   readonly videoTitle: string;
   readonly contentTitle: string;
   /** 콘텐츠 backdrop 이미지 경로 (TMDB) */
-  readonly backdropPath?: string;
+  readonly backdropPath?: string | undefined;
   readonly channelId: string;
   readonly channelName: string;
   readonly channelLogoUrl: string;
-  readonly releaseYear?: string;
-  readonly genreText?: string;
+  readonly releaseYear?: string | undefined;
+  readonly genreText?: string | undefined;
   /** 비디오 런타임 (초 단위) */
-  readonly runtime?: number;
+  readonly runtime?: number | undefined;
 }
 
 /**

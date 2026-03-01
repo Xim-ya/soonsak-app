@@ -70,7 +70,7 @@ function SectionContentListView({
         <PosterItem>
           <PosterImage
             width={POSTER_WIDTH}
-            source={formatter.prefixTmdbImgUrl(item.posterPath, {
+            source={formatter.prefixTmdbImgUrl(item.posterPath ?? '', {
               size: TmdbImageSize.w500,
             })}
           />

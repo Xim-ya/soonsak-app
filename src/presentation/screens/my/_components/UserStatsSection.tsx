@@ -29,7 +29,7 @@ interface UserStatsSectionProps {
 interface StatItemProps {
   readonly count: number;
   readonly label: string;
-  readonly onPress?: () => void;
+  readonly onPress?: (() => void) | undefined;
 }
 
 const StatItem = memo(function StatItem({ count, label, onPress }: StatItemProps) {
