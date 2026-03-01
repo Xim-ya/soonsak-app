@@ -54,10 +54,14 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
     setLoginDialogVisible(false);
   }, []);
 
-  // 빠른탐색 페이지로 이동
+  // 빠른탐색 페이지로 이동 (비로그인 시 로그인 다이얼로그 표시)
   const handleQuickExplorePress = useCallback(() => {
+    if (!isLoggedIn) {
+      setLoginDialogVisible(true);
+      return;
+    }
     navigation.navigate(routePages.quickExplore);
-  }, [navigation]);
+  }, [isLoggedIn, navigation]);
 
   // 로그인 상태: 캐러셀만 표시 (백드롭/그라데이션 없음)
   if (isLoggedIn) {
