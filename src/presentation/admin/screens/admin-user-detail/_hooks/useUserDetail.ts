@@ -20,11 +20,11 @@ import {
 
 /** 에러 메시지 매핑 */
 const ERROR_MESSAGES = {
-  ROLE_UPDATE_FAILED: '역할 변경에 실패했습니다.',
-  PUSH_SEND_FAILED: '푸시 발송에 실패했습니다.',
-  NO_ACTIVE_TOKENS: '활성화된 푸시 토큰이 없습니다.',
-  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
-  TIMEOUT_ERROR: '요청 시간이 초과되었습니다.',
+  ROLE_UPDATE_FAILED: '역할을 변경하지 못했어요',
+  PUSH_SEND_FAILED: '푸시를 발송하지 못했어요',
+  NO_ACTIVE_TOKENS: '활성화된 푸시 토큰이 없어요',
+  NETWORK_ERROR: '네트워크 연결을 확인해주세요',
+  TIMEOUT_ERROR: '요청 시간이 초과됐어요',
 } as const;
 
 // ============================================================================
@@ -117,7 +117,7 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.roleCounts });
       await showDialog({
         title: '성공',
-        description: '역할이 변경되었습니다.',
+        description: '역할을 변경했어요',
         buttonText: '확인',
       });
     },
@@ -178,8 +178,8 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
           const deeplinkInfo = hasDeeplink ? '\n(딥링크 포함)' : '';
           const message =
             result.failedCount > 0
-              ? `푸시 알림이 발송되었습니다.${deeplinkInfo}\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
-              : `푸시 알림이 발송되었습니다.${deeplinkInfo} (${result.sentCount}건)`;
+              ? `푸시 알림을 발송했어요${deeplinkInfo}\n성공: ${result.sentCount}, 실패: ${result.failedCount}`
+              : `푸시 알림을 발송했어요${deeplinkInfo} (${result.sentCount}건)`;
           await showDialog({
             title: '성공',
             description: message,

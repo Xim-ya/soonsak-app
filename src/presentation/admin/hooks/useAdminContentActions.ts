@@ -157,7 +157,7 @@ export function useAdminContentActions({
 
         await showDialog({
           title: '완료',
-          description: '메인 이미지가 변경되었습니다.',
+          description: '메인 이미지를 변경했어요',
           buttonText: '확인',
         });
         setSelectedAction(null);
@@ -165,7 +165,7 @@ export function useAdminContentActions({
         console.error('Backdrop 변경 실패:', error);
         await showDialog({
           title: '오류',
-          description: '이미지 변경에 실패했습니다. 다시 시도해주세요.',
+          description: '이미지를 변경하지 못했어요. 다시 시도해주세요.',
           buttonText: '확인',
         });
       } finally {
@@ -191,7 +191,7 @@ export function useAdminContentActions({
 
         await showDialog({
           title: '완료',
-          description: '비디오 상태가 변경되었습니다.',
+          description: '비디오 상태를 변경했어요',
           buttonText: '확인',
         });
         setSelectedAction(null);
@@ -199,7 +199,7 @@ export function useAdminContentActions({
         console.error('비디오 상태 변경 실패:', error);
         await showDialog({
           title: '오류',
-          description: '상태 변경에 실패했습니다. 다시 시도해주세요.',
+          description: '상태를 변경하지 못했어요. 다시 시도해주세요.',
           buttonText: '확인',
         });
       } finally {
@@ -226,7 +226,7 @@ export function useAdminContentActions({
         const statusText = includesEnding ? 'ON' : 'OFF';
         await showDialog({
           title: '완료',
-          description: `결말포함 여부가 ${statusText}(으)로 변경되었습니다.`,
+          description: `결말 포함을 ${statusText}으로 변경했어요`,
           buttonText: '확인',
         });
         setSelectedAction(null);
@@ -234,7 +234,7 @@ export function useAdminContentActions({
         console.error('결말포함 여부 변경 실패:', error);
         await showDialog({
           title: '오류',
-          description: '변경에 실패했습니다. 다시 시도해주세요.',
+          description: '변경하지 못했어요. 다시 시도해주세요.',
           buttonText: '확인',
         });
       } finally {

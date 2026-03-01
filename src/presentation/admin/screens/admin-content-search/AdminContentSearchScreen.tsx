@@ -151,7 +151,7 @@ export default function AdminContentSearchScreen() {
       if (selectedItem.id === currentContentId && newContentType === currentContentType) {
         await showDialog({
           title: '알림',
-          description: '현재 매핑된 콘텐츠와 동일합니다.',
+          description: '현재 매핑된 콘텐츠와 동일해요',
           buttonText: '확인',
         });
         return;
@@ -159,7 +159,7 @@ export default function AdminContentSearchScreen() {
 
       const result = await showConfirmDialog({
         title: '콘텐츠 교체',
-        description: `"${videoTitle}"을(를)\n"${title}"(으)로 교체하시겠습니까?`,
+        description: `"${videoTitle}"을(를)\n"${title}"(으)로 교체할까요?`,
         leftButtonText: '취소',
         rightButtonText: '교체',
       });
@@ -203,13 +203,13 @@ export default function AdminContentSearchScreen() {
           }),
         ]);
 
-        let message = '교체 완료!';
+        let message = '교체했어요!';
         if (result.newContentCreated && result.oldContentDeleted) {
-          message = '교체 완료!\n새 콘텐츠가 생성되었고, 기존 콘텐츠는 삭제되었습니다.';
+          message = '교체했어요!\n새 콘텐츠를 생성하고, 기존 콘텐츠는 삭제했어요';
         } else if (result.newContentCreated) {
-          message = '교체 완료!\n새 콘텐츠가 DB에 생성되었습니다.';
+          message = '교체했어요!\n새 콘텐츠를 DB에 생성했어요';
         } else if (result.oldContentDeleted) {
-          message = '교체 완료!\n기존 콘텐츠는 다른 비디오가 없어 삭제되었습니다.';
+          message = '교체했어요!\n기존 콘텐츠는 다른 비디오가 없어서 삭제했어요';
         }
 
         const dialogResult = await showDialog({
@@ -230,7 +230,7 @@ export default function AdminContentSearchScreen() {
         console.error('콘텐츠 교체 실패:', error);
         await showDialog({
           title: '오류',
-          description: '콘텐츠 교체에 실패했습니다. 다시 시도해주세요.',
+          description: '콘텐츠를 교체하지 못했어요. 다시 시도해주세요.',
           buttonText: '확인',
         });
       } finally {
@@ -311,7 +311,7 @@ export default function AdminContentSearchScreen() {
         </LoadingContainer>
       ) : showEmptyState ? (
         <EmptyStateContainer>
-          <EmptyStateText>검색 결과가 없습니다</EmptyStateText>
+          <EmptyStateText>검색 결과가 없어요</EmptyStateText>
         </EmptyStateContainer>
       ) : (
         <FlatList

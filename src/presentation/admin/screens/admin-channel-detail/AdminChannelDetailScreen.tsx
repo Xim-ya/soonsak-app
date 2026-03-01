@@ -156,7 +156,7 @@ export default function AdminChannelDetailScreen() {
     if (isContentsLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>연결된 콘텐츠가 없습니다</EmptyText>
+        <EmptyText>연결된 콘텐츠가 없어요</EmptyText>
       </EmptyContainer>
     );
   }, [isContentsLoading]);

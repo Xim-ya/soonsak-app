@@ -154,7 +154,7 @@ export default function AdminUserManagementScreen() {
     if (isLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>유저가 없습니다</EmptyText>
+        <EmptyText>유저가 없어요</EmptyText>
       </EmptyContainer>
     );
   }, [isLoading]);

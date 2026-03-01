@@ -188,7 +188,7 @@ export default function AdminPushContentSelectScreen() {
           </LoadingContainer>
         ) : videos.length === 0 ? (
           <EmptyContainer>
-            <EmptyText>비디오가 없습니다</EmptyText>
+            <EmptyText>비디오가 없어요</EmptyText>
           </EmptyContainer>
         ) : (
           <FlatList
@@ -255,7 +255,7 @@ export default function AdminPushContentSelectScreen() {
         ) : searchResults.length === 0 ? (
           <EmptyContainer>
             <EmptyText>
-              {searchQuery.trim() ? '검색 결과가 없습니다' : '콘텐츠를 검색해주세요'}
+              {searchQuery.trim() ? '검색 결과가 없어요' : '콘텐츠를 검색해주세요'}
             </EmptyText>
           </EmptyContainer>
         ) : (
@@ -278,9 +278,9 @@ export default function AdminPushContentSelectScreen() {
       ) : userContents.length === 0 ? (
         <EmptyContainer>
           <EmptyText>
-            {activeTab === 'history' && '시청기록이 없습니다'}
-            {activeTab === 'favorites' && '찜한 콘텐츠가 없습니다'}
-            {activeTab === 'ratings' && '평가한 콘텐츠가 없습니다'}
+            {activeTab === 'history' && '시청기록이 없어요'}
+            {activeTab === 'favorites' && '찜한 콘텐츠가 없어요'}
+            {activeTab === 'ratings' && '평가한 콘텐츠가 없어요'}
           </EmptyText>
         </EmptyContainer>
       ) : (

@@ -88,7 +88,7 @@ export default function AdminUserDetailScreen() {
         </LoadingContainer>
       ) : error || !user ? (
         <ErrorContainer>
-          <ErrorText>유저 정보를 불러올 수 없습니다</ErrorText>
+          <ErrorText>유저 정보를 불러오지 못했어요</ErrorText>
           <RetryButton onPress={refetch} activeOpacity={0.7}>
             <RetryButtonText>다시 시도</RetryButtonText>
           </RetryButton>
