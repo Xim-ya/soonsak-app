@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { CreditPersonModel } from '../_types/creditModel.cd';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { TVCreditsResponse, MovieCreditsResponse } from '@/features/tmdb/types/creditDto';
 

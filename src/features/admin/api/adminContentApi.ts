@@ -9,7 +9,7 @@ import { CONTENT_DATABASE } from '@/features/utils/constants/dbConfig';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import type { MovieDto } from '@/features/tmdb/types/movieDto';
 import type { TvSeriesDto } from '@/features/tmdb/types/tvDto';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
 
 export const adminContentApi = {

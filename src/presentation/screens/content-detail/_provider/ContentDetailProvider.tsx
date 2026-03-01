@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useEffect, useMemo, useRef, ReactNode } from 'react';
 import { VideoDto } from '@/features/content/types';
 import { contentApi } from '@/features/content/api/contentApi';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { usePrefetchCommentToken } from '@/features/youtube';
 import { useContentProgress } from '@/features/watch-history';
 import { useAuth } from '@/shared/providers/AuthProvider';

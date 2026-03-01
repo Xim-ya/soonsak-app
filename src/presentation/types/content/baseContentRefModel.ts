@@ -1,4 +1,4 @@
-import type { ContentType } from './contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * BaseContentRefModel - 콘텐츠 참조 기본 모델

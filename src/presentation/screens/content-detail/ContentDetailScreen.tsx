@@ -6,7 +6,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Platform } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { BasePage } from '../../components/page';
-import { Header } from './_components';
+import { Header, AdminActionModals, UserActionModals } from './_components';
 import colors from '@/shared/styles/colors';
 import { AppSize } from '@/shared/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
@@ -20,17 +20,9 @@ import { AnimatedAppBar } from './_components/AnimatedAppBar';
 import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentDetailProvider, useContentVideos } from './_provider/ContentDetailProvider';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
-import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
-import { FavoriteActionBottomSheet } from '@/presentation/components/bottom-sheet/FavoriteActionBottomSheet';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
 import { useAdminContentActions, AdminContentAction } from '@/features/admin';
-import {
-  AdminActionBottomSheet,
-  BackdropSelectionModal,
-  VideoStatusModal,
-  IncludesEndingModal,
-} from '@/presentation/admin/components';
 import { useContentDetail } from './_hooks/useContentDetail';
 
 export default function ContentDetailScreen() {
@@ -220,65 +212,37 @@ function ContentDetailContent({
         </TabsContainer>
       </BasePage>
 
-      {/* 어드민 액션 바텀시트 */}
-      <AdminActionBottomSheet
-        visible={adminAction.isActionSheetVisible}
+      {/* 어드민 액션 모달 */}
+      <AdminActionModals
+        isActionSheetVisible={adminAction.isActionSheetVisible}
+        selectedAction={adminAction.selectedAction}
         actions={adminAction.actions}
-        onSelectAction={adminAction.handleSelectAction}
-        onClose={adminAction.handleCloseActionSheet}
         contentId={adminAction.contentId}
         contentType={adminAction.contentType}
-        videoId={adminAction.currentVideoId}
-      />
-
-      {/* 메인 이미지(Backdrop) 선택 모달 */}
-      <BackdropSelectionModal
-        visible={adminAction.selectedAction === AdminContentAction.CHANGE_BACKDROP}
-        contentId={adminAction.contentId}
-        contentType={adminAction.contentType}
+        currentVideoId={adminAction.currentVideoId}
+        currentVideoTitle={adminAction.currentVideoTitle}
+        currentVideoStatus={adminAction.currentVideoStatus}
+        currentIncludesEnding={adminAction.currentIncludesEnding}
         currentBackdropPath={adminAction.currentBackdropPath}
-        onSelect={adminAction.handleBackdropSelect}
-        onClose={adminAction.handleCloseActionModal}
         isSaving={adminAction.isSaving}
+        onSelectAction={adminAction.handleSelectAction}
+        onCloseActionSheet={adminAction.handleCloseActionSheet}
+        onCloseActionModal={adminAction.handleCloseActionModal}
+        onBackdropSelect={adminAction.handleBackdropSelect}
+        onVideoStatusChange={adminAction.handleVideoStatusChange}
+        onIncludesEndingChange={adminAction.handleIncludesEndingChange}
       />
 
-      {/* 비디오 상태 변경 모달 */}
-      {adminAction.currentVideoId && adminAction.currentVideoTitle && (
-        <VideoStatusModal
-          visible={adminAction.selectedAction === AdminContentAction.CHANGE_VIDEO_STATUS}
-          videoId={adminAction.currentVideoId}
-          videoTitle={adminAction.currentVideoTitle}
-          currentStatus={adminAction.currentVideoStatus}
-          onChangeStatus={adminAction.handleVideoStatusChange}
-          onClose={adminAction.handleCloseActionModal}
-          isSaving={adminAction.isSaving}
-        />
-      )}
-
-      {/* 결말포함 여부 변경 모달 */}
-      {adminAction.currentVideoId && adminAction.currentVideoTitle && (
-        <IncludesEndingModal
-          visible={adminAction.selectedAction === AdminContentAction.CHANGE_INCLUDES_ENDING}
-          videoId={adminAction.currentVideoId}
-          videoTitle={adminAction.currentVideoTitle}
-          currentIncludesEnding={adminAction.currentIncludesEnding}
-          onChangeIncludesEnding={adminAction.handleIncludesEndingChange}
-          onClose={adminAction.handleCloseActionModal}
-          isSaving={adminAction.isSaving}
-        />
-      )}
-
-      {/* 찜하기 액션 바텀시트 (일반 사용자용) */}
-      <FavoriteActionBottomSheet
-        visible={isActionSheetVisible}
+      {/* 사용자 액션 모달 */}
+      <UserActionModals
         isFavorited={isFavorited}
-        disabled={isToggling}
+        isToggling={isToggling}
+        isLoginDialogVisible={isLoginDialogVisible}
+        isActionSheetVisible={isActionSheetVisible}
         onToggleFavorite={handleToggleFavorite}
-        onClose={handleCloseActionSheet}
+        onCloseActionSheet={handleCloseActionSheet}
+        onCloseDialog={handleCloseDialog}
       />
-
-      {/* 로그인 유도 다이얼로그 */}
-      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
     </>
   );
 }

@@ -11,7 +11,7 @@
 import { useCallback, useState, useRef } from 'react';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useFavoriteStatus, useToggleFavorite } from '@/features/favorites';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 interface UseFavoriteActionParams {
   readonly contentId: number;

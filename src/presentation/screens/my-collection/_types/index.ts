@@ -1,4 +1,4 @@
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * 탭 이름 상수

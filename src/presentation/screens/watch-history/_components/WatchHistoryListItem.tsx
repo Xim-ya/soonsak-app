@@ -16,7 +16,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { contentTypeConfigs } from '@/presentation/types/content/contentType.enum';
+import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import { WatchHistoryModel } from '@/features/watch-history';
 
 /** 포스터 비율 (2:3) */

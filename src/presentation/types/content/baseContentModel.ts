@@ -1,5 +1,5 @@
 import { ContentDto } from '@/features/content/types';
-import { ContentType } from './contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * BaseContentModel - 콘텐츠 기본 모델

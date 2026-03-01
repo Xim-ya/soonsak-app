@@ -15,7 +15,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { PosterImage } from '@/presentation/components/image/PosterImage';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { RootStackParamList } from '@/shared/navigation/types';
 
 interface RegistrationResultItemData {

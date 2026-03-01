@@ -10,9 +10,9 @@ import {
   ContentIdItem,
 } from '../types';
 import { CONTENT_DATABASE } from '../../utils/constants/dbConfig';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import type { CurationVideoModel } from '@/presentation/screens/explore/_types/exploreTypes';
+import type { CurationVideoModel } from '../types';
 
 /** excludeIds 최대 허용 수 */
 const MAX_EXCLUDE_IDS = 1000;

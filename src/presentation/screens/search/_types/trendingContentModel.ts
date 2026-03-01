@@ -1,7 +1,7 @@
 import { TrendingItemDto } from '@/features/tmdb/types/common';
 import { ContentDto, LogoLanguage } from '@/features/content/types';
 import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * 검색 화면 트렌딩 콘텐츠 아이템 모델

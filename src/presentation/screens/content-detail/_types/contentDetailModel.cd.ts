@@ -1,5 +1,5 @@
 import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { GenreDto, MovieDto, TvSeriesDto } from '@/features/tmdb';
 
 /**

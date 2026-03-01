@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { VideoDto } from '@/features/content/types';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * OtherChannelVideoModel - 다른 채널 영상 모델

@@ -1,4 +1,4 @@
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { SortType, SortOption } from '@/shared/types/sort';
 
 /**

@@ -11,7 +11,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { contentTypeConfigs } from '@/presentation/types/content/contentType.enum';
+import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import { SearchResultModel } from '../_types/searchResultModel';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

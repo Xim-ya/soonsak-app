@@ -12,7 +12,7 @@
  */
 
 import { routePages } from '../constant/routePages';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ProfileSetupMode } from '@/features/user/types';
 
 // routePages 객체의 값들을 Union 타입으로 추출

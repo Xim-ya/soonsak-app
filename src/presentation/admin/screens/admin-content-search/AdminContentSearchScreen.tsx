@@ -32,7 +32,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { adminContentApi } from '@/features/admin/api';
 import type { SearchMultiItemDto } from '@/features/tmdb/types/common';
-import { contentTypeConfigs, ContentType } from '@/presentation/types/content/contentType.enum';
+import { contentTypeConfigs, ContentType } from '@/shared/types/content/contentType.enum';
 import { useDebounce } from '@/shared/hooks/useDebounce';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

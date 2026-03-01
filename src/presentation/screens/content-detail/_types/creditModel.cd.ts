@@ -1,5 +1,5 @@
 import { TVCreditsResponse, MovieCreditsResponse } from '@/features/tmdb/types/creditDto';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * CreditPersonModel - 크레딧 인물 정보

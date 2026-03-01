@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { ContentDetailModel } from '../_types/contentDetailModel.cd';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { MovieDto } from '@/features/tmdb/types/movieDto';
 import { TvSeriesDto } from '@/features/tmdb/types/tvDto';

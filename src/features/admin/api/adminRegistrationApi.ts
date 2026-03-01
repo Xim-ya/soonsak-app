@@ -6,7 +6,7 @@
  */
 
 import { contentApi } from '@/features/content/api/contentApi';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 // ============================================================================
 // Types

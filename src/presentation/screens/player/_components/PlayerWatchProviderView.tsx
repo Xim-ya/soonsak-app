@@ -4,7 +4,7 @@ import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { useWatchProviders } from '@/features/tmdb/hooks/useWatchProviders';
 import { PlayerWatchProviderBottomSheet } from './PlayerWatchProviderBottomSheet';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';

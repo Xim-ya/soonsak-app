@@ -2,8 +2,8 @@
  * Explore 화면 전용 타입 정의
  */
 
-import { ContentType } from '@/presentation/types/content/contentType.enum';
-import type { LogoLanguage } from '@/features/content/types';
+import { ContentType } from '@/shared/types/content/contentType.enum';
+import type { LogoLanguage, CurationVideoModel } from '@/features/content/types';
 
 /** 정렬 타입 */
 type ExploreSortType = 'all' | 'latest' | 'popular';
@@ -31,24 +31,6 @@ interface ExploreContentModel {
   readonly backdropPath?: string | undefined;
   readonly titleLogo?: string | undefined;
   readonly titleLogoLang?: LogoLanguage | undefined;
-}
-
-/** 큐레이션 캐러셀용 비디오 모델 */
-interface CurationVideoModel {
-  readonly videoId: string;
-  readonly contentId: number;
-  readonly contentType: ContentType;
-  readonly videoTitle: string;
-  readonly contentTitle: string;
-  readonly thumbnailUrl?: string;
-  readonly runtime?: number;
-  readonly channelId?: string;
-  readonly channelName?: string;
-  readonly channelLogoUrl?: string;
-  readonly posterPath?: string;
-  readonly backdropPath: string;
-  readonly releaseDate?: string;
-  readonly genreIds?: number[];
 }
 
 /** 페이지네이션 응답 */

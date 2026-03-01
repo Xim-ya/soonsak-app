@@ -14,7 +14,7 @@ import type { useYouTubePlayer } from 'react-native-youtube-bridge';
 import { contentApi } from '@/features/content/api/contentApi';
 import { useAddWatchHistory } from '@/features/watch-history';
 import { useAuth } from '@/shared/providers/AuthProvider';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 interface UsePlayerReadyParams {
   readonly contentId: number;

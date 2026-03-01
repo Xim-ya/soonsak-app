@@ -8,7 +8,7 @@ import { TmdbApiError } from '../types/common';
 import { MovieDto } from '../types/movieDto';
 import { TvSeriesDto } from '../types/tvDto';
 import { tmdbApi } from '../api/tmdbApi';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * 콘텐츠 상세 정보 조회 Hook

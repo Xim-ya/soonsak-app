@@ -13,7 +13,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { BackdropImageModel } from './_types/backdropImageModel';
 import { fromDtos } from './_types/backdropImageModel';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';

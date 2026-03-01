@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { ContentDto } from '@/features/content/types';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * RelatedContentModel - 관련 콘텐츠 모델

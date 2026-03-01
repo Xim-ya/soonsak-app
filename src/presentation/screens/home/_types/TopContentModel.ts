@@ -1,4 +1,4 @@
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { BaseContentModel } from '../../../types/content/baseContentModel';
 import { ContentDto } from '@/features/content/types';
 import { TMDB_GENRE_MAP } from '@/features/content/constants/genreConstants';

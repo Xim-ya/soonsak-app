@@ -5,7 +5,7 @@
  */
 
 import type { VideoManagementItem as VideoManagementItemDto } from '@/features/admin';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
 
 /**
