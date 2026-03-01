@@ -200,17 +200,17 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
             />
           )}
         </ImageWrapper>
+
+        {/* 상단 그라데이션 그림자 - 이미지와 함께 스케일됨 */}
+        <GradientWrapper>
+          <DarkedLinearShadow height={88} align={LinearAlign.topBottom} />
+        </GradientWrapper>
+
+        {/* 하단 그라데이션 그림자 - 이미지와 함께 스케일됨 */}
+        <GradientWrapper>
+          <DarkedLinearShadow height={88} align={LinearAlign.bottomTop} />
+        </GradientWrapper>
       </Animated.View>
-
-      {/* 상단 그라데이션 그림자 */}
-      <GradientWrapper>
-        <DarkedLinearShadow height={88} align={LinearAlign.topBottom} />
-      </GradientWrapper>
-
-      {/* 하단 그라데이션 그림자 */}
-      <GradientWrapper>
-        <DarkedLinearShadow height={88} align={LinearAlign.bottomTop} />
-      </GradientWrapper>
 
       {/* 재생 버튼 */}
       <PlayButtonContainer>
