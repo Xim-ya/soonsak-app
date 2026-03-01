@@ -203,6 +203,7 @@ function ChannelDetailContent() {
         numColumns={viewMode === 'card' ? 3 : 1}
         contentContainerStyle={{ paddingHorizontal: 16 }}
         columnWrapperStyle={viewMode === 'card' ? { gap: 9 } : undefined}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={<Gap size={106} />}
         onScroll={handleScroll}

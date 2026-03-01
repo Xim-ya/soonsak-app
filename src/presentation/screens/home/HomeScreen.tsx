@@ -56,7 +56,11 @@ export default function HomeScreen() {
 
   return (
     <Container onLayout={handleContainerLayout}>
-      <Animated.ScrollView onScroll={scrollHandler} scrollEventThrottle={16}>
+      <Animated.ScrollView
+        onScroll={scrollHandler}
+        scrollEventThrottle={16}
+        showsVerticalScrollIndicator={false}
+      >
         <Header scrollY={scrollY} />
         <WatchHistorySectionView
           title="시청 중인 콘텐츠"
