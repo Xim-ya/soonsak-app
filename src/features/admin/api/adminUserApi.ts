@@ -491,10 +491,10 @@ export const adminUserApi = {
       throw new Error('Push notification body exceeds maximum length (500 characters)');
     }
 
-    // 유저의 활성 푸시 토큰 조회
+    // 유저의 활성 푸시 토큰 조회 (id도 함께 조회)
     const { data: tokens, error: tokenError } = await supabaseClient
       .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
-      .select('token')
+      .select('id, token')
       .eq('user_id', userId)
       .eq('is_active', true);
 
@@ -507,15 +507,84 @@ export const adminUserApi = {
       return { success: false, sentCount: 0, failedCount: 0 };
     }
 
+    // 1. push_notifications 테이블에 발송 기록 생성
+    // PushData 구조에서 액션 타입과 콘텐츠 정보 추출
+    let notificationType = 'system';
+    let actionType = 'none';
+    let contentId: number | null = null;
+    let contentType: string | null = null;
+
+    // Screen → action_type enum 매핑
+    const screenToActionType: Record<string, string> = {
+      ContentDetail: 'nav_content',
+      Player: 'nav_player',
+      ChannelDetail: 'nav_channel',
+      Search: 'nav_search',
+      Settings: 'nav_settings',
+      UserContentList: 'nav_userlist',
+    };
+
+    // Action → action_type enum 매핑
+    const actionToActionType: Record<string, string> = {
+      OPEN_SETTINGS: 'action_settings',
+      REFRESH_DATA: 'action_refresh',
+    };
+
+    if (data?.action) {
+      if (data.action.type === 'NAVIGATION') {
+        const navAction = data.action;
+        actionType = screenToActionType[navAction.screen] ?? 'none';
+        if (navAction.screen === 'ContentDetail') {
+          notificationType = 'recommendation';
+          const params = navAction.params as { id?: number; type?: string };
+          contentId = params.id ?? null;
+          contentType = params.type ?? null;
+        }
+      } else if (data.action.type === 'ACTION') {
+        actionType = actionToActionType[data.action.action] ?? 'none';
+      }
+    }
+
+    const { data: notification, error: notificationError } = await supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATIONS)
+      .insert({
+        notification_type: notificationType,
+        title: trimmedTitle || '순삭',
+        body: trimmedBody,
+        data: data ?? null,
+        action_type: actionType,
+        content_id: contentId,
+        content_type: contentType,
+        user_id: userId,
+        is_broadcast: false,
+        target_user_ids: [userId],
+      })
+      .select('id')
+      .single();
+
+    if (notificationError) {
+      console.error('푸시 알림 기록 생성 실패:', notificationError);
+      // 기록 실패해도 발송은 계속 진행
+    }
+
+    const notificationId = notification?.id;
+
     // Expo Push API로 발송 (검증된 값 사용)
+    // notificationId를 data에 포함하여 클릭 추적 가능하게 함
+    const pushData = data
+      ? { ...data, _notificationId: notificationId }
+      : notificationId
+        ? { _notificationId: notificationId }
+        : undefined;
+
     const messages = tokens.map((t) => ({
       to: t.token,
       // title이 있을 때만 포함 (없으면 앱 이름 표시)
       ...(trimmedTitle.length > 0 && { title: trimmedTitle }),
       body: trimmedBody,
       sound: 'default' as const,
-      // 딥링크 데이터 포함 (있을 경우)
-      ...(data && { data }),
+      // 딥링크 데이터 + notificationId 포함
+      ...(pushData && { data: pushData }),
     }));
 
     try {
@@ -551,6 +620,40 @@ export const adminUserApi = {
         : result.data
           ? [result.data]
           : [];
+
+      // 2. push_notification_receipts 테이블에 수신 기록 생성
+      if (notificationId) {
+        const now = new Date().toISOString();
+        const receipts = tokens.map((token, index) => {
+          const ticketResult = resultData[index] as {
+            status?: string;
+            id?: string;
+            message?: string;
+            details?: { error?: string };
+          } | null;
+          const isSuccess = ticketResult?.status === 'ok';
+
+          return {
+            notification_id: notificationId,
+            user_id: userId,
+            push_token_id: token.id,
+            expo_ticket_id: ticketResult?.id ?? null,
+            delivery_status: isSuccess ? 'sent' : 'failed',
+            error_code: ticketResult?.details?.error ?? null,
+            error_message: isSuccess ? null : (ticketResult?.message ?? null),
+            sent_at: isSuccess ? now : null,
+          };
+        });
+
+        const { error: receiptsError } = await supabaseClient
+          .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
+          .insert(receipts);
+
+        if (receiptsError) {
+          console.error('푸시 수신 기록 생성 실패:', receiptsError);
+          // 기록 실패해도 결과는 반환
+        }
+      }
 
       const sentCount = resultData.filter(
         (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'ok',

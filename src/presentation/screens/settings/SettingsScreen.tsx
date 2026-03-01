@@ -111,6 +111,11 @@ export default function SettingsScreen() {
                 label="채널 관리"
                 onPress={() => navigateToAdmin(routePages.adminChannelManagement)}
               />
+              <Divider />
+              <SettingsItem
+                label="푸시 관리"
+                onPress={() => navigateToAdmin(routePages.adminPushManagement)}
+              />
             </SettingsSection>
           </AdminOnly>
         </ScrollView>

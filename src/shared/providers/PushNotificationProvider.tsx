@@ -24,6 +24,15 @@ import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { useAuth } from './AuthProvider';
+
+/** 푸시 데이터에서 notificationId 추출 */
+function extractNotificationId(data: unknown): string | null {
+  if (data && typeof data === 'object' && '_notificationId' in data) {
+    const id = (data as { _notificationId?: unknown })._notificationId;
+    return typeof id === 'string' ? id : null;
+  }
+  return null;
+}
 import {
   getOrCreateDeviceId,
   linkDeviceToUser,
@@ -57,6 +66,10 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // Killed 상태에서 시작 시 사용할 signOut 캡처
   const signOutRef = useRef(signOut);
   signOutRef.current = signOut;
+
+  // 최신 user 상태 참조 (이벤트 리스너에서 사용)
+  const userRef = useRef(user);
+  userRef.current = user;
 
   // 이미 처리한 알림 응답 ID 추적 (중복 처리 방지)
   // Set을 사용하여 연속 알림(A → B → A) 시나리오도 처리
@@ -135,6 +148,13 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
         }
 
         const data = response.notification.request.content.data;
+
+        // 푸시 클릭 추적 (비동기, 실패해도 무시)
+        const dbNotificationId = extractNotificationId(data);
+        if (dbNotificationId && user?.id) {
+          pushTokenApi.trackNotificationClick(dbNotificationId, user.id);
+        }
+
         handleNotification(data, {
           navigationRef: navigationRef,
           onLogout: signOutRef.current,
@@ -190,6 +210,13 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
       }
 
       const data = response.notification.request.content.data;
+
+      // 푸시 클릭 추적 (비동기, 실패해도 무시)
+      const dbNotificationId = extractNotificationId(data);
+      if (dbNotificationId && userRef.current?.id) {
+        pushTokenApi.trackNotificationClick(dbNotificationId, userRef.current.id);
+      }
+
       handleNotification(data, {
         navigationRef: navigationRef,
         onLogout: signOutRef.current,

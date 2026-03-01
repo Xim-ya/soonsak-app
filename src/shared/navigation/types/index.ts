@@ -136,6 +136,7 @@ export type RootStackParamList = {
     channelId: string; // 채널 ID
     channelName: string; // 채널명 (헤더 표시용)
   }; // 어드민 채널 상세 - channelId, channelName 필수
+  [routePages.adminPushManagement]: undefined; // 어드민 푸시 관리 - 파라미터 없음
 };
 
 /**
