@@ -21,7 +21,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 

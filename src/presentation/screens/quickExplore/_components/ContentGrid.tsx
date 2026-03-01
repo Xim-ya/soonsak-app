@@ -34,7 +34,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { AppSize } from '@/shared/utils/appSize';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import {
   useQuickExploreGrid,

@@ -1,4 +1,4 @@
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 
 /**
  * 포스토 콘텐츠

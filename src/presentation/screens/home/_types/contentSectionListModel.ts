@@ -1,4 +1,4 @@
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 
 /**
  * 홈스크린 > 콘텐츠 섹션 리스트

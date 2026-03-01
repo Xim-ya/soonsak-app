@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { VideoWithContentDto } from '@/features/content/types';
-import type { BaseContentRefModel } from '@/presentation/types/content/baseContentRefModel';
+import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
 
 /**
  * ChannelVideoModel - 채널 상세 페이지의 비디오 아이템 모델

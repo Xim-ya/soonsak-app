@@ -3,7 +3,7 @@ import styled from '@emotion/native';
 import { TouchableOpacity } from 'react-native';
 import ContentTypeChip from '@/presentation/components/chip/ContentTypeChip';
 import DarkChip from '@/presentation/components/chip/DarkChip';
-import { videoTagConfigs } from '@/presentation/types/content/videoTag.enum';
+import { videoTagConfigs } from '@/shared/types/content/videoTag.enum';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';

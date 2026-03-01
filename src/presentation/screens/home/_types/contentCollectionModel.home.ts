@@ -1,5 +1,5 @@
 import { ContentCollectionWithContentsDto, ContentDto } from '@/features/content/types';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 
 /**
  * 콘텐츠 컬렉션 아이템 모델

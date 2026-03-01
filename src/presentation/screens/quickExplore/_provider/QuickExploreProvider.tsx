@@ -26,7 +26,7 @@ import { channelSelectionBridge } from '@/features/channel/utils/channelSelectio
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import type { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import type { BaseContentModel } from '@/shared/types/content/baseContentModel';
 
 /** ContentGrid에서 외부로 노출하는 메서드 */
 interface ContentGridRef {

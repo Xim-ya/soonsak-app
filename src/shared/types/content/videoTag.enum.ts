@@ -5,7 +5,7 @@
  * 타입과 라벨을 정의합니다.
  *
  * @example
- * import { videoTagConfigs } from '@/presentation/types/content/videoTag.enum';
+ * import { videoTagConfigs } from '@/shared/types/content/videoTag.enum';
  * <DarkChip content={videoTagConfigs.includesEnding.label} />
  */
 

@@ -1,5 +1,5 @@
 import { ContentWithVideoDto } from '@/features/content/types';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { formatter } from '@/shared/utils/formatter';
 
 /**

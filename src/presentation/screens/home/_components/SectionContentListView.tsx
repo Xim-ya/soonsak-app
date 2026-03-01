@@ -13,7 +13,7 @@ import styled from '@emotion/native';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import appTextStyle from '@/shared/styles/textStyles';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';

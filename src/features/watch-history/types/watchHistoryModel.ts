@@ -1,4 +1,4 @@
-import type { BaseContentRefModel } from '@/presentation/types/content/baseContentRefModel';
+import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
 import type { WatchHistoryWithContentDto, WatchHistoryCalendarItemDto } from './index';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 

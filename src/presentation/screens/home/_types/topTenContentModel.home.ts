@@ -1,6 +1,6 @@
 import { TrendingItemDto } from '@/features/tmdb/types/common';
 import { ContentDto } from '@/features/content/types';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 
 /**
  * 실시간 Top 10 콘텐츠 아이템 모델

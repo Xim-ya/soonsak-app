@@ -1,6 +1,6 @@
 import { TrendingItemDto } from '@/features/tmdb/types/common';
 import { ContentDto, LogoLanguage } from '@/features/content/types';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { ContentType } from '@/shared/types/content/contentType.enum';
 
 /**
