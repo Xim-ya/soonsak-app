@@ -50,7 +50,7 @@ function MyScreenContent() {
   } = useMyScreen();
 
   return (
-    <BasePage touchableWithoutFeedback={false}>
+    <BasePage touchableWithoutFeedback={false} safeAreaBottom={false}>
       <Container>
         <MyScreenHeader />
         <ScrollView
