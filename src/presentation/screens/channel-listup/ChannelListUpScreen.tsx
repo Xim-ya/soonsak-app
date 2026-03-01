@@ -1,5 +1,5 @@
 /**
- * ChannelAllScreen - 전체 채널 목록 페이지
+ * ChannelListUpScreen - 전체 채널 목록 페이지
  *
  * 활성화된 전체 채널을 3열 그리드로 표시합니다.
  * 채널 로고(원형), 이름, 구독자 수를 보여주며 클릭 시 채널 상세 페이지로 이동합니다.
@@ -22,7 +22,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
-import { useChannelAll, type ChannelItemModel } from './_hooks/useChannelAll';
+import { useChannelListUp, type ChannelItemModel } from './_hooks/useChannelListUp';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -50,7 +50,7 @@ function getItemWidth(gridWidth: number): number {
   );
 }
 
-export default function ChannelAllScreen(): React.ReactElement {
+export default function ChannelListUpScreen(): React.ReactElement {
   const navigation = useNavigation<NavigationProp>();
   const isLargeScreen = AppSize.isLargeScreen();
 
@@ -60,7 +60,7 @@ export default function ChannelAllScreen(): React.ReactElement {
   const avatarSize = itemWidth - 16;
 
   const { channels, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
-    useChannelAll();
+    useChannelListUp();
 
   // 채널 클릭 -> 채널 상세 페이지
   const handleChannelPress = useCallback(

@@ -1,5 +1,5 @@
 /**
- * useChannelAll - 전체 채널 목록 무한 스크롤 훅
+ * useChannelListUp - 전체 채널 목록 무한 스크롤 훅
  *
  * 활성화된 전체 채널 목록을 페이지네이션하여 조회합니다.
  * DTO를 프레젠테이션용 Model로 변환하여 반환합니다.
@@ -12,7 +12,7 @@ import type { ChannelItemModel } from '@/presentation/screens/channel/_types';
 const PAGE_SIZE = 20;
 const STALE_TIME = 5 * 60 * 1000; // 5분
 
-export function useChannelAll() {
+export function useChannelListUp() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       queryKey: ['activeChannelsAll'],

@@ -24,12 +24,12 @@ const headerContainerStyle = { backgroundColor: colors.black };
 const renderTabBar = (props: TabBarProps<string>) => <UserContentTabBar {...props} />;
 
 /**
- * UserContentListScreen - 사용자 콘텐츠 목록 페이지
+ * MyCollectionScreen - 사용자 콘텐츠 목록 페이지
  *
  * 찜했어요, 평가했어요, 봤어요 탭을 제공하며
  * MyPage에서 클릭한 항목에 따라 초기 탭이 결정됩니다.
  */
-export default function UserContentListScreen() {
+export default function MyCollectionScreen() {
   const route = useRoute<UserContentListRouteParams>();
   const { initialTab = 0 } = route.params ?? {};
   const insets = useSafeAreaInsets();

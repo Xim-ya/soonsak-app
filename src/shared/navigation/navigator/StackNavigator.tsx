@@ -7,13 +7,13 @@ import { PlayerScreen } from '../../../presentation/screens/player/PlayerScreen'
 import ChannelDetailScreen from '../../../presentation/screens/channel-detail/ChannelDetailScreen';
 import SearchScreen from '../../../presentation/screens/search/SearchScreen';
 import ChannelSelectionScreen from '../../../presentation/screens/channel-selection/ChannelSelectionScreen';
-import ChannelAllScreen from '../../../presentation/screens/channel-all/ChannelAllScreen';
+import ChannelListUpScreen from '../../../presentation/screens/channel-listup/ChannelListUpScreen';
 import { MediaListScreen } from '../../../presentation/screens/media/MediaListScreen';
 import { ImageDetailScreen } from '../../../presentation/screens/media/ImageDetailScreen';
 import LoginScreen from '../../../presentation/screens/login/LoginScreen';
 import ProfileSetupScreen from '../../../presentation/screens/profile-setup/ProfileSetupScreen';
 import SettingsScreen from '../../../presentation/screens/settings/SettingsScreen';
-import UserContentListScreen from '../../../presentation/screens/user-content-list/UserContentListScreen';
+import MyCollectionScreen from '../../../presentation/screens/my-collection/MyCollectionScreen';
 import WatchHistoryScreen from '../../../presentation/screens/watch-history/WatchHistoryScreen';
 import QuickExploreScreen from '../../../presentation/screens/quickExplore/QuickExploreScreen';
 import AdminContentSearchScreen from '../../../presentation/admin/screens/admin-content-search/AdminContentSearchScreen';
@@ -127,7 +127,7 @@ export default function StackNavigator() {
       />
       <Stack.Screen
         name={routePages.channelAll}
-        component={ChannelAllScreen}
+        component={ChannelListUpScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
@@ -156,7 +156,7 @@ export default function StackNavigator() {
       />
       <Stack.Screen
         name={routePages.userContentList}
-        component={UserContentListScreen}
+        component={MyCollectionScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen

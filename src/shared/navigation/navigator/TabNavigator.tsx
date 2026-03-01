@@ -61,7 +61,7 @@ function NativeTabNavigator() {
     <NativeTab.Navigator
       tabBarActiveTintColor={colors.main}
       tabBarInactiveTintColor="#8E8E93"
-      tabBarLabelStyle={{ fontSize: 10 }}
+      tabLabelStyle={{ fontSize: 10 }}
       minimizeBehavior="onScrollDown"
     >
       <NativeTab.Screen
