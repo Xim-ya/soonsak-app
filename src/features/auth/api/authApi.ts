@@ -200,8 +200,11 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
       ?.code;
     const errorMessage = (error as Error)?.message ?? '';
 
+    // iOS: E_CANCELLED_OPERATION 또는 KakaoSDKCommon.SdkError 오류 0 (사용자 취소)
     const isIOSCancelled =
-      errorCode === 'E_CANCELLED_OPERATION' || nativeErrorCode === 'E_CANCELLED_OPERATION';
+      errorCode === 'E_CANCELLED_OPERATION' ||
+      nativeErrorCode === 'E_CANCELLED_OPERATION' ||
+      errorMessage.includes('SdkError 오류 0');
     const isAndroidCancelled = errorMessage.includes(KAKAO_ERROR_CODES.CANCELED);
 
     if (isIOSCancelled || isAndroidCancelled) {
