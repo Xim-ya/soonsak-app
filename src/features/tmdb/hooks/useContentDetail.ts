@@ -8,7 +8,8 @@ import { TmdbApiError } from '../types/common';
 import { MovieDto } from '../types/movieDto';
 import { TvSeriesDto } from '../types/tvDto';
 import { tmdbApi } from '../api/tmdbApi';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
+import { tmdbKeys } from './tmdbQueryKeys';
 
 /**
  * 콘텐츠 상세 정보 조회 Hook
@@ -28,7 +29,7 @@ export const useContentDetail = (
   const id = contentId;
 
   return useQuery({
-    queryKey: ['tmdb', contentType, id],
+    queryKey: tmdbKeys.detail(id, contentType),
     queryFn: async () => {
       try {
         let response;

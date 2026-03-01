@@ -14,7 +14,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { AppState, type AppStateStatus } from 'react-native';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { watchHistoryApi } from '../api/watchHistoryApi';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 /** YouTube 플레이어 상태 상수 */
 const PLAYER_STATE = {

@@ -1,4 +1,4 @@
-import { ContentType, contentTypeConfigs } from '@/presentation/types/content/contentType.enum';
+import { ContentType, contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import styled from '@emotion/native';

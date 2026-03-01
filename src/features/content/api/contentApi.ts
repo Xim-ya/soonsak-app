@@ -1,5 +1,5 @@
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { mapWithField } from '@/features/utils/mapper/fieldMapper';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { mapWithField } from '@/shared/utils/fieldMapper';
 import {
   ContentDto,
   ContentWithVideoDto,
@@ -9,10 +9,10 @@ import {
   ContentCollectionWithContentsDto,
   ContentIdItem,
 } from '../types';
-import { CONTENT_DATABASE } from '../../utils/constants/dbConfig';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import type { CurationVideoModel } from '@/presentation/pages/explore/_types/exploreTypes';
+import type { CurationVideoModel } from '../types';
 
 /** excludeIds 최대 허용 수 */
 const MAX_EXCLUDE_IDS = 1000;

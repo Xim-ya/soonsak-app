@@ -14,8 +14,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { DEVICE_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { DEVICE_DATABASE } from '@/shared/config/dbConfig';
 
 /** AsyncStorage 키: 로컬에 저장된 디바이스 ID */
 const DEVICE_ID_STORAGE_KEY = '@soonsak/device_id';

@@ -10,8 +10,8 @@
 // API
 export { watchHistoryApi } from './api/watchHistoryApi';
 
-// Components
-export { WatchHistoryCard, WatchHistorySectionView } from './components';
+// Components (presentation layer에서 re-export)
+export { WatchHistoryCard, WatchHistorySectionView } from '@/presentation/components/watch-history';
 
 // Hooks
 export {

@@ -4,10 +4,10 @@ import { Text, Platform, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 import type { SFSymbols7_0 } from 'sf-symbols-typescript';
-import HomeScreen from '../../../presentation/pages/home/HomePage';
-import Explorepage from '../../../presentation/pages/explore/ExploreScreen';
-import ChannelPage from '../../../presentation/pages/channel/ChannelPage';
-import MyPage from '../../../presentation/pages/my/MyPage';
+import HomeScreen from '../../../presentation/screens/home/HomeScreen';
+import ExploreScreen from '../../../presentation/screens/explore/ExploreScreen';
+import ChannelScreen from '../../../presentation/screens/channel/ChannelScreen';
+import MyScreen from '../../../presentation/screens/my/MyScreen';
 import { TabConfig, TabRoutes } from '../constant/tabConfigs';
 import { TabParamList } from '../types';
 import colors from '@/shared/styles/colors';
@@ -61,7 +61,7 @@ function NativeTabNavigator() {
     <NativeTab.Navigator
       tabBarActiveTintColor={colors.main}
       tabBarInactiveTintColor="#8E8E93"
-      tabBarLabelStyle={{ fontSize: 10 }}
+      tabLabelStyle={{ fontSize: 10 }}
       minimizeBehavior="onScrollDown"
     >
       <NativeTab.Screen
@@ -74,7 +74,7 @@ function NativeTabNavigator() {
       />
       <NativeTab.Screen
         name={TabRoutes.Explore}
-        component={Explorepage}
+        component={ExploreScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Explore],
           tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.Explore], pointSize: 14 }),
@@ -82,7 +82,7 @@ function NativeTabNavigator() {
       />
       <NativeTab.Screen
         name={TabRoutes.Channel}
-        component={ChannelPage}
+        component={ChannelScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Channel],
           tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.Channel], pointSize: 14 }),
@@ -90,7 +90,7 @@ function NativeTabNavigator() {
       />
       <NativeTab.Screen
         name={TabRoutes.My}
-        component={MyPage}
+        component={MyScreen}
         options={{
           title: TAB_LABELS[TabRoutes.My],
           tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.My], pointSize: 14 }),
@@ -133,9 +133,9 @@ function LegacyTabNavigator() {
       })}
     >
       <Tab.Screen name={TabRoutes.Home} component={HomeScreen} />
-      <Tab.Screen name={TabRoutes.Explore} component={Explorepage} />
-      <Tab.Screen name={TabRoutes.Channel} component={ChannelPage} />
-      <Tab.Screen name={TabRoutes.My} component={MyPage} />
+      <Tab.Screen name={TabRoutes.Explore} component={ExploreScreen} />
+      <Tab.Screen name={TabRoutes.Channel} component={ChannelScreen} />
+      <Tab.Screen name={TabRoutes.My} component={MyScreen} />
     </Tab.Navigator>
   );
 }

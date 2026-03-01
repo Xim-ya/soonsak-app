@@ -1,21 +1,25 @@
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
 import type { WatchHistoryWithContentDto, WatchHistoryCalendarItemDto } from './index';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 
 /**
  * WatchHistoryModel - 시청 기록 UI 모델
- * WatchHistoryWithContentDto에서 UI에 필요한 필드만 선택
+ *
+ * BaseContentRefModel을 확장하여 시청 기록에 필요한 추가 필드를 포함합니다.
+ * WatchHistoryWithContentDto에서 UI에 필요한 필드만 선택합니다.
  */
-export interface WatchHistoryModel {
+export interface WatchHistoryModel extends BaseContentRefModel {
+  /** 시청 기록 레코드 ID */
   readonly id: string;
-  readonly contentId: number;
-  readonly contentType: ContentType;
+  /** YouTube 비디오 ID */
   readonly videoId: string;
-  readonly contentTitle: string;
-  readonly contentPosterPath: string;
+  /** 콘텐츠 배경 이미지 경로 */
   readonly contentBackdropPath: string;
+  /** 시청 진행 시간 (초) */
   readonly progressSeconds: number;
+  /** 비디오 전체 길이 (초) */
   readonly durationSeconds: number;
+  /** 완전 시청 여부 */
   readonly isFullyWatched: boolean;
 }
 

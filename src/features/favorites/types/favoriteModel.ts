@@ -1,16 +1,16 @@
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
 import type { FavoriteWithContentDto, FavoriteStatusResponse } from './index';
 
 /**
  * FavoriteModel - 찜 UI 모델
- * FavoriteWithContentDto에서 UI에 필요한 필드만 선택
+ *
+ * BaseContentRefModel을 확장하여 찜 기능에 필요한 추가 필드를 포함합니다.
+ * FavoriteWithContentDto에서 UI에 필요한 필드만 선택합니다.
  */
-export interface FavoriteModel {
+export interface FavoriteModel extends BaseContentRefModel {
+  /** 찜 레코드 ID */
   readonly id: string;
-  readonly contentId: number;
-  readonly contentType: ContentType;
-  readonly contentTitle: string;
-  readonly contentPosterPath: string;
+  /** 콘텐츠 배경 이미지 경로 */
   readonly contentBackdropPath: string;
 }
 

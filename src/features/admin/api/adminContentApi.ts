@@ -4,12 +4,12 @@
  * 어드민 전용 콘텐츠 관련 API
  */
 
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { CONTENT_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import type { MovieDto } from '@/features/tmdb/types/movieDto';
 import type { TvSeriesDto } from '@/features/tmdb/types/tvDto';
-import type { ContentType } from '@/presentation/types/content/contentType.enum';
+import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
 
 export const adminContentApi = {

@@ -34,7 +34,7 @@ export interface ChannelLogoImageProps {
   /** 이미지 크기 (너비 = 높이) */
   readonly size: number;
   /** 이미지 URL. 전달하지 않으면 placeholder를 표시합니다. */
-  readonly source?: string;
+  readonly source?: string | undefined;
 }
 
 // ============================================================================

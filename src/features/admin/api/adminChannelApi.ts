@@ -4,8 +4,8 @@
  * 어드민 전용 채널 관리 API
  */
 
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { CONTENT_DATABASE, CHANNEL_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { CONTENT_DATABASE, CHANNEL_DATABASE } from '@/shared/config/dbConfig';
 
 // ============================================================================
 // Types

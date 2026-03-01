@@ -6,6 +6,7 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { YouTubeApiError, YouTubeVideoDto } from '../types';
 import { youtubeApi } from '../api';
+import { youtubeKeys } from './youtubeQueryKeys';
 
 /**
  * YouTube 비디오 메트릭스 조회 Hook
@@ -17,7 +18,7 @@ export const useYouTubeMetrics = (
   },
 ) => {
   return useQuery({
-    queryKey: ['youtube', 'metrics', urlOrId],
+    queryKey: youtubeKeys.metrics(urlOrId ?? ''),
     queryFn: () => youtubeApi.getVideoMetrics(urlOrId!),
     enabled: !!urlOrId && (options?.enabled ?? true),
     staleTime: Infinity, // 데이터는 한 번 가져온 후 수동 새로고침 전까지 유지
@@ -42,7 +43,7 @@ export const useManualRefreshMetrics = (urlOrId?: string) => {
   // 수동 갱신 함수
   const refreshMetrics = () => {
     if (urlOrId) {
-      queryClient.invalidateQueries({ queryKey: ['youtube', 'metrics', urlOrId] });
+      queryClient.invalidateQueries({ queryKey: youtubeKeys.metrics(urlOrId) });
     }
   };
 

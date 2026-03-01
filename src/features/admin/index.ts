@@ -40,8 +40,8 @@ export {
   type YouTubeChannelParseResult,
 } from './utils';
 
-// Hooks
-export { useAdminContentActions } from './hooks/useAdminContentActions';
+// Hooks (presentation layer에서 re-export)
+export { useAdminContentActions } from '@/presentation/admin/hooks';
 
 // API - Content
 export {

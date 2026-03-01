@@ -12,7 +12,7 @@
  */
 
 import { routePages } from '../constant/routePages';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ProfileSetupMode } from '@/features/user/types';
 
 // routePages 객체의 값들을 Union 타입으로 추출
@@ -27,12 +27,12 @@ export type UserContentListTabIndex = 0 | 1 | 2; // 0: 찜했어요, 1: 평가�
  * 이전 화면에서 알고 있는 데이터를 전달하여 API 응답 전에 미리 표시
  */
 export interface ContentDetailInitialData {
-  backdropPath?: string;
-  posterPath?: string;
+  backdropPath?: string | undefined;
+  posterPath?: string | undefined;
   /** 시청 진행률 (초) - 이어보기 표시용 */
-  progressSeconds?: number;
+  progressSeconds?: number | undefined;
   /** 전체 재생 시간 (초) - 진행률 계산용 */
-  durationSeconds?: number;
+  durationSeconds?: number | undefined;
 }
 
 /**
@@ -65,7 +65,7 @@ export type RootStackParamList = {
     title: string;
     contentId: number; // 재생수 증가용
     contentType: ContentType; // 재생수 증가용
-    startSeconds?: number; // 이어보기 시작 시간 (초)
+    startSeconds?: number | undefined; // 이어보기 시작 시간 (초)
   }; // 플레이어 - 비디오 ID, 제목, 콘텐츠 정보 필수, 이어보기 시간 선택
   [routePages.channelDetail]: {
     channelId: string; // YouTube 채널 ID (필수)

@@ -9,7 +9,7 @@ import React, { useCallback } from 'react';
 import styled from '@emotion/native';
 import textStyles from '@/shared/styles/textStyles';
 import colors from '@/shared/styles/colors';
-import { ContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType } from '@/shared/types/content/contentType.enum';
 import { getGenresByContentType } from '@/features/content/constants/genreConstants';
 import { toggleArrayItem } from '@/shared/utils/arrayUtils';
 import { FilterChip } from '../FilterChip';

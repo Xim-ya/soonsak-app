@@ -1,4 +1,4 @@
-import { ContentType, KnownContentType } from '@/presentation/types/content/contentType.enum';
+import { ContentType, KnownContentType } from '@/shared/types/content/contentType.enum';
 
 /**
  * ISO 8601 형식의 타임스탬프 문자열 타입
@@ -144,6 +144,27 @@ interface ContentCollectionWithContentsDto extends Omit<ContentCollectionDto, 'c
   readonly contents: ContentDto[];
 }
 
+/**
+ * 큐레이션 캐러셀용 비디오 모델
+ * contentApi.getCurationVideos()의 반환 타입
+ */
+interface CurationVideoModel {
+  readonly videoId: string;
+  readonly contentId: number;
+  readonly contentType: ContentType;
+  readonly videoTitle: string;
+  readonly contentTitle: string;
+  readonly thumbnailUrl?: string;
+  readonly runtime?: number;
+  readonly channelId?: string;
+  readonly channelName?: string;
+  readonly channelLogoUrl?: string;
+  readonly posterPath?: string;
+  readonly backdropPath: string;
+  readonly releaseDate?: string;
+  readonly genreIds?: number[];
+}
+
 export type {
   ISOTimestamp,
   LogoLanguage,
@@ -154,6 +175,7 @@ export type {
   ContentIdItem,
   ContentCollectionDto,
   ContentCollectionWithContentsDto,
+  CurationVideoModel,
 };
 
 // ContentStatus는 위에서 export const와 export type으로 이미 내보냄

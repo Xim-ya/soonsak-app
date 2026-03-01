@@ -10,7 +10,7 @@ import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { BaseContentModel } from '@/presentation/types/content/baseContentModel';
+import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { CARD_SLIDER } from '@/presentation/components/slider/HorizontalCardSlider';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -55,7 +55,7 @@ const ContentCardImage = React.memo(
       () =>
         item.backdropPath
           ? formatter.prefixTmdbImgUrl(item.backdropPath, { size: TmdbImageSize.w780 })
-          : formatter.prefixTmdbImgUrl(item.posterPath, { size: TmdbImageSize.w500 }),
+          : formatter.prefixTmdbImgUrl(item.posterPath ?? '', { size: TmdbImageSize.w500 }),
       [item.backdropPath, item.posterPath],
     );
 

@@ -8,8 +8,8 @@
  */
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabaseClient } from '@/features/utils/clients/superBaseClient';
-import { PUSH_DATABASE } from '@/features/utils/constants/dbConfig';
+import { supabaseClient } from '@/shared/api/supabaseClient';
+import { PUSH_DATABASE } from '@/shared/config/dbConfig';
 import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
 
 /** AsyncStorage 키: 로컬에 저장된 푸시 토큰 */
