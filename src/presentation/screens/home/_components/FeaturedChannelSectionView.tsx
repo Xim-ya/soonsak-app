@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
+import { FlatList, TouchableOpacity, ListRenderItemInfo, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
@@ -9,6 +9,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 import { useFeaturedChannels } from '../_hooks/useFeaturedChannels';
 import { FeaturedChannelModel } from '../_types/featuredChannelModel.home';
 import {
@@ -88,7 +89,13 @@ const listContentStyle = { paddingHorizontal: 18 };
  * Flutter: _ChannelSlider 위젯 참고
  */
 function FeaturedChannelSectionView() {
+  const navigation = useNavigation<NavigationProp>();
   const { data: channels, isLoading, isError } = useFeaturedChannels();
+
+  // 전체 채널 목록으로 이동
+  const handleTitlePress = useCallback(() => {
+    navigation.navigate(routePages.channelAll);
+  }, [navigation]);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<_ListItem>) =>
@@ -113,7 +120,12 @@ function FeaturedChannelSectionView() {
 
   return (
     <Container>
-      <SectionTitle>놓치지 말아야 할 리뷰 채널</SectionTitle>
+      <Pressable onPress={handleTitlePress}>
+        <TitleRow>
+          <SectionTitle>놓치지 말아야 할 리뷰 채널</SectionTitle>
+          <RightArrowIcon width={20} height={20} />
+        </TitleRow>
+      </Pressable>
       <Gap size={12} />
       <ListContainer>
         <FlatList
@@ -140,10 +152,16 @@ const Container = styled.View({
   marginTop: 40,
 });
 
+const TitleRow = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: 16,
+});
+
 const SectionTitle = styled.Text({
   ...textStyles.title2,
   color: colors.white,
-  paddingHorizontal: 16,
 });
 
 const ListContainer = styled.View({
