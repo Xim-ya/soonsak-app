@@ -168,7 +168,7 @@ function ChannelDetailContent() {
     }
   }, [hasNextPage, isLoading, fetchNextPage]);
 
-  const keyExtractor = useCallback((item: ChannelVideoModel) => `${item.id}-${item.contentId}`, []);
+  const keyExtractor = useCallback((item: ChannelVideoModel, index: number) => `${item.id}-${index}`, []);
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
