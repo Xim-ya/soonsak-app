@@ -21,6 +21,8 @@ import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
 import { useAppPreload } from '@/shared/hooks/useAppPreload';
+import { useAppVersionCheck } from '@/features/app-config';
+import { AppDialog } from '@/presentation/components/dialog/AppDialog';
 import * as Clarity from '@microsoft/react-native-clarity';
 import * as Sentry from '@sentry/react-native';
 
@@ -141,7 +143,19 @@ const navigationTheme = {
 };
 
 // AppSize 초기화를 위한 내부 컴포넌트
-function AppContent() {
+function AppContent({
+  showUpdateDialog,
+  updateTitle,
+  updateMessage,
+  openStore,
+  dismissDialog,
+}: {
+  showUpdateDialog: boolean;
+  updateTitle: string;
+  updateMessage: string;
+  openStore: () => void;
+  dismissDialog: () => void;
+}) {
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
@@ -186,6 +200,20 @@ function AppContent() {
           </NavigationContainer>
         </PushNotificationProvider>
       </AuthProvider>
+
+      {/* 권장 업데이트 다이얼로그 (앱 진입 후 표시) */}
+      <AppDialog
+        visible={showUpdateDialog}
+        title={updateTitle}
+        description={updateMessage}
+        isDivided
+        leftButtonText="나중에"
+        rightButtonText="업데이트"
+        onLeftButtonPress={dismissDialog}
+        onRightButtonPress={openStore}
+        dismissOnBackdrop
+        onBackdropPress={dismissDialog}
+      />
     </>
   );
 }
@@ -204,15 +232,50 @@ export default function App() {
 
   const { isReady: isPreloadReady, hideSplash } = useAppPreload();
 
-  // 폰트 + 이미지 프리로드 완료 시 스플래시 숨김
+  // 앱 버전 체크 (스플래시 상태에서 실행)
+  const {
+    isChecked: isVersionChecked,
+    showDialog: showUpdateDialog,
+    dialogTitle: updateTitle,
+    dialogMessage: updateMessage,
+    isForceUpdate,
+    openStore,
+    dismissDialog,
+  } = useAppVersionCheck();
+
+  // 스플래시 숨김 조건:
+  // 1. 폰트 로드 완료
+  // 2. 프리로드 완료
+  // 3. 버전 체크 완료
+  // 4. 강제 업데이트가 아닌 경우 (강제 업데이트 시 스플래시 유지)
   useEffect(() => {
-    if (fontsLoaded && isPreloadReady) {
+    const shouldHideSplash = fontsLoaded && isPreloadReady && isVersionChecked && !isForceUpdate;
+    if (shouldHideSplash) {
       hideSplash();
     }
-  }, [fontsLoaded, isPreloadReady, hideSplash]);
+  }, [fontsLoaded, isPreloadReady, isVersionChecked, isForceUpdate, hideSplash]);
 
   // 폰트 또는 프리로드 미완료 시 스플래시 유지
   if (!fontsLoaded || !isPreloadReady) {
+    return null;
+  }
+
+  // 강제 업데이트: 스플래시 위에 다이얼로그만 표시 (앱 진입 차단)
+  if (isForceUpdate && showUpdateDialog) {
+    return (
+      <AppDialog
+        visible={showUpdateDialog}
+        title={updateTitle}
+        description={updateMessage}
+        buttonText="업데이트"
+        onButtonPress={openStore}
+        dismissOnBackdrop={false}
+      />
+    );
+  }
+
+  // 버전 체크 미완료 시 대기 (스플래시 유지)
+  if (!isVersionChecked) {
     return null;
   }
 
@@ -223,7 +286,13 @@ export default function App() {
           <SnackbarProvider>
             <DialogProvider>
               <ContentFilterProvider>
-                <AppContent />
+                <AppContent
+                  showUpdateDialog={showUpdateDialog && !isForceUpdate}
+                  updateTitle={updateTitle}
+                  updateMessage={updateMessage}
+                  openStore={openStore}
+                  dismissDialog={dismissDialog}
+                />
               </ContentFilterProvider>
             </DialogProvider>
           </SnackbarProvider>
