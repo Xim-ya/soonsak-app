@@ -18,6 +18,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
@@ -54,6 +55,12 @@ interface UseProfileSetupReturn {
   handlePickImage: () => Promise<void>;
   /** 저장 핸들러 */
   handleSubmit: () => Promise<void>;
+  /** 권한 다이얼로그 표시 여부 */
+  isPermissionDialogVisible: boolean;
+  /** 권한 다이얼로그 닫기 */
+  closePermissionDialog: () => void;
+  /** 설정 페이지로 이동 */
+  openSettings: () => void;
 }
 
 /**
@@ -85,6 +92,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
   const [pickedImageUri, setPickedImageUri] = useState<string | undefined>();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isPermissionDialogVisible, setIsPermissionDialogVisible] = useState(false);
 
   // 현재 표시할 아바타 (새로 선택한 이미지 > 기존 이미지)
   const avatarUrl = pickedImageUri ?? initialValues.initialAvatarUrl;
@@ -115,7 +123,10 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
     if (!permissionResult.granted) {
-      setError('사진 접근 권한이 필요합니다');
+      // 영구 거부된 경우 다이얼로그 표시
+      if (!permissionResult.canAskAgain) {
+        setIsPermissionDialogVisible(true);
+      }
       return;
     }
 
@@ -129,6 +140,21 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
     if (!result.canceled && result.assets[0]) {
       setPickedImageUri(result.assets[0].uri);
     }
+  }, []);
+
+  /**
+   * 권한 다이얼로그 닫기
+   */
+  const closePermissionDialog = useCallback(() => {
+    setIsPermissionDialogVisible(false);
+  }, []);
+
+  /**
+   * 설정 페이지로 이동
+   */
+  const openSettings = useCallback(() => {
+    setIsPermissionDialogVisible(false);
+    Linking.openSettings();
   }, []);
 
   /**
@@ -213,5 +239,8 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
     isChanged,
     handlePickImage,
     handleSubmit,
+    isPermissionDialogVisible,
+    closePermissionDialog,
+    openSettings,
   };
 }
