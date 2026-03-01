@@ -33,3 +33,22 @@ export const isEmbeddedRestrictedError = (error: { code: number; message: string
   ];
   return embeddedRestrictedCodes.includes(error.code);
 };
+
+/**
+ * 비디오 상태를 needs_review로 변경해야 하는 에러인지 확인
+ * - 2: 잘못된 파라미터 (유효하지 않은 video ID)
+ * - 5: 임베드 재생 불가
+ * - 100: 비디오 찾을 수 없음 (삭제/비공개)
+ * - 101: 소유자가 임베드 제한
+ *
+ * 제외: 150, 152, 153 (임베드 정책 문제로 fallback 처리)
+ */
+export const isVideoNeedsReviewError = (errorCode: number): boolean => {
+  const needsReviewCodes = [
+    YOUTUBE_PLAYER_ERROR.VIDEO_NOT_FOUND, // 2
+    YOUTUBE_PLAYER_ERROR.EMBED_NOT_ALLOWED, // 5
+    YOUTUBE_PLAYER_ERROR.CONTENT_NOT_FOUND, // 100
+    101, // 소유자 임베드 제한 (상수에 없음)
+  ];
+  return needsReviewCodes.includes(errorCode);
+};
