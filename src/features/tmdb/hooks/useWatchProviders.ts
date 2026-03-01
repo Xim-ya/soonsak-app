@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { WatchProviderModel } from '../types/watchProviderModel';
 import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '../api/tmdbApi';
+import { tmdbKeys } from './tmdbQueryKeys';
 
 interface UseWatchProvidersResult {
   readonly data: WatchProviderModel[];
@@ -24,7 +25,7 @@ export function useWatchProviders(
   contentType: ContentType,
 ): UseWatchProvidersResult {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['watchProviders', contentId, contentType],
+    queryKey: tmdbKeys.watchProviders(contentId, contentType),
     queryFn: async (): Promise<WatchProviderModel[]> => {
       const response = await tmdbApi.getWatchProviders(contentId, contentType as 'movie' | 'tv');
       return WatchProviderModel.fromDto(response.data);

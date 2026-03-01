@@ -5,6 +5,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { YouTubeVideoDto, YouTubeApiError } from '../types';
 import { youtubeApi } from '../api';
+import { youtubeKeys } from './youtubeQueryKeys';
 
 /**
  * YouTube 비디오 전체 메타데이터 조회 Hook
@@ -18,7 +19,7 @@ export const useYouTubeVideo = (
   },
 ): UseQueryResult<YouTubeVideoDto, YouTubeApiError> => {
   return useQuery({
-    queryKey: ['youtube', 'video', urlOrId],
+    queryKey: youtubeKeys.video(urlOrId ?? ''),
     queryFn: () => youtubeApi.getVideoMetadata(urlOrId!),
     enabled: !!urlOrId && (options?.enabled ?? true),
     staleTime: options?.staleTime ?? 5 * 60 * 1000, // 5분 fresh
@@ -44,7 +45,7 @@ export const useYouTubeQuickInfo = (
   },
 ) => {
   return useQuery({
-    queryKey: ['youtube', 'quick', urlOrId],
+    queryKey: youtubeKeys.quick(urlOrId ?? ''),
     queryFn: () => youtubeApi.getQuickVideoInfo(urlOrId!),
     enabled: !!urlOrId && (options?.enabled ?? true),
     staleTime: 10 * 60 * 1000, // 10분 fresh (더 오래 캐시)
@@ -95,7 +96,7 @@ export const useMultipleYouTubeVideos = (
   },
 ) => {
   return useQuery({
-    queryKey: ['youtube', 'multiple', urls.sort()], // URL 정렬로 캐시 키 안정화
+    queryKey: youtubeKeys.multiple(urls),
     queryFn: () => youtubeApi.getMultipleVideos(urls),
     enabled: urls.length > 0 && (options?.enabled ?? true),
     staleTime: 5 * 60 * 1000,

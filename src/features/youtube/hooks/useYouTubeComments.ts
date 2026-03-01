@@ -16,6 +16,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { commentApi, CommentTokenResponseDto } from '../api/commentApi';
 import { CommentsResponseDto } from '../types';
+import { youtubeKeys } from './youtubeQueryKeys';
 
 /** 캐시 유지 시간 (10분) */
 const STALE_TIME_MS = 1000 * 60 * 10;
@@ -48,7 +49,7 @@ export function usePrefetchCommentToken(
   videoId: string | undefined,
 ): UsePrefetchCommentTokenResult {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['youtubeCommentToken', videoId],
+    queryKey: youtubeKeys.commentToken(videoId ?? ''),
     queryFn: async (): Promise<CommentTokenResponseDto> => {
       if (!videoId) {
         throw new Error('비디오 ID가 없습니다');
@@ -124,7 +125,7 @@ export function useYouTubeComments(
 
   const { data, isLoading, error, refetch } = useQuery({
     // queryKey에서 token 제외 → 캐시 공유로 이중 호출 방지
-    queryKey: ['youtubeComments', videoId, sortBy],
+    queryKey: youtubeKeys.commentList(videoId ?? '', sortBy),
     queryFn: async (): Promise<CommentsResponseDto> => {
       // token이 있으면 2단계 최적화 사용
       if (token) {

@@ -5,6 +5,7 @@
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { YouTubeChannelDto, YouTubeApiError } from '../types';
 import { channelScraper } from '../api/scrapers/channelScraper';
+import { youtubeKeys } from './youtubeQueryKeys';
 
 /**
  * YouTube 채널 정보 조회 Hook
@@ -29,7 +30,7 @@ export const useYouTubeChannel = (
   },
 ): UseQueryResult<YouTubeChannelDto, YouTubeApiError> => {
   return useQuery({
-    queryKey: ['youtube', 'channel', channelId],
+    queryKey: youtubeKeys.channel(channelId ?? ''),
     queryFn: async (): Promise<YouTubeChannelDto> => {
       try {
         console.log('🔍 채널 정보 조회 시작:', channelId);

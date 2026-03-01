@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { TmdbImageItemDto } from '../types/imageDto';
 import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '../api/tmdbApi';
+import { tmdbKeys } from './tmdbQueryKeys';
 
 interface UseContentImagesResult {
   readonly data: TmdbImageItemDto[];
@@ -26,7 +27,7 @@ export function useContentImages(
   excludeFilePath?: string,
 ): UseContentImagesResult {
   const { data, isLoading, error } = useQuery({
-    queryKey: ['tmdb', 'images', contentId, contentType],
+    queryKey: tmdbKeys.images(contentId, contentType),
     queryFn: async (): Promise<TmdbImageItemDto[]> => {
       const response = await tmdbApi.getContentImages(contentId, contentType as 'movie' | 'tv');
 
