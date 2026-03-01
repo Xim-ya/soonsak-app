@@ -4,6 +4,9 @@
  * 앱 버전 관리, 점검 모드, Feature Flag 등 앱 설정 관련 기능
  */
 
+// Singleton Manager
+export { appConfigManager } from './AppConfigManager';
+
 // API
 export { appConfigApi } from './api/appConfigApi';
 

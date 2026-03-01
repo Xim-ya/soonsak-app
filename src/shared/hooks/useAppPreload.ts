@@ -4,6 +4,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { contentApi } from '@/features/content/api/contentApi';
 import { formatter } from '@/shared/utils/formatter';
 import { ContentDto } from '@/features/content/types';
+import { appConfigManager } from '@/features/app-config';
 
 /** 배너 콘텐츠 프리로드 개수 */
 const BANNER_PRELOAD_COUNT = 5;
@@ -40,6 +41,9 @@ export function useAppPreload() {
   useEffect(() => {
     async function preloadResources() {
       try {
+        // appConfigManager 초기화 (버전 정책, 점검 모드 등)
+        await appConfigManager.initialize();
+
         const bannerContents = await contentApi.getRandomBannerContents(BANNER_PRELOAD_COUNT);
 
         // 캐시에 저장 (홈 화면에서 재사용)
