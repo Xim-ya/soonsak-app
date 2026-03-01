@@ -19,11 +19,18 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
+import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
+import { useContentDetail } from '../_hooks/useContentDetail';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+interface VideoItemViewProps {
+  item: OtherChannelVideoModel;
+  contentTitle: string;
+}
+
 // 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
-function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
+function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
   const { data: channel } = useYouTubeChannel(item.channelId);
   const navigation = useNavigation<NavigationProp>();
 
@@ -32,11 +39,11 @@ function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
 
     navigation.navigate(routePages.player, {
       videoId: item.id,
-      title: item.title,
+      title: contentTitle || item.title,
       contentId: item.contentId,
       contentType: item.contentType,
     });
-  }, [navigation, item]);
+  }, [navigation, item, contentTitle]);
 
   return (
     <VideoItemContainer>
@@ -68,6 +75,11 @@ function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
 
 function OtherChannelVideoListView() {
   const { videos, primaryVideo } = useContentVideos();
+  const { id, type } = useContentDetailRoute();
+  const { data: contentDetail } = useContentDetail(Number(id), type);
+
+  // 콘텐츠 제목
+  const contentTitle = contentDetail?.title ?? '';
 
   // primaryVideo를 제외한 나머지 비디오들을 Model로 변환
   // 정렬은 DB에서 처리됨 (includes_ending DESC, runtime DESC)
@@ -86,12 +98,12 @@ function OtherChannelVideoListView() {
 
   return (
     <Container>
-      <SectionTitle>다른 채널 영상</SectionTitle>
+      <SectionTitle>다른 영상</SectionTitle>
       <Gap size={10} />
       <VideoListView
         horizontal
         data={otherVideos}
-        renderItem={({ item }) => <VideoItemView item={item} />}
+        renderItem={({ item }) => <VideoItemView item={item} contentTitle={contentTitle} />}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <Gap size={12} />}
         showsHorizontalScrollIndicator={false}

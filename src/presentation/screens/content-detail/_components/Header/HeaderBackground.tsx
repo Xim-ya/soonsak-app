@@ -134,7 +134,7 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
 
     const playerParams = {
       videoId: primaryVideo.id,
-      title: primaryVideo.title || contentTitle || '',
+      title: contentTitle || primaryVideo.title || '',
       contentId: Number(id),
       contentType: type,
       ...(canResume &&
