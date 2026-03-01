@@ -169,7 +169,7 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     <Container style={isLargeScreen ? { width: backdropWidth } : undefined}>
       <Animated.View
         style={[
-          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' },
           backdropAnimatedStyle,
         ]}
       >
@@ -290,7 +290,6 @@ const Container = styled.View({
   position: 'relative',
   width: '100%',
   aspectRatio: 375 / 240,
-  overflow: 'hidden',
   pointerEvents: 'box-none' as const,
 });
 
