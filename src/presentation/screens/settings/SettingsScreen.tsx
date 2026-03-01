@@ -40,7 +40,7 @@ export default function SettingsScreen() {
   const { currentVersion, hasUpdate, openStore } = useAppVersionInfo();
 
   return (
-    <BasePage>
+    <BasePage safeAreaBottom={false}>
       <Container>
         <BackButtonAppBar title="설정" />
 
