@@ -1,8 +1,8 @@
-import React, { memo } from 'react';
+import React, { memo, useState, useCallback, useRef } from 'react';
 import { TouchableOpacity, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate, type SharedValue } from 'react-native-reanimated';
-import type { TabBarProps } from 'react-native-collapsible-tab-view';
+import { type TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 
@@ -10,27 +10,17 @@ const { width: screenWidth } = Dimensions.get('window');
 
 interface TabItemProps {
   name: string;
-  index: number;
-  indexDecimal: SharedValue<number>;
+  isActive: boolean;
   onPress: () => void;
 }
 
 /**
  * TabItem - 개별 탭 아이템 컴포넌트
- *
- * useAnimatedStyle을 컴포넌트 레벨에서 사용하기 위해 분리
  */
-const TabItem = memo(function TabItem({ name, index, indexDecimal, onPress }: TabItemProps) {
-  const textStyle = useAnimatedStyle(() => {
-    const isActive = Math.round(indexDecimal.value) === index;
-    return {
-      color: isActive ? colors.white : colors.gray04,
-    };
-  });
-
+const TabItem = memo(function TabItem({ name, isActive, onPress }: TabItemProps) {
   return (
     <Tab onPress={onPress} activeOpacity={0.7}>
-      <AnimatedTabText style={textStyle}>{name}</AnimatedTabText>
+      <TabText isActive={isActive}>{name}</TabText>
     </Tab>
   );
 });
@@ -46,6 +36,33 @@ export function UserContentTabBar<T extends string>({
   indexDecimal,
   onTabPress,
 }: TabBarProps<T>) {
+  // 라이브러리에서 현재 포커스된 탭 가져오기
+  const focusedTab = useFocusedTab();
+
+  // 초기화 여부 추적
+  const isInitialized = useRef(false);
+
+  // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
+  const [activeTab, setActiveTab] = useState<T>(tabNames[0]!);
+
+  // 초기 마운트 시에만 focusedTab으로 동기화 (initialTabName으로 진입 시)
+  if (!isInitialized.current && focusedTab) {
+    isInitialized.current = true;
+    if (focusedTab !== activeTab) {
+      setActiveTab(focusedTab as T);
+    }
+  }
+
+  const handleTabPress = useCallback(
+    (name: T) => {
+      setActiveTab(name);
+      onTabPress(name);
+    },
+    [onTabPress],
+  );
+
+  const getIsActive = (name: T) => activeTab === name;
+
   const tabWidth = screenWidth / tabNames.length;
   const indicatorWidth = tabWidth * 0.38;
 
@@ -64,13 +81,12 @@ export function UserContentTabBar<T extends string>({
   return (
     <TabBarContainer>
       <TabsContainer>
-        {tabNames.map((name, index) => (
+        {tabNames.map((name) => (
           <TabItem
             key={name}
             name={name}
-            index={index}
-            indexDecimal={indexDecimal}
-            onPress={() => onTabPress(name)}
+            isActive={getIsActive(name)}
+            onPress={() => handleTabPress(name)}
           />
         ))}
       </TabsContainer>
@@ -98,9 +114,10 @@ const Tab = styled(TouchableOpacity)({
   alignItems: 'center',
 });
 
-const AnimatedTabText = styled(Animated.Text)({
+const TabText = styled.Text<{ isActive: boolean }>(({ isActive }) => ({
   ...textStyles.body3,
-});
+  color: isActive ? colors.white : colors.gray04,
+}));
 
 const Indicator = styled(Animated.View)<{ width: number }>(({ width }) => ({
   position: 'absolute',

@@ -25,6 +25,7 @@ const PAGER_STYLE = { backgroundColor: colors.black };
 const PAGER_PROPS = {
   style: PAGER_STYLE,
   overScrollMode: 'never' as const,
+  scrollEnabled: false,
 };
 
 export default function ExploreScreen() {

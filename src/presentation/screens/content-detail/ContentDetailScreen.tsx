@@ -201,6 +201,7 @@ function ContentDetailContent({
             tabBarHeight={48}
             minHeaderHeight={48}
             width={AppSize.isLargeScreen() ? AppSize.actualScreenWidth : AppSize.screenWidth}
+            pagerProps={{ scrollEnabled: false }}
           >
             <Tabs.Tab name="영상" label="videoInfo">
               <ContentTabView appBarOpacity={appBarOpacity} />

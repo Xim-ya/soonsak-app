@@ -1,7 +1,8 @@
+import { useState, useCallback, useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate, SharedValue } from 'react-native-reanimated';
-import { TabBarProps } from 'react-native-collapsible-tab-view';
+import { TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -9,22 +10,14 @@ import { AppSize } from '@/shared/utils/appSize';
 interface TabItemProps {
   name: string;
   label: string;
-  index: number;
-  indexDecimal: SharedValue<number>;
+  isActive: boolean;
   onPress: () => void;
 }
 
-const TabItem = ({ name, label, index, indexDecimal, onPress }: TabItemProps) => {
-  const textStyle = useAnimatedStyle(() => {
-    const isActive = Math.round(indexDecimal.value) === index;
-    return {
-      color: isActive ? colors.white : colors.gray04,
-    };
-  });
-
+const TabItem = ({ name, label, isActive, onPress }: TabItemProps) => {
   return (
     <Tab key={name} onPress={onPress} activeOpacity={0.7}>
-      <AnimatedTabText style={textStyle}>{label}</AnimatedTabText>
+      <TabText isActive={isActive}>{label}</TabText>
     </Tab>
   );
 };
@@ -38,6 +31,31 @@ export const TabBar = <T extends string>({
   onTabPress,
   tabProps,
 }: TabBarProps<T>) => {
+  // 라이브러리에서 현재 포커스된 탭 가져오기 (초기값용)
+  const focusedTab = useFocusedTab();
+
+  // 초기화 여부 추적
+  const isInitialized = useRef(false);
+
+  // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
+  const [activeTab, setActiveTab] = useState<T>(tabNames[0]!);
+
+  // 초기 마운트 시에만 focusedTab으로 동기화
+  if (!isInitialized.current && focusedTab) {
+    isInitialized.current = true;
+    if (focusedTab !== activeTab) {
+      setActiveTab(focusedTab as T);
+    }
+  }
+
+  const handleTabPress = useCallback(
+    (name: T) => {
+      setActiveTab(name);
+      onTabPress(name);
+    },
+    [onTabPress],
+  );
+
   // 컴포넌트 내부에서 읽어 AppSize 갱신 반영
   const isLargeScreen = AppSize.isLargeScreen();
   const screenWidth = isLargeScreen ? AppSize.actualScreenWidth : AppSize.screenWidth;
@@ -62,6 +80,8 @@ export const TabBar = <T extends string>({
   const tabletContainerStyle = isLargeScreen ? { alignItems: 'center' as const } : undefined;
   const tabletTabsStyle = isLargeScreen ? { width: effectiveWidth } : undefined;
 
+  const getIsActive = (name: T) => activeTab === name;
+
   return (
     <TabBarContainer style={tabletContainerStyle}>
       <TabsContainer style={tabletTabsStyle}>
@@ -74,9 +94,8 @@ export const TabBar = <T extends string>({
               key={name}
               name={name}
               label={label}
-              index={index}
-              indexDecimal={indexDecimal}
-              onPress={() => onTabPress(name)}
+              isActive={getIsActive(name)}
+              onPress={() => handleTabPress(name)}
             />
           );
         })}
@@ -107,9 +126,10 @@ const Tab = styled(TouchableOpacity)({
   alignItems: 'center',
 });
 
-const AnimatedTabText = styled(Animated.Text)({
+const TabText = styled.Text<{ isActive: boolean }>(({ isActive }) => ({
   ...textStyles.body3,
-});
+  color: isActive ? colors.white : colors.gray04,
+}));
 
 const Indicator = styled(Animated.View)<{ width: number }>(({ width }) => ({
   position: 'absolute',
