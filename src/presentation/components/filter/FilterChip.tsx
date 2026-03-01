@@ -56,8 +56,8 @@ const ChipContainer = styled.TouchableOpacity<{ selected: boolean; disabled: boo
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
-    borderWidth: selected ? 0 : 1,
-    borderColor: colors.gray04,
+    borderWidth: 1,
+    borderColor: selected ? 'transparent' : colors.gray04,
     opacity: disabled ? 0.4 : 1,
   }),
 );
