@@ -16,7 +16,7 @@
  * </Container>
  */
 
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { LayoutChangeEvent } from 'react-native';
 import {
   useSharedValue,
@@ -44,7 +44,7 @@ interface UseScrollLazyLoadReturn {
 export function useScrollLazyLoad(): UseScrollLazyLoadReturn {
   const [isVisible, setIsVisible] = useState(false);
   const [viewportHeight, setViewportHeight] = useState(0);
-  const targetYRef = useRef(0);
+  const targetY = useSharedValue(0);
   const scrollY = useSharedValue(0);
   const isTriggered = useSharedValue(false);
 
@@ -54,9 +54,12 @@ export function useScrollLazyLoad(): UseScrollLazyLoadReturn {
   }, []);
 
   // 타겟 레이아웃 측정 (Y 위치)
-  const handleTargetLayout = useCallback((event: LayoutChangeEvent) => {
-    targetYRef.current = event.nativeEvent.layout.y;
-  }, []);
+  const handleTargetLayout = useCallback(
+    (event: LayoutChangeEvent) => {
+      targetY.value = event.nativeEvent.layout.y;
+    },
+    [targetY],
+  );
 
   // 로드 트리거 함수
   const triggerLoad = useCallback(() => {
@@ -72,12 +75,12 @@ export function useScrollLazyLoad(): UseScrollLazyLoadReturn {
 
   // 스크롤 위치 감지하여 레이지 로드 트리거
   useAnimatedReaction(
-    () => scrollY.value,
-    (currentScrollY) => {
+    () => ({ scroll: scrollY.value, target: targetY.value }),
+    ({ scroll: currentScrollY, target: currentTargetY }) => {
       if (isTriggered.value) return;
-      if (targetYRef.current <= 0 || viewportHeight <= 0) return;
+      if (currentTargetY <= 0 || viewportHeight <= 0) return;
 
-      const triggerPoint = targetYRef.current - viewportHeight - VIEWPORT_THRESHOLD;
+      const triggerPoint = currentTargetY - viewportHeight - VIEWPORT_THRESHOLD;
       if (currentScrollY >= triggerPoint) {
         isTriggered.value = true;
         runOnJS(triggerLoad)();

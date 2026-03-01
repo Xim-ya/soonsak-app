@@ -8,6 +8,7 @@ import colors from '@/shared/styles/colors';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { WatchHistorySectionView, type WatchHistoryModelType } from '@/features/watch-history';
+import Gap from '@/presentation/components/view/Gap';
 import { Header } from './_components/Header';
 import HomeAppBar from './_components/HomeAppBar';
 import RecentContentView from './_components/RecentContentView';
@@ -68,6 +69,7 @@ export default function HomeScreen() {
           <ContentCollectionSectionView isVisible={isCollectionVisible} />
         </View>
         <LongRuntimeContentListView />
+        <Gap size={120} />
       </Animated.ScrollView>
       <HomeAppBar scrollY={scrollY} />
     </Container>
