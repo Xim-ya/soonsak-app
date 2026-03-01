@@ -3,7 +3,7 @@
  *
  * YouTube 스타일 프로그레스 바 정책을 적용한 공통 컴포넌트
  * - 최소 1% 또는 10초 이상 시청해야 표시
- * - 95% 이상 또는 남은 10초 이하면 완료로 간주하여 미표시
+ * - 88% 이상 또는 남은 10초 이하면 완료로 간주하여 미표시
  */
 
 import { memo } from 'react';
@@ -37,8 +37,8 @@ export const WATCH_PROGRESS_POLICY = {
   MIN_PERCENT: 1,
   /** 최소 표시 기준: 10초 이상 시청 */
   MIN_SECONDS: 10,
-  /** 완료 기준: 95% 이상이면 완료로 처리 */
-  COMPLETION_PERCENT: 95,
+  /** 완료 기준: 88% 이상이면 완료로 처리 */
+  COMPLETION_PERCENT: 88,
   /** 완료 기준: 남은 시간 10초 이하면 완료로 처리 */
   COMPLETION_REMAINING_SECONDS: 10,
 } as const;
@@ -48,7 +48,7 @@ export const WATCH_PROGRESS_POLICY = {
 /**
  * YouTube 스타일 프로그레스 바 표시 여부 결정
  * - 최소 1% 이상 또는 10초 이상 시청해야 표시
- * - 95% 이상 또는 남은 10초 이하면 완료로 간주하여 미표시
+ * - 88% 이상 또는 남은 10초 이하면 완료로 간주하여 미표시
  */
 export function shouldShowProgressBar(progressSeconds: number, durationSeconds: number): boolean {
   const hasValidDuration = durationSeconds > 0 && progressSeconds > 0;
