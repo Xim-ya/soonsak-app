@@ -23,7 +23,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { useSocialLogin } from '@/presentation/pages/login/_hooks/useSocialLogin';
+import { useSocialLogin } from '@/presentation/screens/login/_hooks/useSocialLogin';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import KakaoLogo from '@assets/icons/kakao_logo.svg';

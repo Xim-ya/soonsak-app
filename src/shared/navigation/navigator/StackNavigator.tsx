@@ -2,30 +2,30 @@ import { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useNavigation, NavigationProp, useNavigationState } from '@react-navigation/native';
 import TabNavigator from './TabNavigator';
-import ContentDetailPage from '../../../presentation/pages/content-detail/ContentDetailPage';
-import { PlayerPage } from '../../../presentation/pages/player/PlayerPage';
-import ChannelDetailPage from '../../../presentation/pages/channel-detail/ChannelDetailPage';
-import SearchPage from '../../../presentation/pages/search/SearchPage';
-import ChannelSelectionPage from '../../../presentation/pages/channel-selection/ChannelSelectionPage';
-import ChannelAllPage from '../../../presentation/pages/channel-all/ChannelAllPage';
-import { MediaListPage } from '../../../presentation/pages/media/MediaListPage';
-import { ImageDetailPage } from '../../../presentation/pages/media/ImageDetailPage';
-import LoginPage from '../../../presentation/pages/login/LoginPage';
-import ProfileSetupPage from '../../../presentation/pages/profile-setup/ProfileSetupPage';
-import SettingsPage from '../../../presentation/pages/settings/SettingsPage';
-import UserContentListPage from '../../../presentation/pages/user-content-list/UserContentListPage';
-import WatchHistoryPage from '../../../presentation/pages/watch-history/WatchHistoryPage';
-import QuickExplorePage from '../../../presentation/pages/quickExplore/QuickExplorePage';
-import AdminContentSearchPage from '../../../presentation/admin/pages/admin-content-search/AdminContentSearchPage';
-import AdminPrimaryVideoSelectPage from '../../../presentation/admin/pages/admin-primary-video-select/AdminPrimaryVideoSelectPage';
-import AdminVideoManagementPage from '../../../presentation/admin/pages/admin-video-management/AdminVideoManagementPage';
-import AdminUserManagementPage from '../../../presentation/admin/pages/admin-user-management/AdminUserManagementPage';
-import AdminUserDetailPage from '../../../presentation/admin/pages/admin-user-detail/AdminUserDetailPage';
-import AdminPushContentSelectPage from '../../../presentation/admin/pages/admin-push-content-select/AdminPushContentSelectPage';
-import AdminUserContentListPage from '../../../presentation/admin/pages/admin-user-content-list/AdminUserContentListPage';
-import AdminContentRegistrationPage from '../../../presentation/admin/pages/admin-content-registration/AdminContentRegistrationPage';
-import AdminChannelManagementPage from '../../../presentation/admin/pages/admin-channel-management/AdminChannelManagementPage';
-import AdminChannelDetailPage from '../../../presentation/admin/pages/admin-channel-detail/AdminChannelDetailPage';
+import ContentDetailScreen from '../../../presentation/screens/content-detail/ContentDetailScreen';
+import { PlayerScreen } from '../../../presentation/screens/player/PlayerScreen';
+import ChannelDetailScreen from '../../../presentation/screens/channel-detail/ChannelDetailScreen';
+import SearchScreen from '../../../presentation/screens/search/SearchScreen';
+import ChannelSelectionScreen from '../../../presentation/screens/channel-selection/ChannelSelectionScreen';
+import ChannelAllScreen from '../../../presentation/screens/channel-all/ChannelAllScreen';
+import { MediaListScreen } from '../../../presentation/screens/media/MediaListScreen';
+import { ImageDetailScreen } from '../../../presentation/screens/media/ImageDetailScreen';
+import LoginScreen from '../../../presentation/screens/login/LoginScreen';
+import ProfileSetupScreen from '../../../presentation/screens/profile-setup/ProfileSetupScreen';
+import SettingsScreen from '../../../presentation/screens/settings/SettingsScreen';
+import UserContentListScreen from '../../../presentation/screens/user-content-list/UserContentListScreen';
+import WatchHistoryScreen from '../../../presentation/screens/watch-history/WatchHistoryScreen';
+import QuickExploreScreen from '../../../presentation/screens/quickExplore/QuickExploreScreen';
+import AdminContentSearchScreen from '../../../presentation/admin/screens/admin-content-search/AdminContentSearchScreen';
+import AdminPrimaryVideoSelectScreen from '../../../presentation/admin/screens/admin-primary-video-select/AdminPrimaryVideoSelectScreen';
+import AdminVideoManagementScreen from '../../../presentation/admin/screens/admin-video-management/AdminVideoManagementScreen';
+import AdminUserManagementScreen from '../../../presentation/admin/screens/admin-user-management/AdminUserManagementScreen';
+import AdminUserDetailScreen from '../../../presentation/admin/screens/admin-user-detail/AdminUserDetailScreen';
+import AdminPushContentSelectScreen from '../../../presentation/admin/screens/admin-push-content-select/AdminPushContentSelectScreen';
+import AdminUserContentListScreen from '../../../presentation/admin/screens/admin-user-content-list/AdminUserContentListScreen';
+import AdminContentRegistrationScreen from '../../../presentation/admin/screens/admin-content-registration/AdminContentRegistrationScreen';
+import AdminChannelManagementScreen from '../../../presentation/admin/screens/admin-channel-management/AdminChannelManagementScreen';
+import AdminChannelDetailScreen from '../../../presentation/admin/screens/admin-channel-detail/AdminChannelDetailScreen';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -97,52 +97,52 @@ export default function StackNavigator() {
       </Stack.Screen>
       <Stack.Screen
         name={routePages.login}
-        component={LoginPage}
+        component={LoginScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.contentDetail}
-        component={ContentDetailPage}
+        component={ContentDetailScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.player}
-        component={PlayerPage}
+        component={PlayerScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.channelDetail}
-        component={ChannelDetailPage}
+        component={ChannelDetailScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.search}
-        component={SearchPage}
+        component={SearchScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.channelSelection}
-        component={ChannelSelectionPage}
+        component={ChannelSelectionScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.channelAll}
-        component={ChannelAllPage}
+        component={ChannelAllScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.mediaList}
-        component={MediaListPage}
+        component={MediaListScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.imageDetail}
-        component={ImageDetailPage}
+        component={ImageDetailScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.profileSetup}
-        component={ProfileSetupPage}
+        component={ProfileSetupScreen}
         options={({ route }) => ({
           headerShown: false,
           // 초기 설정 모드에서만 뒤로가기 제스처 비활성화
@@ -151,72 +151,72 @@ export default function StackNavigator() {
       />
       <Stack.Screen
         name={routePages.settings}
-        component={SettingsPage}
+        component={SettingsScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.userContentList}
-        component={UserContentListPage}
+        component={UserContentListScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.watchHistory}
-        component={WatchHistoryPage}
+        component={WatchHistoryScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.quickExplore}
-        component={QuickExplorePage}
+        component={QuickExploreScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminContentSearch}
-        component={AdminContentSearchPage}
+        component={AdminContentSearchScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminPrimaryVideoSelect}
-        component={AdminPrimaryVideoSelectPage}
+        component={AdminPrimaryVideoSelectScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminVideoManagement}
-        component={AdminVideoManagementPage}
+        component={AdminVideoManagementScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminUserManagement}
-        component={AdminUserManagementPage}
+        component={AdminUserManagementScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminUserDetail}
-        component={AdminUserDetailPage}
+        component={AdminUserDetailScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminPushContentSelect}
-        component={AdminPushContentSelectPage}
+        component={AdminPushContentSelectScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminUserContentList}
-        component={AdminUserContentListPage}
+        component={AdminUserContentListScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminContentRegistration}
-        component={AdminContentRegistrationPage}
+        component={AdminContentRegistrationScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminChannelManagement}
-        component={AdminChannelManagementPage}
+        component={AdminChannelManagementScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
         name={routePages.adminChannelDetail}
-        component={AdminChannelDetailPage}
+        component={AdminChannelDetailScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>
