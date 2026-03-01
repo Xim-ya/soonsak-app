@@ -5,7 +5,7 @@
  */
 
 import { memo } from 'react';
-import { View, ActivityIndicator } from 'react-native';
+import { View, ActivityIndicator, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -15,11 +15,17 @@ import { formatCompactNumber } from '@/features/admin';
 interface UserStatisticsCardsProps {
   readonly statistics: UserStatistics;
   readonly isLoading: boolean;
+  /** 오늘 가입 필터 활성화 여부 */
+  readonly showTodaySignupsOnly?: boolean;
+  /** 오늘 가입 카드 클릭 핸들러 */
+  readonly onTodaySignupPress?: () => void;
 }
 
 export const UserStatisticsCards = memo(function UserStatisticsCards({
   statistics,
   isLoading,
+  showTodaySignupsOnly = false,
+  onTodaySignupPress,
 }: UserStatisticsCardsProps) {
   if (isLoading) {
     return (
@@ -60,10 +66,17 @@ export const UserStatisticsCards = memo(function UserStatisticsCards({
           <MiniCardValue>{formatCompactNumber(statistics.totalUsers)}</MiniCardValue>
           <MiniCardLabel>총 가입자</MiniCardLabel>
         </MiniCard>
-        <MiniCard>
-          <MiniCardValue>{formatCompactNumber(statistics.newUsersToday)}</MiniCardValue>
-          <MiniCardLabel>오늘 가입</MiniCardLabel>
-        </MiniCard>
+        <MiniCardPressable
+          onPress={onTodaySignupPress}
+          activeOpacity={0.7}
+          isActive={showTodaySignupsOnly}
+          disabled={!onTodaySignupPress}
+        >
+          <MiniCardValue isActive={showTodaySignupsOnly}>
+            {formatCompactNumber(statistics.newUsersToday)}
+          </MiniCardValue>
+          <MiniCardLabel isActive={showTodaySignupsOnly}>오늘 가입</MiniCardLabel>
+        </MiniCardPressable>
       </MiniCardsRow>
     </Container>
   );
@@ -156,13 +169,30 @@ const MiniCard = styled(View)({
   alignItems: 'center',
 });
 
-const MiniCardValue = styled.Text({
-  ...textStyles.title2,
-  color: colors.white,
-  marginBottom: 2,
-});
+interface MiniCardPressableProps {
+  isActive: boolean;
+}
 
-const MiniCardLabel = styled.Text({
+const MiniCardPressable = styled(TouchableOpacity)<MiniCardPressableProps>(({ isActive }) => ({
+  flex: 1,
+  backgroundColor: isActive ? colors.primary : colors.gray06,
+  borderRadius: 12,
+  paddingVertical: 14,
+  paddingHorizontal: 12,
+  alignItems: 'center',
+}));
+
+interface MiniCardTextProps {
+  isActive?: boolean;
+}
+
+const MiniCardValue = styled.Text<MiniCardTextProps>(({ isActive }) => ({
+  ...textStyles.title2,
+  color: isActive ? colors.white : colors.white,
+  marginBottom: 2,
+}));
+
+const MiniCardLabel = styled.Text<MiniCardTextProps>(({ isActive }) => ({
   ...textStyles.alert2,
-  color: colors.gray03,
-});
+  color: isActive ? colors.white : colors.gray03,
+}));

@@ -58,6 +58,8 @@ export default function AdminUserManagementScreen() {
     onSearch,
     sortBy,
     onSortChange,
+    showTodaySignupsOnly,
+    onTodaySignupPress,
     isLoading,
     isStatisticsLoading,
     isFetchingNextPage,
@@ -113,7 +115,12 @@ export default function AdminUserManagementScreen() {
     () => (
       <>
         {/* 통계 카드 */}
-        <UserStatisticsCards statistics={statistics} isLoading={isStatisticsLoading} />
+        <UserStatisticsCards
+          statistics={statistics}
+          isLoading={isStatisticsLoading}
+          showTodaySignupsOnly={showTodaySignupsOnly}
+          onTodaySignupPress={onTodaySignupPress}
+        />
 
         {/* 검색바 */}
         <UserSearchBar
@@ -131,6 +138,8 @@ export default function AdminUserManagementScreen() {
     [
       statistics,
       isStatisticsLoading,
+      showTodaySignupsOnly,
+      onTodaySignupPress,
       searchQuery,
       searchField,
       onSearchChange,
@@ -154,10 +163,10 @@ export default function AdminUserManagementScreen() {
     if (isLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>유저가 없어요</EmptyText>
+        <EmptyText>{showTodaySignupsOnly ? '오늘 가입한 유저가 없어요' : '유저가 없어요'}</EmptyText>
       </EmptyContainer>
     );
-  }, [isLoading]);
+  }, [isLoading, showTodaySignupsOnly]);
 
   return (
     <BasePage useSafeArea={false}>
@@ -195,7 +204,6 @@ export default function AdminUserManagementScreen() {
             />
           }
           ItemSeparatorComponent={Separator}
-          stickyHeaderIndices={[0]}
           removeClippedSubviews={true}
           maxToRenderPerBatch={10}
           windowSize={10}

@@ -73,6 +73,8 @@ export interface UserListParams {
   sortBy: 'createdAt' | 'lastLoginAt' | 'entryCount';
   cursor: string | null;
   limit: number;
+  /** 가입일 필터 (이 날짜 이후 가입자만 조회) */
+  signupDateFrom?: string | null;
 }
 
 /** 유저 목록 조회 결과 */
@@ -150,7 +152,7 @@ export const adminUserApi = {
    * 유저 목록 조회 (무한스크롤, 필터, 검색, 정렬)
    */
   getUsers: async (params: UserListParams): Promise<UserListResult> => {
-    const { role, searchQuery, searchField, sortBy, cursor } = params;
+    const { role, searchQuery, searchField, sortBy, cursor, signupDateFrom } = params;
     const limit = normalizeLimit(params.limit);
     const sanitizedSearchQuery = sanitizeSearchQuery(searchQuery);
 
@@ -163,6 +165,11 @@ export const adminUserApi = {
     // 역할 필터
     if (role !== 'all') {
       query = query.eq('role', role);
+    }
+
+    // 가입일 필터 (오늘 가입자 등)
+    if (signupDateFrom) {
+      query = query.gte('created_at', signupDateFrom);
     }
 
     // 검색 필터 (정규화된 검색어 사용)
