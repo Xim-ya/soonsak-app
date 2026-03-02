@@ -46,8 +46,8 @@ export function useAppVersionInfo(): UseAppVersionInfoReturn {
     const url =
       storeUrl ??
       (Platform.OS === 'ios'
-        ? 'https://apps.apple.com/app/soonsak'
-        : 'https://play.google.com/store/apps/details?id=com.soonsak');
+        ? 'https://apps.apple.com/app/id6758769228'
+        : 'https://play.google.com/store/apps/details?id=com.soonsak.app');
 
     Linking.openURL(url).catch((error) => {
       if (isDev) {

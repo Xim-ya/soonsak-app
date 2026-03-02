@@ -56,6 +56,7 @@ export const DEEP_LINK_SCREENS = [
   routePages.settings,
   routePages.userContentList,
   routePages.adminContentRegistration,
+  routePages.reviewFunnel,
 ] as const;
 
 export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
@@ -69,7 +70,7 @@ export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
  *
  * 새 인증 필요 화면 추가 시 이 배열에 추가하세요.
  */
-export const AUTH_REQUIRED_SCREENS = [routePages.userContentList] as const;
+export const AUTH_REQUIRED_SCREENS = [routePages.userContentList, routePages.reviewFunnel] as const;
 
 export type AuthRequiredScreen = (typeof AUTH_REQUIRED_SCREENS)[number];
 
@@ -160,6 +161,12 @@ export const deepLinkConfig = {
     routePages.adminContentRegistration,
     'admin/content-registration',
   ),
+
+  /**
+   * 리뷰 퍼널 (편지 + 리뷰 유도)
+   * @example quickExplore://review-funnel
+   */
+  [routePages.reviewFunnel]: defineDeepLink(routePages.reviewFunnel, 'review-funnel'),
 } satisfies Record<DeepLinkScreen, DeepLinkScreenConfig<DeepLinkScreen>>;
 
 /* ========================================

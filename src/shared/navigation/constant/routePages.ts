@@ -25,6 +25,7 @@ export const routePages = {
   adminChannelManagement: 'AdminChannelManagement',
   adminChannelDetail: 'AdminChannelDetail',
   adminPushManagement: 'AdminPushManagement',
+  reviewFunnel: 'ReviewFunnel',
 } as const;
 
 export type RoutePages = typeof routePages;

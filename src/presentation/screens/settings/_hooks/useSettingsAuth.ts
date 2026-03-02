@@ -20,7 +20,7 @@ import { useDialog } from '@/presentation/components/dialog';
 // 외부 URL 상수
 const FEEDBACK_URL = 'mailto:support@soonsak.app';
 const PRIVACY_URL = 'https://soonsak.app/privacy';
-const APP_STORE_URL = 'https://apps.apple.com/app/soonsak';
+const APP_STORE_URL = 'https://apps.apple.com/app/id6758769228';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
