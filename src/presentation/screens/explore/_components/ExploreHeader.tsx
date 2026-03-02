@@ -43,21 +43,37 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
 
   const { backdropUrl } = useRandomBackdrop();
 
-  // 로그인 다이얼로그 상태
+  // 로그인 다이얼로그 상태 및 성공 후 액션 추적
   const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<'quickExplore' | null>(null);
 
   const handleLoginPress = useCallback(() => {
+    setPendingNavigation(null);
     setLoginDialogVisible(true);
   }, []);
 
   const handleCloseDialog = useCallback(() => {
     setLoginDialogVisible(false);
+    setPendingNavigation(null);
   }, []);
 
-  // 빠른탐색 페이지로 이동
+  // 로그인 성공 후 콜백: 대기 중인 네비게이션 실행
+  const handleLoginSuccess = useCallback(() => {
+    if (pendingNavigation === 'quickExplore') {
+      navigation.navigate(routePages.quickExplore);
+    }
+    setPendingNavigation(null);
+  }, [pendingNavigation, navigation]);
+
+  // 빠른탐색 페이지로 이동 (비로그인 시 로그인 다이얼로그 표시)
   const handleQuickExplorePress = useCallback(() => {
+    if (!isLoggedIn) {
+      setPendingNavigation('quickExplore');
+      setLoginDialogVisible(true);
+      return;
+    }
     navigation.navigate(routePages.quickExplore);
-  }, [navigation]);
+  }, [isLoggedIn, navigation]);
 
   // 로그인 상태: 캐러셀만 표시 (백드롭/그라데이션 없음)
   if (isLoggedIn) {
@@ -93,7 +109,11 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
             </CardSection>
           </FallbackContentOverlay>
         </FallbackContainer>
-        <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
+        <LoginPromptDialog
+          visible={isLoginDialogVisible}
+          onClose={handleCloseDialog}
+          onLoginSuccess={handleLoginSuccess}
+        />
       </>
     );
   }
@@ -124,7 +144,11 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
           <DarkedLinearShadow height={BOTTOM_GRADIENT_HEIGHT} align={LinearAlign.bottomTop} />
         </BackdropImage>
       </Container>
-      <LoginPromptDialog visible={isLoginDialogVisible} onClose={handleCloseDialog} />
+      <LoginPromptDialog
+        visible={isLoginDialogVisible}
+        onClose={handleCloseDialog}
+        onLoginSuccess={handleLoginSuccess}
+      />
     </>
   );
 });

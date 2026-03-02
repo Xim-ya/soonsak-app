@@ -73,6 +73,9 @@ export const AUTH_DATABASE = {
 export const PUSH_DATABASE = {
   TABLES: {
     PUSH_TOKENS: 'push_tokens',
+    PUSH_NOTIFICATION_TEMPLATES: 'push_notification_templates',
+    PUSH_NOTIFICATIONS: 'push_notifications',
+    PUSH_NOTIFICATION_RECEIPTS: 'push_notification_receipts',
   },
   COLUMNS: {
     ID: 'id',

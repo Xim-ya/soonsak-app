@@ -146,4 +146,59 @@ export const pushTokenApi = {
   getStoredToken: async (): Promise<string | null> => {
     return AsyncStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
   },
+
+  /**
+   * 푸시 알림 클릭 추적
+   *
+   * 푸시 알림을 클릭했을 때 clicked_at 시간을 기록합니다.
+   *
+   * @param notificationId 푸시 알림 ID (push_notifications 테이블의 ID)
+   * @param userId 사용자 ID
+   */
+  trackNotificationClick: async (notificationId: string, userId: string): Promise<void> => {
+    try {
+      const { error } = await supabaseClient
+        .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
+        .update({
+          clicked_at: new Date().toISOString(),
+        })
+        .eq('notification_id', notificationId)
+        .eq('user_id', userId);
+
+      if (error) {
+        console.warn('[PushToken] 알림 클릭 추적 실패:', error);
+      }
+    } catch (err) {
+      // 클릭 추적 실패는 치명적이지 않으므로 무시
+      console.warn('[PushToken] 알림 클릭 추적 에러:', err);
+    }
+  },
+
+  /**
+   * 푸시 알림 읽음 처리
+   *
+   * 푸시 알림을 수신했을 때 read_at 시간을 기록합니다.
+   *
+   * @param notificationId 푸시 알림 ID (push_notifications 테이블의 ID)
+   * @param userId 사용자 ID
+   */
+  trackNotificationRead: async (notificationId: string, userId: string): Promise<void> => {
+    try {
+      const { error } = await supabaseClient
+        .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
+        .update({
+          read_at: new Date().toISOString(),
+        })
+        .eq('notification_id', notificationId)
+        .eq('user_id', userId)
+        .is('read_at', null); // 이미 읽은 건 업데이트하지 않음
+
+      if (error) {
+        console.warn('[PushToken] 알림 읽음 추적 실패:', error);
+      }
+    } catch (err) {
+      // 읽음 추적 실패는 치명적이지 않으므로 무시
+      console.warn('[PushToken] 알림 읽음 추적 에러:', err);
+    }
+  },
 };

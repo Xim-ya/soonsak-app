@@ -31,8 +31,24 @@ const QUERY_KEYS = {
   statistics: ['adminUserStatistics'] as const,
   roleCounts: ['adminUserRoleCounts'] as const,
   users: (params: UserListQueryParams) =>
-    ['adminUsers', params.role, params.searchQuery, params.searchField, params.sortBy] as const,
+    [
+      'adminUsers',
+      params.role,
+      params.searchQuery,
+      params.searchField,
+      params.sortBy,
+      params.signupDateFrom,
+    ] as const,
 } as const;
+
+/**
+ * 오늘 자정 ISO 문자열 반환 (UTC 기준)
+ */
+function getTodayStartIso(): string {
+  const now = new Date();
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  return todayStart.toISOString();
+}
 
 const DEFAULT_COUNTS: UserRoleCounts = {
   total: 0,
@@ -58,6 +74,7 @@ interface UserListQueryParams {
   searchQuery: string | null;
   searchField: UserSearchField;
   sortBy: UserSortBy;
+  signupDateFrom: string | null;
 }
 
 interface UseUserManagementReturn {
@@ -85,6 +102,10 @@ interface UseUserManagementReturn {
   readonly sortBy: UserSortBy;
   /** 정렬 기준 변경 */
   readonly onSortChange: (sort: UserSortBy) => void;
+  /** 오늘 가입 필터 활성화 여부 */
+  readonly showTodaySignupsOnly: boolean;
+  /** 오늘 가입 필터 토글 */
+  readonly onTodaySignupPress: () => void;
   /** 로딩 중 여부 */
   readonly isLoading: boolean;
   /** 통계 로딩 중 여부 */
@@ -114,6 +135,7 @@ export function useUserManagement(): UseUserManagementReturn {
   const [appliedSearchQuery, setAppliedSearchQuery] = useState<string | null>(null);
   const [searchField, setSearchField] = useState<UserSearchField>('email');
   const [sortBy, setSortBy] = useState<UserSortBy>('lastLoginAt');
+  const [showTodaySignupsOnly, setShowTodaySignupsOnly] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 현재 쿼리 파라미터
@@ -122,9 +144,10 @@ export function useUserManagement(): UseUserManagementReturn {
       role: selectedRole,
       searchQuery: appliedSearchQuery,
       searchField,
-      sortBy,
+      sortBy: showTodaySignupsOnly ? 'createdAt' : sortBy,
+      signupDateFrom: showTodaySignupsOnly ? getTodayStartIso() : null,
     }),
-    [selectedRole, appliedSearchQuery, searchField, sortBy],
+    [selectedRole, appliedSearchQuery, searchField, sortBy, showTodaySignupsOnly],
   );
 
   // 대시보드 통계 조회
@@ -157,6 +180,7 @@ export function useUserManagement(): UseUserManagementReturn {
         searchQuery: queryParams.searchQuery,
         searchField: queryParams.searchField,
         sortBy: queryParams.sortBy,
+        signupDateFrom: queryParams.signupDateFrom,
         cursor: pageParam,
         limit: PAGE_SIZE,
       }),
@@ -204,6 +228,11 @@ export function useUserManagement(): UseUserManagementReturn {
     setSortBy(sort);
   }, []);
 
+  // 오늘 가입 필터 토글
+  const onTodaySignupPress = useCallback(() => {
+    setShowTodaySignupsOnly((prev) => !prev);
+  }, []);
+
   // 다음 페이지 로드
   const fetchNextPage = useCallback(() => {
     const canFetchMore = hasNextPage && !isFetchingNextPage;
@@ -248,6 +277,8 @@ export function useUserManagement(): UseUserManagementReturn {
     onSearch,
     sortBy,
     onSortChange,
+    showTodaySignupsOnly,
+    onTodaySignupPress,
     isLoading,
     isStatisticsLoading,
     isFetchingNextPage,

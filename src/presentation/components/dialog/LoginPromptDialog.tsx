@@ -101,7 +101,7 @@ function LoginPromptDialog({
               </IllustrationWrapper>
 
               {/* 타이틀 */}
-              <TitleText>로그인하고{'\n'}모든 기능을 자유롭게 사용해보세요!</TitleText>
+              <TitleText>로그인하면{'\n'}모든 기능을 자유롭게 쓸 수 있어요</TitleText>
 
               {/* 버튼 그룹 */}
               <ButtonGroup>

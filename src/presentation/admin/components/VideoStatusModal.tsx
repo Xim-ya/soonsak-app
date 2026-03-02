@@ -79,7 +79,7 @@ function VideoStatusModal({
       const result = await showConfirmDialog({
         title: '비디오 거부',
         description:
-          '비디오를 거부하면:\n• 대표 영상에서 해제됩니다\n• 이 비디오가 유일하면 콘텐츠가 삭제됩니다\n\n계속하시겠습니까?',
+          '비디오를 거부하면:\n• 대표 영상에서 해제돼요\n• 이 비디오가 유일하면 콘텐츠도 삭제돼요\n\n계속할까요?',
         leftButtonText: '취소',
         rightButtonText: '거부',
       });

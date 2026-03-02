@@ -117,7 +117,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
       setPermissionStatus(status);
 
       if (status !== 'granted') {
-        setError('푸시 알림 권한이 거부되었습니다.');
+        setError('푸시 알림 권한이 필요해요');
         return false;
       }
 

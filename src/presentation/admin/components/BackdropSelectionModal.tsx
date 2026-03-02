@@ -153,14 +153,14 @@ function BackdropSelectionModal({
     if (error) {
       return (
         <EmptyContainer>
-          <EmptyText>이미지를 불러올 수 없습니다</EmptyText>
+          <EmptyText>이미지를 불러오지 못했어요</EmptyText>
         </EmptyContainer>
       );
     }
 
     return (
       <EmptyContainer>
-        <EmptyText>사용 가능한 이미지가 없습니다</EmptyText>
+        <EmptyText>사용 가능한 이미지가 없어요</EmptyText>
       </EmptyContainer>
     );
   }, [isLoading, error]);

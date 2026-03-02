@@ -629,7 +629,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             </>
           )}
         </SendButton>
-        {!hasActiveTokens && <DisabledHint>활성 푸시 토큰이 없어 발송할 수 없습니다</DisabledHint>}
+        {!hasActiveTokens && <DisabledHint>활성 푸시 토큰이 없어서 발송할 수 없어요</DisabledHint>}
       </Container>
 
       <Modal

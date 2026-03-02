@@ -96,8 +96,8 @@ export async function sendContentRegistrationCompleteNotification(
   const title = '콘텐츠 등록 완료';
   const body =
     successCount === totalCount
-      ? `${successCount}개 콘텐츠가 등록되었습니다.`
-      : `${totalCount}개 중 ${successCount}개가 등록되었습니다.`;
+      ? `${successCount}개 콘텐츠를 등록했어요`
+      : `${totalCount}개 중 ${successCount}개를 등록했어요`;
 
   return sendLocalNotification({
     title,
@@ -132,7 +132,7 @@ export async function sendChannelRegistrationCompleteNotification(
   successCount: number,
 ): Promise<string | null> {
   const title = '채널 등록 완료';
-  const body = `${channelName} 채널에서 ${successCount}개 영상이 등록되었습니다.`;
+  const body = `${channelName} 채널에서 ${successCount}개 영상을 등록했어요`;
 
   return sendLocalNotification({
     title,

@@ -74,6 +74,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
       <Tabs.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+        showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
           <GridContainer>
@@ -102,11 +103,12 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
       <Tabs.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+        showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
           <EmptyContainer>
-            <EmptyText>관련 콘텐츠가 없습니다.</EmptyText>
-            <EmptySubText>비슷한 콘텐츠를 찾을 수 없어요.</EmptySubText>
+            <EmptyText>관련 콘텐츠가 없어요</EmptyText>
+            <EmptySubText>비슷한 콘텐츠를 준비 중이에요</EmptySubText>
           </EmptyContainer>
         </View>
       </Tabs.ScrollView>
@@ -117,6 +119,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
     <Tabs.ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+      showsVerticalScrollIndicator={false}
     >
       <View style={tabletContentStyle}>
         <GridContainer>

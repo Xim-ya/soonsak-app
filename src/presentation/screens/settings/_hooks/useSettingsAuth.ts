@@ -95,7 +95,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     } catch {
       await showDialog({
         title: '오류',
-        description: '로그아웃 중 문제가 발생했습니다.',
+        description: '로그아웃 중 문제가 생겼어요',
         buttonText: '확인',
       });
     }
@@ -105,7 +105,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   const handleLogoutPress = useCallback(async () => {
     const result = await showConfirmDialog({
       title: '로그아웃',
-      description: '정말 로그아웃 하시겠습니까?',
+      description: '정말 로그아웃할까요?',
       leftButtonText: '취소',
       rightButtonText: '로그아웃',
     });
@@ -125,7 +125,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     } catch {
       await showDialog({
         title: '오류',
-        description: '회원탈퇴 처리 중 문제가 발생했습니다.',
+        description: '탈퇴하는 중 문제가 생겼어요',
         buttonText: '확인',
       });
     } finally {
@@ -137,7 +137,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   const handleWithdrawPress = useCallback(async () => {
     const result = await showConfirmDialog({
       title: '회원탈퇴',
-      description: '정말 탈퇴하시겠습니까?\n탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.',
+      description: '정말 탈퇴할까요?\n탈퇴하면 모든 데이터가 삭제되고 복구할 수 없어요',
       leftButtonText: '취소',
       rightButtonText: '탈퇴하기',
     });

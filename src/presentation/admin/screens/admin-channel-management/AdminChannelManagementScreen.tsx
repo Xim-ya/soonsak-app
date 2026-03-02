@@ -106,7 +106,7 @@ export default function AdminChannelManagementScreen() {
     if (isLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>등록된 채널이 없습니다</EmptyText>
+        <EmptyText>등록된 채널이 없어요</EmptyText>
       </EmptyContainer>
     );
   }, [isLoading]);

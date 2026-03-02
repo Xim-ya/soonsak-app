@@ -93,7 +93,7 @@ export default function AdminVideoManagementScreen() {
     if (isLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>비디오가 없습니다</EmptyText>
+        <EmptyText>비디오가 없어요</EmptyText>
       </EmptyContainer>
     );
   }, [isLoading]);

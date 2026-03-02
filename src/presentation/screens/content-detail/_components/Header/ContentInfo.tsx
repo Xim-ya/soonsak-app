@@ -206,6 +206,7 @@ const Container = styled.View({
 
 /** 태블릿에서 max-width 적용을 위한 래퍼 */
 const ContentWrapper = styled.View({
+  width: '100%',
   justifyContent: 'center',
   alignItems: 'center',
 });

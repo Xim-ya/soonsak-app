@@ -70,7 +70,7 @@ export function DarkedLinearShadow({
       style={{
         position: setPositionLayout ? 'absolute' : 'relative',
         top: align === LinearAlign.topBottom ? 0 : null,
-        bottom: align === LinearAlign.bottomTop ? 0 : null,
+        bottom: align === LinearAlign.bottomTop ? -1 : null, // 1px 틈 방지
         pointerEvents: 'none',
         left: 0,
         right: 0,

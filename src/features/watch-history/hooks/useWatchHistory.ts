@@ -220,7 +220,8 @@ export const useWatchHistoryPreview = (config?: { pageSize?: number; enabled?: b
   const { pageSize = 6, enabled = true } = config ?? {};
   const { user, status } = useAuth();
   const userId = user?.id ?? null;
-  const isGuest = status === 'unauthenticated';
+  // idle(초기 로딩), unauthenticated 모두 비로그인으로 처리하여 스켈레톤 비노출
+  const isGuest = status !== 'authenticated';
 
   const query = useInfiniteQuery({
     queryKey: [...watchHistoryKeys.uniqueList(userId), 'preview', pageSize],

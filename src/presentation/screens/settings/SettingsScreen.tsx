@@ -7,19 +7,18 @@
  * - 계정 관리 (로그아웃, 회원탈퇴)
  */
 
-import { ScrollView, ActivityIndicator } from 'react-native';
+import { ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import colors from '@/shared/styles/colors';
+import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { SettingsSection, SettingsItem, SettingsToggleItem } from './_components';
 import { AdminOnly } from '@/features/auth/guards';
 import { useSettingsAuth } from './_hooks';
-
-// TODO: react-native-device-info로 실제 버전 가져오기
-const APP_VERSION = '1.0.0';
+import { useAppVersionInfo } from '@/features/app-config';
 
 // 회원탈퇴 텍스트 색상 (연한 흰색)
 const WITHDRAW_TEXT_COLOR = colors.gray02;
@@ -38,8 +37,10 @@ export default function SettingsScreen() {
     navigateToAdmin,
   } = useSettingsAuth();
 
+  const { currentVersion, hasUpdate, openStore } = useAppVersionInfo();
+
   return (
-    <BasePage>
+    <BasePage safeAreaBottom={false}>
       <Container>
         <BackButtonAppBar title="설정" />
 
@@ -56,7 +57,17 @@ export default function SettingsScreen() {
               onValueChange={handleNotificationToggle}
             />
             <Divider />
-            <SettingsItem label={`현재 버전 ${APP_VERSION}`} showArrow={false} />
+            <SettingsItem
+              label={`현재 버전 ${currentVersion}`}
+              showArrow={false}
+              rightElement={
+                hasUpdate ? (
+                  <UpdateButton onPress={openStore} activeOpacity={0.7}>
+                    <UpdateButtonText>업데이트</UpdateButtonText>
+                  </UpdateButton>
+                ) : undefined
+              }
+            />
             <Divider />
             <SettingsItem label="피드백 및 문의사항" onPress={openFeedbackUrl} />
             <Divider />
@@ -100,6 +111,11 @@ export default function SettingsScreen() {
                 label="채널 관리"
                 onPress={() => navigateToAdmin(routePages.adminChannelManagement)}
               />
+              <Divider />
+              <SettingsItem
+                label="푸시 관리"
+                onPress={() => navigateToAdmin(routePages.adminPushManagement)}
+              />
             </SettingsSection>
           </AdminOnly>
         </ScrollView>
@@ -142,4 +158,16 @@ const LoadingOverlay = styled.View({
   backgroundColor: colors.overlay,
   justifyContent: 'center',
   alignItems: 'center',
+});
+
+const UpdateButton = styled(TouchableOpacity)({
+  backgroundColor: colors.primary,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 6,
+});
+
+const UpdateButtonText = styled.Text({
+  ...textStyles.alert1,
+  color: colors.white,
 });
