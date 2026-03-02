@@ -17,6 +17,7 @@ import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
 import { DialogProvider } from '@/presentation/components/dialog';
 import { isAppError } from '@/shared/errors';
 import { linkingConfig } from '@/features/push-notifications';
+import { useSyncAppBadge } from '@/features/notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { showGlobalSnackbar } from '@/shared/utils/snackbarRef';
 import { configureGoogleSignin } from '@/features/auth/api/authApi';
@@ -142,6 +143,15 @@ const navigationTheme = {
   },
 };
 
+/**
+ * 앱 아이콘 배지 동기화 컴포넌트
+ * AuthProvider, PushNotificationProvider 내부에서 배지 카운트를 동기화합니다.
+ */
+function AppBadgeSyncer() {
+  useSyncAppBadge();
+  return null;
+}
+
 // AppSize 초기화를 위한 내부 컴포넌트
 function AppContent({
   showUpdateDialog,
@@ -195,6 +205,7 @@ function AppContent({
       <StatusBar style="light" />
       <AuthProvider>
         <PushNotificationProvider>
+          <AppBadgeSyncer />
           <NavigationContainer ref={navigationRef} theme={navigationTheme} linking={linkingConfig}>
             <StackNavigator />
           </NavigationContainer>

@@ -3,7 +3,7 @@
  *
  * MY 탭 상단에 표시되는 헤더입니다.
  * - 좌측: "MY" 타이틀
- * - 우측: 로그인 시 설정 아이콘, 비로그인 시 로그인 버튼
+ * - 우측: 로그인 시 알림 아이콘 + 설정 아이콘, 비로그인 시 로그인 버튼 + 설정 아이콘
  */
 
 import { TouchableOpacity } from 'react-native';
@@ -11,6 +11,7 @@ import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
+import { NotificationBellButton } from '@/features/notifications/components/NotificationBellButton';
 import { useMyScreen } from '../_provider';
 import GearIcon from '@assets/icons/gear.svg';
 
@@ -28,6 +29,7 @@ function MyScreenHeader() {
             <LoginButtonText>로그인</LoginButtonText>
           </LoginButton>
         )}
+        <NotificationBellButton size={ICON_SIZE} />
         <TouchableOpacity onPress={handleSettingsPress} activeOpacity={0.7}>
           <GearIcon width={ICON_SIZE} height={ICON_SIZE} color={colors.white} />
         </TouchableOpacity>

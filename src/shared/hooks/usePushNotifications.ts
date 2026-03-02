@@ -138,14 +138,18 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
     // 초기화 함수
     const initialize = async () => {
-      // 시뮬레이터에서는 토큰 획득 스킵
-      if (isSimulator) return;
-
-      // 1. 권한 확인 및 요청
+      // 1. 권한 확인 및 요청 (시뮬레이터에서도 배지를 위해 필요)
       const granted = await requestPermissions();
       if (!granted || !mounted) return;
 
-      // 2. 토큰 획득
+      // 2. 토큰 획득 (시뮬레이터에서는 스킵)
+      if (isSimulator) {
+        if (__DEV__) {
+          console.log('[PushNotifications] 시뮬레이터: 권한 획득 완료, 토큰 스킵');
+        }
+        return;
+      }
+
       const token = await getExpoPushToken();
       if (mounted && token) {
         setExpoPushToken(token);

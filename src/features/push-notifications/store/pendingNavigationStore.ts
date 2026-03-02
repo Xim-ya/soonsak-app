@@ -6,10 +6,10 @@
  *
  * @see docs/push-notification-deep-link-spec.md (섹션 13)
  */
-import type { DeepLinkScreen } from '../types/notificationTypes';
+import type { AuthRequiredScreen } from '@/shared/navigation/config/routeRegistry';
 import type { RootStackParamList } from '@/shared/navigation/types';
 
-interface PendingNavigation<T extends DeepLinkScreen = DeepLinkScreen> {
+interface PendingNavigation<T extends AuthRequiredScreen = AuthRequiredScreen> {
   screen: T;
   params: RootStackParamList[T];
 }
@@ -22,7 +22,7 @@ export const pendingNavigationStore = {
    *
    * 비로그인 상태에서 인증 필요 화면 접근 시 호출
    */
-  set: <T extends DeepLinkScreen>(navigation: PendingNavigation<T>): void => {
+  set: <T extends AuthRequiredScreen>(navigation: PendingNavigation<T>): void => {
     pendingNavigation = navigation;
   },
 

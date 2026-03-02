@@ -32,19 +32,21 @@ export const pushTokenApi = {
    * 푸시 토큰 동기화 (upsert)
    *
    * 새 토큰을 서버에 등록하거나 기존 토큰을 업데이트합니다.
-   * 토큰이 변경된 경우에만 서버에 요청을 보냅니다.
+   * 같은 유저의 다른 모든 토큰은 비활성화합니다 (한 유저 = 한 활성 토큰).
    *
    * @param userId 사용자 ID
    * @param token Expo Push Token
    */
   syncToken: async (userId: string, token: string): Promise<void> => {
-    // 로컬 저장된 토큰과 비교
-    const storedToken = await AsyncStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
-
-    // 기존 토큰이 있고 다르면 비활성화
-    if (storedToken && storedToken !== token) {
-      await pushTokenApi.deactivateToken(userId, storedToken);
-    }
+    // 같은 유저의 다른 모든 토큰 비활성화 (한 유저는 하나의 활성 토큰만 가짐)
+    await supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
+      .update({
+        [PUSH_DATABASE.COLUMNS.IS_ACTIVE]: false,
+        [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
+      })
+      .eq(PUSH_DATABASE.COLUMNS.USER_ID, userId)
+      .neq(PUSH_DATABASE.COLUMNS.TOKEN, token);
 
     // 다른 user가 같은 토큰을 가지고 있으면 삭제 (기기는 한 user에만 연결)
     await supabaseClient
@@ -67,7 +69,7 @@ export const pushTokenApi = {
         [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
       },
       {
-        onConflict: 'user_id,token',
+        onConflict: 'token',
       },
     );
 
