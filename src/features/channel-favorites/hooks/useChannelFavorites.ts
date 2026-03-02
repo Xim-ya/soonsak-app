@@ -7,7 +7,10 @@ import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { channelFavoritesApi } from '../api/channelFavoritesApi';
 import type { ToggleChannelFavoriteParams } from '../types';
-import { ChannelFavoriteStatusModel } from '../types/channelFavoriteModel';
+import {
+  ChannelFavoriteStatusModel,
+  fromChannelFavoriteStatusDto,
+} from '../types/channelFavoriteModel';
 
 /** 캐시 시간 상수 */
 const FIVE_MINUTES = 5 * 60 * 1000;
@@ -57,7 +60,7 @@ export const useChannelFavoriteStatus = (
   return useQuery({
     queryKey: channelFavoriteKeys.status(userId, channelId),
     queryFn: () => channelFavoritesApi.getChannelFavoriteStatus(channelId),
-    select: ChannelFavoriteStatusModel.fromDto,
+    select: fromChannelFavoriteStatusDto,
     enabled: (options?.enabled ?? true) && !!userId,
     placeholderData: { isFavorited: false, favoriteId: null },
     staleTime: FIVE_MINUTES,

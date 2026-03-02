@@ -1,5 +1,5 @@
-import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
+import { getAuthUser } from '@/shared/api/authUtils';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { CurationVideoModel } from '@/features/content/types';
 import type {
@@ -16,18 +16,6 @@ const RPC_NAMES = {
   GET_PERSONALIZED_RECOMMENDATIONS: 'get_personalized_recommendations',
   GET_PERSONALIZED_CURATION_VIDEOS: 'get_personalized_curation_videos',
 } as const;
-
-/**
- * 인증된 사용자 정보 반환
- * @returns 미인증 시 null
- */
-async function getAuthUser(): Promise<User | null> {
-  const { data, error } = await supabaseClient.auth.getUser();
-  if (error) {
-    return null;
-  }
-  return data.user ?? null;
-}
 
 /**
  * RPC 응답 타입 정의

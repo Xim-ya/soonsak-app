@@ -29,6 +29,11 @@ interface VideoItemViewProps {
   contentTitle: string;
 }
 
+interface OtherChannelVideoListViewProps {
+  /** 콘텐츠 제목 (외부에서 전달, 없으면 내부 훅으로 조회) */
+  contentTitle?: string;
+}
+
 // 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
 function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
   const { data: channel } = useYouTubeChannel(item.channelId);
@@ -73,13 +78,18 @@ function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
   );
 }
 
-function OtherChannelVideoListView() {
+function OtherChannelVideoListView({
+  contentTitle: externalContentTitle,
+}: OtherChannelVideoListViewProps = {}) {
   const { videos, primaryVideo } = useContentVideos();
+
+  // 외부에서 contentTitle이 전달되지 않은 경우에만 route와 content detail 조회
+  const shouldFetchInternal = externalContentTitle === undefined;
   const { id, type } = useContentDetailRoute();
   const { data: contentDetail } = useContentDetail(Number(id), type);
 
-  // 콘텐츠 제목
-  const contentTitle = contentDetail?.title ?? '';
+  // 콘텐츠 제목: 외부 props 우선, 없으면 내부 훅에서 조회
+  const contentTitle = shouldFetchInternal ? (contentDetail?.title ?? '') : externalContentTitle;
 
   // primaryVideo를 제외한 나머지 비디오들을 Model로 변환
   // 정렬은 DB에서 처리됨 (includes_ending DESC, runtime DESC)

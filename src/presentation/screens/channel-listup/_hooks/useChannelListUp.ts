@@ -10,6 +10,7 @@ import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
 import { useFavoriteChannelIds } from '@/features/channel-favorites';
+import { sortByFavorites } from '@/shared/utils/sortByFavorites';
 import type { ChannelItemModel } from '@/presentation/screens/channel/_types';
 
 const PAGE_SIZE = 20;
@@ -59,22 +60,7 @@ export function useChannelListUp() {
   // 모든 페이지의 채널을 평탄화하고 찜한 채널을 앞으로 정렬
   const sortedChannels = useMemo(() => {
     const allChannels = data?.pages.flatMap((page) => page.channels) ?? [];
-    if (allChannels.length === 0) return [];
-    if (favoriteIds.length === 0) return allChannels;
-
-    const favoriteSet = new Set(favoriteIds);
-    const favorites: ChannelItemModel[] = [];
-    const others: ChannelItemModel[] = [];
-
-    allChannels.forEach((channel) => {
-      if (favoriteSet.has(channel.id)) {
-        favorites.push(channel);
-      } else {
-        others.push(channel);
-      }
-    });
-
-    return [...favorites, ...others];
+    return sortByFavorites(allChannels, favoriteIds, (ch) => ch.id);
   }, [data?.pages, favoriteIds]);
 
   return {

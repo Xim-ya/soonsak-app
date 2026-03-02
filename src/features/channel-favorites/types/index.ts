@@ -1,7 +1,4 @@
-/**
- * ISO 8601 형식의 타임스탬프 문자열 타입
- */
-type ISOTimestamp = string;
+import type { ISOTimestamp } from '@/shared/types/common/timestamp';
 
 /**
  * 채널 찜 DTO

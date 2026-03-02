@@ -8,12 +8,14 @@ export interface ChannelFavoriteStatusModel {
   readonly favoriteId: string | null;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-namespace
-export namespace ChannelFavoriteStatusModel {
-  export function fromDto(dto: ChannelFavoriteStatusResponse): ChannelFavoriteStatusModel {
-    return {
-      isFavorited: dto.isFavorited,
-      favoriteId: dto.favoriteId,
-    };
-  }
+/**
+ * DTO를 ChannelFavoriteStatusModel로 변환
+ */
+export function fromChannelFavoriteStatusDto(
+  dto: ChannelFavoriteStatusResponse,
+): ChannelFavoriteStatusModel {
+  return {
+    isFavorited: dto.isFavorited,
+    favoriteId: dto.favoriteId,
+  };
 }

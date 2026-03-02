@@ -18,13 +18,16 @@ const ONE_HOUR = 60 * 60 * 1000;
 /**
  * Query Key 팩토리
  * - userId를 포함하여 로그인 상태 변경 시 자동으로 새 캐시 사용
+ * - limit을 포함하여 다른 limit 값에 대해 별도 캐시 사용
  */
 export const recommendationKeys = {
   all: (userId: string | null) => ['recommendations', userId] as const,
-  genrePreferences: (userId: string | null) =>
-    [...recommendationKeys.all(userId), 'genrePreferences'] as const,
+  genrePreferences: (userId: string | null, limit: number) =>
+    [...recommendationKeys.all(userId), 'genrePreferences', limit] as const,
   personalized: (userId: string | null, contentType?: string) =>
     [...recommendationKeys.all(userId), 'personalized', contentType ?? 'all'] as const,
+  curationVideos: (userId: string | null, limit: number) =>
+    [...recommendationKeys.all(userId), 'curationVideos', limit] as const,
 };
 
 /**
@@ -39,7 +42,7 @@ export const useGenrePreferences = (
   const userId = user?.id ?? null;
 
   return useQuery({
-    queryKey: recommendationKeys.genrePreferences(userId),
+    queryKey: recommendationKeys.genrePreferences(userId, limit),
     queryFn: () => recommendationsApi.getGenrePreferences(limit),
     select: GenrePreferenceModel.fromDtoList,
     enabled: (options?.enabled ?? true) && !!userId,
@@ -131,7 +134,7 @@ export const usePersonalizedCurationVideos = (
   const userId = user?.id ?? null;
 
   return useQuery({
-    queryKey: [...recommendationKeys.all(userId), 'curationVideos'],
+    queryKey: recommendationKeys.curationVideos(userId, limit),
     queryFn: () => recommendationsApi.getPersonalizedCurationVideos(limit),
     enabled: (options?.enabled ?? true) && !!userId,
     placeholderData: [],

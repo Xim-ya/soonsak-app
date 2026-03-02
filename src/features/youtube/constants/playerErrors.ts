@@ -10,6 +10,8 @@ export const YOUTUBE_PLAYER_ERROR = {
   EMBED_NOT_ALLOWED: 5,
   /** 요청한 콘텐츠를 찾을 수 없음 (삭제 또는 비공개) */
   CONTENT_NOT_FOUND: 100,
+  /** 소유자가 임베드 재생을 제한함 (WNM 정책) */
+  OWNER_EMBED_RESTRICTED: 101,
   /** 채널 소유자가 임베드 재생을 제한함 */
   EMBEDDED_RESTRICTED: 150,
   /** 광고 로딩 실패 또는 임베드 검증 실패 (doubleclick.net 연결 거부 등) */
@@ -44,11 +46,11 @@ export const isEmbeddedRestrictedError = (error: { code: number; message: string
  * 제외: 150, 152, 153 (임베드 정책 문제로 fallback 처리)
  */
 export const isVideoNeedsReviewError = (errorCode: number): boolean => {
-  const needsReviewCodes = [
+  const needsReviewCodes: number[] = [
     YOUTUBE_PLAYER_ERROR.VIDEO_NOT_FOUND, // 2
     YOUTUBE_PLAYER_ERROR.EMBED_NOT_ALLOWED, // 5
     YOUTUBE_PLAYER_ERROR.CONTENT_NOT_FOUND, // 100
-    101, // 소유자 임베드 제한 (상수에 없음)
+    YOUTUBE_PLAYER_ERROR.OWNER_EMBED_RESTRICTED, // 101
   ];
   return needsReviewCodes.includes(errorCode);
 };

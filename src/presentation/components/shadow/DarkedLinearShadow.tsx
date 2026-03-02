@@ -35,7 +35,6 @@ export function DarkedLinearShadow({
     'rgba(0, 0, 0, 0)', // 아래: 연하게
   ] as const;
 
-  // TODO: 임시 빨간색 테스트
   const bottomTopColors = [
     'rgba(0, 0, 0, 0)', // 위: 연하게
     'rgba(0, 0, 0, 0.0086)',

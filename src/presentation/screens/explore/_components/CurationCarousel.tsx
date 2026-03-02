@@ -56,11 +56,13 @@ function CurationCarousel() {
     error: defaultError,
   } = useCurationVideos();
 
-  // 개인화 비디오가 있으면 사용, 없으면 기본 큐레이션 사용
-  const hasPersonalized = personalizedVideos && personalizedVideos.length > 0;
-  const videos = hasPersonalized ? personalizedVideos : defaultVideos;
-  const isLoading = hasPersonalized ? isPersonalizedLoading : isDefaultLoading;
-  const error = hasPersonalized ? personalizedError : defaultError;
+  // 개인화 로딩 중이거나 데이터가 있으면 개인화 브랜치 사용
+  // 로딩 중에도 개인화 상태를 유지하여 로딩 UI를 올바르게 표시
+  const isUsingPersonalized =
+    isPersonalizedLoading || (personalizedVideos && personalizedVideos.length > 0);
+  const videos = isUsingPersonalized ? personalizedVideos ?? [] : defaultVideos;
+  const isLoading = isUsingPersonalized ? isPersonalizedLoading : isDefaultLoading;
+  const error = isUsingPersonalized ? personalizedError : defaultError;
 
   const handleVideoPress = useCallback(
     (video: CurationVideoModel) => {

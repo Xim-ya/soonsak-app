@@ -9,6 +9,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
 import { useFavoriteChannelIds } from '@/features/channel-favorites';
+import { sortByFavorites } from '@/shared/utils/sortByFavorites';
 import type { ChannelItemModel } from '../_types';
 
 const STALE_TIME = 10 * 60 * 1000; // 10분
@@ -40,24 +41,10 @@ export function useChannelList(): UseChannelListReturn {
   });
 
   // 찜한 채널을 앞으로 정렬
-  const sortedChannels = useMemo(() => {
-    if (!data) return [];
-    if (favoriteIds.length === 0) return data;
-
-    const favoriteSet = new Set(favoriteIds);
-    const favorites: ChannelItemModel[] = [];
-    const others: ChannelItemModel[] = [];
-
-    data.forEach((channel) => {
-      if (favoriteSet.has(channel.id)) {
-        favorites.push(channel);
-      } else {
-        others.push(channel);
-      }
-    });
-
-    return [...favorites, ...others];
-  }, [data, favoriteIds]);
+  const sortedChannels = useMemo(
+    () => sortByFavorites(data ?? [], favoriteIds, (ch) => ch.id),
+    [data, favoriteIds],
+  );
 
   return {
     channels: sortedChannels,

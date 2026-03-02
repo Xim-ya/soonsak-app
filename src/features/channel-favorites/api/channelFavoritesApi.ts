@@ -1,5 +1,5 @@
-import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
+import { getAuthUser, requireAuth } from '@/shared/api/authUtils';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import type {
   ChannelFavoriteDto,
@@ -8,30 +8,6 @@ import type {
 } from '../types';
 
 const TABLE_NAME = 'channel_favorites';
-
-/**
- * 인증된 사용자 정보 반환
- * @returns 미인증 시 null
- */
-async function getAuthUser(): Promise<User | null> {
-  const { data, error } = await supabaseClient.auth.getUser();
-  if (error) {
-    return null;
-  }
-  return data.user ?? null;
-}
-
-/**
- * 인증된 사용자 정보 반환
- * @throws 미인증 시 에러
- */
-async function requireAuth(): Promise<User> {
-  const user = await getAuthUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-  return user;
-}
 
 /**
  * 채널 찜하기 API
@@ -91,9 +67,12 @@ export const channelFavoritesApi = {
           .eq('channel_id', params.channelId)
           .single();
 
+        // race condition으로 다른 요청이 삭제했을 수 있음
         if (existing.data) {
           return mapWithField<ChannelFavoriteDto>(existing.data);
         }
+        // 데이터가 없으면 재시도 (삭제 후 다시 추가된 경우)
+        throw new Error('채널 찜 상태가 변경되었습니다. 다시 시도해주세요.');
       }
       console.error('채널 찜 추가 실패:', error);
       throw new Error(`Failed to add channel favorite: ${error.message}`);
