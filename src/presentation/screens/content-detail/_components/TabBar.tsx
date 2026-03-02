@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
