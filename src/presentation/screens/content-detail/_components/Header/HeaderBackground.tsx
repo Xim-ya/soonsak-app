@@ -21,7 +21,12 @@ import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { AppSize } from '@/shared/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
-import { useYouTubeVideo, buildYouTubeUrl, usePlayVideo, useSyncVideoMetrics } from '@/features/youtube';
+import {
+  useYouTubeVideo,
+  buildYouTubeUrl,
+  usePlayVideo,
+  useSyncVideoMetrics,
+} from '@/features/youtube';
 import { useContentDetailRoute } from '../../_hooks/useContentDetailRoute';
 import {
   shouldShowProgressBar,

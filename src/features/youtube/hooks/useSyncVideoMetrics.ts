@@ -38,11 +38,26 @@ interface SyncResult {
 }
 
 /**
+ * 현재 KST 날짜를 YYYY-MM-DD 형식으로 반환
+ */
+function getKstDateString(): string {
+  const now = new Date();
+  // KST = UTC + 9시간
+  const kstOffset = 9 * 60 * 60 * 1000;
+  const kstDate = new Date(now.getTime() + kstOffset);
+  return kstDate.toISOString().split('T')[0];
+}
+
+/**
  * YouTube 비디오 지표를 DB에 동기화
  */
-export function useSyncVideoMetrics({ videoId, viewCount, likeCount }: SyncVideoMetricsParams): void {
-  // 동일한 videoId로 중복 호출 방지
-  const syncedVideoIdRef = useRef<string | null>(null);
+export function useSyncVideoMetrics({
+  videoId,
+  viewCount,
+  likeCount,
+}: SyncVideoMetricsParams): void {
+  // 동일한 videoId + 날짜 조합으로 중복 호출 방지 (예: "abc123:2024-01-15")
+  const syncedKeyRef = useRef<string | null>(null);
 
   useEffect(() => {
     // 필수 데이터가 없으면 스킵
@@ -50,8 +65,11 @@ export function useSyncVideoMetrics({ videoId, viewCount, likeCount }: SyncVideo
       return;
     }
 
-    // 이미 동기화한 비디오면 스킵
-    if (syncedVideoIdRef.current === videoId) {
+    // 오늘 날짜 기준 dedupe 키 생성
+    const todayKey = `${videoId}:${getKstDateString()}`;
+
+    // 같은 날 이미 동기화한 비디오면 스킵
+    if (syncedKeyRef.current === todayKey) {
       return;
     }
 
@@ -80,8 +98,8 @@ export function useSyncVideoMetrics({ videoId, viewCount, likeCount }: SyncVideo
           console.log('[useSyncVideoMetrics] 업데이트 스킵:', result.reason);
         }
 
-        // 동기화 완료 표시
-        syncedVideoIdRef.current = videoId;
+        // 동기화 완료 표시 (날짜 포함 키)
+        syncedKeyRef.current = todayKey;
       } catch (error) {
         console.error('[useSyncVideoMetrics] 동기화 실패:', error);
       }

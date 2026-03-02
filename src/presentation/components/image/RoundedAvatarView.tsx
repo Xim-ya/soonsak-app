@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/native';
 import { Animated } from 'react-native';
 import colors from '@/shared/styles/colors';
@@ -11,9 +11,13 @@ interface RoundedAvatorViewProps {
 
 /**
  * 아바타 크기에 맞는 로고 아이콘 사이즈 계산
+ * size가 작을 경우 아이콘이 컨테이너를 넘지 않도록 제한
  */
 function calculateLogoSize(size: number): { width: number; height: number } {
-  const iconWidth = Math.max(16, Math.min(size * 0.5, 32));
+  // 아이콘 너비: 최소 16, 최대 32, 기본 size의 50%
+  // 단, size보다 크지 않도록 제한 (작은 아바타에서 오버플로우 방지)
+  const baseWidth = Math.max(16, Math.min(size * 0.5, 32));
+  const iconWidth = Math.min(size * 0.8, baseWidth); // 컨테이너의 80% 이하로 제한
   const iconHeight = iconWidth * 0.67; // logo_placeholder.svg 비율 (200:134)
   return { width: iconWidth, height: iconHeight };
 }
@@ -22,6 +26,13 @@ function RoundedAvatorView({ source, size }: RoundedAvatorViewProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
+
+  // source가 변경되면 상태 리셋 (에러 상태에서 새 URL로 재시도 가능하도록)
+  useEffect(() => {
+    setIsLoading(true);
+    setHasError(false);
+    fadeAnim.setValue(0);
+  }, [source, fadeAnim]);
 
   // source가 유효한 URL인지 확인
   const hasValidSource = source && source.trim() !== '';
