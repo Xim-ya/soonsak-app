@@ -99,6 +99,29 @@ function normalizePageSize(limit: number): number {
   return Math.min(Math.max(limit, MIN_PAGE_SIZE), MAX_PAGE_SIZE);
 }
 
+/** 커서 구분자 */
+const CURSOR_DELIMITER = '|';
+
+/**
+ * 복합 커서 생성 (created_at|id)
+ * @description 동일 타임스탬프 레코드 누락 방지
+ */
+function createCompositeCursor(createdAt: string, id: string): string {
+  return `${createdAt}${CURSOR_DELIMITER}${id}`;
+}
+
+/**
+ * 복합 커서 파싱
+ * @returns [createdAt, id] 또는 null (유효하지 않은 커서)
+ */
+function parseCompositeCursor(cursor: string): [string, string] | null {
+  const parts = cursor.split(CURSOR_DELIMITER);
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return null;
+  }
+  return [parts[0], parts[1]];
+}
+
 /** DB 응답 아이템 타입 (Supabase 응답 구조) */
 interface NotificationReceiptRow {
   id: string;
@@ -182,11 +205,24 @@ export const notificationApi = {
       )
       .eq('user_id', userId)
       .eq('push_token_id', pushTokenId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: false }); // 동일 타임스탬프 레코드 순서 보장
 
-    // 커서 기반 페이지네이션
+    // 복합 커서 기반 페이지네이션 (created_at|id)
+    // 동일 타임스탬프 레코드 누락 방지
     if (cursor) {
-      query = query.lt('created_at', cursor);
+      const parsedCursor = parseCompositeCursor(cursor);
+      if (parsedCursor) {
+        const [cursorCreatedAt, cursorId] = parsedCursor;
+        // (created_at, id) < (cursor_created_at, cursor_id) 조건
+        // Supabase에서 or 조건으로 구현
+        query = query.or(
+          `created_at.lt.${cursorCreatedAt},and(created_at.eq.${cursorCreatedAt},id.lt.${cursorId})`,
+        );
+      } else {
+        // 레거시 커서 호환성 (created_at만 있는 경우)
+        query = query.lt('created_at', cursor);
+      }
     }
 
     // +1로 다음 페이지 존재 여부 확인
@@ -203,9 +239,10 @@ export const notificationApi = {
     const hasMore = notificationsData.length > normalizedLimit;
     const notifications = notificationsData.slice(0, normalizedLimit);
 
-    // nextCursor 계산 (Readability - 명확한 의도)
+    // 복합 커서 생성 (created_at|id)
     const lastItem = notifications[notifications.length - 1];
-    const nextCursor = hasMore && lastItem ? lastItem.created_at : null;
+    const nextCursor =
+      hasMore && lastItem ? createCompositeCursor(lastItem.created_at, lastItem.id) : null;
 
     return {
       notifications: notifications.map(mapToNotificationItem),

@@ -225,6 +225,9 @@ export const useMarkNotificationAsRead = () => {
  *
  * 낙관적 업데이트로 즉시 읽음 처리하고, 전체 리페치를 피합니다.
  * (리페치 시 RefreshControl이 표시되는 문제 방지)
+ *
+ * @description
+ * prefix 기반 캐시 매칭으로 모든 pageSize 캐시를 업데이트합니다.
  */
 export const useMarkNotificationAsClicked = () => {
   const queryClient = useQueryClient();
@@ -238,37 +241,47 @@ export const useMarkNotificationAsClicked = () => {
       return notificationApi.markAsClicked(notificationId, userId);
     },
     onMutate: async (notificationId: string) => {
+      const listKeyPrefix = notificationKeys.list(userId, expoPushToken);
+
       // 진행 중인 쿼리 취소 (낙관적 업데이트와 충돌 방지)
       await queryClient.cancelQueries({
-        queryKey: notificationKeys.list(userId, expoPushToken),
+        queryKey: listKeyPrefix,
       });
 
-      // 이전 데이터 스냅샷 저장
-      const listQueryKey = [...notificationKeys.list(userId, expoPushToken), DEFAULT_PAGE_SIZE];
-      const previousData = queryClient.getQueryData(listQueryKey);
-
-      // 낙관적 업데이트: 해당 알림의 readAt 즉시 업데이트
-      queryClient.setQueryData<NotificationInfiniteData>(listQueryKey, (oldData) => {
-        if (!oldData?.pages) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
-            ...page,
-            notifications: page.notifications.map((notification) =>
-              notification.notificationId === notificationId
-                ? { ...notification, readAt: new Date().toISOString() }
-                : notification,
-            ),
-          })),
-        };
+      // prefix 기반으로 모든 list 캐시의 스냅샷 저장
+      const allListCaches = queryClient.getQueriesData<NotificationInfiniteData>({
+        queryKey: listKeyPrefix,
       });
 
-      return { previousData, listQueryKey };
+      // 낙관적 업데이트: 모든 캐시에서 해당 알림의 readAt 즉시 업데이트
+      const now = new Date().toISOString();
+      allListCaches.forEach(([queryKey]) => {
+        queryClient.setQueryData<NotificationInfiniteData>(queryKey, (oldData) => {
+          if (!oldData?.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              notifications: page.notifications.map((notification) =>
+                notification.notificationId === notificationId
+                  ? { ...notification, readAt: now }
+                  : notification,
+              ),
+            })),
+          };
+        });
+      });
+
+      return { previousCaches: allListCaches };
     },
     onError: (_error, _notificationId, context) => {
-      // 에러 시 이전 데이터로 롤백
-      if (context?.previousData && context?.listQueryKey) {
-        queryClient.setQueryData(context.listQueryKey, context.previousData);
+      // 에러 시 모든 캐시를 이전 데이터로 롤백
+      if (context?.previousCaches) {
+        context.previousCaches.forEach(([queryKey, data]) => {
+          if (data) {
+            queryClient.setQueryData(queryKey, data);
+          }
+        });
       }
     },
     onSettled: () => {
@@ -284,6 +297,9 @@ export const useMarkNotificationAsClicked = () => {
  * 모든 알림 읽음 처리 Mutation Hook
  *
  * 낙관적 업데이트로 모든 알림을 즉시 읽음 처리합니다.
+ *
+ * @description
+ * prefix 기반 캐시 매칭으로 모든 pageSize 캐시를 업데이트합니다.
  */
 export const useMarkAllNotificationsAsRead = () => {
   const queryClient = useQueryClient();
@@ -297,37 +313,46 @@ export const useMarkAllNotificationsAsRead = () => {
       return notificationApi.markAllAsRead(userId);
     },
     onMutate: async () => {
+      const listKeyPrefix = notificationKeys.list(userId, expoPushToken);
+
       // 진행 중인 쿼리 취소
       await queryClient.cancelQueries({
-        queryKey: notificationKeys.list(userId, expoPushToken),
+        queryKey: listKeyPrefix,
       });
 
-      // 이전 데이터 스냅샷 저장
-      const listQueryKey = [...notificationKeys.list(userId, expoPushToken), DEFAULT_PAGE_SIZE];
-      const previousData = queryClient.getQueryData(listQueryKey);
+      // prefix 기반으로 모든 list 캐시의 스냅샷 저장
+      const allListCaches = queryClient.getQueriesData<NotificationInfiniteData>({
+        queryKey: listKeyPrefix,
+      });
 
-      // 낙관적 업데이트: 모든 알림의 readAt 즉시 업데이트
+      // 낙관적 업데이트: 모든 캐시에서 모든 알림의 readAt 즉시 업데이트
       const now = new Date().toISOString();
-      queryClient.setQueryData<NotificationInfiniteData>(listQueryKey, (oldData) => {
-        if (!oldData?.pages) return oldData;
-        return {
-          ...oldData,
-          pages: oldData.pages.map((page) => ({
-            ...page,
-            notifications: page.notifications.map((notification) => ({
-              ...notification,
-              readAt: notification.readAt ?? now,
+      allListCaches.forEach(([queryKey]) => {
+        queryClient.setQueryData<NotificationInfiniteData>(queryKey, (oldData) => {
+          if (!oldData?.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page) => ({
+              ...page,
+              notifications: page.notifications.map((notification) => ({
+                ...notification,
+                readAt: notification.readAt ?? now,
+              })),
             })),
-          })),
-        };
+          };
+        });
       });
 
-      return { previousData, listQueryKey };
+      return { previousCaches: allListCaches };
     },
     onError: (_error, _variables, context) => {
-      // 에러 시 이전 데이터로 롤백
-      if (context?.previousData && context?.listQueryKey) {
-        queryClient.setQueryData(context.listQueryKey, context.previousData);
+      // 에러 시 모든 캐시를 이전 데이터로 롤백
+      if (context?.previousCaches) {
+        context.previousCaches.forEach(([queryKey, data]) => {
+          if (data) {
+            queryClient.setQueryData(queryKey, data);
+          }
+        });
       }
     },
     onSettled: () => {
