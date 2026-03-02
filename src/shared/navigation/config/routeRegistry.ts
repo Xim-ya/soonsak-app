@@ -56,6 +56,7 @@ export const DEEP_LINK_SCREENS = [
   routePages.settings,
   routePages.userContentList,
   routePages.adminContentRegistration,
+  routePages.reviewFunnel,
 ] as const;
 
 export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
@@ -71,6 +72,7 @@ export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
  */
 export const AUTH_REQUIRED_SCREENS = [
   routePages.userContentList,
+  routePages.reviewFunnel,
   routePages.notificationList,
 ] as const;
 
@@ -163,6 +165,12 @@ export const deepLinkConfig = {
     routePages.adminContentRegistration,
     'admin/content-registration',
   ),
+
+  /**
+   * 리뷰 퍼널 (편지 + 리뷰 유도)
+   * @example quickExplore://review-funnel
+   */
+  [routePages.reviewFunnel]: defineDeepLink(routePages.reviewFunnel, 'review-funnel'),
 } satisfies Record<DeepLinkScreen, DeepLinkScreenConfig<DeepLinkScreen>>;
 
 /* ========================================
