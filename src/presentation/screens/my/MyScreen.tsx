@@ -24,7 +24,7 @@ import {
   MonthYearPickerBottomSheet,
 } from './_components';
 
-const SCROLL_BOTTOM_PADDING = AppSize.ratioHeight(40);
+const SCROLL_BOTTOM_PADDING = AppSize.ratioHeight(120);
 
 export default function MyScreen() {
   return (
@@ -50,7 +50,7 @@ function MyScreenContent() {
   } = useMyScreen();
 
   return (
-    <BasePage touchableWithoutFeedback={false}>
+    <BasePage touchableWithoutFeedback={false} safeAreaBottom={false}>
       <Container>
         <MyScreenHeader />
         <ScrollView

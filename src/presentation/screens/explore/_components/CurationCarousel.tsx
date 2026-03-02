@@ -1,7 +1,8 @@
 /**
  * CurationCarousel - 큐레이션 캐러셀 컴포넌트
  *
- * 랜덤으로 선정된 콘텐츠의 대표 비디오를 가로 스크롤로 보여줍니다.
+ * 로그인 사용자: 개인화 추천 콘텐츠의 대표 비디오
+ * 비로그인 사용자: 랜덤 큐레이션 비디오
  * 터치 시 콘텐츠 상세 페이지로 이동합니다.
  *
  * @example
@@ -17,6 +18,7 @@ import colors from '@/shared/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { usePersonalizedCurationVideos } from '@/features/recommendations';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
 import {
   CurationVideoItem,
@@ -39,7 +41,28 @@ ItemSeparator.displayName = 'CurationItemSeparator';
 
 function CurationCarousel() {
   const navigation = useNavigation<NavigationProp>();
-  const { videos, isLoading, error } = useCurationVideos();
+
+  // 개인화 추천 비디오 (로그인 시 사용)
+  const {
+    data: personalizedVideos,
+    isLoading: isPersonalizedLoading,
+    error: personalizedError,
+  } = usePersonalizedCurationVideos(10);
+
+  // 기본 큐레이션 비디오 (개인화 데이터 없을 때 폴백)
+  const {
+    videos: defaultVideos,
+    isLoading: isDefaultLoading,
+    error: defaultError,
+  } = useCurationVideos();
+
+  // 개인화 로딩 중이거나 데이터가 있으면 개인화 브랜치 사용
+  // 로딩 중에도 개인화 상태를 유지하여 로딩 UI를 올바르게 표시
+  const isUsingPersonalized =
+    isPersonalizedLoading || (personalizedVideos && personalizedVideos.length > 0);
+  const videos = isUsingPersonalized ? (personalizedVideos ?? []) : defaultVideos;
+  const isLoading = isUsingPersonalized ? isPersonalizedLoading : isDefaultLoading;
+  const error = isUsingPersonalized ? personalizedError : defaultError;
 
   const handleVideoPress = useCallback(
     (video: CurationVideoModel) => {
@@ -133,11 +156,13 @@ const LoadingContainer = styled.View({
  * MetaInfo: alert2 (fontSize 13, lineHeight 16), marginTop 2
  * INFO_SECTION_HEIGHT = 44 + 2 + 16 = 62px
  *
- * 스켈레톤 바 높이는 fontSize 기준으로 설정
+ * 스켈레톤 바는 lineHeight 내에서 텍스트 baseline에 맞추기 위해
+ * marginTop을 추가하여 아래로 내림 (총 높이는 유지)
  */
 const TITLE_SKELETON_HEIGHT = 15; // body2 fontSize
 const TITLE_LINE_HEIGHT = 22; // body2 lineHeight
-const META_SKELETON_HEIGHT = 16; // alert2 lineHeight (전체 높이 맞춤)
+const TITLE_TOP_OFFSET = 4; // baseline 정렬을 위한 상단 오프셋
+const META_SKELETON_HEIGHT = 13; // alert2 fontSize
 const META_MARGIN_TOP = 2; // MetaInfo marginTop
 
 /** 썸네일 스켈레톤 */
@@ -154,22 +179,24 @@ const InfoSkeletonContainer = styled.View({
   height: INFO_SECTION_HEIGHT,
 });
 
-/** 타이틀 스켈레톤 첫 번째 줄 - lineHeight 22 중 fontSize 15 영역 */
+/** 타이틀 스켈레톤 첫 번째 줄 */
 const TitleSkeletonLine1 = styled.View({
   width: THUMBNAIL_WIDTH * 0.9,
   height: TITLE_SKELETON_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 4,
-  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT, // 22 - 15 = 7
+  marginTop: TITLE_TOP_OFFSET, // 첫 줄 baseline 정렬
+  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT - TITLE_TOP_OFFSET, // 22 - 15 - 4 = 3
 });
 
-/** 타이틀 스켈레톤 두 번째 줄 - lineHeight 22 맞춤 */
+/** 타이틀 스켈레톤 두 번째 줄 */
 const TitleSkeletonLine2 = styled.View({
   width: THUMBNAIL_WIDTH * 0.6,
   height: TITLE_SKELETON_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 4,
-  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT, // 22 - 15 = 7
+  marginTop: 2,
+  marginBottom: TITLE_LINE_HEIGHT - TITLE_SKELETON_HEIGHT - 2, // 22 - 15 - 2 = 5
 });
 
 /** 메타 스켈레톤 (제목 아래) */
@@ -178,7 +205,7 @@ const MetaSkeleton = styled.View({
   height: META_SKELETON_HEIGHT,
   backgroundColor: colors.gray05,
   borderRadius: 4,
-  marginTop: META_MARGIN_TOP, // 2
+  marginTop: META_MARGIN_TOP + TITLE_TOP_OFFSET - 1, // 2 + 4 - 1 = 5 (baseline 정렬)
 });
 
 /** 스켈레톤 아이템 컨테이너 */

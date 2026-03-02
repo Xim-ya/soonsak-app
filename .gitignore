@@ -145,3 +145,4 @@ vendor/bundle/
 
 # Sentry
 .sentryclirc
+google-services.json

@@ -45,6 +45,16 @@ interface ProfileSetupContextType {
   readonly isButtonEnabled: boolean;
   /** 버튼 상태 */
   readonly buttonState: ButtonState;
+  /** 권한 다이얼로그 표시 여부 */
+  readonly isPermissionDialogVisible: boolean;
+  /** 권한 다이얼로그 닫기 */
+  readonly closePermissionDialog: () => void;
+  /** 설정 페이지로 이동 */
+  readonly openSettings: () => void;
+  /** 설정 열기 실패 다이얼로그 표시 여부 */
+  readonly isSettingsErrorDialogVisible: boolean;
+  /** 설정 열기 실패 다이얼로그 닫기 */
+  readonly closeSettingsErrorDialog: () => void;
 }
 
 const ProfileSetupContext = createContext<ProfileSetupContextType | undefined>(undefined);
@@ -71,6 +81,11 @@ export function ProfileSetupProvider({
     isChanged,
     handlePickImage,
     handleSubmit,
+    isPermissionDialogVisible,
+    closePermissionDialog,
+    openSettings,
+    isSettingsErrorDialogVisible,
+    closeSettingsErrorDialog,
   } = useProfileSetup({ mode });
 
   // 모드별 UI 텍스트
@@ -103,6 +118,11 @@ export function ProfileSetupProvider({
       showBackButton,
       isButtonEnabled,
       buttonState,
+      isPermissionDialogVisible,
+      closePermissionDialog,
+      openSettings,
+      isSettingsErrorDialogVisible,
+      closeSettingsErrorDialog,
     }),
     [
       nickname,
@@ -119,6 +139,11 @@ export function ProfileSetupProvider({
       showBackButton,
       isButtonEnabled,
       buttonState,
+      isPermissionDialogVisible,
+      closePermissionDialog,
+      openSettings,
+      isSettingsErrorDialogVisible,
+      closeSettingsErrorDialog,
     ],
   );
 

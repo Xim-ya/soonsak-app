@@ -57,7 +57,7 @@ function PrimaryButtonComponent({ title, onPress, state = 'enabled' }: PrimaryBu
 
   // 버튼 배경색 계산
   const backgroundColor = useMemo(() => {
-    if (isEnabled) return colors.green;
+    if (isEnabled) return colors.primary;
     return colors.gray04;
   }, [isEnabled]);
 

@@ -52,7 +52,7 @@ function MediaListScreenComponent() {
       <SafeAreaView edges={['top']} style={safeAreaStyle}>
         <BackButtonAppBar title="스틸컷" />
 
-        <ScrollView>
+        <ScrollView showsVerticalScrollIndicator={false}>
           {/* 상단 대형 이미지 */}
           {heroImage && (
             <HeroContainer>

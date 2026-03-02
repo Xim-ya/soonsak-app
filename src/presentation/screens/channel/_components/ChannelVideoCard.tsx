@@ -103,8 +103,8 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
             height={thumbnailHeight}
             borderRadius={0}
           />
-          {/* 하단 그라데이션 오버레이 */}
-          <DarkedLinearShadow height={thumbnailHeight} align={LinearAlign.bottomTop} />
+          {/* 하단 그라데이션 오버레이 (썸네일의 1/3 높이) */}
+          <DarkedLinearShadow height={thumbnailHeight / 3} align={LinearAlign.bottomTop} />
           {/* 하단 오버레이: 콘텐츠 제목(좌) <-> 런타임(우) */}
           <OverlayRow>
             <ContentTitle numberOfLines={1}>{video.contentTitle}</ContentTitle>

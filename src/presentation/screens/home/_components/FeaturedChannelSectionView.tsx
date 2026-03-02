@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
+import { FlatList, TouchableOpacity, ListRenderItemInfo, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
@@ -9,6 +9,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 import { useFeaturedChannels } from '../_hooks/useFeaturedChannels';
 import { FeaturedChannelModel } from '../_types/featuredChannelModel.home';
 import {
@@ -22,6 +23,8 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 // 여러 곳에서 재사용되는 상수만 추출
 const AVATAR_SIZE = 88;
 const ITEM_SEPARATOR = 12;
+const SECTION_HORIZONTAL_PADDING = 16;
+const LIST_HORIZONTAL_PADDING = 18; // 원형 아바타 정렬을 위해 2px 추가
 
 type _ListItem = FeaturedChannelModel | SkeletonModel;
 
@@ -44,7 +47,13 @@ const ChannelItem = React.memo(({ channel }: { channel: FeaturedChannelModel }) 
 
   return (
     <ItemContainer>
-      <ItemTouchable onPress={handlePress} activeOpacity={0.8}>
+      <ItemTouchable
+        onPress={handlePress}
+        activeOpacity={0.8}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={`${channel.name} 채널로 이동`}
+      >
         <ChannelLogoImage source={channel.logoUrl} size={AVATAR_SIZE} />
         <Gap size={10} />
         <ChannelNameText numberOfLines={1}>{channel.name}</ChannelNameText>
@@ -81,14 +90,20 @@ const getItemLayout = (_: unknown, index: number) => ({
   index,
 });
 
-const listContentStyle = { paddingHorizontal: 18 };
+const listContentStyle = { paddingHorizontal: LIST_HORIZONTAL_PADDING };
 
 /**
  * 대표 채널 섹션
  * Flutter: _ChannelSlider 위젯 참고
  */
 function FeaturedChannelSectionView() {
+  const navigation = useNavigation<NavigationProp>();
   const { data: channels, isLoading, isError } = useFeaturedChannels();
+
+  // 전체 채널 목록으로 이동
+  const handleTitlePress = useCallback(() => {
+    navigation.navigate(routePages.channelAll);
+  }, [navigation]);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<_ListItem>) =>
@@ -113,7 +128,18 @@ function FeaturedChannelSectionView() {
 
   return (
     <Container>
-      <SectionTitle>놓치지 말아야 할 리뷰 채널</SectionTitle>
+      <Pressable
+        onPress={handleTitlePress}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel="전체 채널 목록 보기"
+        accessibilityHint="모든 채널 목록 페이지로 이동합니다"
+      >
+        <TitleRow>
+          <SectionTitle>놓치지 말아야 할 리뷰 채널</SectionTitle>
+          <RightArrowIcon width={20} height={20} />
+        </TitleRow>
+      </Pressable>
       <Gap size={12} />
       <ListContainer>
         <FlatList
@@ -140,10 +166,16 @@ const Container = styled.View({
   marginTop: 40,
 });
 
+const TitleRow = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingHorizontal: SECTION_HORIZONTAL_PADDING,
+});
+
 const SectionTitle = styled.Text({
   ...textStyles.title2,
   color: colors.white,
-  paddingHorizontal: 16,
 });
 
 const ListContainer = styled.View({

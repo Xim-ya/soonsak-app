@@ -13,9 +13,9 @@
 
 import React from 'react';
 import styled from '@emotion/native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import textStyles from '@/shared/styles/textStyles';
 import colors from '@/shared/styles/colors';
-import { AppSize } from '@/shared/utils/appSize';
 
 interface FilterFooterProps {
   /** 초기화 버튼 콜백 */
@@ -25,8 +25,10 @@ interface FilterFooterProps {
 }
 
 function FilterFooter({ onReset, onApply }: FilterFooterProps): React.ReactElement {
+  const insets = useSafeAreaInsets();
+
   return (
-    <Container>
+    <Container bottomInset={insets.bottom}>
       <Divider />
       <ButtonRow>
         <ResetButton onPress={onReset} activeOpacity={0.7}>
@@ -43,10 +45,10 @@ function FilterFooter({ onReset, onApply }: FilterFooterProps): React.ReactEleme
 
 /* Styled Components */
 
-const Container = styled.View({
-  paddingBottom: AppSize.bottomInset + 8,
+const Container = styled.View<{ bottomInset: number }>(({ bottomInset }) => ({
+  paddingBottom: Math.max(bottomInset, 8) + 8,
   backgroundColor: colors.gray06,
-});
+}));
 
 const Divider = styled.View({
   height: 1,

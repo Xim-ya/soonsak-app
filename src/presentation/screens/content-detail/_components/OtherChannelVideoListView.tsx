@@ -19,11 +19,23 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
+import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
+import { useContentDetail } from '../_hooks/useContentDetail';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
+interface VideoItemViewProps {
+  item: OtherChannelVideoModel;
+  contentTitle: string;
+}
+
+interface OtherChannelVideoListViewProps {
+  /** 콘텐츠 제목 (외부에서 전달, 없으면 내부 훅으로 조회) */
+  contentTitle?: string;
+}
+
 // 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
-function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
+function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
   const { data: channel } = useYouTubeChannel(item.channelId);
   const navigation = useNavigation<NavigationProp>();
 
@@ -32,11 +44,11 @@ function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
 
     navigation.navigate(routePages.player, {
       videoId: item.id,
-      title: item.title,
+      title: contentTitle || item.title,
       contentId: item.contentId,
       contentType: item.contentType,
     });
-  }, [navigation, item]);
+  }, [navigation, item, contentTitle]);
 
   return (
     <VideoItemContainer>
@@ -66,8 +78,20 @@ function VideoItemView({ item }: { item: OtherChannelVideoModel }) {
   );
 }
 
-function OtherChannelVideoListView() {
+function OtherChannelVideoListView({
+  contentTitle: externalContentTitle,
+}: OtherChannelVideoListViewProps = {}) {
   const { videos, primaryVideo } = useContentVideos();
+
+  // 외부에서 contentTitle이 전달되지 않은 경우에만 route와 content detail 조회
+  const shouldFetchInternal = externalContentTitle === undefined;
+  const { id, type } = useContentDetailRoute();
+  const { data: contentDetail } = useContentDetail(Number(id), type, {
+    enabled: shouldFetchInternal,
+  });
+
+  // 콘텐츠 제목: 외부 props 우선, 없으면 내부 훅에서 조회
+  const contentTitle = shouldFetchInternal ? (contentDetail?.title ?? '') : externalContentTitle;
 
   // primaryVideo를 제외한 나머지 비디오들을 Model로 변환
   // 정렬은 DB에서 처리됨 (includes_ending DESC, runtime DESC)
@@ -86,12 +110,12 @@ function OtherChannelVideoListView() {
 
   return (
     <Container>
-      <SectionTitle>다른 채널 영상</SectionTitle>
+      <SectionTitle>다른 영상</SectionTitle>
       <Gap size={10} />
       <VideoListView
         horizontal
         data={otherVideos}
-        renderItem={({ item }) => <VideoItemView item={item} />}
+        renderItem={({ item }) => <VideoItemView item={item} contentTitle={contentTitle} />}
         keyExtractor={(item) => item.id}
         ItemSeparatorComponent={() => <Gap size={12} />}
         showsHorizontalScrollIndicator={false}

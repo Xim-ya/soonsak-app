@@ -7,7 +7,7 @@
  * useExplore 훅을 통해 필터 상태에 접근합니다.
  */
 
-import { useCallback } from 'react';
+import { useCallback, useState, useRef, useLayoutEffect } from 'react';
 import { ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,9 +17,8 @@ import Animated, {
   useAnimatedReaction,
   interpolate,
   Extrapolation,
-  SharedValue,
 } from 'react-native-reanimated';
-import { TabBarProps, useCurrentTabScrollY } from 'react-native-collapsible-tab-view';
+import { TabBarProps, useCurrentTabScrollY, useFocusedTab } from 'react-native-collapsible-tab-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
@@ -34,35 +33,19 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 /** 개별 탭 버튼 Props */
 interface ExploreTabButtonProps<T extends string> {
   readonly name: T;
-  readonly index: number;
-  readonly indexDecimal: SharedValue<number>;
+  readonly isActive: boolean;
   readonly onTabPress: (name: T) => void;
 }
 
-/** 개별 탭 버튼 컴포넌트 - Hooks 규칙 준수를 위해 분리 */
+/** 개별 탭 버튼 컴포넌트 */
 const ExploreTabButton = <T extends string>({
   name,
-  index,
-  indexDecimal,
+  isActive,
   onTabPress,
 }: ExploreTabButtonProps<T>) => {
   const tabConfig = EXPLORE_SORT_TABS.find((tab) => tab.key === name);
   const label = tabConfig?.label ?? name;
   const isDisabled = tabConfig?.isDisabled ?? false;
-
-  const textStyle = useAnimatedStyle(() => {
-    const isActive = Math.round(indexDecimal.value) === index;
-    return {
-      color: isDisabled ? colors.gray04 : isActive ? colors.white : colors.gray02,
-    };
-  });
-
-  const indicatorStyle = useAnimatedStyle(() => {
-    const isActive = Math.round(indexDecimal.value) === index;
-    return {
-      opacity: isActive && !isDisabled ? 1 : 0,
-    };
-  });
 
   return (
     <TabButton
@@ -73,8 +56,10 @@ const ExploreTabButton = <T extends string>({
       }}
       activeOpacity={isDisabled ? 1 : 0.7}
     >
-      <AnimatedTabText style={textStyle}>{label}</AnimatedTabText>
-      <AnimatedIndicator style={indicatorStyle} />
+      <TabButtonText isActive={isActive} isDisabled={isDisabled}>
+        {label}
+      </TabButtonText>
+      <TabIndicator isActive={isActive && !isDisabled} />
     </TabButton>
   );
 };
@@ -111,6 +96,30 @@ const ExploreTabBar = <T extends string>({
   onTabPress,
 }: ExploreTabBarProps<T>) => {
   const navigation = useNavigation<NavigationProp>();
+
+  // 라이브러리에서 현재 포커스된 탭 가져오기
+  const focusedTab = useFocusedTab();
+
+  // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
+  // lazy initializer로 초기값 설정
+  const [activeTab, setActiveTab] = useState<T>(() => (focusedTab as T) || tabNames[0]!);
+
+  // focusedTab 변경 시 동기화 (레이아웃 전에 실행)
+  useLayoutEffect(() => {
+    if (focusedTab && focusedTab !== activeTab) {
+      setActiveTab(focusedTab as T);
+    }
+  }, [focusedTab]);
+
+  const handleTabPress = useCallback(
+    (name: T) => {
+      setActiveTab(name);
+      onTabPress(name);
+    },
+    [onTabPress],
+  );
+
+  const getIsActive = (name: T) => activeTab === name;
 
   // Context에서 필터 상태 및 액션 가져오기
   const {
@@ -161,13 +170,12 @@ const ExploreTabBar = <T extends string>({
       <TabBarSection>
         <TabBarContent>
           <TabsWrapper>
-            {tabNames.map((name, index) => (
+            {tabNames.map((name) => (
               <ExploreTabButton
                 key={name}
                 name={name}
-                index={index}
-                indexDecimal={indexDecimal}
-                onTabPress={onTabPress}
+                isActive={getIsActive(name)}
+                onTabPress={handleTabPress}
               />
             ))}
           </TabsWrapper>
@@ -255,18 +263,22 @@ const TabButton = styled.TouchableOpacity({
   justifyContent: 'center',
 });
 
-const AnimatedTabText = styled(Animated.Text)({
-  ...textStyles.title2,
-});
+const TabButtonText = styled.Text<{ isActive: boolean; isDisabled: boolean }>(
+  ({ isActive, isDisabled }) => ({
+    ...textStyles.title2,
+    color: isDisabled ? colors.gray04 : isActive ? colors.white : colors.gray02,
+  }),
+);
 
-const AnimatedIndicator = styled(Animated.View)({
+const TabIndicator = styled.View<{ isActive: boolean }>(({ isActive }) => ({
   position: 'absolute',
   bottom: 0,
   left: 0,
   right: 0,
   height: 2,
   backgroundColor: colors.white,
-});
+  opacity: isActive ? 1 : 0,
+}));
 
 const FilterBarSection = styled.View({
   paddingTop: 10,

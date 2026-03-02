@@ -58,6 +58,15 @@ export const pushTokenApi = {
     // device_id 조회 (없으면 생성)
     const deviceId = await getOrCreateDeviceId();
 
+    // SECURITY DEFINER 함수를 사용하여 토큰 동기화
+    // - 다른 유저의 동일 토큰 삭제 (RLS 우회)
+    // - 현재 유저의 토큰 upsert
+    const { error } = await supabaseClient.rpc('sync_push_token', {
+      p_user_id: userId,
+      p_token: token,
+      p_platform: Platform.OS,
+      p_device_id: deviceId,
+    });
     // 토큰 등록 (upsert) - 항상 실행하여 DB 동기화 보장
     const { error } = await supabaseClient.from(PUSH_DATABASE.TABLES.PUSH_TOKENS).upsert(
       {

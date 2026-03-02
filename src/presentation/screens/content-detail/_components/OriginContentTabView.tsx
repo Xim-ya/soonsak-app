@@ -74,6 +74,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
       <Tabs.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+        showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
           <GridContainer>
@@ -102,6 +103,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
       <Tabs.ScrollView
         style={{ flex: 1 }}
         contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+        showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
           <EmptyContainer>
@@ -117,6 +119,7 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
     <Tabs.ScrollView
       style={{ flex: 1 }}
       contentContainerStyle={isLargeScreen ? tabletScrollContentStyle : undefined}
+      showsVerticalScrollIndicator={false}
     >
       <View style={tabletContentStyle}>
         <GridContainer>

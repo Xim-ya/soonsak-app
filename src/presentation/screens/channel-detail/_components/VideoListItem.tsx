@@ -15,6 +15,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
+import DarkChip from '@/presentation/components/chip/DarkChip';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -64,9 +65,9 @@ function VideoListItemComponent({ video }: VideoListItemProps) {
           borderRadius={8}
         />
         {runtimeText && (
-          <RuntimeBadge>
-            <RuntimeText>{runtimeText}</RuntimeText>
-          </RuntimeBadge>
+          <RuntimeChipWrapper>
+            <DarkChip content={runtimeText} />
+          </RuntimeChipWrapper>
         )}
       </ThumbnailWrapper>
       <Gap size={12} />
@@ -96,20 +97,10 @@ const ThumbnailWrapper = styled.View({
   overflow: 'hidden',
 });
 
-const RuntimeBadge = styled.View({
+const RuntimeChipWrapper = styled.View({
   position: 'absolute',
   bottom: 6,
   right: 6,
-  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-  borderRadius: 4,
-  paddingHorizontal: 6,
-  paddingVertical: 2,
-});
-
-const RuntimeText = styled.Text({
-  ...textStyles.alert2,
-  color: colors.white,
-  fontSize: 11,
 });
 
 const InfoContainer = styled.View({

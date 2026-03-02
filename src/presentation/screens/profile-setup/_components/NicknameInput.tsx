@@ -31,7 +31,6 @@ function NicknameInput({ autoFocus = true }: NicknameInputProps): React.ReactEle
   const { nickname, setNickname, error } = useProfileSetupContext();
 
   const hasError = error !== null && error.length > 0;
-  const isValid = !hasError && nickname.length >= NICKNAME_RULES.MIN_LENGTH;
 
   // 힌트 메시지
   const hintMessage = `${NICKNAME_RULES.MIN_LENGTH}~${NICKNAME_RULES.MAX_LENGTH}자, 한글/영문/숫자/_/- 사용 가능`;
@@ -43,7 +42,7 @@ function NicknameInput({ autoFocus = true }: NicknameInputProps): React.ReactEle
   return (
     <Container>
       {/* 입력 필드 */}
-      <InputContainer hasError={hasError} isValid={isValid}>
+      <InputContainer hasError={hasError}>
         <StyledTextInput
           ref={inputRef}
           value={nickname}
@@ -73,24 +72,24 @@ const Container = styled.View({
   width: '100%',
 });
 
-const InputContainer = styled.View<{ hasError: boolean; isValid: boolean }>(
-  ({ hasError, isValid }) => ({
-    flexDirection: 'row',
-    alignItems: 'center',
-    height: INPUT_HEIGHT,
-    backgroundColor: colors.gray05,
-    borderRadius: INPUT_BORDER_RADIUS,
-    borderWidth: 1,
-    borderColor: hasError ? colors.red : isValid ? colors.green : colors.gray04,
-    paddingHorizontal: INPUT_PADDING_HORIZONTAL,
-  }),
-);
+const InputContainer = styled.View<{ hasError: boolean }>(({ hasError }) => ({
+  flexDirection: 'row',
+  alignItems: 'center',
+  height: INPUT_HEIGHT,
+  backgroundColor: colors.gray05,
+  borderRadius: INPUT_BORDER_RADIUS,
+  borderWidth: 1,
+  borderColor: hasError ? colors.red : colors.gray04,
+  paddingHorizontal: INPUT_PADDING_HORIZONTAL,
+}));
 
 const StyledTextInput = styled(TextInput)({
   flex: 1,
   ...textStyles.body1,
+  lineHeight: undefined,
   color: colors.white,
   paddingVertical: 0,
+  textAlignVertical: 'center',
 });
 
 const MessageContainer = styled.View({
