@@ -32,35 +32,27 @@ export const pushTokenApi = {
    * 푸시 토큰 동기화 (upsert)
    *
    * 새 토큰을 서버에 등록하거나 기존 토큰을 업데이트합니다.
-   * 토큰이 변경된 경우에만 서버에 요청을 보냅니다.
+   * 같은 유저의 다른 모든 토큰은 비활성화합니다 (한 유저 = 한 활성 토큰).
    *
    * @param userId 사용자 ID
    * @param token Expo Push Token
    */
   syncToken: async (userId: string, token: string): Promise<void> => {
-    // 로컬 저장된 토큰과 비교
-    const storedToken = await AsyncStorage.getItem(PUSH_TOKEN_STORAGE_KEY);
-
-    // 기존 토큰이 있고 다르면 비활성화
-    if (storedToken && storedToken !== token) {
-      await pushTokenApi.deactivateToken(userId, storedToken);
-    }
-
     // device_id 조회 (없으면 생성)
     const deviceId = await getOrCreateDeviceId();
 
     // SECURITY DEFINER 함수를 사용하여 토큰 동기화
     // - 다른 유저의 동일 토큰 삭제 (RLS 우회)
     // - 현재 유저의 토큰 upsert
-    const { error } = await supabaseClient.rpc('sync_push_token', {
+    const { error: rpcError } = await supabaseClient.rpc('sync_push_token', {
       p_user_id: userId,
       p_token: token,
       p_platform: Platform.OS,
       p_device_id: deviceId,
     });
 
-    if (error) {
-      throw error;
+    if (rpcError) {
+      throw new Error(`Failed to sync push token via RPC: ${rpcError.message}`);
     }
 
     // 로컬에 토큰 저장

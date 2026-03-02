@@ -165,7 +165,7 @@ const StatusText = styled.Text({
 });
 
 const ClickBadge = styled.View({
-  backgroundColor: colors.primary,
+  backgroundColor: colors.red,
   paddingHorizontal: 6,
   paddingVertical: 2,
   borderRadius: 4,

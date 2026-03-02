@@ -14,6 +14,7 @@ export const routePages = {
   userContentList: 'UserContentList',
   watchHistory: 'WatchHistory',
   quickExplore: 'QuickExplore',
+  notificationList: 'NotificationList',
   adminContentSearch: 'AdminContentSearch',
   adminPrimaryVideoSelect: 'AdminPrimaryVideoSelect',
   adminVideoManagement: 'AdminVideoManagement',

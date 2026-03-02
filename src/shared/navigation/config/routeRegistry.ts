@@ -70,7 +70,11 @@ export type DeepLinkScreen = (typeof DEEP_LINK_SCREENS)[number];
  *
  * 새 인증 필요 화면 추가 시 이 배열에 추가하세요.
  */
-export const AUTH_REQUIRED_SCREENS = [routePages.userContentList, routePages.reviewFunnel] as const;
+export const AUTH_REQUIRED_SCREENS = [
+  routePages.userContentList,
+  routePages.reviewFunnel,
+  routePages.notificationList,
+] as const;
 
 export type AuthRequiredScreen = (typeof AUTH_REQUIRED_SCREENS)[number];
 

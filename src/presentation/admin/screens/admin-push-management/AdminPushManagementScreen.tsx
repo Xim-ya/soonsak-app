@@ -197,7 +197,7 @@ export default function AdminPushManagementScreen() {
   const isLoading = activeTab === 'receipts' ? isReceiptsLoading : isTemplatesLoading;
 
   return (
-    <BasePage useSafeArea={false}>
+    <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
       {/* 헤더 */}
       <HeaderContainer paddingTop={insets.top}>
         <BackButton onPress={handleGoBack} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
