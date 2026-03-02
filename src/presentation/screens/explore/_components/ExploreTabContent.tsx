@@ -9,12 +9,19 @@
  * 반응형 그리드:
  * - 고정 카드 너비(MIN_CARD_WIDTH) 기준으로 열 수 자동 계산
  * - 폰: 2열 / 패블릿: 3열 / 태블릿: 4열+
+ *
+ * Lazy 데이터 로딩:
+ * - Tabs.Lazy 대신 내부에서 lazy 로딩 처리 (Android 스크롤 동기화 이슈 해결)
+ * - 탭이 포커스될 때까지 데이터 로딩을 지연
+ * - Tabs.FlatList는 항상 마운트되어 스크롤 동기화 보장
+ *
+ * @see https://github.com/PedroBern/react-native-collapsible-tab-view/issues/354
  */
 
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react';
 import { ActivityIndicator, ListRenderItem, Platform, useWindowDimensions } from 'react-native';
 import styled from '@emotion/native';
-import { Tabs } from 'react-native-collapsible-tab-view';
+import { Tabs, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
@@ -53,6 +60,8 @@ const CONTENT_CONTAINER_STYLE = {
 interface ExploreTabContentProps {
   /** 정렬 타입 */
   readonly sortType: ExploreSortType;
+  /** 탭 이름 - Tabs.Tab의 name과 동일해야 함 (lazy 로딩용) */
+  readonly tabName: string;
 }
 
 interface SkeletonCardProps {
@@ -102,8 +111,8 @@ const SkeletonGrid = React.memo(function SkeletonGrid({
   cardWidth,
   cardHeight,
 }: SkeletonGridProps) {
-  // 2행 * columnCount개의 스켈레톤 표시
-  const skeletonCount = columnCount * 2;
+  // 4행 * columnCount개의 스켈레톤 표시
+  const skeletonCount = columnCount * 4;
 
   return (
     <SkeletonContainer>
@@ -122,12 +131,41 @@ const SkeletonGrid = React.memo(function SkeletonGrid({
 
 const ExploreTabContent = React.memo(function ExploreTabContent({
   sortType,
+  tabName,
 }: ExploreTabContentProps): React.ReactElement {
   // Context에서 필터 상태와 콘텐츠 클릭 핸들러 가져오기
   const { filter, handleContentPress } = useExplore();
 
+  // Lazy 로딩: 탭이 포커스되기 전까지 데이터 로딩 지연
+  const focusedTab = useFocusedTab();
+  const [hasBeenFocused, setHasBeenFocused] = useState(focusedTab === tabName);
+  const isMounted = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // 탭이 포커스되면 데이터 로딩 활성화 (한 번 활성화되면 유지)
+  useEffect(() => {
+    if (focusedTab !== tabName || hasBeenFocused) {
+      return;
+    }
+
+    // 약간의 지연을 두어 탭 전환 애니메이션 완료 후 로딩 시작
+    const timer = setTimeout(() => {
+      if (isMounted.current) {
+        setHasBeenFocused(true);
+      }
+    }, 50);
+
+    return () => clearTimeout(timer);
+  }, [focusedTab, tabName, hasBeenFocused]);
+
+  // hasBeenFocused가 false면 데이터 로딩을 건너뜀
   const { contents, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useExploreContents(sortType, filter);
+    useExploreContents(sortType, filter, { enabled: hasBeenFocused });
 
   // 반응형 화면 너비 (화면 크기 변경 시 자동 업데이트)
   const { width: windowWidth } = useWindowDimensions();
@@ -202,13 +240,24 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
   );
 
   const renderListEmpty = useCallback(() => {
+    // 아직 포커스되지 않은 탭: circular loading (탭 전환 대기)
+    if (!hasBeenFocused) {
+      return (
+        <LoadingContainer>
+          <ActivityIndicator color={colors.gray02} />
+        </LoadingContainer>
+      );
+    }
+
+    // 포커스된 탭에서 데이터 로딩 중: 스켈레톤
     if (isLoading) {
       return (
         <SkeletonGrid columnCount={columnCount} cardWidth={cardWidth} cardHeight={cardHeight} />
       );
     }
+
     return <EmptyState />;
-  }, [isLoading, columnCount, cardWidth, cardHeight]);
+  }, [hasBeenFocused, isLoading, columnCount, cardWidth, cardHeight]);
 
   // contents 존재 여부에 따라 columnWrapperStyle 적용
   const hasContents = dataWithPlaceholders.length > 0;
@@ -259,6 +308,13 @@ const SkeletonItemWrapper = styled.View<ItemWrapperProps>(({ cardWidth, isLastIn
   width: cardWidth,
   marginRight: isLastInRow ? 0 : GRID_GAP,
 }));
+
+const LoadingContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  paddingVertical: 60,
+});
 
 const EmptyContainer = styled.View({
   justifyContent: 'center',

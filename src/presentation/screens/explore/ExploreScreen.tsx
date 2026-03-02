@@ -80,22 +80,15 @@ function ExploreContent({ initialTab }: ExploreContentProps) {
           snapThreshold={null}
           allowHeaderOverscroll={true}
           pagerProps={PAGER_PROPS}
-          lazy
         >
           <Tabs.Tab name="all" label="전체">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="all" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="all" tabName="all" />
           </Tabs.Tab>
           <Tabs.Tab name="latest" label="최신">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="latest" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="latest" tabName="latest" />
           </Tabs.Tab>
           <Tabs.Tab name="popular" label="인기">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="popular" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="popular" tabName="popular" />
           </Tabs.Tab>
         </Tabs.Container>
       </TabsContainer>

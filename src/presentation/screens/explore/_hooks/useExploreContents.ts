@@ -60,10 +60,17 @@ function serializeFilter(filter: ContentFilter): string {
   });
 }
 
+interface UseExploreContentsOptions {
+  /** 쿼리 활성화 여부 (lazy 로딩용) */
+  enabled?: boolean;
+}
+
 export function useExploreContents(
   sortType: ExploreSortType,
   filter: ContentFilter,
+  options?: UseExploreContentsOptions,
 ): UseExploreContentsReturn {
+  const { enabled = true } = options ?? {};
   const filterKey = serializeFilter(filter);
 
   // 세션 시드 (앱 재시작 시마다 새로 생성, 'all' 정렬에서 사용)
@@ -85,6 +92,7 @@ export function useExploreContents(
       return lastPage.hasMore ? allPages.length : undefined;
     },
     staleTime: 5 * 60 * 1000,
+    enabled,
   });
 
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, refetch } =
