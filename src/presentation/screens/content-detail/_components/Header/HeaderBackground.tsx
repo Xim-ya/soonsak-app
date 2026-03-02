@@ -21,7 +21,7 @@ import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { AppSize } from '@/shared/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
-import { useYouTubeVideo, buildYouTubeUrl, usePlayVideo } from '@/features/youtube';
+import { useYouTubeVideo, buildYouTubeUrl, usePlayVideo, useSyncVideoMetrics } from '@/features/youtube';
 import { useContentDetailRoute } from '../../_hooks/useContentDetailRoute';
 import {
   shouldShowProgressBar,
@@ -57,6 +57,13 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   // YouTube 데이터 가져오기 - primaryVideo가 있을 때만 요청
   const youtubeUrl = primaryVideo ? buildYouTubeUrl(primaryVideo.id) : null;
   const { data: videoInfo, isLoading: youtubeLoading } = useYouTubeVideo(youtubeUrl ?? '');
+
+  // YouTube 지표를 DB에 동기화 (오늘 갱신 안 됐으면)
+  useSyncVideoMetrics({
+    videoId: primaryVideo?.id,
+    viewCount: videoInfo?.metrics.viewCount,
+    likeCount: videoInfo?.metrics.likeCount,
+  });
 
   // TMDB 배경 이미지 페이드인 애니메이션
   const tmdbOpacity = useRef(new RNAnimated.Value(0)).current;
