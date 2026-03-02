@@ -60,7 +60,7 @@ function CurationCarousel() {
   // 로딩 중에도 개인화 상태를 유지하여 로딩 UI를 올바르게 표시
   const isUsingPersonalized =
     isPersonalizedLoading || (personalizedVideos && personalizedVideos.length > 0);
-  const videos = isUsingPersonalized ? personalizedVideos ?? [] : defaultVideos;
+  const videos = isUsingPersonalized ? (personalizedVideos ?? []) : defaultVideos;
   const isLoading = isUsingPersonalized ? isPersonalizedLoading : isDefaultLoading;
   const error = isUsingPersonalized ? personalizedError : defaultError;
 

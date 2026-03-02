@@ -86,7 +86,9 @@ function OtherChannelVideoListView({
   // 외부에서 contentTitle이 전달되지 않은 경우에만 route와 content detail 조회
   const shouldFetchInternal = externalContentTitle === undefined;
   const { id, type } = useContentDetailRoute();
-  const { data: contentDetail } = useContentDetail(Number(id), type);
+  const { data: contentDetail } = useContentDetail(Number(id), type, {
+    enabled: shouldFetchInternal,
+  });
 
   // 콘텐츠 제목: 외부 props 우선, 없으면 내부 훅에서 조회
   const contentTitle = shouldFetchInternal ? (contentDetail?.title ?? '') : externalContentTitle;

@@ -24,8 +24,13 @@ export const recommendationKeys = {
   all: (userId: string | null) => ['recommendations', userId] as const,
   genrePreferences: (userId: string | null, limit: number) =>
     [...recommendationKeys.all(userId), 'genrePreferences', limit] as const,
-  personalized: (userId: string | null, contentType?: string) =>
-    [...recommendationKeys.all(userId), 'personalized', contentType ?? 'all'] as const,
+  personalized: (userId: string | null, contentType?: string, pageSize?: number) =>
+    [
+      ...recommendationKeys.all(userId),
+      'personalized',
+      contentType ?? 'all',
+      pageSize ?? 20,
+    ] as const,
   curationVideos: (userId: string | null, limit: number) =>
     [...recommendationKeys.all(userId), 'curationVideos', limit] as const,
 };
@@ -65,7 +70,7 @@ export const usePersonalizedRecommendations = (
   const userId = user?.id ?? null;
 
   return useInfiniteQuery({
-    queryKey: recommendationKeys.personalized(userId, contentType),
+    queryKey: recommendationKeys.personalized(userId, contentType, pageSize),
     queryFn: ({ pageParam = 0 }) =>
       recommendationsApi.getPersonalizedRecommendations(
         pageSize,
