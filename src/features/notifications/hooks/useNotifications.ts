@@ -14,12 +14,24 @@ import {
   useQueryClient,
   useInfiniteQuery,
   UseQueryResult,
+  InfiniteData,
 } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { usePushNotification } from '@/shared/providers/PushNotificationProvider';
 import { notificationApi } from '../api/notificationApi';
 import { notificationKeys } from './notificationQueryKeys';
-import type { NotificationItem, UnreadNotificationCount } from '../types/notificationListTypes';
+import type {
+  NotificationItem,
+  NotificationListResult,
+  UnreadNotificationCount,
+} from '../types/notificationListTypes';
+
+// ============================================================================
+// Internal Types
+// ============================================================================
+
+/** 알림 목록 무한 스크롤 데이터 타입 */
+type NotificationInfiniteData = InfiniteData<NotificationListResult, string | null>;
 
 // ============================================================================
 // Constants
@@ -226,24 +238,20 @@ export const useMarkNotificationAsClicked = () => {
       const previousData = queryClient.getQueryData(listQueryKey);
 
       // 낙관적 업데이트: 해당 알림의 readAt 즉시 업데이트
-      queryClient.setQueryData(
-        listQueryKey,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (oldData: any) => {
-          if (!oldData?.pages) return oldData;
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: { notifications: NotificationItem[] }) => ({
-              ...page,
-              notifications: page.notifications.map((notification: NotificationItem) =>
-                notification.notificationId === notificationId
-                  ? { ...notification, readAt: new Date().toISOString() }
-                  : notification,
-              ),
-            })),
-          };
-        },
-      );
+      queryClient.setQueryData<NotificationInfiniteData>(listQueryKey, (oldData) => {
+        if (!oldData?.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            notifications: page.notifications.map((notification) =>
+              notification.notificationId === notificationId
+                ? { ...notification, readAt: new Date().toISOString() }
+                : notification,
+            ),
+          })),
+        };
+      });
 
       return { previousData, listQueryKey };
     },
@@ -285,23 +293,19 @@ export const useMarkAllNotificationsAsRead = () => {
 
       // 낙관적 업데이트: 모든 알림의 readAt 즉시 업데이트
       const now = new Date().toISOString();
-      queryClient.setQueryData(
-        listQueryKey,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (oldData: any) => {
-          if (!oldData?.pages) return oldData;
-          return {
-            ...oldData,
-            pages: oldData.pages.map((page: { notifications: NotificationItem[] }) => ({
-              ...page,
-              notifications: page.notifications.map((notification: NotificationItem) => ({
-                ...notification,
-                readAt: notification.readAt ?? now,
-              })),
+      queryClient.setQueryData<NotificationInfiniteData>(listQueryKey, (oldData) => {
+        if (!oldData?.pages) return oldData;
+        return {
+          ...oldData,
+          pages: oldData.pages.map((page) => ({
+            ...page,
+            notifications: page.notifications.map((notification) => ({
+              ...notification,
+              readAt: notification.readAt ?? now,
             })),
-          };
-        },
-      );
+          })),
+        };
+      });
 
       return { previousData, listQueryKey };
     },

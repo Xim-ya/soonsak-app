@@ -19,11 +19,15 @@
  * const { notification } = usePushNotification();
  */
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
+import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import { useAuth } from './AuthProvider';
+
+/** 시뮬레이터 여부 확인 */
+const isSimulator = !Device.isDevice;
 
 /** 푸시 데이터에서 notificationId 추출 */
 function extractNotificationId(data: unknown): string | null {
@@ -128,6 +132,9 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     // AuthProvider 초기화 대기
     if (status === 'idle') return;
 
+    // 시뮬레이터에서는 NativeEventEmitter 에러 방지를 위해 스킵
+    if (isSimulator) return;
+
     const handleInitialNotification = async () => {
       const response = await Notifications.getLastNotificationResponseAsync();
       if (response && navigationRef.isReady()) {
@@ -185,6 +192,9 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // 앱이 실행 중일 때 푸시 알림 탭 처리
   // ref 패턴으로 최신 상태 참조 (구독 재등록 방지)
   useEffect(() => {
+    // 시뮬레이터에서는 NativeEventEmitter 에러 방지를 위해 스킵
+    if (isSimulator) return;
+
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       if (!navigationRef.isReady()) {
         if (__DEV__) {

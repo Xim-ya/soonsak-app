@@ -11,7 +11,7 @@
  * - 규칙 8.2: 매직 넘버 상수로 분리
  */
 
-import { useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -36,49 +36,58 @@ interface NotificationBellButtonProps {
   size?: number;
 }
 
-function NotificationBellButton({
-  color = colors.white,
-  size = DEFAULT_ICON_SIZE,
-}: NotificationBellButtonProps) {
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-  const { status } = useAuth();
-  const isAuthenticated = status === 'authenticated';
+/**
+ * 알림 벨 버튼 컴포넌트
+ * React.memo 적용 - props 변경 시에만 리렌더링
+ */
+const NotificationBellButton = React.memo(
+  function NotificationBellButton({
+    color = colors.white,
+    size = DEFAULT_ICON_SIZE,
+  }: NotificationBellButtonProps) {
+    const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+    const { status } = useAuth();
+    const isAuthenticated = status === 'authenticated';
 
-  const { data: unreadData } = useUnreadNotificationCount({
-    enabled: isAuthenticated,
-  });
+    const { data: unreadData } = useUnreadNotificationCount({
+      enabled: isAuthenticated,
+    });
 
-  // 규칙 5.1: 단순한 계산은 일반 변수로 처리 (useMemo 불필요)
-  const unreadCount = unreadData?.count ?? 0;
-  const hasUnread = unreadCount > 0;
-  const displayCount =
-    unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount.toString();
+    // 규칙 5.1: 단순한 계산은 일반 변수로 처리 (useMemo 불필요)
+    const unreadCount = unreadData?.count ?? 0;
+    const hasUnread = unreadCount > 0;
+    const displayCount =
+      unreadCount > MAX_BADGE_COUNT ? `${MAX_BADGE_COUNT}+` : unreadCount.toString();
 
-  // 뱃지 크기를 아이콘 크기에 비례하여 계산
-  const badgeSize = Math.round(size * BADGE_RATIO);
-  const badgeFontSize = Math.round(badgeSize * 0.6);
+    // 뱃지 크기를 아이콘 크기에 비례하여 계산
+    const badgeSize = Math.round(size * BADGE_RATIO);
+    const badgeFontSize = Math.round(badgeSize * 0.6);
 
-  // 규칙 5.2: useCallback으로 핸들러 메모이제이션
-  const handlePress = useCallback(() => {
-    navigation.navigate(routePages.notificationList);
-  }, [navigation]);
+    // 규칙 5.2: useCallback으로 핸들러 메모이제이션
+    const handlePress = useCallback(() => {
+      navigation.navigate(routePages.notificationList);
+    }, [navigation]);
 
-  // 비로그인 사용자에게는 표시하지 않음 (조건부 렌더링은 hooks 호출 후에)
-  if (!isAuthenticated) {
-    return null;
-  }
+    // 비로그인 사용자에게는 표시하지 않음 (조건부 렌더링은 hooks 호출 후에)
+    if (!isAuthenticated) {
+      return null;
+    }
 
-  return (
-    <Container onPress={handlePress} hitSlop={HIT_SLOP} accessibilityLabel="알림">
-      <BellIcon width={size} height={size} color={color} />
-      {hasUnread && (
-        <Badge size={badgeSize}>
-          <BadgeText fontSize={badgeFontSize}>{displayCount}</BadgeText>
-        </Badge>
-      )}
-    </Container>
-  );
-}
+    return (
+      <Container onPress={handlePress} hitSlop={HIT_SLOP} accessibilityLabel="알림">
+        <BellIcon width={size} height={size} color={color} />
+        {hasUnread && (
+          <Badge size={badgeSize}>
+            <BadgeText fontSize={badgeFontSize}>{displayCount}</BadgeText>
+          </Badge>
+        )}
+      </Container>
+    );
+  },
+  (prevProps, nextProps) => {
+    return prevProps.color === nextProps.color && prevProps.size === nextProps.size;
+  },
+);
 
 export { NotificationBellButton };
 

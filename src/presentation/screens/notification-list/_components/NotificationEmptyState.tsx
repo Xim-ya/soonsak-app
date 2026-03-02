@@ -21,7 +21,11 @@ const bellEmptySvg = `
 </svg>
 `;
 
-function NotificationEmptyState() {
+/**
+ * 알림 빈 상태 컴포넌트
+ * React.memo 적용 - props 없는 정적 컴포넌트로 불필요한 리렌더링 방지
+ */
+const NotificationEmptyState = React.memo(function NotificationEmptyState() {
   return (
     <Container>
       <SvgXml xml={bellEmptySvg} width={ICON_SIZE} height={ICON_SIZE} />
@@ -31,7 +35,7 @@ function NotificationEmptyState() {
       <Description>새로운 알림이 오면 여기에 표시됩니다</Description>
     </Container>
   );
-}
+});
 
 export { NotificationEmptyState };
 

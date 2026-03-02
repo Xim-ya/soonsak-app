@@ -22,18 +22,21 @@ import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 
-// 전역 알림 핸들러 설정 (Foreground 알림 표시 방식)
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
-
 /** 시뮬레이터 여부 확인 */
 const isSimulator = !Device.isDevice;
+
+// 전역 알림 핸들러 설정 (Foreground 알림 표시 방식)
+// 시뮬레이터에서는 NativeEventEmitter 초기화 에러 방지를 위해 스킵
+if (!isSimulator) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 /** 푸시 알림 훅 반환 타입 */
 export interface UsePushNotificationsResult {
@@ -162,14 +165,17 @@ export function usePushNotifications(): UsePushNotificationsResult {
     initialize();
 
     // Foreground 알림 수신 리스너 (알림 표시용)
-    notificationListener.current = Notifications.addNotificationReceivedListener((notif) => {
-      if (mounted) {
-        setNotification(notif);
-        if (__DEV__) {
-          console.log('[PushNotifications] Foreground 알림 수신:', notif.request.content.title);
+    // 시뮬레이터에서는 NativeEventEmitter 에러 방지를 위해 스킵
+    if (!isSimulator) {
+      notificationListener.current = Notifications.addNotificationReceivedListener((notif) => {
+        if (mounted) {
+          setNotification(notif);
+          if (__DEV__) {
+            console.log('[PushNotifications] Foreground 알림 수신:', notif.request.content.title);
+          }
         }
-      }
-    });
+      });
+    }
 
     // 알림 탭 응답은 PushNotificationProvider에서 처리 (인증 체크 포함)
 

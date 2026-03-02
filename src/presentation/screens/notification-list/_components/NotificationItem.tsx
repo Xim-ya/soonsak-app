@@ -80,8 +80,11 @@ function NotificationItemView({ item, onPress }: NotificationItemViewProps) {
   );
 }
 
-// 규칙 5.1: React.memo에 적절한 비교 함수 추가
-export default React.memo(NotificationItemView, (prevProps, nextProps) => {
+/**
+ * 규칙 5.1: React.memo에 적절한 비교 함수 추가
+ * Named export로 통일하여 일관된 import 패턴 유지
+ */
+const MemoizedNotificationItemView = React.memo(NotificationItemView, (prevProps, nextProps) => {
   // item의 주요 필드만 비교하여 불필요한 리렌더링 방지
   return (
     prevProps.item.id === nextProps.item.id &&
@@ -89,6 +92,8 @@ export default React.memo(NotificationItemView, (prevProps, nextProps) => {
     prevProps.onPress === nextProps.onPress
   );
 });
+
+export { MemoizedNotificationItemView as NotificationItemView };
 
 /* Styled Components */
 
