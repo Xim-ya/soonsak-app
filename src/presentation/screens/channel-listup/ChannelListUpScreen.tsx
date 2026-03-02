@@ -151,7 +151,7 @@ export default function ChannelListUpScreen(): React.ReactElement {
       <BasePage useSafeArea>
         <BackButtonAppBar title="전체 채널" />
         <LoadingContainer>
-          <ActivityIndicator color={colors.gray02} size="large" />
+          <ActivityIndicator color={colors.gray02} />
         </LoadingContainer>
       </BasePage>
     );

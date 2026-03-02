@@ -143,6 +143,7 @@ function ContentGridView({
       numColumns={NUM_COLUMNS}
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
+      showsVerticalScrollIndicator={false}
       // 성능 최적화 옵션
       removeClippedSubviews={true}
       maxToRenderPerBatch={9}

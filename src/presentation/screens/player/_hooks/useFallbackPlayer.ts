@@ -10,8 +10,14 @@
 import { useState, useCallback } from 'react';
 import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
-import { buildYouTubeUrl, buildYouTubeAppUrl, isEmbeddedRestrictedError } from '@/features/youtube';
+import {
+  buildYouTubeUrl,
+  buildYouTubeAppUrl,
+  isEmbeddedRestrictedError,
+  isVideoNeedsReviewError,
+} from '@/features/youtube';
 import { useDialog } from '@/presentation/components/dialog';
+import { supabaseClient } from '@/shared/api/supabaseClient';
 
 interface UseFallbackPlayerParams {
   readonly videoId: string;
@@ -55,6 +61,25 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
     async (error: { code: number; message: string }) => {
       console.error('플레이어 에러:', error);
 
+      // 비디오 상태를 needs_review로 변경해야 하는 에러인지 확인 (2, 5, 100, 101)
+      if (isVideoNeedsReviewError(error.code)) {
+        console.log(`에러 코드 ${error.code} 감지 → 비디오 상태를 needs_review로 변경`);
+        try {
+          const { error: updateError } = await supabaseClient
+            .from('videos')
+            .update({ status: 'needs_review' })
+            .eq('id', videoId);
+
+          if (updateError) {
+            console.error('비디오 상태 업데이트 실패:', updateError);
+          } else {
+            console.log(`비디오 ${videoId} 상태를 needs_review로 변경 완료`);
+          }
+        } catch (err) {
+          console.error('비디오 상태 업데이트 중 예외 발생:', err);
+        }
+      }
+
       const isEmbedRestricted = isEmbeddedRestrictedError(error);
 
       if (isEmbedRestricted) {
@@ -71,7 +96,7 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
         }
       }
     },
-    [navigation, showDialog],
+    [navigation, showDialog, videoId],
   );
 
   return {

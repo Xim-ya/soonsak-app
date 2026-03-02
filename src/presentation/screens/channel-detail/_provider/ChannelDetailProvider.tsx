@@ -10,6 +10,9 @@ import { ChannelVideoModel } from '../_types';
  * 채널 정보, 정렬/뷰 모드 상태, 콘텐츠 데이터를 관리합니다.
  */
 interface ChannelDetailContextType {
+  // 채널 ID
+  readonly channelId: string;
+
   // 정렬 상태
   readonly sortType: SortType;
   readonly setSortType: (sortType: SortType) => void;
@@ -97,6 +100,9 @@ export function ChannelDetailProvider({
 
   const contextValue: ChannelDetailContextType = useMemo(
     () => ({
+      // 채널 ID
+      channelId,
+
       // 정렬 상태
       sortType,
       setSortType: handleSortChange,
@@ -119,6 +125,7 @@ export function ChannelDetailProvider({
       fetchNextPage,
     }),
     [
+      channelId,
       sortType,
       handleSortChange,
       viewMode,

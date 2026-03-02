@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from 'react';
-import { FlatList } from 'react-native';
+import { FlatList, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute } from '@react-navigation/native';
@@ -9,6 +9,7 @@ import { BackButtonAppBar } from '../../components/app-bar';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { SortSelector } from '../../components/sort';
 import { ViewModeToggle } from '../../components/view-mode';
+import { LoginPromptDialog } from '../../components/dialog/LoginPromptDialog';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import colors from '@/shared/styles/colors';
@@ -18,10 +19,13 @@ import Gap from '../../components/view/Gap';
 import { AppSize } from '@/shared/utils/appSize';
 import { CHANNEL_SORT_OPTIONS } from '../channel/_types';
 import { useScrollAnimation } from './_hooks/useScrollAnimation';
+import { useChannelFavoriteAction } from './_hooks/useChannelFavoriteAction';
 import { VideoGridItem, VideoListItem } from './_components';
 import { ChannelVideoModel } from './_types';
 import { SkeletonView } from '../../components/loading/SkeletonView';
 import { ChannelDetailProvider, useChannelDetail } from './_provider/ChannelDetailProvider';
+import HeartBlankSvg from '@assets/icons/heart_blank.svg';
+import HeartFilledSvg from '@assets/icons/heart_filled.svg';
 
 type ChannelDetailRouteParams = ScreenRouteProp<typeof routePages.channelDetail>;
 
@@ -57,6 +61,7 @@ function ChannelDetailContent() {
 
   // Provider에서 상태 가져오기
   const {
+    channelId,
     sortType,
     setSortType,
     viewMode,
@@ -71,6 +76,15 @@ function ChannelDetailContent() {
     hasNextPage,
     fetchNextPage,
   } = useChannelDetail();
+
+  // 채널 찜 액션 관리
+  const {
+    isFavorited,
+    isLoginDialogVisible,
+    handleToggleFavorite,
+    handleCloseDialog,
+    loginSuccessCallback,
+  } = useChannelFavoriteAction({ channelId });
 
   // 스크롤 애니메이션 관리
   const { handleScroll, gradientAnimatedStyle } = useScrollAnimation();
@@ -111,10 +125,19 @@ function ChannelDetailContent() {
         {isChannelLoading ? (
           <SkeletonView width={80} height={16} borderRadius={4} />
         ) : (
-          formattedSubscriberCount &&
-          formattedSubscriberCount !== '0' && (
-            <SubscriberText>구독자 {formattedSubscriberCount}명</SubscriberText>
-          )
+          <SubscriberRow>
+            {formattedSubscriberCount && formattedSubscriberCount !== '0' && (
+              <SubscriberText>구독자 {formattedSubscriberCount}명</SubscriberText>
+            )}
+            <FavoriteButton onPress={handleToggleFavorite} activeOpacity={0.7}>
+              {isFavorited ? (
+                <HeartFilledSvg width={12} height={12} />
+              ) : (
+                <HeartBlankSvg width={12} height={12} />
+              )}
+              <FavoriteButtonText>찜</FavoriteButtonText>
+            </FavoriteButton>
+          </SubscriberRow>
         )}
         <FilterRow>
           <ContentCountText>{totalCount}개의 콘텐츠</ContentCountText>
@@ -132,6 +155,8 @@ function ChannelDetailContent() {
     displayLogoUrl,
     displayName,
     formattedSubscriberCount,
+    isFavorited,
+    handleToggleFavorite,
     totalCount,
     sortType,
     setSortType,
@@ -143,7 +168,10 @@ function ChannelDetailContent() {
     }
   }, [hasNextPage, isLoading, fetchNextPage]);
 
-  const keyExtractor = useCallback((item: ChannelVideoModel) => `${item.id}-${item.contentId}`, []);
+  const keyExtractor = useCallback(
+    (item: ChannelVideoModel, index: number) => `${item.id}-${index}`,
+    [],
+  );
 
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
@@ -178,6 +206,7 @@ function ChannelDetailContent() {
         numColumns={viewMode === 'card' ? 3 : 1}
         contentContainerStyle={{ paddingHorizontal: 16 }}
         columnWrapperStyle={viewMode === 'card' ? { gap: 9 } : undefined}
+        showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={<Gap size={106} />}
         onScroll={handleScroll}
@@ -188,6 +217,13 @@ function ChannelDetailContent() {
         maxToRenderPerBatch={10}
         windowSize={10}
         initialNumToRender={10}
+      />
+
+      {/* 로그인 유도 다이얼로그 */}
+      <LoginPromptDialog
+        visible={isLoginDialogVisible}
+        onClose={handleCloseDialog}
+        onLoginSuccess={loginSuccessCallback}
       />
     </BasePage>
   );
@@ -242,9 +278,32 @@ const ChannelName = styled.Text({
   maxWidth: AppSize.screenWidth - 32,
 });
 
+const SubscriberRow = styled.View({
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 12,
+});
+
 const SubscriberText = styled.Text({
   ...textStyles.alert2,
   color: colors.gray03,
+});
+
+const FavoriteButton = styled(TouchableOpacity)({
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: 'rgba(40, 40, 49, 0.6)',
+  borderRadius: 12,
+  paddingVertical: 4,
+  paddingHorizontal: 8,
+  gap: 3,
+});
+
+const FavoriteButtonText = styled.Text({
+  ...textStyles.alert2,
+  color: colors.white,
+  marginRight: 3,
 });
 
 const FilterRow = styled.View({

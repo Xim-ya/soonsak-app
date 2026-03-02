@@ -46,6 +46,7 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
       <Tabs.ScrollView
         style={styles.scrollView}
         contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+        showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
           {/* YouTube 메트릭 정보 */}

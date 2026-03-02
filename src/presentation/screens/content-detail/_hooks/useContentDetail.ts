@@ -28,6 +28,11 @@ async function fetchCustomBackdropPath(
   return data.backdrop_path as string | null;
 }
 
+interface UseContentDetailOptions {
+  /** 쿼리 활성화 여부 (기본값: true) */
+  enabled?: boolean;
+}
+
 /**
  * useContentDetail - 콘텐츠 상세 정보를 관리하는 훅
  *
@@ -37,6 +42,7 @@ async function fetchCustomBackdropPath(
  *
  * @param contentId - 콘텐츠 고유 ID (필수)
  * @param contentType - 콘텐츠 타입 ('movie' | 'tv') (필수)
+ * @param options - 추가 옵션 (enabled 등)
  * @returns 콘텐츠 데이터, 로딩 상태, 에러 상태
  *
  * @example
@@ -45,8 +51,15 @@ async function fetchCustomBackdropPath(
  *
  * // TV 시리즈 데이터 조회
  * const { data, isLoading, error } = useContentDetail(1396, 'tv');
+ *
+ * // 조건부 조회 (외부 데이터가 없을 때만)
+ * const { data } = useContentDetail(id, type, { enabled: !externalData });
  */
-export function useContentDetail(contentId: number, contentType: ContentType) {
+export function useContentDetail(
+  contentId: number,
+  contentType: ContentType,
+  options?: UseContentDetailOptions,
+) {
   const { data, isLoading, error } = useQuery({
     queryKey: ['contentDetail', contentId, contentType],
     queryFn: async (): Promise<ContentDetailModel> => {
@@ -82,7 +95,7 @@ export function useContentDetail(contentId: number, contentType: ContentType) {
         throw error;
       }
     },
-    enabled: contentType === 'movie' || contentType === 'tv',
+    enabled: (options?.enabled ?? true) && (contentType === 'movie' || contentType === 'tv'),
     retry: false,
   });
 
