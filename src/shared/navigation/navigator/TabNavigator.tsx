@@ -1,9 +1,8 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeBottomTabNavigator } from '@bottom-tabs/react-navigation';
-import { Text, Platform, StyleSheet } from 'react-native';
+import { Text, Platform, StyleSheet, ImageSourcePropType } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
-import type { SFSymbols7_0 } from 'sf-symbols-typescript';
 import HomeScreen from '../../../presentation/screens/home/HomeScreen';
 import ExploreScreen from '../../../presentation/screens/explore/ExploreScreen';
 import ChannelScreen from '../../../presentation/screens/channel/ChannelScreen';
@@ -20,12 +19,12 @@ const IS_IOS_26_OR_LATER = IOS_VERSION >= 26;
 const TAB_BAR_HEIGHT = 56;
 const BLUR_INTENSITY = 80;
 
-// SF Symbol 매핑 (iOS 26+ 네이티브 탭바용)
-const SF_SYMBOLS: Record<TabRoutes, SFSymbols7_0> = {
-  [TabRoutes.Home]: 'house.fill',
-  [TabRoutes.Explore]: 'magnifyingglass',
-  [TabRoutes.Channel]: 'play.tv.fill',
-  [TabRoutes.My]: 'person.fill',
+// 커스텀 PNG 아이콘 (iOS 26+ 네이티브 탭바용)
+const TAB_ICONS: Record<TabRoutes, ImageSourcePropType> = {
+  [TabRoutes.Home]: require('@assets/icons/tab/home_tab.png'),
+  [TabRoutes.Explore]: require('@assets/icons/tab/explore_tab.png'),
+  [TabRoutes.Channel]: require('@assets/icons/tab/channel_tab.png'),
+  [TabRoutes.My]: require('@assets/icons/tab/my_tab.png'),
 };
 
 // 탭 라벨
@@ -69,7 +68,7 @@ function NativeTabNavigator() {
         component={HomeScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Home],
-          tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.Home], pointSize: 14 }),
+          tabBarIcon: () => TAB_ICONS[TabRoutes.Home],
         }}
       />
       <NativeTab.Screen
@@ -77,7 +76,7 @@ function NativeTabNavigator() {
         component={ExploreScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Explore],
-          tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.Explore], pointSize: 14 }),
+          tabBarIcon: () => TAB_ICONS[TabRoutes.Explore],
         }}
       />
       <NativeTab.Screen
@@ -85,7 +84,7 @@ function NativeTabNavigator() {
         component={ChannelScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Channel],
-          tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.Channel], pointSize: 14 }),
+          tabBarIcon: () => TAB_ICONS[TabRoutes.Channel],
         }}
       />
       <NativeTab.Screen
@@ -93,7 +92,7 @@ function NativeTabNavigator() {
         component={MyScreen}
         options={{
           title: TAB_LABELS[TabRoutes.My],
-          tabBarIcon: () => ({ sfSymbol: SF_SYMBOLS[TabRoutes.My], pointSize: 14 }),
+          tabBarIcon: () => TAB_ICONS[TabRoutes.My],
         }}
       />
     </NativeTab.Navigator>
