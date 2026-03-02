@@ -2,7 +2,7 @@
  * ExploreScreen - 탐색 탭 화면
  *
  * 콘텐츠를 필터링하고 정렬하여 탐색할 수 있는 화면입니다.
- * 스와이프로 탭을 전환할 수 있습니다.
+ * 탭 전환은 TabBar를 통해서만 가능합니다 (스와이프 비활성화).
  */
 
 import { useRoute, RouteProp } from '@react-navigation/native';
@@ -25,6 +25,7 @@ const PAGER_STYLE = { backgroundColor: colors.black };
 const PAGER_PROPS = {
   style: PAGER_STYLE,
   overScrollMode: 'never' as const,
+  scrollEnabled: false,
 };
 
 export default function ExploreScreen() {
@@ -79,22 +80,15 @@ function ExploreContent({ initialTab }: ExploreContentProps) {
           snapThreshold={null}
           allowHeaderOverscroll={true}
           pagerProps={PAGER_PROPS}
-          lazy
         >
           <Tabs.Tab name="all" label="전체">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="all" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="all" tabName="all" />
           </Tabs.Tab>
           <Tabs.Tab name="latest" label="최신">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="latest" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="latest" tabName="latest" />
           </Tabs.Tab>
           <Tabs.Tab name="popular" label="인기">
-            <Tabs.Lazy>
-              <ExploreTabContent sortType="popular" />
-            </Tabs.Lazy>
+            <ExploreTabContent sortType="popular" tabName="popular" />
           </Tabs.Tab>
         </Tabs.Container>
       </TabsContainer>

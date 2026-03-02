@@ -45,7 +45,7 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
     <>
       <Tabs.ScrollView
         style={styles.scrollView}
-        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : undefined}
+        contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
         <View style={tabletContentStyle}>
@@ -81,10 +81,16 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
 const MemoizedVideoTabView = React.memo(VideoTabView);
 MemoizedVideoTabView.displayName = 'VideoTabView';
 
-/** 태블릿 레이아웃 스타일 */
+/** 스크롤뷰 스타일 */
+const SCROLL_BOTTOM_PADDING = 120;
+
 const styles = StyleSheet.create({
+  scrollContent: {
+    paddingBottom: SCROLL_BOTTOM_PADDING,
+  },
   tabletScrollContent: {
     alignItems: 'center',
+    paddingBottom: SCROLL_BOTTOM_PADDING,
   },
   scrollView: {
     flex: 1,

@@ -4,6 +4,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import ContentTypeChip from '@/presentation/components/chip/ContentTypeChip';
+import DarkChip from '@/presentation/components/chip/DarkChip';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -25,6 +26,8 @@ export function VideoGridItem({ video }: VideoGridItemProps) {
   const posterUrl = formatter.prefixTmdbImgUrl(video.contentPosterPath, {
     size: TmdbImageSize.w342,
   });
+
+  const runtimeText = video.runtime ? formatter.formatRuntime(video.runtime) : '';
 
   const handlePress = () => {
     navigation.navigate(routePages.contentDetail, {
@@ -48,6 +51,11 @@ export function VideoGridItem({ video }: VideoGridItemProps) {
           <ChipWrapper>
             <ContentTypeChip contentType={video.contentType} />
           </ChipWrapper>
+          {runtimeText && (
+            <RuntimeChipWrapper>
+              <DarkChip content={runtimeText} />
+            </RuntimeChipWrapper>
+          )}
         </PosterWrapper>
         <TitleWrapper>
           <ContentTitle numberOfLines={2}>{video.contentTitle || '내용 없음'}</ContentTitle>
@@ -70,6 +78,12 @@ const ChipWrapper = styled.View({
   position: 'absolute',
   left: 5,
   top: 6,
+});
+
+const RuntimeChipWrapper = styled.View({
+  position: 'absolute',
+  bottom: 6,
+  right: 6,
 });
 
 const TitleWrapper = styled.View({

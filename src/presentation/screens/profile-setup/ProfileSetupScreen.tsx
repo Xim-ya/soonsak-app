@@ -23,6 +23,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { PrimaryButton } from '@/presentation/components/button';
+import { AppDialog } from '@/presentation/components/dialog/AppDialog';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ProfileSetupProvider, useProfileSetupContext } from './_provider/ProfileSetupProvider';
@@ -52,45 +53,81 @@ export default function ProfileSetupScreen(): React.ReactElement {
  * ProfileSetupProvider 내부에서 렌더링되어 Context에 접근 가능
  */
 function ProfileSetupContent(): React.ReactElement {
-  const { showBackButton, buttonText, buttonState, handleSubmit, mode } = useProfileSetupContext();
+  const {
+    showBackButton,
+    buttonText,
+    buttonState,
+    handleSubmit,
+    mode,
+    isPermissionDialogVisible,
+    closePermissionDialog,
+    openSettings,
+    isSettingsErrorDialogVisible,
+    closeSettingsErrorDialog,
+  } = useProfileSetupContext();
 
   return (
-    <BasePage automaticallyAdjustKeyboardInsets={false}>
-      <Container>
-        {/* 앱바 - 뒤로가기 버튼만 표시 */}
-        <BackButtonAppBar showBackButton={showBackButton} />
+    <>
+      <BasePage automaticallyAdjustKeyboardInsets={false}>
+        <Container>
+          {/* 앱바 - 뒤로가기 버튼만 표시 */}
+          <BackButtonAppBar showBackButton={showBackButton} />
 
-        <KeyboardAvoidingView
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          style={keyboardAvoidingStyle}
-        >
-          <ScrollView
-            contentContainerStyle={scrollContentStyle}
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={keyboardAvoidingStyle}
           >
-            {/* 콘텐츠 영역 */}
-            <ContentContainer>
-              {/* 프로필 이미지 */}
-              <ImageSection>
-                <ProfileImagePicker />
-              </ImageSection>
+            <ScrollView
+              contentContainerStyle={scrollContentStyle}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
+              {/* 콘텐츠 영역 */}
+              <ContentContainer>
+                {/* 프로필 이미지 */}
+                <ImageSection>
+                  <ProfileImagePicker />
+                </ImageSection>
 
-              {/* 닉네임 입력 */}
-              <InputSection>
-                <SectionLabel>닉네임</SectionLabel>
-                <NicknameInput autoFocus={mode === 'initial'} />
-              </InputSection>
-            </ContentContainer>
+                {/* 닉네임 입력 */}
+                <InputSection>
+                  <SectionLabel>닉네임</SectionLabel>
+                  <NicknameInput autoFocus={mode === 'initial'} />
+                </InputSection>
+              </ContentContainer>
 
-            {/* 하단 버튼 */}
-            <ButtonContainer>
-              <PrimaryButton title={buttonText} onPress={handleSubmit} state={buttonState} />
-            </ButtonContainer>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </Container>
-    </BasePage>
+              {/* 하단 버튼 */}
+              <ButtonContainer>
+                <PrimaryButton title={buttonText} onPress={handleSubmit} state={buttonState} />
+              </ButtonContainer>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Container>
+      </BasePage>
+
+      {/* 권한 요청 다이얼로그 */}
+      <AppDialog
+        visible={isPermissionDialogVisible}
+        title="사진에 접근할 수 없어요"
+        description="설정에서 사진 접근을 허용하면 프로필 사진을 바꿀 수 있어요"
+        isDivided
+        leftButtonText="다음에"
+        rightButtonText="설정 열기"
+        onLeftButtonPress={closePermissionDialog}
+        onRightButtonPress={openSettings}
+        onBackdropPress={closePermissionDialog}
+      />
+
+      {/* 설정 열기 실패 다이얼로그 */}
+      <AppDialog
+        visible={isSettingsErrorDialogVisible}
+        title="설정을 열 수 없어요"
+        description="알 수 없는 오류가 발생했어요. 직접 설정 앱에서 사진 접근을 허용해 주세요."
+        rightButtonText="확인"
+        onRightButtonPress={closeSettingsErrorDialog}
+        onBackdropPress={closeSettingsErrorDialog}
+      />
+    </>
   );
 }
 

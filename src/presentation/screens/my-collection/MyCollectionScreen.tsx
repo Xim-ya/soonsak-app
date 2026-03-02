@@ -21,6 +21,8 @@ const TAB_BAR_HEIGHT = 48;
 
 const headerContainerStyle = { backgroundColor: colors.black };
 
+const pagerProps = { scrollEnabled: false };
+
 const renderTabBar = (props: TabBarProps<string>) => <UserContentTabBar {...props} />;
 
 /**
@@ -49,6 +51,7 @@ export default function MyCollectionScreen() {
           renderTabBar={renderTabBar}
           headerContainerStyle={headerContainerStyle}
           tabBarHeight={TAB_BAR_HEIGHT}
+          pagerProps={pagerProps}
         >
           <Tabs.Tab name="찜했어요">
             <MemoizedFavoritesTabView />

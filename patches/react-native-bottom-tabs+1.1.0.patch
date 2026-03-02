@@ -1,0 +1,13 @@
+diff --git a/node_modules/react-native-bottom-tabs/ios/TabViewProvider.swift b/node_modules/react-native-bottom-tabs/ios/TabViewProvider.swift
+index 013032f..39a9e3a 100644
+--- a/node_modules/react-native-bottom-tabs/ios/TabViewProvider.swift
++++ b/node_modules/react-native-bottom-tabs/ios/TabViewProvider.swift
+@@ -51,7 +51,7 @@ public final class TabInfo: NSObject {
+   private var props = TabViewProps()
+   private var hostingController: PlatformHostingController<TabViewImpl>?
+   private var coalescingKey: UInt16 = 0
+-  private var iconSize = CGSize(width: 27, height: 27)
++  private var iconSize = CGSize(width: 28, height: 28)
+ 
+   @objc var onPageSelected: RCTDirectEventBlock?
+ 

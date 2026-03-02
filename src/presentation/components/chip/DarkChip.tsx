@@ -1,28 +1,29 @@
-import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import styled from '@emotion/native';
-import { TouchableOpacity } from 'react-native';
+import { View, Text, Platform } from 'react-native';
 
 const DarkChip = ({ content }: { content: string }) => {
   return (
     <Container>
-      <Content numberOfLines={1}>{content}</Content>
+      <Content textBreakStrategy="simple">{content}</Content>
     </Container>
   );
 };
 
 /* Styled Components */
-const Container = styled(TouchableOpacity)({
-  backgroundColor: 'rgba(40, 40, 49, 0.6)', // #282831 60% 투명도
+const Container = styled(View)({
+  backgroundColor: 'rgba(40, 40, 49, 0.6)',
   paddingHorizontal: 6,
   paddingVertical: 4,
   borderRadius: 6,
   alignSelf: 'flex-start',
-  flexShrink: 0, // 부모 레이아웃에 의해 줄어들지 않도록
 });
 
-const Content = styled.Text({
+const Content = styled(Text)({
   ...textStyles.alert1,
+  includeFontPadding: false,
+  // Android letterSpacing + lineHeight 버그 우회
+  ...(Platform.OS === 'android' && { lineHeight: undefined }),
 });
 
 export default DarkChip;

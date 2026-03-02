@@ -169,7 +169,7 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     <Container style={isLargeScreen ? { width: backdropWidth } : undefined}>
       <Animated.View
         style={[
-          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
+          { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' },
           backdropAnimatedStyle,
         ]}
       >
@@ -200,17 +200,17 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
             />
           )}
         </ImageWrapper>
+
+        {/* 상단 그라데이션 그림자 - 이미지와 함께 스케일됨 */}
+        <GradientWrapper>
+          <DarkedLinearShadow height={88} align={LinearAlign.topBottom} />
+        </GradientWrapper>
+
+        {/* 하단 그라데이션 그림자 - 이미지와 함께 스케일됨 */}
+        <GradientWrapper>
+          <DarkedLinearShadow height={88} align={LinearAlign.bottomTop} />
+        </GradientWrapper>
       </Animated.View>
-
-      {/* 상단 그라데이션 그림자 */}
-      <GradientWrapper>
-        <DarkedLinearShadow height={88} align={LinearAlign.topBottom} />
-      </GradientWrapper>
-
-      {/* 하단 그라데이션 그림자 */}
-      <GradientWrapper>
-        <DarkedLinearShadow height={88} align={LinearAlign.bottomTop} />
-      </GradientWrapper>
 
       {/* 재생 버튼 */}
       <PlayButtonContainer>
@@ -290,7 +290,6 @@ const Container = styled.View({
   position: 'relative',
   width: '100%',
   aspectRatio: 375 / 240,
-  overflow: 'hidden',
   pointerEvents: 'box-none' as const,
 });
 
