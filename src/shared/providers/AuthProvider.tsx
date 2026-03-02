@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import type { User } from '@supabase/supabase-js';
 import { authApi } from '@/features/auth/api/authApi';
 import { userApi } from '@/features/user/api/userApi';
+import { clearAppBadge } from '@/features/notifications';
 import type {
   AuthState,
   AuthContextValue,
@@ -84,6 +85,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
   // 로그아웃 핸들러
   const signOut = useCallback(async () => {
     await authApi.signOut();
+    // 앱 아이콘 배지 초기화
+    await clearAppBadge();
     // 상태는 onAuthStateChange에서 자동 업데이트됨
   }, []);
 

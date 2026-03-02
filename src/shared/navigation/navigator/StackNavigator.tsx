@@ -16,6 +16,7 @@ import SettingsScreen from '../../../presentation/screens/settings/SettingsScree
 import MyCollectionScreen from '../../../presentation/screens/my-collection/MyCollectionScreen';
 import WatchHistoryScreen from '../../../presentation/screens/watch-history/WatchHistoryScreen';
 import QuickExploreScreen from '../../../presentation/screens/quickExplore/QuickExploreScreen';
+import NotificationListScreen from '../../../presentation/screens/notification-list/NotificationListScreen';
 import AdminContentSearchScreen from '../../../presentation/admin/screens/admin-content-search/AdminContentSearchScreen';
 import AdminPrimaryVideoSelectScreen from '../../../presentation/admin/screens/admin-primary-video-select/AdminPrimaryVideoSelectScreen';
 import AdminVideoManagementScreen from '../../../presentation/admin/screens/admin-video-management/AdminVideoManagementScreen';
@@ -168,6 +169,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.quickExplore}
         component={QuickExploreScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.notificationList}
+        component={NotificationListScreen}
         options={{ headerShown: false }}
       />
       <Stack.Screen
