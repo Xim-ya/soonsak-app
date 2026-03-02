@@ -25,6 +25,9 @@ import { useFavoriteAction } from './_hooks/useFavoriteAction';
 import { useAdminContentActions, AdminContentAction } from '@/features/admin';
 import { useContentDetail } from './_hooks/useContentDetail';
 
+// 모듈 레벨 상수 (매 렌더마다 새 객체 생성 방지)
+const PAGER_PROPS = { scrollEnabled: false };
+
 export default function ContentDetailScreen() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
   const { id, type, title, videoId, initialData } = route.params;
@@ -201,7 +204,7 @@ function ContentDetailContent({
             tabBarHeight={48}
             minHeaderHeight={48}
             width={AppSize.isLargeScreen() ? AppSize.actualScreenWidth : AppSize.screenWidth}
-            pagerProps={{ scrollEnabled: false }}
+            pagerProps={PAGER_PROPS}
           >
             <Tabs.Tab name="영상" label="videoInfo">
               <ContentTabView appBarOpacity={appBarOpacity} />

@@ -82,8 +82,8 @@ const ChipWrapper = styled.View({
 
 const RuntimeChipWrapper = styled.View({
   position: 'absolute',
-  bottom: 5,
-  right: 5,
+  bottom: 6,
+  right: 6,
 });
 
 const TitleWrapper = styled.View({

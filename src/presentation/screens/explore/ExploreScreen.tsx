@@ -2,7 +2,7 @@
  * ExploreScreen - 탐색 탭 화면
  *
  * 콘텐츠를 필터링하고 정렬하여 탐색할 수 있는 화면입니다.
- * 스와이프로 탭을 전환할 수 있습니다.
+ * 탭 전환은 TabBar를 통해서만 가능합니다 (스와이프 비활성화).
  */
 
 import { useRoute, RouteProp } from '@react-navigation/native';

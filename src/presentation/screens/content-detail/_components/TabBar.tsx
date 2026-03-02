@@ -1,7 +1,7 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import Animated, { useAnimatedStyle, interpolate, SharedValue } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -34,19 +34,16 @@ export const TabBar = <T extends string>({
   // 라이브러리에서 현재 포커스된 탭 가져오기 (초기값용)
   const focusedTab = useFocusedTab();
 
-  // 초기화 여부 추적
-  const isInitialized = useRef(false);
-
   // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
-  const [activeTab, setActiveTab] = useState<T>(tabNames[0]!);
+  // lazy initializer로 초기값 설정
+  const [activeTab, setActiveTab] = useState<T>(() => (focusedTab as T) || tabNames[0]!);
 
-  // 초기 마운트 시에만 focusedTab으로 동기화
-  if (!isInitialized.current && focusedTab) {
-    isInitialized.current = true;
-    if (focusedTab !== activeTab) {
+  // focusedTab 변경 시 동기화
+  useEffect(() => {
+    if (focusedTab && focusedTab !== activeTab) {
       setActiveTab(focusedTab as T);
     }
-  }
+  }, [focusedTab]);
 
   const handleTabPress = useCallback(
     (name: T) => {

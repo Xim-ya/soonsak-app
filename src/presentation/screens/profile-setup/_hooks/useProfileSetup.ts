@@ -61,6 +61,10 @@ interface UseProfileSetupReturn {
   closePermissionDialog: () => void;
   /** 설정 페이지로 이동 */
   openSettings: () => void;
+  /** 설정 열기 실패 다이얼로그 표시 여부 */
+  isSettingsErrorDialogVisible: boolean;
+  /** 설정 열기 실패 다이얼로그 닫기 */
+  closeSettingsErrorDialog: () => void;
 }
 
 /**
@@ -93,6 +97,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isPermissionDialogVisible, setIsPermissionDialogVisible] = useState(false);
+  const [isSettingsErrorDialogVisible, setIsSettingsErrorDialogVisible] = useState(false);
 
   // 현재 표시할 아바타 (새로 선택한 이미지 > 기존 이미지)
   const avatarUrl = pickedImageUri ?? initialValues.initialAvatarUrl;
@@ -154,7 +159,17 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
    */
   const openSettings = useCallback(() => {
     setIsPermissionDialogVisible(false);
-    Linking.openSettings();
+    Linking.openSettings().catch((err) => {
+      console.error('Failed to open settings:', err);
+      setIsSettingsErrorDialogVisible(true);
+    });
+  }, []);
+
+  /**
+   * 설정 열기 실패 다이얼로그 닫기
+   */
+  const closeSettingsErrorDialog = useCallback(() => {
+    setIsSettingsErrorDialogVisible(false);
   }, []);
 
   /**
@@ -242,5 +257,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
     isPermissionDialogVisible,
     closePermissionDialog,
     openSettings,
+    isSettingsErrorDialogVisible,
+    closeSettingsErrorDialog,
   };
 }

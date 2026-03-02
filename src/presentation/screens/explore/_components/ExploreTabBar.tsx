@@ -7,7 +7,7 @@
  * useExplore 훅을 통해 필터 상태에 접근합니다.
  */
 
-import { useCallback, useState, useRef } from 'react';
+import { useCallback, useState, useRef, useLayoutEffect } from 'react';
 import { ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,7 +17,6 @@ import Animated, {
   useAnimatedReaction,
   interpolate,
   Extrapolation,
-  SharedValue,
 } from 'react-native-reanimated';
 import { TabBarProps, useCurrentTabScrollY, useFocusedTab } from 'react-native-collapsible-tab-view';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -34,7 +33,6 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 /** 개별 탭 버튼 Props */
 interface ExploreTabButtonProps<T extends string> {
   readonly name: T;
-  readonly index: number;
   readonly isActive: boolean;
   readonly onTabPress: (name: T) => void;
 }
@@ -42,7 +40,6 @@ interface ExploreTabButtonProps<T extends string> {
 /** 개별 탭 버튼 컴포넌트 */
 const ExploreTabButton = <T extends string>({
   name,
-  index,
   isActive,
   onTabPress,
 }: ExploreTabButtonProps<T>) => {
@@ -103,19 +100,16 @@ const ExploreTabBar = <T extends string>({
   // 라이브러리에서 현재 포커스된 탭 가져오기
   const focusedTab = useFocusedTab();
 
-  // 초기화 여부 추적
-  const isInitialized = useRef(false);
-
   // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
-  const [activeTab, setActiveTab] = useState<T>(tabNames[0]!);
+  // lazy initializer로 초기값 설정
+  const [activeTab, setActiveTab] = useState<T>(() => (focusedTab as T) || tabNames[0]!);
 
-  // 초기 마운트 시에만 focusedTab으로 동기화
-  if (!isInitialized.current && focusedTab) {
-    isInitialized.current = true;
-    if (focusedTab !== activeTab) {
+  // focusedTab 변경 시 동기화 (레이아웃 전에 실행)
+  useLayoutEffect(() => {
+    if (focusedTab && focusedTab !== activeTab) {
       setActiveTab(focusedTab as T);
     }
-  }
+  }, [focusedTab]);
 
   const handleTabPress = useCallback(
     (name: T) => {
@@ -176,11 +170,10 @@ const ExploreTabBar = <T extends string>({
       <TabBarSection>
         <TabBarContent>
           <TabsWrapper>
-            {tabNames.map((name, index) => (
+            {tabNames.map((name) => (
               <ExploreTabButton
                 key={name}
                 name={name}
-                index={index}
                 isActive={getIsActive(name)}
                 onTabPress={handleTabPress}
               />

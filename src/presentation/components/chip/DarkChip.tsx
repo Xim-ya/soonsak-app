@@ -17,7 +17,6 @@ const Container = styled(View)({
   paddingVertical: 4,
   borderRadius: 6,
   alignSelf: 'flex-start',
-  flexDirection: 'row',
 });
 
 const Content = styled(Text)({

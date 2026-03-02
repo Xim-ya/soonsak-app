@@ -51,6 +51,10 @@ interface ProfileSetupContextType {
   readonly closePermissionDialog: () => void;
   /** 설정 페이지로 이동 */
   readonly openSettings: () => void;
+  /** 설정 열기 실패 다이얼로그 표시 여부 */
+  readonly isSettingsErrorDialogVisible: boolean;
+  /** 설정 열기 실패 다이얼로그 닫기 */
+  readonly closeSettingsErrorDialog: () => void;
 }
 
 const ProfileSetupContext = createContext<ProfileSetupContextType | undefined>(undefined);
@@ -80,6 +84,8 @@ export function ProfileSetupProvider({
     isPermissionDialogVisible,
     closePermissionDialog,
     openSettings,
+    isSettingsErrorDialogVisible,
+    closeSettingsErrorDialog,
   } = useProfileSetup({ mode });
 
   // 모드별 UI 텍스트
@@ -115,6 +121,8 @@ export function ProfileSetupProvider({
       isPermissionDialogVisible,
       closePermissionDialog,
       openSettings,
+      isSettingsErrorDialogVisible,
+      closeSettingsErrorDialog,
     }),
     [
       nickname,
@@ -134,6 +142,8 @@ export function ProfileSetupProvider({
       isPermissionDialogVisible,
       closePermissionDialog,
       openSettings,
+      isSettingsErrorDialogVisible,
+      closeSettingsErrorDialog,
     ],
   );
 
