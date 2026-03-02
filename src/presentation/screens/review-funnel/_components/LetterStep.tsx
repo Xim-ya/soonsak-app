@@ -5,6 +5,7 @@ import type { EdgeInsets } from 'react-native-safe-area-context';
 import LottieView from 'lottie-react-native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { FUNNEL_BACKGROUND_COLORS, HIT_SLOP } from '@/features/review-funnel/constants';
 import CloseIcon from '@assets/icons/close.svg';
 
 interface LetterStepProps {
@@ -13,8 +14,6 @@ interface LetterStepProps {
   onClose: () => void;
   insets: EdgeInsets;
 }
-
-const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
 
 /**
  * LetterStep - 편지 도착 화면
@@ -26,7 +25,7 @@ export function LetterStep({ userName, onOpen, onClose, insets }: LetterStepProp
     <Container>
       {/* 배경 그래디언트 */}
       <BackgroundGradient
-        colors={['#1a1a2e', '#16213e', '#0f0f0f']}
+        colors={FUNNEL_BACKGROUND_COLORS}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />

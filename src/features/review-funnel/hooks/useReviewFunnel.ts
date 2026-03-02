@@ -33,10 +33,30 @@ interface UseReviewFunnelReturn {
 /**
  * 스토어 설정
  */
-const getStoreConfig = () => ({
+const STORE_CONFIG = {
   iosAppId: '6758769228',
   androidPackageName: Constants.expoConfig?.android?.package ?? 'com.soonsak.app',
-});
+} as const;
+
+/**
+ * 스토어 리뷰 페이지 열기
+ */
+const openStoreReviewPage = async (): Promise<void> => {
+  if (Platform.OS === 'ios') {
+    const iosUrl = `https://apps.apple.com/app/id${STORE_CONFIG.iosAppId}?action=write-review`;
+    await Linking.openURL(iosUrl);
+  } else {
+    // Android: market:// 먼저 시도, 실패 시 HTTPS 폴백
+    const marketUrl = `market://details?id=${STORE_CONFIG.androidPackageName}`;
+    const webUrl = `https://play.google.com/store/apps/details?id=${STORE_CONFIG.androidPackageName}`;
+
+    try {
+      await Linking.openURL(marketUrl);
+    } catch {
+      await Linking.openURL(webUrl);
+    }
+  }
+};
 
 /**
  * 리뷰 퍼널 로직 훅
@@ -55,9 +75,11 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
   const sessionRef = useRef<ReviewFunnelSessionDto | null>(null);
 
   /**
-   * 초기화: 세션 생성 + 진입 처리
+   * 초기화: 세션 생성 + 진입 처리 + 콘텐츠 로드
    */
   useEffect(() => {
+    let isMounted = true;
+
     const initialize = async () => {
       try {
         setIsLoading(true);
@@ -67,27 +89,34 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
           platform: Platform.OS as 'ios' | 'android',
           appVersion: Constants.expoConfig?.version,
         });
+
+        if (!isMounted) return;
         sessionRef.current = session;
 
-        // 2. 퍼널 진입 처리 (has_reviewed: null → false, 이미 true면 무시)
-        if (session.hasReviewed !== true) {
-          await reviewFunnelApi.markAsEntered(session.id);
-        }
+        // 2. 병렬 처리: 진입 처리 + 시청기록 로드
+        const shouldMarkEntered = session.hasReviewed !== true;
+        const [, contents] = await Promise.all([
+          shouldMarkEntered ? reviewFunnelApi.markAsEntered(session.id) : Promise.resolve(),
+          reviewFunnelApi.getRandomWatchedContents(3),
+        ]);
 
-        // 3. 시청기록에서 랜덤 콘텐츠 로드 (최대 3개)
-        const contents = await reviewFunnelApi.getRandomWatchedContents(3);
+        if (!isMounted) return;
         setWatchedContents(contents);
-
         setError(null);
       } catch (err) {
-        console.error('퍼널 초기화 실패:', err);
+        if (!isMounted) return;
+        if (__DEV__) console.error('퍼널 초기화 실패:', err);
         setError('초기화에 실패했습니다.');
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
     initialize();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   /**
@@ -114,59 +143,32 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
    * iOS: 평점만 남기기 선택 시 / Android: 기본 리뷰 버튼 클릭 시
    */
   const handleRatingOnlyClick = useCallback(async () => {
-    console.log('[ReviewFunnel] handleRatingOnlyClick 시작');
-
     try {
-      // 리뷰 완료 처리 (Android: in_app_review, iOS: rating_only)
-      const reviewType = Platform.OS === 'ios' ? 'rating_only' : 'in_app_review';
+      // iOS는 평점만/리뷰작성 구분, Android는 인앱 리뷰로 통합
+      const isIOS = Platform.OS === 'ios';
+      const reviewType: ReviewType = isIOS ? 'rating_only' : 'in_app_review';
       await markReviewCompleted(reviewType);
-      console.log('[ReviewFunnel] markReviewCompleted 완료');
 
-      // in-app review 시도
-      // Android 개발환경에서는 다이얼로그가 표시되지 않으므로 스토어 URL로 이동
-      const shouldUseInAppReview = Platform.OS === 'ios' || !__DEV__;
+      // Android 개발환경에서는 in-app review 다이얼로그가 표시되지 않음
+      const isAndroidDev = Platform.OS === 'android' && __DEV__;
+      const canUseInAppReview = !isAndroidDev;
 
-      if (shouldUseInAppReview) {
+      if (canUseInAppReview) {
         try {
           const isAvailable = await StoreReview.isAvailableAsync();
-          console.log('[ReviewFunnel] StoreReview.isAvailableAsync:', isAvailable);
-
           if (isAvailable) {
             await StoreReview.requestReview();
-            console.log('[ReviewFunnel] StoreReview.requestReview 완료');
             return;
           }
-        } catch (storeReviewError) {
-          console.warn('[ReviewFunnel] StoreReview 사용 불가:', storeReviewError);
-        }
-      } else {
-        console.log('[ReviewFunnel] 개발환경 Android - 스토어 URL로 이동');
-      }
-
-      // in-app review 불가 시 스토어 URL로 이동 (fallback)
-      const storeConfig = getStoreConfig();
-      console.log('[ReviewFunnel] 스토어 URL로 이동 시도:', storeConfig);
-
-      if (Platform.OS === 'ios') {
-        const iosUrl = `https://apps.apple.com/app/id${storeConfig.iosAppId}?action=write-review`;
-        console.log('[ReviewFunnel] iOS URL:', iosUrl);
-        await Linking.openURL(iosUrl);
-      } else {
-        // Android: market:// 먼저 시도, 실패 시 HTTPS 폴백
-        const marketUrl = `market://details?id=${storeConfig.androidPackageName}`;
-        const webUrl = `https://play.google.com/store/apps/details?id=${storeConfig.androidPackageName}`;
-        console.log('[ReviewFunnel] Android URL:', marketUrl);
-
-        try {
-          await Linking.openURL(marketUrl);
-          console.log('[ReviewFunnel] market:// URL 열기 성공');
-        } catch (marketError) {
-          console.warn('[ReviewFunnel] market:// 실패, HTTPS로 시도:', marketError);
-          await Linking.openURL(webUrl);
+        } catch {
+          // in-app review 불가 시 스토어 URL로 폴백
         }
       }
+
+      // 스토어 URL로 이동 (fallback)
+      await openStoreReviewPage();
     } catch (err) {
-      console.error('[ReviewFunnel] 인앱 리뷰 요청 실패:', err);
+      if (__DEV__) console.error('[ReviewFunnel] 인앱 리뷰 요청 실패:', err);
     }
   }, [markReviewCompleted]);
 
@@ -176,19 +178,10 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
    */
   const handleWriteReviewClick = useCallback(async () => {
     try {
-      // 리뷰 완료 처리 (리뷰 내용도 작성)
       await markReviewCompleted('write_review');
-
-      // 스토어 리뷰 페이지로 직접 이동
-      const storeConfig = getStoreConfig();
-      const storeUrl = `https://apps.apple.com/app/id${storeConfig.iosAppId}?action=write-review`;
-
-      const canOpen = await Linking.canOpenURL(storeUrl);
-      if (canOpen) {
-        await Linking.openURL(storeUrl);
-      }
+      await openStoreReviewPage();
     } catch (err) {
-      console.error('스토어 리뷰 요청 실패:', err);
+      if (__DEV__) console.error('[ReviewFunnel] 스토어 리뷰 요청 실패:', err);
     }
   }, [markReviewCompleted]);
 

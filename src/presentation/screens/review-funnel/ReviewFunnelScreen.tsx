@@ -4,10 +4,9 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import colors from '@/shared/styles/colors';
 import { useReviewFunnel } from '@/features/review-funnel/hooks/useReviewFunnel';
+import { FUNNEL_BACKGROUND_COLORS } from '@/features/review-funnel/constants';
 import { LetterStep } from './_components/LetterStep';
 import { ContentReviewStep } from './_components/ContentReviewStep';
-
-const BACKGROUND_COLORS = ['#1a1a2e', '#16213e', '#0f0f0f'] as const;
 
 /**
  * ReviewFunnelScreen - 리뷰 유도 퍼널 화면
@@ -39,7 +38,7 @@ export default function ReviewFunnelScreen() {
       <Container>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <BackgroundGradient
-          colors={BACKGROUND_COLORS}
+          colors={FUNNEL_BACKGROUND_COLORS}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
         />
@@ -55,7 +54,7 @@ export default function ReviewFunnelScreen() {
       <Container>
         <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
         <BackgroundGradient
-          colors={BACKGROUND_COLORS}
+          colors={FUNNEL_BACKGROUND_COLORS}
           start={{ x: 0.5, y: 0 }}
           end={{ x: 0.5, y: 1 }}
         />

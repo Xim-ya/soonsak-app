@@ -11,6 +11,12 @@ import type { EdgeInsets } from 'react-native-safe-area-context';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import type { RecommendedContent } from '@/features/review-funnel/types';
+import {
+  FUNNEL_BACKGROUND_COLORS,
+  HIT_SLOP,
+  TMDB_IMAGE_BASE,
+  POSTER_SIZE,
+} from '@/features/review-funnel/constants';
 import CloseIcon from '@assets/icons/close.svg';
 
 interface ContentReviewStepProps {
@@ -20,9 +26,6 @@ interface ContentReviewStepProps {
   onClose: () => void;
   insets: EdgeInsets;
 }
-
-const HIT_SLOP = { top: 10, bottom: 10, left: 10, right: 10 };
-const TMDB_IMAGE_BASE = 'https://image.tmdb.org/t/p/w300';
 
 /**
  * ContentReviewStep - 리뷰 유도 화면
@@ -61,7 +64,7 @@ export function ContentReviewStep({
     <Container>
       {/* 배경 그래디언트 */}
       <BackgroundGradient
-        colors={['#1a1a2e', '#16213e', '#0f0f0f']}
+        colors={FUNNEL_BACKGROUND_COLORS}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
       />
@@ -210,20 +213,20 @@ const PosterGrid = styled.View({
 });
 
 const PosterCard = styled.View({
-  width: 100,
+  width: POSTER_SIZE.width,
   alignItems: 'center',
 });
 
 const PosterImage = styled(Image)({
-  width: 100,
-  height: 150,
+  width: POSTER_SIZE.width,
+  height: POSTER_SIZE.height,
   borderRadius: 8,
   backgroundColor: colors.gray05,
 });
 
 const PosterPlaceholder = styled.View({
-  width: 100,
-  height: 150,
+  width: POSTER_SIZE.width,
+  height: POSTER_SIZE.height,
   borderRadius: 8,
   backgroundColor: colors.gray05,
   justifyContent: 'center',
