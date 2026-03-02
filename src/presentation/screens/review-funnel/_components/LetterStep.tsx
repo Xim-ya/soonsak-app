@@ -51,7 +51,7 @@ export function LetterStep({ userName, onOpen, onClose, insets }: LetterStepProp
 
         {/* 텍스트 영역 */}
         <TextContainer>
-          <TitleText>순삭 개발자가</TitleText>
+          <TitleText>개발자가</TitleText>
           <HighlightRow>
             <HighlightText>{userName}</HighlightText>
             <TitleText> 유저님께</TitleText>
