@@ -38,52 +38,21 @@ export const pushTokenApi = {
    * @param token Expo Push Token
    */
   syncToken: async (userId: string, token: string): Promise<void> => {
-    // 같은 유저의 다른 모든 토큰 비활성화 (한 유저는 하나의 활성 토큰만 가짐)
-    await supabaseClient
-      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
-      .update({
-        [PUSH_DATABASE.COLUMNS.IS_ACTIVE]: false,
-        [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
-      })
-      .eq(PUSH_DATABASE.COLUMNS.USER_ID, userId)
-      .neq(PUSH_DATABASE.COLUMNS.TOKEN, token);
-
-    // 다른 user가 같은 토큰을 가지고 있으면 삭제 (기기는 한 user에만 연결)
-    await supabaseClient
-      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
-      .delete()
-      .eq(PUSH_DATABASE.COLUMNS.TOKEN, token)
-      .neq(PUSH_DATABASE.COLUMNS.USER_ID, userId);
-
     // device_id 조회 (없으면 생성)
     const deviceId = await getOrCreateDeviceId();
 
     // SECURITY DEFINER 함수를 사용하여 토큰 동기화
     // - 다른 유저의 동일 토큰 삭제 (RLS 우회)
     // - 현재 유저의 토큰 upsert
-    const { error } = await supabaseClient.rpc('sync_push_token', {
+    const { error: rpcError } = await supabaseClient.rpc('sync_push_token', {
       p_user_id: userId,
       p_token: token,
       p_platform: Platform.OS,
       p_device_id: deviceId,
     });
-    // 토큰 등록 (upsert) - 항상 실행하여 DB 동기화 보장
-    const { error } = await supabaseClient.from(PUSH_DATABASE.TABLES.PUSH_TOKENS).upsert(
-      {
-        [PUSH_DATABASE.COLUMNS.USER_ID]: userId,
-        [PUSH_DATABASE.COLUMNS.TOKEN]: token,
-        [PUSH_DATABASE.COLUMNS.PLATFORM]: Platform.OS,
-        [PUSH_DATABASE.COLUMNS.DEVICE_ID]: deviceId,
-        [PUSH_DATABASE.COLUMNS.IS_ACTIVE]: true,
-        [PUSH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
-      },
-      {
-        onConflict: 'token',
-      },
-    );
 
-    if (error) {
-      throw error;
+    if (rpcError) {
+      throw new Error(`Failed to sync push token via RPC: ${rpcError.message}`);
     }
 
     // 로컬에 토큰 저장

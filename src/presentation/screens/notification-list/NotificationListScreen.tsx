@@ -13,8 +13,9 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { FlatList, RefreshControl, ActivityIndicator, ListRenderItem } from 'react-native';
+import { FlatList, RefreshControl, ActivityIndicator, ListRenderItem, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
+import textStyles from '@/shared/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import colors from '@/shared/styles/colors';
 import type { NotificationItem } from '@/features/notifications';
@@ -31,6 +32,7 @@ export default function NotificationListScreen() {
   const {
     items,
     isLoading,
+    isError,
     isEmpty,
     isRefetching,
     isFetchingNextPage,
@@ -66,7 +68,7 @@ export default function NotificationListScreen() {
     );
   }, [isFetchingNextPage]);
 
-  // 빈 상태 또는 초기 로딩
+  // 빈 상태, 에러 상태, 또는 초기 로딩
   const ListEmpty = useCallback(() => {
     if (isLoading) {
       return (
@@ -75,8 +77,18 @@ export default function NotificationListScreen() {
         </LoadingContainer>
       );
     }
+    if (isError) {
+      return (
+        <ErrorContainer>
+          <ErrorText>알림을 불러오지 못했어요</ErrorText>
+          <RetryButton onPress={handleRefresh} activeOpacity={0.7}>
+            <RetryButtonText>다시 시도</RetryButtonText>
+          </RetryButton>
+        </ErrorContainer>
+      );
+    }
     return <NotificationEmptyState />;
-  }, [isLoading]);
+  }, [isLoading, isError, handleRefresh]);
 
   // 리프레시 컨트롤
   const refreshControl = useMemo(
@@ -110,7 +122,7 @@ export default function NotificationListScreen() {
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0.5}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={isEmpty || isLoading ? EMPTY_CONTENT_STYLE : undefined}
+          contentContainerStyle={isEmpty || isLoading || isError ? EMPTY_CONTENT_STYLE : undefined}
           getItemLayout={(_, index) => ({
             length: ITEM_HEIGHT_ESTIMATE,
             offset: ITEM_HEIGHT_ESTIMATE * index,
@@ -151,4 +163,28 @@ const LoadingContainer = styled.View({
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
+});
+
+const ErrorContainer = styled.View({
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  gap: 16,
+});
+
+const ErrorText = styled.Text({
+  ...textStyles.body2,
+  color: colors.gray02,
+});
+
+const RetryButton = styled(TouchableOpacity)({
+  paddingHorizontal: 20,
+  paddingVertical: 10,
+  borderRadius: 20,
+  backgroundColor: colors.gray05,
+});
+
+const RetryButtonText = styled.Text({
+  ...textStyles.alert2,
+  color: colors.white,
 });

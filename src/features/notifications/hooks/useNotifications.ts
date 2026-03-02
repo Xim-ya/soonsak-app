@@ -210,7 +210,12 @@ export const useMarkNotificationAsRead = () => {
   const { invalidateCurrentDevice } = useNotificationCacheInvalidation();
 
   return useMutation({
-    mutationFn: (notificationId: string) => notificationApi.markAsRead(notificationId, userId!),
+    mutationFn: (notificationId: string) => {
+      if (!userId) {
+        return Promise.reject(new Error('userId is required'));
+      }
+      return notificationApi.markAsRead(notificationId, userId);
+    },
     onSuccess: invalidateCurrentDevice,
   });
 };
@@ -226,7 +231,12 @@ export const useMarkNotificationAsClicked = () => {
   const { userId, expoPushToken } = useNotificationContext();
 
   return useMutation({
-    mutationFn: (notificationId: string) => notificationApi.markAsClicked(notificationId, userId!),
+    mutationFn: (notificationId: string) => {
+      if (!userId) {
+        return Promise.reject(new Error('userId is required'));
+      }
+      return notificationApi.markAsClicked(notificationId, userId);
+    },
     onMutate: async (notificationId: string) => {
       // 진행 중인 쿼리 취소 (낙관적 업데이트와 충돌 방지)
       await queryClient.cancelQueries({
@@ -280,7 +290,12 @@ export const useMarkAllNotificationsAsRead = () => {
   const { userId, expoPushToken } = useNotificationContext();
 
   return useMutation({
-    mutationFn: () => notificationApi.markAllAsRead(userId!),
+    mutationFn: () => {
+      if (!userId) {
+        return Promise.reject(new Error('userId is required'));
+      }
+      return notificationApi.markAllAsRead(userId);
+    },
     onMutate: async () => {
       // 진행 중인 쿼리 취소
       await queryClient.cancelQueries({

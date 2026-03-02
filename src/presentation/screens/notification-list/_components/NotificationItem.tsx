@@ -85,10 +85,17 @@ function NotificationItemView({ item, onPress }: NotificationItemViewProps) {
  * Named export로 통일하여 일관된 import 패턴 유지
  */
 const MemoizedNotificationItemView = React.memo(NotificationItemView, (prevProps, nextProps) => {
-  // item의 주요 필드만 비교하여 불필요한 리렌더링 방지
+  // item의 표시 필드를 모두 비교하여 UI 변경 시 리렌더링 보장
+  const prevItem = prevProps.item;
+  const nextItem = nextProps.item;
+
   return (
-    prevProps.item.id === nextProps.item.id &&
-    prevProps.item.readAt === nextProps.item.readAt &&
+    prevItem.id === nextItem.id &&
+    prevItem.readAt === nextItem.readAt &&
+    prevItem.title === nextItem.title &&
+    prevItem.body === nextItem.body &&
+    prevItem.createdAt === nextItem.createdAt &&
+    prevItem.notificationType === nextItem.notificationType &&
     prevProps.onPress === nextProps.onPress
   );
 });

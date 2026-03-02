@@ -12,7 +12,7 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType, contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import type { NotificationItem } from '@/features/notifications';
 
 // ============================================================================
@@ -37,54 +37,86 @@ type DeepLinkScreen =
 /** 네비게이션 타입 */
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
 
-/** 라우트 핸들러 타입 */
-type RouteHandler = (navigation: Navigation, params: Record<string, unknown> | null) => void;
+/** 라우트 핸들러 타입 - boolean 반환으로 네비게이션 성공 여부 표시 */
+type RouteHandler = (navigation: Navigation, params: Record<string, unknown> | null) => boolean;
 
 // ============================================================================
 // Route Handlers (화면별 네비게이션 핸들러)
 // ============================================================================
 
 /**
+ * 숫자 파라미터 안전하게 파싱
+ */
+function parseNumberParam(value: unknown): number | null {
+  if (typeof value === 'number' && isFinite(value)) return value;
+  if (typeof value === 'string') {
+    const parsed = Number(value);
+    if (isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+/**
+ * ContentType 유효성 검증
+ */
+function isValidContentType(value: unknown): value is ContentType {
+  return typeof value === 'string' && value in contentTypeConfigs;
+}
+
+/**
  * 콘텐츠 상세 화면 네비게이션
  */
 const navigateToContentDetail: RouteHandler = (navigation, params) => {
-  const hasRequiredParams = params?.['id'] && params?.['type'];
-  if (!hasRequiredParams) return;
+  const id = parseNumberParam(params?.['id']);
+  const type = params?.['type'];
+
+  if (id === null || !isValidContentType(type)) return false;
 
   navigation.navigate(routePages.contentDetail, {
-    id: params['id'] as number,
-    type: params['type'] as ContentType,
-    title: (params['title'] as string) ?? undefined,
+    id,
+    type,
+    title: typeof params?.['title'] === 'string' ? params['title'] : null,
   });
+  return true;
 };
 
 /**
  * 플레이어 화면 네비게이션
  */
 const navigateToPlayer: RouteHandler = (navigation, params) => {
-  const hasRequiredParams = params?.['videoId'] && params?.['contentId'] && params?.['contentType'];
-  if (!hasRequiredParams) return;
+  const videoId = params?.['videoId'];
+  const contentId = parseNumberParam(params?.['contentId']);
+  const contentType = params?.['contentType'];
+
+  if (typeof videoId !== 'string' || contentId === null || !isValidContentType(contentType)) {
+    return false;
+  }
+
+  const title = typeof params?.['title'] === 'string' ? params['title'] : '';
 
   navigation.navigate(routePages.player, {
-    videoId: params['videoId'] as string,
-    title: params['title'] as string,
-    contentId: params['contentId'] as number,
-    contentType: params['contentType'] as ContentType,
-    startSeconds: params['startSeconds'] as number | undefined,
+    videoId,
+    title,
+    contentId,
+    contentType,
+    startSeconds: parseNumberParam(params?.['startSeconds']) ?? undefined,
   });
+  return true;
 };
 
 /**
  * 채널 상세 화면 네비게이션
  */
 const navigateToChannelDetail: RouteHandler = (navigation, params) => {
-  if (!params?.['channelId']) return;
+  const channelId = params?.['channelId'];
+  if (typeof channelId !== 'string') return false;
 
-  const channelName = params['channelName'] as string | undefined;
+  const channelName = params?.['channelName'];
   navigation.navigate(routePages.channelDetail, {
-    channelId: params['channelId'] as string,
-    ...(channelName ? { channelName } : {}),
+    channelId,
+    ...(typeof channelName === 'string' ? { channelName } : {}),
   });
+  return true;
 };
 
 /**
@@ -92,6 +124,7 @@ const navigateToChannelDetail: RouteHandler = (navigation, params) => {
  */
 const navigateToSearch: RouteHandler = (navigation) => {
   navigation.navigate(routePages.search);
+  return true;
 };
 
 /**
@@ -99,16 +132,20 @@ const navigateToSearch: RouteHandler = (navigation) => {
  */
 const navigateToSettings: RouteHandler = (navigation) => {
   navigation.navigate(routePages.settings);
+  return true;
 };
 
 /**
  * 사용자 콘텐츠 목록 화면 네비게이션
  */
 const navigateToUserContentList: RouteHandler = (navigation, params) => {
-  const initialTab = params?.['initialTab'] as 0 | 1 | 2 | undefined;
+  const initialTab = parseNumberParam(params?.['initialTab']);
+  const validTab = initialTab !== null && [0, 1, 2].includes(initialTab) ? initialTab : undefined;
+
   navigation.navigate(routePages.userContentList, {
-    ...(initialTab !== undefined ? { initialTab } : {}),
+    ...(validTab !== undefined ? { initialTab: validTab as 0 | 1 | 2 } : {}),
   });
+  return true;
 };
 
 // ============================================================================
@@ -183,8 +220,7 @@ export function navigateByDeepLink(navigation: Navigation, deepLinkInfo: DeepLin
   // 지원하는 화면인지 확인 후 라우터 맵에서 핸들러 실행
   if (isSupportedScreen(screen)) {
     const handler = DEEP_LINK_ROUTE_MAP[screen];
-    handler(navigation, params);
-    return true;
+    return handler(navigation, params);
   }
 
   return false;
@@ -198,7 +234,10 @@ export function navigateByDeepLink(navigation: Navigation, deepLinkInfo: DeepLin
  * @param item 알림 아이템
  * @returns 네비게이션이 수행되었는지 여부
  */
-export function handleNotificationDeepLink(navigation: Navigation, item: NotificationItem): boolean {
+export function handleNotificationDeepLink(
+  navigation: Navigation,
+  item: NotificationItem,
+): boolean {
   const deepLinkInfo = parseNotificationDeepLink(item);
   return navigateByDeepLink(navigation, deepLinkInfo);
 }

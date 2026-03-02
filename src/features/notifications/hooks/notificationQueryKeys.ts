@@ -50,10 +50,13 @@ const DEFAULT_PUSH_TOKEN = 'all' as const;
 
 /**
  * 푸시 토큰을 정규화합니다.
- * null/undefined인 경우 'all'을 반환합니다.
+ * null/undefined/빈문자열인 경우 'all'을 반환합니다.
  */
 function normalizePushToken(pushToken?: string | null): string {
-  return pushToken ?? DEFAULT_PUSH_TOKEN;
+  if (!pushToken || pushToken.trim() === '') {
+    return DEFAULT_PUSH_TOKEN;
+  }
+  return pushToken;
 }
 
 export const notificationKeys = {

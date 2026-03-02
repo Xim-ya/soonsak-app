@@ -74,7 +74,13 @@ const NotificationBellButton = React.memo(
     }
 
     return (
-      <Container onPress={handlePress} hitSlop={HIT_SLOP} accessibilityLabel="알림">
+      <Container
+        onPress={handlePress}
+        hitSlop={HIT_SLOP}
+        accessibilityLabel="알림"
+        accessibilityRole="button"
+        accessibilityState={{ selected: hasUnread }}
+      >
         <BellIcon width={size} height={size} color={color} />
         {hasUnread && (
           <Badge size={badgeSize}>

@@ -254,6 +254,7 @@ export const notificationApi = {
    *
    * @param notificationId 알림 ID (push_notifications)
    * @param userId 사용자 ID
+   * @throws Error Supabase 에러 발생 시
    */
   markAsRead: async (notificationId: string, userId: string): Promise<void> => {
     const { error } = await supabaseClient
@@ -266,7 +267,7 @@ export const notificationApi = {
       .is('read_at', null);
 
     if (error) {
-      console.warn('[NotificationApi] 알림 읽음 처리 실패:', error);
+      throw new Error(`Failed to mark notification as read: ${error.message}`);
     }
   },
 
@@ -275,6 +276,7 @@ export const notificationApi = {
    *
    * @param notificationId 알림 ID (push_notifications)
    * @param userId 사용자 ID
+   * @throws Error Supabase 에러 발생 시
    */
   markAsClicked: async (notificationId: string, userId: string): Promise<void> => {
     const now = new Date().toISOString();
@@ -289,7 +291,7 @@ export const notificationApi = {
       .eq('user_id', userId);
 
     if (error) {
-      console.warn('[NotificationApi] 알림 클릭 처리 실패:', error);
+      throw new Error(`Failed to mark notification as clicked: ${error.message}`);
     }
   },
 
@@ -297,6 +299,7 @@ export const notificationApi = {
    * 모든 알림 읽음 처리
    *
    * @param userId 사용자 ID
+   * @throws Error Supabase 에러 발생 시
    */
   markAllAsRead: async (userId: string): Promise<void> => {
     const { error } = await supabaseClient
@@ -308,7 +311,7 @@ export const notificationApi = {
       .is('read_at', null);
 
     if (error) {
-      console.warn('[NotificationApi] 모든 알림 읽음 처리 실패:', error);
+      throw new Error(`Failed to mark all notifications as read: ${error.message}`);
     }
   },
 };

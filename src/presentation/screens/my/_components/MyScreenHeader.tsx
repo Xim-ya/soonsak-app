@@ -11,7 +11,7 @@ import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
-import { NotificationBellButton } from '@/features/notifications/components/NotificationBellButton';
+import { NotificationBellButton } from '@/features/notifications';
 import { useMyScreen } from '../_provider';
 import GearIcon from '@assets/icons/gear.svg';
 
