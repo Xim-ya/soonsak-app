@@ -20,10 +20,10 @@ import {
 
 /** 에러 메시지 매핑 */
 const ERROR_MESSAGES = {
-  FETCH_FAILED: '채널 정보를 불러올 수 없습니다.',
-  CONTENTS_FETCH_FAILED: '콘텐츠 목록을 불러올 수 없습니다.',
-  DELETE_FAILED: '채널 삭제에 실패했습니다.',
-  NETWORK_ERROR: '네트워크 연결을 확인해주세요.',
+  FETCH_FAILED: '채널 정보를 불러오지 못했어요',
+  CONTENTS_FETCH_FAILED: '콘텐츠 목록을 불러오지 못했어요',
+  DELETE_FAILED: '채널을 삭제하지 못했어요',
+  NETWORK_ERROR: '네트워크 연결을 확인해주세요',
 } as const;
 
 /** 페이지당 콘텐츠 수 */
@@ -138,7 +138,7 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
 
       const dialogResult = await showDialog({
         title: '삭제 완료',
-        description: `채널이 삭제되었습니다.\n영상 ${result.deletedVideosCount}개, 콘텐츠 ${result.deletedContentsCount}개가 함께 삭제되었습니다.`,
+        description: `채널을 삭제했어요\n영상 ${result.deletedVideosCount}개, 콘텐츠 ${result.deletedContentsCount}개도 함께 삭제했어요`,
         buttonText: '확인',
       });
       if (dialogResult === 'confirm') {
@@ -165,7 +165,7 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
 
     const result = await showConfirmDialog({
       title: '채널 삭제',
-      description: `이 채널을 삭제하면 ${videoCount}개의 영상이 삭제되고, ${contentCount}개의 콘텐츠도 함께 삭제될 수 있습니다.\n\n정말 삭제하시겠습니까?`,
+      description: `이 채널을 삭제하면 ${videoCount}개의 영상이 삭제되고, ${contentCount}개의 콘텐츠도 함께 삭제될 수 있어요\n\n정말 삭제할까요?`,
       leftButtonText: '취소',
       rightButtonText: '삭제',
     });

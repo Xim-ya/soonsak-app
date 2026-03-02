@@ -44,12 +44,12 @@ const emptyStateConfigs: Record<EmptyStateType, EmptyStateConfig> = {
   },
   noResults: {
     icon: noResultsIconSvg,
-    title: '검색 결과가 없습니다',
-    description: '등록된 콘텐츠 중 일치하는 결과가 없습니다',
+    title: '검색 결과가 없어요',
+    description: '등록된 콘텐츠 중 일치하는 결과가 없어요',
   },
   error: {
     icon: errorIconSvg,
-    title: '검색 중 오류가 발생했습니다',
+    title: '검색 중 오류가 생겼어요',
     description: '잠시 후 다시 시도해주세요',
   },
 };

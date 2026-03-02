@@ -20,11 +20,11 @@ export type AuthErrorCode = (typeof AUTH_ERROR_CODES)[keyof typeof AUTH_ERROR_CO
 
 /** 인증 에러 메시지 */
 export const AUTH_ERROR_MESSAGES: Record<AuthErrorCode, string> = {
-  [AUTH_ERROR_CODES.USER_CANCELLED]: '로그인이 취소되었습니다.',
-  [AUTH_ERROR_CODES.NETWORK_ERROR]: '네트워크 연결을 확인해주세요.',
-  [AUTH_ERROR_CODES.GOOGLE_PLAY_NOT_AVAILABLE]: 'Google Play 서비스를 업데이트해주세요.',
-  [AUTH_ERROR_CODES.SUPABASE_ERROR]: '로그인 중 오류가 발생했습니다.',
-  [AUTH_ERROR_CODES.UNKNOWN_ERROR]: '알 수 없는 오류가 발생했습니다.',
+  [AUTH_ERROR_CODES.USER_CANCELLED]: '로그인을 취소했어요',
+  [AUTH_ERROR_CODES.NETWORK_ERROR]: '네트워크 연결을 확인해주세요',
+  [AUTH_ERROR_CODES.GOOGLE_PLAY_NOT_AVAILABLE]: 'Google Play 서비스를 업데이트해주세요',
+  [AUTH_ERROR_CODES.SUPABASE_ERROR]: '로그인 중 문제가 생겼어요',
+  [AUTH_ERROR_CODES.UNKNOWN_ERROR]: '알 수 없는 오류가 발생했어요',
 };
 
 /** Apple 에러 코드 맵핑 */

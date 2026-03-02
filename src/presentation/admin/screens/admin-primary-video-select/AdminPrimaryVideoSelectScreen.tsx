@@ -68,7 +68,7 @@ export default function AdminPrimaryVideoSelectScreen() {
     if (video.isPrimary) {
       await showDialog({
         title: '알림',
-        description: '이미 대표 비디오로 설정되어 있습니다.',
+        description: '이미 대표 비디오로 설정되어 있어요',
         buttonText: '확인',
       });
       return;
@@ -76,7 +76,7 @@ export default function AdminPrimaryVideoSelectScreen() {
 
     const result = await showConfirmDialog({
       title: '대표 비디오 변경',
-      description: `"${video.title}"을(를) 대표 비디오로 설정하시겠습니까?`,
+      description: `"${video.title}"을(를) 대표 비디오로 설정할까요?`,
       leftButtonText: '취소',
       rightButtonText: '변경',
     });
@@ -109,14 +109,14 @@ export default function AdminPrimaryVideoSelectScreen() {
 
         await showDialog({
           title: '완료',
-          description: `"${videoTitle}"이(가) 대표 비디오로 설정되었습니다.`,
+          description: `"${videoTitle}"을(를) 대표 비디오로 설정했어요`,
           buttonText: '확인',
         });
       } catch (error) {
         console.error('대표 비디오 변경 실패:', error);
         await showDialog({
           title: '오류',
-          description: '대표 비디오 변경에 실패했습니다. 다시 시도해주세요.',
+          description: '대표 비디오를 변경하지 못했어요. 다시 시도해주세요.',
           buttonText: '확인',
         });
       }

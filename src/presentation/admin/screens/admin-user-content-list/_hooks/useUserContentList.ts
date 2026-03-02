@@ -151,7 +151,7 @@ export function useUserContentList({
     if (trimmedBody.length === 0) {
       await showDialog({
         title: '입력 오류',
-        description: '내용을 입력해주세요.',
+        description: '내용을 입력해주세요',
         buttonText: '확인',
       });
       return;
@@ -184,7 +184,7 @@ export function useUserContentList({
       if (result.success) {
         const dialogResult = await showDialog({
           title: '발송 완료',
-          description: `푸시 알림이 발송되었습니다. (${result.sentCount}건)`,
+          description: `푸시 알림을 발송했어요 (${result.sentCount}건)`,
           buttonText: '확인',
         });
         if (dialogResult === 'confirm') {
@@ -193,7 +193,7 @@ export function useUserContentList({
       } else {
         await showDialog({
           title: '발송 실패',
-          description: '활성화된 푸시 토큰이 없습니다.',
+          description: '활성화된 푸시 토큰이 없어요',
           buttonText: '확인',
         });
       }
@@ -201,7 +201,7 @@ export function useUserContentList({
       console.error('푸시 발송 실패:', err);
       await showDialog({
         title: '발송 실패',
-        description: '푸시 알림 발송에 실패했습니다.',
+        description: '푸시 알림을 발송하지 못했어요',
         buttonText: '확인',
       });
     } finally {
@@ -226,11 +226,11 @@ export function useUserContentList({
   const getEmptyMessage = useCallback(() => {
     switch (activeTab) {
       case 'history':
-        return '시청기록이 없습니다';
+        return '시청기록이 없어요';
       case 'favorites':
-        return '찜한 콘텐츠가 없습니다';
+        return '찜한 콘텐츠가 없어요';
       case 'ratings':
-        return '평가한 콘텐츠가 없습니다';
+        return '평가한 콘텐츠가 없어요';
     }
   }, [activeTab]);
 

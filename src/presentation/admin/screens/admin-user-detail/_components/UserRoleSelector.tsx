@@ -63,7 +63,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
       if (role === 'banned') {
         const result = await showConfirmDialog({
           title: '차단 확인',
-          description: '이 유저를 차단하시겠습니까?\n차단된 유저는 앱을 이용할 수 없습니다.',
+          description: '이 유저를 차단할까요?\n차단된 유저는 앱을 이용할 수 없어요',
           leftButtonText: '취소',
           rightButtonText: '차단',
         });
@@ -78,7 +78,7 @@ export const UserRoleSelector = memo(function UserRoleSelector({
       if (role === 'admin') {
         const result = await showConfirmDialog({
           title: '관리자 권한 부여',
-          description: '이 유저에게 관리자 권한을 부여하시겠습니까?',
+          description: '이 유저에게 관리자 권한을 부여할까요?',
           leftButtonText: '취소',
           rightButtonText: '확인',
         });

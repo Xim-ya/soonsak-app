@@ -46,7 +46,7 @@ export const PushTokenStatus = memo(function PushTokenStatus({ tokens }: PushTok
 
       {hasNoTokens ? (
         <EmptyContainer>
-          <EmptyText>등록된 푸시 토큰이 없습니다</EmptyText>
+          <EmptyText>등록된 푸시 토큰이 없어요</EmptyText>
         </EmptyContainer>
       ) : (
         <>
