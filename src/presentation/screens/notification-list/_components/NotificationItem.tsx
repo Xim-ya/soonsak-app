@@ -27,6 +27,7 @@ import PlayIcon from '@assets/icons/notification/play.svg';
 import ChannelIcon from '@assets/icons/notification/channel.svg';
 import GearIcon from '@assets/icons/notification/gear.svg';
 import LightningIcon from '@assets/icons/notification/lightning.svg';
+import PartyIcon from '@assets/icons/notification/party.svg';
 
 const ICON_CONTAINER_SIZE = 40;
 const ICON_SIZE = 24;
@@ -44,6 +45,7 @@ const NOTIFICATION_ICONS: Record<PushNotificationType, IconComponent> = {
   marketing: LightningIcon,
   reminder: BellIcon,
   recommendation: PlayIcon,
+  review: PartyIcon,
 };
 
 interface NotificationItemViewProps {

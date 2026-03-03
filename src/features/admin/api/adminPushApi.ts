@@ -21,7 +21,8 @@ export type PushNotificationType =
   | 'system'
   | 'marketing'
   | 'reminder'
-  | 'recommendation';
+  | 'recommendation'
+  | 'review';
 
 /** 푸시 우선순위 */
 export type PushPriority = 'high' | 'normal' | 'low';

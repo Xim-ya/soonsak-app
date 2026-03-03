@@ -253,7 +253,7 @@ export const useMarkNotificationAsClicked = () => {
         queryKey: listKeyPrefix,
       });
 
-      // 낙관적 업데이트: 모든 캐시에서 해당 알림의 readAt 즉시 업데이트
+      // 낙관적 업데이트: 모든 캐시에서 해당 알림의 readAt, clickedAt 즉시 업데이트
       const now = new Date().toISOString();
       allListCaches.forEach(([queryKey]) => {
         queryClient.setQueryData<NotificationInfiniteData>(queryKey, (oldData) => {
@@ -264,7 +264,7 @@ export const useMarkNotificationAsClicked = () => {
               ...page,
               notifications: page.notifications.map((notification) =>
                 notification.notificationId === notificationId
-                  ? { ...notification, readAt: now }
+                  ? { ...notification, readAt: now, clickedAt: now }
                   : notification,
               ),
             })),
