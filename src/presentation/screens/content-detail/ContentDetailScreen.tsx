@@ -82,11 +82,12 @@ function ContentDetailContent({
   // 콘텐츠 상세 정보 (현재 backdrop 경로 가져오기 위해)
   const { data: contentDetail } = useContentDetail(contentId, contentType);
 
-  // GA4 content_view 이벤트 로깅 (페이지 진입 시 1회)
-  const hasLoggedContentView = useRef(false);
+  // GA4 content_view 이벤트 로깅 (콘텐츠별 1회)
+  // contentId 변경 시에도 새 콘텐츠에 대해 로깅하기 위해 마지막 로깅한 콘텐츠 ID를 추적
+  const lastLoggedContentIdRef = useRef<number | null>(null);
   useEffect(() => {
-    if (!hasLoggedContentView.current && contentDetail) {
-      hasLoggedContentView.current = true;
+    if (contentDetail && lastLoggedContentIdRef.current !== contentId) {
+      lastLoggedContentIdRef.current = contentId;
       analyticsService.contentView({
         content_id: contentId,
         content_type: contentType,

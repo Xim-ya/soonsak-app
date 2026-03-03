@@ -54,6 +54,8 @@ function MonthYearPickerBottomSheet() {
 
   // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
   const actionTakenRef = useRef(false);
+  // 이전 visible 상태 추적 (중복 bottomSheetOpen 방지)
+  const wasMonthPickerVisibleRef = useRef(false);
 
   // 애니메이션 값
   const overlayOpacity = useSharedValue(0);
@@ -62,11 +64,18 @@ function MonthYearPickerBottomSheet() {
   // visible 상태에 따른 초기화
   useEffect(() => {
     if (isMonthPickerVisible) {
-      actionTakenRef.current = false;
-      analyticsService.bottomSheetOpen({
-        sheet_type: 'month_year_picker',
-        screen_name: 'my',
-      });
+      // 새로 열릴 때만 GA 로깅 (이전에 닫혀있었을 때만)
+      const isNewOpen = !wasMonthPickerVisibleRef.current;
+      wasMonthPickerVisibleRef.current = true;
+
+      if (isNewOpen) {
+        actionTakenRef.current = false;
+        analyticsService.bottomSheetOpen({
+          sheet_type: 'month_year_picker',
+          screen_name: 'my',
+        });
+      }
+
       setTempYear(selectedYear);
       setTempMonth(selectedMonth);
 
@@ -92,6 +101,9 @@ function MonthYearPickerBottomSheet() {
           viewPosition: 0.5,
         });
       }, 100);
+    } else {
+      // 닫힐 때 상태 리셋
+      wasMonthPickerVisibleRef.current = false;
     }
   }, [isMonthPickerVisible, selectedYear, selectedMonth, overlayOpacity, sheetTranslateY]);
 

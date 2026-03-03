@@ -104,29 +104,41 @@ function serializeParams<T extends object>(params: T): EventParams {
  * 기본 이벤트 로깅 함수
  * 개발 환경에서는 콘솔 로그만 출력하고 실제 전송하지 않음
  */
-async function logEvent(eventName: AnalyticsEventName, params?: EventParams): Promise<void> {
+function logEvent(eventName: AnalyticsEventName, params?: EventParams): void {
   if (__DEV__) {
     console.log(`[Analytics] ${eventName}`, params ?? {});
     return;
   }
 
   // Fire and forget - 비동기로 전송하되 기다리지 않음
-  analytics().logEvent(eventName, params);
+  analytics()
+    .logEvent(eventName, params)
+    .catch((error) => {
+      if (__DEV__) {
+        console.error(`[Analytics] Failed to log event ${eventName}:`, error);
+      }
+    });
 }
 
 /**
  * 화면 조회 로깅 함수
  */
-async function logScreenView(screenName: string, screenClass?: string): Promise<void> {
+function logScreenView(screenName: string, screenClass?: string): void {
   if (__DEV__) {
     console.log(`[Analytics] screen_view: ${screenName}`);
     return;
   }
 
-  analytics().logScreenView({
-    screen_name: screenName,
-    screen_class: screenClass ?? screenName,
-  });
+  analytics()
+    .logScreenView({
+      screen_name: screenName,
+      screen_class: screenClass ?? screenName,
+    })
+    .catch((error) => {
+      if (__DEV__) {
+        console.error(`[Analytics] Failed to log screen view ${screenName}:`, error);
+      }
+    });
 }
 
 /**

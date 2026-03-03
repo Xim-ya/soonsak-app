@@ -58,9 +58,10 @@ export const TabBar = <T extends string>({
       // 탭 전환 시 GA4 이벤트 로깅 (같은 탭 클릭 시에는 로깅하지 않음)
       if (previousTabRef.current !== name) {
         const tabName = name === '영상' ? 'video_info' : 'related_content';
+        const parsedContentId = contentId != null ? Number(contentId) : 0;
         analyticsService.contentDetailTabSwitch({
           tab_name: tabName as 'video_info' | 'related_content',
-          content_id: Number(contentId),
+          content_id: parsedContentId,
         });
         previousTabRef.current = name;
       }

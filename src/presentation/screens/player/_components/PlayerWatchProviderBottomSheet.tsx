@@ -40,8 +40,14 @@ function PlayerWatchProviderBottomSheet({
 
   // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
   const actionTakenRef = useRef(false);
+  // 닫기 애니메이션 진행 중 재진입 방지
+  const isClosingRef = useRef(false);
 
   const handleClose = useCallback(() => {
+    // 재진입 가드: 이미 닫기 진행 중이면 중복 호출 방지
+    if (isClosingRef.current) return;
+    isClosingRef.current = true;
+
     analyticsService.bottomSheetClose({
       sheet_type: 'watch_provider',
       screen_name: 'player',
@@ -60,6 +66,7 @@ function PlayerWatchProviderBottomSheet({
   useEffect(() => {
     if (visible) {
       actionTakenRef.current = false;
+      isClosingRef.current = false;
       analyticsService.bottomSheetOpen({
         sheet_type: 'watch_provider',
         screen_name: 'player',

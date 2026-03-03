@@ -67,6 +67,8 @@ interface ContentFilterBottomSheetProps {
   readonly preserveScrollPosition?: boolean;
   /** 필터 초기화 콜백 (초기화 버튼 클릭 시 호출) */
   readonly onReset?: () => void;
+  /** GA 로깅에 사용할 화면 이름 (기본값: 'explore') */
+  readonly screenName?: string;
 }
 
 const SHEET_HEIGHT = AppSize.screenHeight * 0.85;
@@ -83,6 +85,7 @@ function ContentFilterBottomSheet({
   onRequestChannelSelection,
   preserveScrollPosition = false,
   onReset,
+  screenName = 'explore',
 }: ContentFilterBottomSheetProps): React.ReactElement {
   // 임시 필터 상태 (적용 전까지만 유지)
   const [tempFilter, setTempFilter] = useState<ContentFilter>(currentFilter);
@@ -119,7 +122,7 @@ function ContentFilterBottomSheet({
       if (!preserveScrollPosition) {
         analyticsService.bottomSheetOpen({
           sheet_type: 'content_filter',
-          screen_name: 'explore',
+          screen_name: screenName,
         });
       }
       setTempFilter(currentFilter);
@@ -147,7 +150,7 @@ function ContentFilterBottomSheet({
   const handleClose = useCallback(() => {
     analyticsService.bottomSheetClose({
       sheet_type: 'content_filter',
-      screen_name: 'explore',
+      screen_name: screenName,
       action_taken: actionTakenRef.current,
     });
     overlayOpacity.value = withTiming(0, { duration: 200 });
@@ -158,7 +161,7 @@ function ContentFilterBottomSheet({
         runOnJS(onClose)();
       },
     );
-  }, [onClose, overlayOpacity, sheetTranslateY]);
+  }, [onClose, overlayOpacity, sheetTranslateY, screenName]);
 
   // visible 상태에 따른 애니메이션
   useEffect(() => {

@@ -117,11 +117,13 @@ export function WatchHistoryProvider({ children, date }: WatchHistoryProviderPro
     infiniteQuery.hasNextPage,
   ]);
 
-  // 시청 기록 화면 진입 이벤트 로깅 (최초 1회만)
-  const hasLoggedViewRef = useRef(false);
+  // 시청 기록 화면 진입 이벤트 로깅 (날짜별 1회)
+  // date 변경 시에도 새 날짜에 대해 로깅하기 위해 마지막 로깅한 날짜 키를 추적
+  const lastLoggedDateKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!isInitialLoading && !hasLoggedViewRef.current) {
-      hasLoggedViewRef.current = true;
+    const dateKey = date ?? 'all';
+    if (!isInitialLoading && lastLoggedDateKeyRef.current !== dateKey) {
+      lastLoggedDateKeyRef.current = dateKey;
       analyticsService.watchHistoryView({
         date_filter: date ?? null,
         total_count: items.length,
@@ -141,11 +143,12 @@ export function WatchHistoryProvider({ children, date }: WatchHistoryProviderPro
   // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
   const handleItemPress = useCallback(
     (item: WatchHistoryModelType) => {
-      // 시청 기록 콘텐츠 클릭 이벤트 로깅
-      const watchProgress =
+      // 시청 기록 콘텐츠 클릭 이벤트 로깅 (0~100 범위 제한)
+      const rawProgress =
         item.durationSeconds > 0
           ? Math.round((item.progressSeconds / item.durationSeconds) * 100)
           : 0;
+      const watchProgress = Math.min(100, Math.max(0, rawProgress));
 
       analyticsService.watchHistoryContentClick({
         content_id: item.contentId,

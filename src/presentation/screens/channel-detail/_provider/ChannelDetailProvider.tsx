@@ -95,16 +95,18 @@ export function ChannelDetailProvider({
       subscriberCount,
     });
 
-  // GA4 channel_view 이벤트 로깅 (화면 진입 시 1회만)
-  const hasLoggedViewRef = useRef(false);
+  // GA4 channel_view 이벤트 로깅 (채널별 1회)
+  // channelId 변경 시에도 새 채널에 대해 로깅하기 위해 마지막 로깅한 채널 키를 추적
+  const lastLoggedChannelKeyRef = useRef<string | null>(null);
   useEffect(() => {
-    if (!hasLoggedViewRef.current && displayName) {
+    const channelKey = `${channelId}_${source}`;
+    if (displayName && lastLoggedChannelKeyRef.current !== channelKey) {
       analyticsService.channelView({
         channel_id: channelId,
         channel_name: displayName,
         source,
       });
-      hasLoggedViewRef.current = true;
+      lastLoggedChannelKeyRef.current = channelKey;
     }
   }, [channelId, displayName, source]);
 

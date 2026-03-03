@@ -1,4 +1,4 @@
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, NavigationState } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
@@ -176,13 +176,13 @@ function AppBadgeSyncer() {
 /**
  * 현재 네비게이션 상태에서 활성 화면 이름을 가져옴
  */
-function getActiveRouteName(state: any): string | undefined {
+function getActiveRouteName(state: NavigationState | undefined): string | undefined {
   if (!state) return undefined;
 
   const route = state.routes[state.index];
   if (route.state) {
     // 중첩 네비게이터가 있으면 재귀적으로 탐색
-    return getActiveRouteName(route.state);
+    return getActiveRouteName(route.state as NavigationState);
   }
   return route.name;
 }
@@ -255,14 +255,14 @@ function AppContent({
         <PushNotificationProvider>
           <AppBadgeSyncer />
           <NavigationContainer
-              ref={navigationRef}
-              theme={navigationTheme}
-              linking={linkingConfig}
-              onReady={() => {
-                routeNameRef.current = getActiveRouteName(navigationRef.current?.getState());
-              }}
-              onStateChange={onNavigationStateChange}
-            >
+            ref={navigationRef}
+            theme={navigationTheme}
+            linking={linkingConfig}
+            onReady={() => {
+              routeNameRef.current = getActiveRouteName(navigationRef.current?.getState());
+            }}
+            onStateChange={onNavigationStateChange}
+          >
             <StackNavigator />
           </NavigationContainer>
         </PushNotificationProvider>
