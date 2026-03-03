@@ -23,6 +23,16 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import type { AdminActionConfig, AdminContentAction } from '@/features/admin/types';
+import { AdminContentAction as AdminContentActionEnum } from '@/features/admin/types';
+import { ContentStatusLabel, type ContentStatus } from '@/features/content/types';
+
+// 상태별 칩 색상
+const STATUS_CHIP_COLORS: Record<ContentStatus, string> = {
+  pending: '#F59E0B', // 노랑
+  confirmed: '#10B981', // 초록
+  rejected: '#EF4444', // 빨강
+  needs_review: '#F97316', // 주황
+};
 
 // 상수 정의
 const OPTION_HEIGHT = 56;
@@ -46,6 +56,8 @@ interface AdminActionBottomSheetProps {
   readonly contentType?: string | undefined;
   /** 비디오 ID */
   readonly videoId?: string | undefined;
+  /** 현재 비디오 상태 (비디오 상태 변경 항목에 칩으로 표시) */
+  readonly currentVideoStatus?: ContentStatus | undefined;
 }
 
 function AdminActionBottomSheet({
@@ -56,6 +68,7 @@ function AdminActionBottomSheet({
   contentId,
   contentType,
   videoId,
+  currentVideoStatus,
 }: AdminActionBottomSheetProps) {
   const { showDialog } = useDialog();
 
@@ -206,30 +219,43 @@ function AdminActionBottomSheet({
 
             {/* 옵션 버튼들 */}
             <OptionsContainer>
-              {actions.map((actionConfig, index) => (
-                <OptionButton
-                  key={actionConfig.action}
-                  onPress={
-                    actionConfig.disabled
-                      ? undefined
-                      : () => handleSelectAction(actionConfig.action)
-                  }
-                  activeOpacity={actionConfig.disabled ? 1 : 0.7}
-                  isDestructive={actionConfig.isDestructive ?? false}
-                  isDisabled={actionConfig.disabled ?? false}
-                  isLast={index === actions.length - 1}
-                >
-                  <OptionText
+              {actions.map((actionConfig, index) => {
+                const isVideoStatusAction =
+                  actionConfig.action === AdminContentActionEnum.CHANGE_VIDEO_STATUS;
+                const showStatusChip = isVideoStatusAction && currentVideoStatus;
+
+                return (
+                  <OptionButton
+                    key={actionConfig.action}
+                    onPress={
+                      actionConfig.disabled
+                        ? undefined
+                        : () => handleSelectAction(actionConfig.action)
+                    }
+                    activeOpacity={actionConfig.disabled ? 1 : 0.7}
                     isDestructive={actionConfig.isDestructive ?? false}
                     isDisabled={actionConfig.disabled ?? false}
+                    isLast={index === actions.length - 1}
                   >
-                    {actionConfig.label}
-                  </OptionText>
-                  {actionConfig.disabled && actionConfig.disabledReason && (
-                    <DisabledReasonText>{actionConfig.disabledReason}</DisabledReasonText>
-                  )}
-                </OptionButton>
-              ))}
+                    <OptionContent>
+                      <OptionText
+                        isDestructive={actionConfig.isDestructive ?? false}
+                        isDisabled={actionConfig.disabled ?? false}
+                      >
+                        {actionConfig.label}
+                      </OptionText>
+                      {showStatusChip && (
+                        <StatusChip backgroundColor={STATUS_CHIP_COLORS[currentVideoStatus]}>
+                          <StatusChipText>{ContentStatusLabel[currentVideoStatus]}</StatusChipText>
+                        </StatusChip>
+                      )}
+                    </OptionContent>
+                    {actionConfig.disabled && actionConfig.disabledReason && (
+                      <DisabledReasonText>{actionConfig.disabledReason}</DisabledReasonText>
+                    )}
+                  </OptionButton>
+                );
+              })}
             </OptionsContainer>
 
             {/* 스페이서 */}
@@ -346,10 +372,29 @@ interface OptionTextProps {
   isDisabled: boolean;
 }
 
+const OptionContent = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 8,
+});
+
 const OptionText = styled.Text<OptionTextProps>(({ isDestructive, isDisabled }) => ({
   ...textStyles.title2,
   color: isDisabled ? colors.gray03 : isDestructive ? colors.red : colors.white,
 }));
+
+const StatusChip = styled.View<{ backgroundColor: string }>(({ backgroundColor }) => ({
+  paddingHorizontal: 8,
+  paddingVertical: 3,
+  borderRadius: 10,
+  backgroundColor,
+}));
+
+const StatusChipText = styled.Text({
+  ...textStyles.alert2,
+  color: colors.white,
+  fontWeight: '600',
+});
 
 const DisabledReasonText = styled.Text({
   ...textStyles.alert2,

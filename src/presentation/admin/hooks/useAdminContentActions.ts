@@ -154,9 +154,17 @@ export function useAdminContentActions({
         setIsSaving(true);
         await adminContentApi.updateBackdropPath(contentId, contentType, backdropPath);
 
+        // 비디오 상태를 승인(confirmed)으로 자동 변경
+        if (currentVideo?.id) {
+          await adminContentApi.updateVideoStatus(currentVideo.id, 'confirmed');
+        }
+
         // 캐시 무효화하여 UI 업데이트
         await queryClient.invalidateQueries({
           queryKey: ['contentDetail', contentId, contentType],
+        });
+        await queryClient.invalidateQueries({
+          queryKey: ['videos', contentId, contentType],
         });
 
         await showDialog({
@@ -176,7 +184,7 @@ export function useAdminContentActions({
         setIsSaving(false);
       }
     },
-    [contentId, contentType, queryClient, showDialog],
+    [contentId, contentType, currentVideo?.id, queryClient, showDialog],
   );
 
   // 비디오 상태 변경 핸들러
@@ -221,6 +229,11 @@ export function useAdminContentActions({
       try {
         setIsSaving(true);
         await adminContentApi.updateIncludesEnding(currentVideo.id, includesEnding);
+
+        // 결말포함 off 시 비디오 상태를 승인(confirmed)으로 자동 변경
+        if (!includesEnding) {
+          await adminContentApi.updateVideoStatus(currentVideo.id, 'confirmed');
+        }
 
         // 비디오 목록 캐시 무효화하여 UI 업데이트
         await queryClient.invalidateQueries({

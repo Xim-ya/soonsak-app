@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from '@emotion/native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YoutubeView, useYouTubePlayer, useYouTubeEvent } from 'react-native-youtube-bridge';
 import WebView from 'react-native-webview';
 import colors from '@/shared/styles/colors';
@@ -30,6 +31,7 @@ type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.pla
 export const PlayerScreen = () => {
   const route = useRoute<PlayerScreenRouteProp>();
   const navigation = useNavigation();
+  const insets = useSafeAreaInsets();
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
   const { showDialog, showConfirmDialog } = useDialog();
@@ -231,7 +233,7 @@ export const PlayerScreen = () => {
   // Android 전체화면 모드
   if (isAndroid) {
     return (
-      <FullscreenContainer>
+      <FullscreenContainer style={{ paddingBottom: insets.bottom }}>
         {!isPlayerReady && (
           <LoadingContainer>
             <ActivityIndicator size="small" color={colors.white} />
@@ -239,7 +241,7 @@ export const PlayerScreen = () => {
         )}
         <YoutubeView
           player={player}
-          height={playerHeight}
+          height={playerHeight - insets.bottom}
           width={playerWidth}
           style={{
             opacity: isPlayerReady ? 1 : 0,

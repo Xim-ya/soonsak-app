@@ -7,7 +7,7 @@
  * const { isWithdrawing, handleLogoutPress, handleWithdrawPress } = useSettingsAuth();
  */
 
-import { useCallback, useState } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -17,11 +17,12 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useDialog } from '@/presentation/components/dialog';
 import { analyticsService } from '@/shared/analytics';
+import { openStoreUrl } from '@/shared/utils/storeUtils';
+import { appConfigApi } from '@/features/app-config/api/appConfigApi';
 
 // 외부 URL 상수
-const FEEDBACK_URL = 'mailto:support@soonsak.app';
-const PRIVACY_URL = 'https://soonsak.app/privacy';
-const APP_STORE_URL = 'https://apps.apple.com/app/id6758769228';
+const FEEDBACK_URL = 'https://soonsak.featurebase.app/en/p/pideubaegi-pilyohaeyo';
+const PRIVACY_URL = 'https://www.notion.so/318e38e37ca0803a910ec2afbcd96890';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -57,6 +58,16 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   // 상태
   const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+  // 서버 스토어 URL 참조
+  const storeUrlRef = useRef<string | null>(null);
+
+  // 스토어 URL 조회
+  useEffect(() => {
+    appConfigApi.getVersionPolicy().then((policy) => {
+      storeUrlRef.current = policy?.storeUrl ?? null;
+    });
+  }, []);
 
   // 로그인 화면으로 네비게이션 리셋
   const resetToLoginScreen = useCallback(() => {
@@ -173,11 +184,20 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     return openExternalUrl(PRIVACY_URL, '페이지를 열 수 없습니다.');
   }, [openExternalUrl]);
 
-  const openAppStoreUrl = useCallback(() => {
+  const openAppStoreUrl = useCallback(async () => {
     // 앱 평가 클릭 이벤트 로깅
     analyticsService.settingsRateAppClick();
-    return openExternalUrl(APP_STORE_URL, '스토어를 열 수 없습니다.');
-  }, [openExternalUrl]);
+
+    // 서버 URL 우선, 없으면 플랫폼별 기본 URL 사용
+    const success = await openStoreUrl(storeUrlRef.current);
+    if (!success) {
+      await showDialog({
+        title: '오류',
+        description: '스토어를 열 수 없습니다.',
+        buttonText: '확인',
+      });
+    }
+  }, [showDialog]);
 
   // 관리자 화면 네비게이션
   const navigateToAdmin = useCallback(
