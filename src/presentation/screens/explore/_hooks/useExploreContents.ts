@@ -63,6 +63,8 @@ function serializeFilter(filter: ContentFilter): string {
 interface UseExploreContentsOptions {
   /** 쿼리 활성화 여부 (lazy 로딩용) */
   enabled?: boolean;
+  /** 탐색 시드 (화면 진입/앱 복귀 시마다 새로 생성) */
+  exploreSeed?: number;
 }
 
 export function useExploreContents(
@@ -70,21 +72,21 @@ export function useExploreContents(
   filter: ContentFilter,
   options?: UseExploreContentsOptions,
 ): UseExploreContentsReturn {
-  const { enabled = true } = options ?? {};
+  const { enabled = true, exploreSeed } = options ?? {};
   const filterKey = serializeFilter(filter);
 
-  // 세션 시드 (앱 재시작 시마다 새로 생성, 'all' 정렬에서 사용)
-  const sessionSeed = getSessionSeed();
+  // 탐색 시드: 화면 진입/앱 복귀 시마다 새로 생성된 시드 사용, 없으면 세션 시드 fallback
+  const seed = exploreSeed ?? getSessionSeed();
 
   const queryResult = useInfiniteQuery({
-    queryKey: ['exploreContents', sortType, filterKey, sessionSeed],
+    queryKey: ['exploreContents', sortType, filterKey, seed],
     queryFn: async ({ pageParam = 0 }): Promise<ExploreContentsResponse> => {
       return contentApi.getExploreContents(
         sortType,
         filter,
         pageParam,
         PAGE_SIZE,
-        sortType === 'all' ? sessionSeed : undefined,
+        sortType === 'all' ? seed : undefined,
       );
     },
     initialPageParam: 0,

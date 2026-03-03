@@ -133,8 +133,8 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
   sortType,
   tabName,
 }: ExploreTabContentProps): React.ReactElement {
-  // Context에서 필터 상태와 콘텐츠 클릭 핸들러 가져오기
-  const { filter, handleContentPress } = useExplore();
+  // Context에서 필터 상태, 탐색 시드, 콘텐츠 클릭 핸들러 가져오기
+  const { filter, exploreSeed, handleContentPress } = useExplore();
 
   // Lazy 로딩: 탭이 포커스되기 전까지 데이터 로딩 지연
   const focusedTab = useFocusedTab();
@@ -165,7 +165,7 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
 
   // hasBeenFocused가 false면 데이터 로딩을 건너뜀
   const { contents, isLoading, isFetchingNextPage, hasNextPage, fetchNextPage } =
-    useExploreContents(sortType, filter, { enabled: hasBeenFocused });
+    useExploreContents(sortType, filter, { enabled: hasBeenFocused, exploreSeed });
 
   // 반응형 화면 너비 (화면 크기 변경 시 자동 업데이트)
   const { width: windowWidth } = useWindowDimensions();
