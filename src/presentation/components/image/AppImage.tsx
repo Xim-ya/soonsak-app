@@ -47,12 +47,7 @@
 import React, { useState, useCallback, useMemo, memo } from 'react';
 import styled from '@emotion/native';
 import { ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+import { Image as ExpoImage } from 'expo-image';
 import colors from '@/shared/styles/colors';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
@@ -135,54 +130,44 @@ export interface AppImageProps {
 }
 
 // ============================================================================
-// Custom Hook (응집도: 이미지 로딩 상태 관리 로직 분리)
+// Custom Hook (에러 상태만 관리 - expo-image가 로딩/트랜지션 처리)
 // ============================================================================
 
-interface ImageLoadState {
-  isLoading: boolean;
-  hasError: boolean;
-}
-
 /**
- * 이미지 로딩 상태 관리 훅
+ * 이미지 에러 상태 관리 훅
  *
- * 로딩/에러 상태와 애니메이션 값을 함께 관리합니다.
+ * expo-image가 로딩 상태와 트랜지션을 네이티브에서 처리하므로
+ * 에러 상태만 관리합니다.
  */
-function useImageLoadState(
-  transitionDuration: number,
+function useImageErrorState(
+  source: string,
   onLoadCallback?: () => void,
   onErrorCallback?: (error?: Error) => void,
 ) {
-  const [state, setState] = useState<ImageLoadState>({
-    isLoading: true,
-    hasError: false,
-  });
+  const [hasError, setHasError] = useState(false);
 
-  const opacity = useSharedValue(0);
+  // FlashList 셀 재활용 시 source 변경 감지하여 에러 상태 리셋
+  const prevSourceRef = React.useRef(source);
+  if (prevSourceRef.current !== source) {
+    prevSourceRef.current = source;
+    if (hasError) {
+      setHasError(false);
+    }
+  }
 
   const handleLoad = useCallback(() => {
-    setState({ isLoading: false, hasError: false });
-    opacity.value = withTiming(1, {
-      duration: transitionDuration,
-      easing: Easing.out(Easing.ease),
-    });
     onLoadCallback?.();
-  }, [opacity, transitionDuration, onLoadCallback]);
+  }, [onLoadCallback]);
 
   const handleError = useCallback(() => {
-    setState({ isLoading: false, hasError: true });
+    setHasError(true);
     onErrorCallback?.();
   }, [onErrorCallback]);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
   return {
-    ...state,
+    hasError,
     handleLoad,
     handleError,
-    animatedStyle,
   };
 }
 
@@ -195,24 +180,6 @@ function useImageLoadState(
  */
 function isValidSource(source: string): boolean {
   return source.trim().length > 0;
-}
-
-/**
- * ContentFit을 RN Image의 resizeMode로 변환
- *
- * TODO: expo-image 전환 시 이 함수는 제거되고 contentFit을 직접 사용
- */
-function contentFitToResizeMode(contentFit: ContentFitType): 'cover' | 'contain' | 'stretch' {
-  switch (contentFit) {
-    case ContentFit.Cover:
-      return 'cover';
-    case ContentFit.Contain:
-      return 'contain';
-    case ContentFit.Fill:
-      return 'stretch';
-    default:
-      return 'cover';
-  }
 }
 
 // ============================================================================
@@ -231,11 +198,9 @@ function AppImageComponent({
   source,
   width,
   height,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO: expo-image 전환 시 활성화
   cachePolicy = DEFAULT_CACHE_POLICY,
   contentFit = DEFAULT_CONTENT_FIT,
   transition = DEFAULT_TRANSITION_DURATION,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- TODO: expo-image 전환 시 활성화
   placeholder,
   borderRadius = DEFAULT_BORDER_RADIUS,
   transparent = false,
@@ -245,58 +210,26 @@ function AppImageComponent({
 }: AppImageProps) {
   const hasValidSource = isValidSource(source);
 
-  const { isLoading, hasError, handleLoad, handleError, animatedStyle } = useImageLoadState(
-    transition,
-    onLoad,
-    onError,
-  );
+  const { hasError, handleLoad, handleError } = useImageErrorState(source, onLoad, onError);
 
-  // 이미지 스타일 메모이제이션
+  // 이미지 스타일 메모이제이션 (컨테이너를 완전히 채움)
   const imageStyle = useMemo(
     () => ({
       width,
       height,
+      borderRadius,
       position: 'absolute' as const,
       top: 0,
       left: 0,
     }),
-    [width, height],
+    [width, height, borderRadius],
   );
-
-  // source 객체 메모이제이션
-  const imageSource = useMemo(() => ({ uri: source }), [source]);
-
-  // resizeMode 변환 (RN Image 전용)
-  const resizeMode = contentFitToResizeMode(contentFit);
 
   // 에러 상태인지 판단 (빈 소스 또는 로드 에러)
   const shouldShowError = hasError || !hasValidSource;
 
-  // 로딩 상태 표시 조건 (transparent 모드에서는 placeholder 숨김)
-  const shouldShowPlaceholder = isLoading && hasValidSource && !transparent;
-
   // 이미지 표시 조건
   const shouldShowImage = !hasError && hasValidSource;
-
-  // TODO: [expo-image 전환 시]
-  // 1. Animated.Image를 expo-image의 Image로 교체
-  // 2. cachePolicy prop을 직접 전달
-  // 3. contentFit prop을 직접 전달 (resizeMode 변환 불필요)
-  // 4. placeholder.blurhash를 직접 사용
-  // 5. transition prop을 직접 사용
-  //
-  // 예시:
-  // import { Image } from 'expo-image';
-  // <Image
-  //   source={source}
-  //   cachePolicy={cachePolicy}
-  //   contentFit={contentFit}
-  //   placeholder={{ blurhash: placeholder?.blurhash }}
-  //   transition={transition}
-  //   style={imageStyle}
-  //   onLoad={handleLoad}
-  //   onError={handleError}
-  // />
 
   return (
     <Container
@@ -306,24 +239,24 @@ function AppImageComponent({
       transparent={transparent}
       style={style}
     >
-      {/* 로딩 중 placeholder */}
-      {shouldShowPlaceholder && (
-        <PlaceholderView width={width} height={height} borderRadius={borderRadius} />
-      )}
-
       {/* 에러 상태 표시 */}
       {shouldShowError && (
         <ImageErrorPlaceholder width={width} height={height} borderRadius={borderRadius} />
       )}
 
-      {/* 실제 이미지 (현재: RN Animated.Image) */}
+      {/* expo-image: 네이티브 레벨에서 로딩/트랜지션/캐싱 처리 */}
+      {/* recyclingKey: FlashList 셀 재활용 시 이전 이미지 즉시 클리어 */}
       {shouldShowImage && (
-        <Animated.Image
-          source={imageSource}
-          style={[imageStyle, animatedStyle]}
-          resizeMode={resizeMode}
+        <ExpoImage
+          source={source}
+          style={imageStyle}
+          contentFit={contentFit}
+          cachePolicy={cachePolicy}
+          transition={transition}
+          recyclingKey={source}
           onLoad={handleLoad}
           onError={handleError}
+          {...(placeholder?.blurhash ? { placeholder: placeholder.blurhash } : {})}
         />
       )}
     </Container>
@@ -346,20 +279,6 @@ const Container = styled.View<{
   overflow: 'hidden',
   position: 'relative',
   backgroundColor: transparent ? 'transparent' : colors.gray05,
-}));
-
-const PlaceholderView = styled.View<{
-  width: number;
-  height: number;
-  borderRadius: number;
-}>(({ width, height, borderRadius }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width,
-  height,
-  backgroundColor: colors.gray05,
-  borderRadius,
 }));
 
 // ============================================================================

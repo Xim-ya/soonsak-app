@@ -9,7 +9,7 @@
  * - source가 없거나 에러일 때 logo_placeholder 표시
  */
 
-import { useState, memo } from 'react';
+import { useState, memo, useRef } from 'react';
 import styled from '@emotion/native';
 import { AppImage } from './AppImage';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
@@ -49,6 +49,18 @@ function BaseRatioImageComponent({
 
   const [isLoading, setIsLoading] = useState(hasSource);
   const [hasError, setHasError] = useState(false);
+
+  // FlashList 셀 재활용 시 source 변경 감지하여 상태 리셋
+  const prevSourceRef = useRef(source);
+  if (prevSourceRef.current !== source) {
+    prevSourceRef.current = source;
+    const newHasSource = typeof source === 'string' && source.trim().length > 0;
+    // 동기적으로 상태 리셋 (useEffect보다 빠름)
+    if (!isLoading || hasError) {
+      setIsLoading(newHasSource);
+      setHasError(false);
+    }
+  }
 
   // 단순 상태 업데이트는 useCallback 불필요 (오버헤드 > 이익)
   const handleLoad = () => {

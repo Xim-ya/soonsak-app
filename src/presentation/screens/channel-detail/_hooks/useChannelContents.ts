@@ -5,6 +5,8 @@ import { getSessionSeed } from '@/shared/utils/sessionSeed';
 import type { SortType } from '@/shared/types/sort';
 import { ChannelVideoModel } from '../_types';
 
+const PAGE_SIZE = 21;
+
 interface ChannelContentsResponse {
   videos: VideoWithContentDto[];
   hasMore: boolean;
@@ -32,7 +34,7 @@ export function useChannelContents(
     useInfiniteQuery({
       queryKey: ['channelVideos', channelId, sortType, sessionSeed],
       queryFn: async ({ pageParam = 0 }): Promise<ChannelContentsResponse> => {
-        return contentApi.getDistinctContentsByChannel(channelId, pageParam, 20, sortType);
+        return contentApi.getDistinctContentsByChannel(channelId, pageParam, PAGE_SIZE, sortType);
       },
       initialPageParam: 0,
       getNextPageParam: (lastPage: ChannelContentsResponse, pages) => {

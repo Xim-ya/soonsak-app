@@ -14,15 +14,10 @@
  * />
  */
 
-import React, { useState, useCallback, useMemo, memo } from 'react';
+import React, { useState, useCallback, useMemo, useRef, memo } from 'react';
 import styled from '@emotion/native';
 import { ViewStyle } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  Easing,
-} from 'react-native-reanimated';
+import { Image as ExpoImage } from 'expo-image';
 import colors from '@/shared/styles/colors';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
@@ -41,68 +36,57 @@ function LoadableImageViewComponent({
   borderRadius = 4,
   style,
 }: LoadableImageViewProps) {
-  const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
 
   // source가 빈 문자열이면 에러 상태로 처리
   const isValidSource = source && source.length > 0;
 
-  // Reanimated shared value (UI 스레드에서 애니메이션)
-  const opacity = useSharedValue(0);
+  // FlashList 셀 재활용 시 source 변경 감지하여 에러 상태 리셋
+  const prevSourceRef = useRef(source);
+  if (prevSourceRef.current !== source) {
+    prevSourceRef.current = source;
+    if (hasError) {
+      setHasError(false);
+    }
+  }
 
   const handleImageLoad = useCallback(() => {
-    setIsLoading(false);
-    setHasError(false);
-
-    // Reanimated 애니메이션 (UI 스레드에서 실행)
-    opacity.value = withTiming(1, {
-      duration: 300,
-      easing: Easing.out(Easing.ease),
-    });
-  }, [opacity]);
+    // expo-image가 로딩 상태와 트랜지션을 네이티브에서 처리
+  }, []);
 
   const handleImageError = useCallback(() => {
-    setIsLoading(false);
     setHasError(true);
   }, []);
 
-  // 애니메이션 스타일 (UI 스레드)
-  const animatedImageStyle = useAnimatedStyle(() => ({
-    opacity: opacity.value,
-  }));
-
-  // 이미지 스타일 메모이제이션
+  // 이미지 스타일 메모이제이션 (컨테이너를 완전히 채움)
   const imageStyle = useMemo(
     () => ({
       width,
       height,
+      borderRadius,
       position: 'absolute' as const,
       top: 0,
       left: 0,
     }),
-    [width, height],
+    [width, height, borderRadius],
   );
-
-  // source 객체 메모이제이션
-  const imageSource = useMemo(() => ({ uri: source }), [source]);
 
   return (
     <Container width={width} height={height} borderRadius={borderRadius} style={style}>
-      {/* 로딩 중일 때 회색 placeholder (유효한 소스일 때만) */}
-      {isLoading && isValidSource && (
-        <PlaceholderView width={width} height={height} borderRadius={borderRadius} />
-      )}
-
       {/* 에러 시 에러 표시 (빈 소스 포함) */}
       {(hasError || !isValidSource) && (
         <ImageErrorPlaceholder width={width} height={height} borderRadius={borderRadius} />
       )}
 
-      {/* 실제 이미지 - Reanimated 애니메이션 */}
+      {/* expo-image: 네이티브 레벨에서 로딩/트랜지션/캐싱 처리 */}
+      {/* recyclingKey: FlashList 셀 재활용 시 이전 이미지 즉시 클리어 */}
       {!hasError && isValidSource && (
-        <Animated.Image
-          source={imageSource}
-          style={[imageStyle, animatedImageStyle]}
+        <ExpoImage
+          source={source}
+          style={imageStyle}
+          contentFit="cover"
+          transition={300}
+          recyclingKey={source}
           onLoad={handleImageLoad}
           onError={handleImageError}
         />
@@ -123,21 +107,6 @@ const Container = styled.View<{
   overflow: 'hidden',
   position: 'relative',
   backgroundColor: colors.gray05,
-}));
-
-// 로딩 중 placeholder
-const PlaceholderView = styled.View<{
-  width: number;
-  height: number;
-  borderRadius: number;
-}>(({ width, height, borderRadius }) => ({
-  position: 'absolute',
-  top: 0,
-  left: 0,
-  width,
-  height,
-  backgroundColor: colors.gray05,
-  borderRadius,
 }));
 
 // memo로 감싸서 source가 같으면 리렌더링 방지
