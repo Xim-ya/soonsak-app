@@ -3,6 +3,7 @@ import type { User } from '@supabase/supabase-js';
 import { authApi } from '@/features/auth/api/authApi';
 import { userApi } from '@/features/user/api/userApi';
 import { clearAppBadge } from '@/features/notifications';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import type {
   AuthState,
   AuthContextValue,
@@ -178,6 +179,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
         // created_at == updated_at이면 프로필 설정 안 한 신규 사용자
         const needsProfileSetup = checkNeedsProfileSetup(profile);
+
+        // 기존 유저 로그인 시 웹훅 호출 (신규 가입자는 프로필 설정 완료 시 호출)
+        if (!needsProfileSetup && profile?.displayName) {
+          wowPointWebhook.onLogin({ nickname: profile.displayName });
+        }
 
         if (mounted) {
           setState({

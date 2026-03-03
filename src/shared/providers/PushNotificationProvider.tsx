@@ -43,9 +43,11 @@ import {
   getOrCreateDeviceId,
   linkDeviceToUser,
   incrementDeviceEntryCount,
+  getDeviceEntryInfo,
 } from '@/shared/utils/deviceId';
 import { userApi } from '@/features/user/api/userApi';
 import { PushLogger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 
 /** PushNotificationContext 값 타입 */
 interface PushNotificationContextValue {
@@ -68,7 +70,7 @@ interface PushNotificationProviderProps {
 }
 
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
-  const { status, user, signOut } = useAuth();
+  const { status, user, signOut, displayName } = useAuth();
   const queryClient = useQueryClient();
   const { expoPushToken, notification, permissionStatus, refreshToken, error } =
     usePushNotifications();
@@ -133,16 +135,34 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
     const incrementEntryCount = async () => {
       try {
-        if (status === 'authenticated' && user) {
+        const isLoggedIn = status === 'authenticated' && !!user;
+        let entryInfo: { entryCount: number; lastVisitAt: string | null } | null = null;
+
+        if (isLoggedIn && user) {
+          // 로그인 유저: 진입 정보 조회 (카운트 증가 전)
+          entryInfo = await userApi.getEntryInfo(user.id);
+
           // 로그인 유저: profiles.entry_count 증가 + 앱 버전 업데이트
           await Promise.all([
             userApi.incrementEntryCount(user.id),
             userApi.updateLastUsedVersion(user.id),
           ]);
         } else {
+          // 비로그인 유저: 진입 정보 조회 (카운트 증가 전)
+          entryInfo = await getDeviceEntryInfo();
+
           // 비로그인 유저: devices.entry_count 증가
           await incrementDeviceEntryCount();
         }
+
+        // 앱 진입 웹훅 호출 (Slack 알림)
+        wowPointWebhook.onAppEntry({
+          nickname: displayName,
+          isLoggedIn,
+          ...(entryInfo && { visitCount: entryInfo.entryCount + 1 }),
+          ...(entryInfo?.lastVisitAt && { lastVisitAt: entryInfo.lastVisitAt }),
+        });
+
         hasCountedRef.current = true;
         PushLogger.log('================================');
       } catch (error) {
@@ -151,7 +171,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     };
 
     incrementEntryCount();
-  }, [status, user]);
+  }, [status, user, displayName]);
 
   // 앱이 종료 상태(Killed)에서 푸시 알림으로 시작된 경우 처리
   // status가 idle이면 AuthProvider 세션 복원이 완료되지 않았으므로 대기

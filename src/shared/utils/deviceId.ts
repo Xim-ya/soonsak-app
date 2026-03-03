@@ -110,6 +110,36 @@ export async function getStoredDeviceId(): Promise<string | null> {
 }
 
 /**
+ * 비로그인 유저 진입 정보 조회
+ *
+ * devices 테이블에서 entry_count와 updated_at을 조회합니다.
+ */
+export async function getDeviceEntryInfo(): Promise<{
+  entryCount: number;
+  lastVisitAt: string | null;
+} | null> {
+  const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
+  if (!deviceId) return null;
+
+  try {
+    const { data, error } = await supabaseClient
+      .from(DEVICE_DATABASE.TABLES.DEVICES)
+      .select('entry_count, updated_at')
+      .eq(DEVICE_DATABASE.COLUMNS.DEVICE_ID, deviceId)
+      .single();
+
+    if (error || !data) return null;
+
+    return {
+      entryCount: (data.entry_count as number) ?? 0,
+      lastVisitAt: data.updated_at as string | null,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
  * 앱 진입 카운트 증가 (비로그인 유저용)
  *
  * devices 테이블의 entry_count를 1 증가시킵니다.

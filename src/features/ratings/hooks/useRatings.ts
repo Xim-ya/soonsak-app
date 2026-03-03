@@ -7,6 +7,7 @@ import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { analyticsService } from '@/shared/analytics';
 import { Logger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { ratingsApi } from '../api/ratingsApi';
 import type { SetRatingParams } from '../types';
 import { RatingModel, RatingStatusModel } from '../types/ratingModel';
@@ -59,7 +60,7 @@ export const useRatingStatus = (
  */
 export const useSetRating = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const userId = user?.id ?? null;
 
   return useMutation({
@@ -99,6 +100,13 @@ export const useSetRating = () => {
           content_type: params.contentType,
           rating: params.rating,
           action: hadPreviousRating ? 'update' : 'add',
+        });
+
+        // Slack 웹훅 알림 (평점 등록/수정 시에만)
+        wowPointWebhook.onVideoRating({
+          nickname: displayName,
+          ...(params.contentTitle && { videoTitle: params.contentTitle }),
+          rating: params.rating,
         });
       }
     },

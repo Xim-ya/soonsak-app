@@ -15,6 +15,7 @@ import { AppState, type AppStateStatus } from 'react-native';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { Logger } from '@/shared/utils/logger';
 import { watchHistoryApi } from '../api/watchHistoryApi';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 const WatchProgressLogger = Logger.create('WatchProgress');
@@ -41,6 +42,9 @@ const SEEK_THRESHOLD_SECONDS = 3;
 /** Seek 동기화 debounce 딜레이 (밀리초) */
 const SEEK_DEBOUNCE_MS = 300;
 
+/** 영상 완료로 간주하는 진행률 (88%) */
+const VIDEO_COMPLETE_THRESHOLD = 0.88;
+
 /** 쿼리 무효화용 watchHistory 기본 키 */
 const WATCH_HISTORY_QUERY_KEY = ['watchHistory'] as const;
 
@@ -48,6 +52,10 @@ interface UseWatchProgressSyncParams {
   readonly contentId: number;
   readonly contentType: ContentType;
   readonly videoId: string;
+  /** 와우 포인트 웹훅용 닉네임 */
+  readonly nickname?: string;
+  /** 와우 포인트 웹훅용 영상 제목 */
+  readonly videoTitle?: string;
 }
 
 interface WatchProgressSyncResult {
@@ -63,6 +71,8 @@ export function useWatchProgressSync({
   contentId,
   contentType,
   videoId,
+  nickname,
+  videoTitle,
 }: UseWatchProgressSyncParams): WatchProgressSyncResult {
   const { user } = useAuth();
   const isLoggedIn = user !== null;
@@ -75,6 +85,7 @@ export function useWatchProgressSync({
   const initialSyncTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null); // 초기 동기화 타이머
   const isSyncingRef = useRef(false);
   const hasInitialSyncRef = useRef(false); // 초기 동기화 완료 여부
+  const hasTriggeredCompleteWebhookRef = useRef(false); // 88% 완료 웹훅 트리거 여부
 
   /** 서버에 진행률 동기화 */
   const syncToServer = useCallback(async () => {
@@ -166,6 +177,18 @@ export function useWatchProgressSync({
         scheduleInitialSync();
       }
 
+      // 88% 이상 시청 시 와우 포인트 웹훅 트리거 (한 번만)
+      if (duration > 0 && !hasTriggeredCompleteWebhookRef.current) {
+        const progressPercentage = currentTime / duration;
+        if (progressPercentage >= VIDEO_COMPLETE_THRESHOLD) {
+          hasTriggeredCompleteWebhookRef.current = true;
+          wowPointWebhook.onVideoComplete({
+            ...(nickname && { nickname }),
+            ...(videoTitle && { videoTitle }),
+          });
+        }
+      }
+
       if (hasTimeJump) {
         if (seekDebounceRef.current) {
           clearTimeout(seekDebounceRef.current);
@@ -176,7 +199,7 @@ export function useWatchProgressSync({
         }, SEEK_DEBOUNCE_MS);
       }
     },
-    [syncToServer, scheduleInitialSync],
+    [syncToServer, scheduleInitialSync, nickname, videoTitle],
   );
 
   /** 주기적 동기화 시작 */

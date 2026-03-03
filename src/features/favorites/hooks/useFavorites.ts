@@ -7,6 +7,7 @@ import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { analyticsService } from '@/shared/analytics';
 import { Logger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { favoritesApi } from '../api/favoritesApi';
 import type { ToggleFavoriteParams } from '../types';
 import { FavoriteModel, FavoriteStatusModel } from '../types/favoriteModel';
@@ -115,6 +116,14 @@ export const useToggleFavorite = () => {
         action: wasAdded ? 'add' : 'remove',
         screen_name: params.screenName ?? 'content_detail',
       });
+
+      // 찜 추가 시에만 웹훅 호출
+      if (wasAdded) {
+        wowPointWebhook.onVideoFavorite({
+          ...(params.nickname && { nickname: params.nickname }),
+          ...(params.videoTitle && { videoTitle: params.videoTitle }),
+        });
+      }
     },
 
     onError: (_error, _params, context) => {

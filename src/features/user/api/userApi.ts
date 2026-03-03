@@ -225,4 +225,31 @@ export const userApi = {
       UserLogger.warn('앱 버전 업데이트 실패:', error);
     }
   },
+
+  /**
+   * 앱 진입 정보 조회 (방문 횟수, 마지막 방문 시간)
+   *
+   * @param userId 사용자 ID
+   * @returns { entryCount, lastVisitAt } 또는 null
+   */
+  getEntryInfo: async (
+    userId: string,
+  ): Promise<{ entryCount: number; lastVisitAt: string | null } | null> => {
+    try {
+      const { data, error } = await supabaseClient
+        .from(AUTH_DATABASE.TABLES.PROFILES)
+        .select('entry_count, updated_at')
+        .eq(AUTH_DATABASE.COLUMNS.ID, userId)
+        .single();
+
+      if (error || !data) return null;
+
+      return {
+        entryCount: (data.entry_count as number) ?? 0,
+        lastVisitAt: data.updated_at as string | null,
+      };
+    } catch {
+      return null;
+    }
+  },
 };

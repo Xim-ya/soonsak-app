@@ -28,6 +28,7 @@ import { userApi } from '@/features/user/api/userApi';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { analyticsService } from '@/shared/analytics';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { Logger } from '@/shared/utils/logger';
 
 const ProfileSetupLogger = Logger.create('ProfileSetup');
@@ -232,6 +233,8 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
       // 프로필 설정 완료 표시 (ProfileSetupNavigator에서 다시 리다이렉트 방지)
       if (mode === 'initial') {
         completeProfileSetup();
+        // 신규 가입자 웹훅 호출
+        wowPointWebhook.onSignup({ nickname });
       }
 
       // 이전 화면으로 복귀 (initial/edit 모두 동일)

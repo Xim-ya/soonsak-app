@@ -16,6 +16,7 @@ export interface SetRatingParams {
   contentId: number;
   contentType: ContentType;
   rating: number; // 0.0 ~ 5.0 (0.5 단위, 0.0은 취소)
+  contentTitle?: string; // 웹훅 알림용 콘텐츠 제목
 }
 
 /** 평점 상태 응답 */

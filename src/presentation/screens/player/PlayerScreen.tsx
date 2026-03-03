@@ -20,6 +20,8 @@ import {
 import { useDialog } from '@/presentation/components/dialog';
 import { analyticsService } from '@/shared/analytics';
 import { PlayerLogger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
+import { useAuth } from '@/shared/providers/AuthProvider';
 
 type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.player>;
 
@@ -31,6 +33,7 @@ type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.pla
 export const PlayerScreen = () => {
   const route = useRoute<PlayerScreenRouteProp>();
   const navigation = useNavigation();
+  const { displayName } = useAuth();
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
   const { showDialog, showConfirmDialog } = useDialog();
@@ -76,12 +79,14 @@ export const PlayerScreen = () => {
     contentId,
     contentType,
     videoId,
+    nickname: displayName,
+    videoTitle: title,
   });
 
   // 플레이어 준비 완료 이벤트
   useYouTubeEvent(player, 'ready', handleReady);
 
-  // GA4 content_play_start 이벤트 로깅
+  // GA4 content_play_start 이벤트 로깅 및 와우 포인트 웹훅
   const logPlayStart = useCallback(() => {
     if (!hasLoggedPlayStart.current) {
       hasLoggedPlayStart.current = true;
@@ -95,8 +100,14 @@ export const PlayerScreen = () => {
         is_resume: isResume,
         start_seconds: startSeconds ?? 0,
       });
+
+      // 와우 포인트 웹훅: 영상 재생 시작 알림
+      wowPointWebhook.onVideoPlay({
+        nickname: displayName,
+        videoTitle: title,
+      });
     }
-  }, [contentId, contentType, videoId, startSeconds]);
+  }, [contentId, contentType, videoId, startSeconds, displayName, title]);
 
   // GA4 content_play_end 이벤트 로깅 (언마운트 시)
   useEffect(() => {
