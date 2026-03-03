@@ -25,6 +25,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useNicknameValidation } from '@/features/user/hooks/useNicknameValidation';
 import { userApi } from '@/features/user/api/userApi';
+import { generateRandomNickname } from '@/features/user/constants/randomNickname';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { analyticsService } from '@/shared/analytics';
@@ -87,10 +88,10 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
   } = useAuth();
   const { validate, validateAsync, getErrorMessage } = useNicknameValidation();
 
-  // 초기값 계산 (AuthProvider에서 이미 displayName 자동 생성됨)
+  // 초기값 계산 (닉네임이 없으면 랜덤 닉네임 생성)
   const initialValues = useMemo(
     () => ({
-      initialNickname: currentDisplayName,
+      initialNickname: currentDisplayName || generateRandomNickname(),
       initialAvatarUrl: currentAvatarUrl,
     }),
     [currentDisplayName, currentAvatarUrl],

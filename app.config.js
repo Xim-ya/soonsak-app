@@ -61,7 +61,7 @@ module.exports = {
       supportsTablet: false,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
-      googleServicesFile: './GoogleService-Info.plist',
+      googleServicesFile: process.env.GOOGLE_SERVICES_PLIST || './GoogleService-Info.plist',
       entitlements: {
         'aps-environment': APP_VARIANT === 'production' ? 'production' : 'development',
       },
@@ -69,7 +69,8 @@ module.exports = {
         CFBundleName: '순삭',
         CFBundleDisplayName: '순삭',
         CFBundleDevelopmentRegion: 'ko',
-        NSUserNotificationsUsageDescription: '숨은 명작 작품을 추천해 드릴게요',
+        NSUserNotificationsUsageDescription: '딱 맞는 영화를 추천해 드릴게요 🎥',
+        ITSAppUsesNonExemptEncryption: false,
         ...(APP_VARIANT !== 'production' && { FIRDebugEnabled: true }),
       },
     },
@@ -80,7 +81,7 @@ module.exports = {
       },
       edgeToEdgeEnabled: true,
       package: 'com.soonsak.app',
-      googleServicesFile: './google-services.json',
+      googleServicesFile: process.env.GOOGLE_SERVICES_JSON || './google-services.json',
     },
     web: {
       favicon: './assets/favicon.png',

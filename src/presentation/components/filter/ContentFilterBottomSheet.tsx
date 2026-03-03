@@ -25,7 +25,7 @@ import {
   InteractionManager,
 } from 'react-native';
 import styled from '@emotion/native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -299,108 +299,113 @@ function ContentFilterBottomSheet({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <ModalContainer>
-        {/* 배경 오버레이 */}
-        <Overlay style={overlayAnimatedStyle} onTouchEnd={handleClose} />
+      <GestureHandlerRootView style={GESTURE_ROOT_STYLE}>
+        <ModalContainer>
+          {/* 배경 오버레이 */}
+          <Overlay style={overlayAnimatedStyle} onTouchEnd={handleClose} />
 
-        {/* 바텀시트 컨테이너 */}
-        <SheetContainer style={sheetAnimatedStyle}>
-          {/* 드래그 핸들 영역 */}
-          <GestureDetector gesture={panGesture}>
-            <DragArea>
-              <HandleContainer>
-                <Handle />
-              </HandleContainer>
-              <HeaderTitle>필터</HeaderTitle>
-            </DragArea>
-          </GestureDetector>
+          {/* 바텀시트 컨테이너 */}
+          <SheetContainer style={sheetAnimatedStyle}>
+            {/* 드래그 핸들 영역 */}
+            <GestureDetector gesture={panGesture}>
+              <DragArea>
+                <HandleContainer>
+                  <Handle />
+                </HandleContainer>
+                <HeaderTitle>필터</HeaderTitle>
+              </DragArea>
+            </GestureDetector>
 
-          {/* 탭 바 (스크롤 네비게이터) */}
-          <FilterTabBar tabs={visibleTabs} activeTab={activeTab} onTabPress={handleTabPress} />
+            {/* 탭 바 (스크롤 네비게이터) */}
+            <FilterTabBar tabs={visibleTabs} activeTab={activeTab} onTabPress={handleTabPress} />
 
-          {/* 모든 필터 섹션 수직 나열 */}
-          <ScrollView
-            ref={scrollRef}
-            showsVerticalScrollIndicator={false}
-            onScroll={handleScroll}
-            scrollEventThrottle={16}
-            contentContainerStyle={SCROLL_CONTENT_CONTAINER_STYLE}
-          >
-            {/* 추천 섹션 */}
-            {visibleTabs.some((t) => t.key === 'recommend') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('recommend', e)}>
-                <RecommendFilterTab
-                  includeEnding={tempFilter.includeEnding}
-                  onIncludeEndingChange={filterHandlers.onIncludeEndingChange}
-                  excludeWatched={tempFilter.excludeWatched}
-                  onExcludeWatchedChange={filterHandlers.onExcludeWatchedChange}
-                />
-              </SectionWrapper>
-            )}
+            {/* 모든 필터 섹션 수직 나열 */}
+            <ScrollView
+              ref={scrollRef}
+              showsVerticalScrollIndicator={false}
+              onScroll={handleScroll}
+              scrollEventThrottle={16}
+              contentContainerStyle={SCROLL_CONTENT_CONTAINER_STYLE}
+            >
+              {/* 추천 섹션 */}
+              {visibleTabs.some((t) => t.key === 'recommend') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('recommend', e)}>
+                  <RecommendFilterTab
+                    includeEnding={tempFilter.includeEnding}
+                    onIncludeEndingChange={filterHandlers.onIncludeEndingChange}
+                    excludeWatched={tempFilter.excludeWatched}
+                    onExcludeWatchedChange={filterHandlers.onExcludeWatchedChange}
+                  />
+                </SectionWrapper>
+              )}
 
-            {/* 장르 섹션 */}
-            {visibleTabs.some((t) => t.key === 'genre') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('genre', e)}>
-                <GenreFilterTab
-                  contentType={tempFilter.contentType}
-                  selectedGenreIds={tempFilter.genreIds}
-                  onContentTypeChange={filterHandlers.onContentTypeChange}
-                  onGenreIdsChange={filterHandlers.onGenreIdsChange}
-                />
-              </SectionWrapper>
-            )}
+              {/* 장르 섹션 */}
+              {visibleTabs.some((t) => t.key === 'genre') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('genre', e)}>
+                  <GenreFilterTab
+                    contentType={tempFilter.contentType}
+                    selectedGenreIds={tempFilter.genreIds}
+                    onContentTypeChange={filterHandlers.onContentTypeChange}
+                    onGenreIdsChange={filterHandlers.onGenreIdsChange}
+                  />
+                </SectionWrapper>
+              )}
 
-            {/* 국가 섹션 */}
-            {visibleTabs.some((t) => t.key === 'country') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('country', e)}>
-                <CountryFilterTab
-                  selectedCountryCodes={tempFilter.countryCodes}
-                  onCountryCodesChange={filterHandlers.onCountryCodesChange}
-                />
-              </SectionWrapper>
-            )}
+              {/* 국가 섹션 */}
+              {visibleTabs.some((t) => t.key === 'country') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('country', e)}>
+                  <CountryFilterTab
+                    selectedCountryCodes={tempFilter.countryCodes}
+                    onCountryCodesChange={filterHandlers.onCountryCodesChange}
+                  />
+                </SectionWrapper>
+              )}
 
-            {/* 공개연도 섹션 */}
-            {visibleTabs.some((t) => t.key === 'releaseYear') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('releaseYear', e)}>
-                <ReleaseYearFilterTab
-                  selectedRange={tempFilter.releaseYearRange}
-                  onRangeChange={filterHandlers.onReleaseYearRangeChange}
-                />
-              </SectionWrapper>
-            )}
+              {/* 공개연도 섹션 */}
+              {visibleTabs.some((t) => t.key === 'releaseYear') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('releaseYear', e)}>
+                  <ReleaseYearFilterTab
+                    selectedRange={tempFilter.releaseYearRange}
+                    onRangeChange={filterHandlers.onReleaseYearRangeChange}
+                  />
+                </SectionWrapper>
+              )}
 
-            {/* 평점 섹션 */}
-            {visibleTabs.some((t) => t.key === 'rating') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('rating', e)}>
-                <RatingFilterTab
-                  selectedRating={tempFilter.minStarRating}
-                  onRatingChange={filterHandlers.onMinStarRatingChange}
-                />
-              </SectionWrapper>
-            )}
+              {/* 평점 섹션 */}
+              {visibleTabs.some((t) => t.key === 'rating') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('rating', e)}>
+                  <RatingFilterTab
+                    selectedRating={tempFilter.minStarRating}
+                    onRatingChange={filterHandlers.onMinStarRatingChange}
+                  />
+                </SectionWrapper>
+              )}
 
-            {/* 채널 섹션 */}
-            {visibleTabs.some((t) => t.key === 'channel') && (
-              <SectionWrapper onLayout={(e) => handleSectionLayout('channel', e)}>
-                <ChannelFilterTab
-                  selectedChannelIds={tempFilter.channelIds}
-                  onChannelIdsChange={filterHandlers.onChannelIdsChange}
-                  onMorePress={handleChannelMorePress}
-                />
-              </SectionWrapper>
-            )}
-          </ScrollView>
+              {/* 채널 섹션 */}
+              {visibleTabs.some((t) => t.key === 'channel') && (
+                <SectionWrapper onLayout={(e) => handleSectionLayout('channel', e)}>
+                  <ChannelFilterTab
+                    selectedChannelIds={tempFilter.channelIds}
+                    onChannelIdsChange={filterHandlers.onChannelIdsChange}
+                    onMorePress={handleChannelMorePress}
+                  />
+                </SectionWrapper>
+              )}
+            </ScrollView>
 
-          {/* 하단 버튼 */}
-          <FilterFooter onReset={handleReset} onApply={handleApply} />
-        </SheetContainer>
-      </ModalContainer>
+            {/* 하단 버튼 */}
+            <FilterFooter onReset={handleReset} onApply={handleApply} />
+          </SheetContainer>
+        </ModalContainer>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
 
 const SCROLL_CONTENT_CONTAINER_STYLE = { paddingBottom: 20 } as const;
+
+// Android Modal에서 GestureHandler가 작동하도록 루트뷰 스타일
+const GESTURE_ROOT_STYLE = { flex: 1 } as const;
 
 /* Styled Components */
 

@@ -94,8 +94,10 @@ export function MyScreenProvider({ children }: MyScreenProviderProps) {
   const navigation = useNavigation<NavigationProp>();
 
   // 유저 프로필 및 인증 상태
-  const { status, displayName, avatarUrl } = useAuth();
+  const { status, displayName: authDisplayName, avatarUrl } = useAuth();
   const isGuest = status === 'unauthenticated';
+  // 게스트인 경우 "게스트"로 표시
+  const displayName = isGuest ? '게스트' : authDisplayName;
 
   // 로그인 다이얼로그 상태
   const [isLoginDialogVisible, setLoginDialogVisible] = useState(false);

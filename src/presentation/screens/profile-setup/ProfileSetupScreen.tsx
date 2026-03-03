@@ -58,7 +58,6 @@ function ProfileSetupContent(): React.ReactElement {
     buttonText,
     buttonState,
     handleSubmit,
-    mode,
     isPermissionDialogVisible,
     closePermissionDialog,
     openSettings,
@@ -92,7 +91,7 @@ function ProfileSetupContent(): React.ReactElement {
                 {/* 닉네임 입력 */}
                 <InputSection>
                   <SectionLabel>닉네임</SectionLabel>
-                  <NicknameInput autoFocus={mode === 'initial'} />
+                  <NicknameInput />
                 </InputSection>
               </ContentContainer>
 

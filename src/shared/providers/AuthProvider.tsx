@@ -21,7 +21,7 @@ const initialState: AuthState = {
   needsProfileSetup: false,
 };
 
-const DEFAULT_DISPLAY_NAME = '사용자';
+const DEFAULT_DISPLAY_NAME = '';
 const DEFAULT_ROLE: UserRole = 'user';
 
 /**

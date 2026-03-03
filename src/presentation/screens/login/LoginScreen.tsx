@@ -72,7 +72,9 @@ const ContentContainer = styled.View({
   paddingHorizontal: 24,
 });
 
-const TopSection = styled.View({});
+const TopSection = styled.View({
+  alignItems: 'center',
+});
 
 const BottomSection = styled.View({});
 

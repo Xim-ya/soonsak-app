@@ -5,7 +5,7 @@
  * ProfileSetupProvider의 Context를 통해 상태에 접근합니다.
  *
  * @example
- * <NicknameInput autoFocus={true} />
+ * <NicknameInput />
  */
 
 import React, { useCallback, useRef } from 'react';
@@ -26,7 +26,7 @@ interface NicknameInputProps {
   readonly autoFocus?: boolean;
 }
 
-function NicknameInput({ autoFocus = true }: NicknameInputProps): React.ReactElement {
+function NicknameInput({ autoFocus = false }: NicknameInputProps): React.ReactElement {
   const inputRef = useRef<TextInput>(null);
   const { nickname, setNickname, error } = useProfileSetupContext();
 

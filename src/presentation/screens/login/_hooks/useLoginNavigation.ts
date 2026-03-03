@@ -48,7 +48,7 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
   const navigation = useNavigation<LoginNavigationProp>();
   const route = useRoute<LoginRouteProp>();
   const insets = useSafeAreaInsets();
-  const { status } = useAuth();
+  const { status, needsProfileSetup } = useAuth();
 
   // canGoBack 파라미터 확인 (다른 화면에서 로그인 페이지로 이동한 경우 true)
   const canGoBack = route.params?.canGoBack ?? false;
@@ -99,6 +99,19 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
     const justAuthenticated = prevStatus !== 'authenticated' && status === 'authenticated';
 
     if (justAuthenticated) {
+      // 신규 사용자면 메인으로 리셋 후 프로필 설정 화면으로 이동
+      // (프로필 설정 완료 시 goBack()하면 메인으로 이동하도록)
+      if (needsProfileSetup) {
+        navigation.reset({
+          index: 1,
+          routes: [
+            { name: routePages.mainTabs },
+            { name: routePages.profileSetup, params: { mode: 'initial' } },
+          ],
+        });
+        return;
+      }
+
       // 푸시 알림/딥링크로 인한 pending navigation이 있으면 해당 화면으로 이동
       if (navigationRef.isReady() && handlePendingNavigation(navigationRef)) {
         return;
@@ -115,7 +128,7 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
         navigateToMain();
       }
     }
-  }, [status, canGoBack, navigation, navigateToMain, onLoginSuccess]);
+  }, [status, needsProfileSetup, canGoBack, navigation, navigateToMain, onLoginSuccess]);
 
   // 비회원 둘러보기 처리
   const handleGuestPress = useCallback(() => {

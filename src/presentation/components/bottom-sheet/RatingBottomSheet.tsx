@@ -10,7 +10,7 @@
 import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Modal } from 'react-native';
 import styled from '@emotion/native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -34,6 +34,9 @@ const BORDER_RADIUS = 12;
 
 const STAR_SIZE = 28;
 const STAR_GAP = 6;
+
+// Android Modal에서 GestureHandler가 작동하도록 루트뷰 스타일
+const GESTURE_ROOT_STYLE = { flex: 1 } as const;
 
 interface RatingBottomSheetProps {
   /** 바텀시트 표시 여부 */
@@ -161,49 +164,51 @@ function RatingBottomSheet({
 
   return (
     <Modal visible={visible} transparent animationType="none" onRequestClose={handleClose}>
-      <ModalContainer>
-        {/* 배경 오버레이 */}
-        <Overlay style={overlayAnimatedStyle} onTouchEnd={handleClose} />
+      <GestureHandlerRootView style={GESTURE_ROOT_STYLE}>
+        <ModalContainer>
+          {/* 배경 오버레이 */}
+          <Overlay style={overlayAnimatedStyle} onTouchEnd={handleClose} />
 
-        {/* 바텀시트 컨테이너 */}
-        <SheetContainer style={sheetAnimatedStyle} height={sheetHeight}>
-          <ContentWrapper>
-            {/* 드래그 핸들 */}
-            <GestureDetector gesture={panGesture}>
-              <DragArea>
-                <HandleContainer>
-                  <Handle />
-                </HandleContainer>
-              </DragArea>
-            </GestureDetector>
+          {/* 바텀시트 컨테이너 */}
+          <SheetContainer style={sheetAnimatedStyle} height={sheetHeight}>
+            <ContentWrapper>
+              {/* 드래그 핸들 */}
+              <GestureDetector gesture={panGesture}>
+                <DragArea>
+                  <HandleContainer>
+                    <Handle />
+                  </HandleContainer>
+                </DragArea>
+              </GestureDetector>
 
-            {/* 콘텐츠 영역 */}
-            <ContentArea>
-              {/* 제목 */}
-              <TitleText numberOfLines={2}>{contentTitle}</TitleText>
+              {/* 콘텐츠 영역 */}
+              <ContentArea>
+                {/* 제목 */}
+                <TitleText numberOfLines={2}>{contentTitle}</TitleText>
 
-              {/* 별점 선택 영역 */}
-              <InteractiveStarRating
-                value={selectedRating}
-                onChange={handleRatingChange}
-                onDragEnd={handleSubmitRating}
-                mode="drag"
-                step={0.5}
-                size={STAR_SIZE}
-                gap={STAR_GAP}
-              />
-            </ContentArea>
+                {/* 별점 선택 영역 */}
+                <InteractiveStarRating
+                  value={selectedRating}
+                  onChange={handleRatingChange}
+                  onDragEnd={handleSubmitRating}
+                  mode="drag"
+                  step={0.5}
+                  size={STAR_SIZE}
+                  gap={STAR_GAP}
+                />
+              </ContentArea>
 
-            {/* 스페이서 */}
-            <Spacer />
+              {/* 스페이서 */}
+              <Spacer />
 
-            {/* 취소 버튼 */}
-            <CloseButton onPress={handleClose} activeOpacity={0.7}>
-              <CloseButtonText>취소</CloseButtonText>
-            </CloseButton>
-          </ContentWrapper>
-        </SheetContainer>
-      </ModalContainer>
+              {/* 취소 버튼 */}
+              <CloseButton onPress={handleClose} activeOpacity={0.7}>
+                <CloseButtonText>취소</CloseButtonText>
+              </CloseButton>
+            </ContentWrapper>
+          </SheetContainer>
+        </ModalContainer>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
