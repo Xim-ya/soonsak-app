@@ -9,9 +9,7 @@ import * as Application from 'expo-application';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
 import { openStoreUrl } from '@/shared/utils/storeUtils';
-
-/** 개발 모드 여부 */
-const isDev = __DEV__;
+import { VersionLogger } from '@/shared/utils/logger';
 
 /**
  * 현재 앱 버전 가져오기
@@ -57,9 +55,7 @@ export function useAppVersionInfo(): UseAppVersionInfoReturn {
           setStoreUrl(policy.storeUrl);
         }
       } catch (error) {
-        if (isDev) {
-          console.error('[useAppVersionInfo] 버전 정보 조회 실패:', error);
-        }
+        VersionLogger.error('버전 정보 조회 실패:', error);
       } finally {
         setIsLoading(false);
       }

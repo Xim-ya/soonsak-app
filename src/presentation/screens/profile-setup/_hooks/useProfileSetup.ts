@@ -28,6 +28,10 @@ import { userApi } from '@/features/user/api/userApi';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { analyticsService } from '@/shared/analytics';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
+import { Logger } from '@/shared/utils/logger';
+
+const ProfileSetupLogger = Logger.create('ProfileSetup');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -165,7 +169,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
   const openSettings = useCallback(() => {
     setIsPermissionDialogVisible(false);
     Linking.openSettings().catch((err) => {
-      console.error('Failed to open settings:', err);
+      ProfileSetupLogger.error('Failed to open settings:', err);
       setIsSettingsErrorDialogVisible(true);
     });
   }, []);
@@ -229,6 +233,8 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
       // 프로필 설정 완료 표시 (ProfileSetupNavigator에서 다시 리다이렉트 방지)
       if (mode === 'initial') {
         completeProfileSetup();
+        // 신규 가입자 웹훅 호출
+        wowPointWebhook.onSignup({ nickname });
       }
 
       // 이전 화면으로 복귀 (initial/edit 모두 동일)
@@ -236,7 +242,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
       // edit 모드: 설정 화면으로 복귀
       navigation.goBack();
     } catch (e) {
-      console.error('프로필 저장 실패:', e);
+      ProfileSetupLogger.error('프로필 저장 실패:', e);
       setError('저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

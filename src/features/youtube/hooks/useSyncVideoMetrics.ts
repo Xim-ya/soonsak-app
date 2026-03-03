@@ -17,6 +17,7 @@
 
 import { useEffect, useRef } from 'react';
 import { supabaseClient } from '@/shared/api/supabaseClient';
+import { YouTubeLogger } from '@/shared/utils/logger';
 
 interface SyncVideoMetricsParams {
   /** YouTube 비디오 ID */
@@ -82,26 +83,26 @@ export function useSyncVideoMetrics({
         });
 
         if (error) {
-          console.error('[useSyncVideoMetrics] RPC 에러:', error);
+          YouTubeLogger.error('비디오 지표 RPC 에러:', error);
           return;
         }
 
         const result = data as SyncResult;
 
         if (result.updated) {
-          console.log('[useSyncVideoMetrics] 비디오 지표 업데이트 완료:', {
+          YouTubeLogger.log('비디오 지표 업데이트 완료:', {
             videoId: result.video_id,
             viewCount: result.view_count,
             likeCount: result.like_count,
           });
         } else {
-          console.log('[useSyncVideoMetrics] 업데이트 스킵:', result.reason);
+          YouTubeLogger.log('비디오 지표 업데이트 스킵:', result.reason);
         }
 
         // 동기화 완료 표시 (날짜 포함 키)
         syncedKeyRef.current = todayKey;
       } catch (error) {
-        console.error('[useSyncVideoMetrics] 동기화 실패:', error);
+        YouTubeLogger.error('비디오 지표 동기화 실패:', error);
       }
     };
 

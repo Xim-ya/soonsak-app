@@ -8,6 +8,7 @@
  */
 
 import { CommentsResponseDto } from '../types';
+import { CommentLogger } from '@/shared/utils/logger';
 
 /** Edge Function URL */
 const EDGE_FUNCTION_URL = 'https://hhgnrkejmkprfypwjhmz.supabase.co/functions/v1/youtube-comments';
@@ -24,7 +25,7 @@ export const commentApi = {
    * @param videoId YouTube 비디오 ID
    */
   async prefetchToken(videoId: string): Promise<CommentTokenResponseDto> {
-    console.log('🔑 댓글 토큰 prefetch 시작:', videoId);
+    CommentLogger.log('🔑 댓글 토큰 prefetch 시작:', videoId);
 
     try {
       const response = await fetch(
@@ -37,14 +38,14 @@ export const commentApi = {
       }
 
       const data = await response.json();
-      console.log('✅ 댓글 토큰 prefetch 완료:', !!data.token);
+      CommentLogger.log('✅ 댓글 토큰 prefetch 완료:', !!data.token);
 
       return {
         token: data.token || null,
         totalCountText: data.totalCountText,
       };
     } catch (error) {
-      console.error('❌ 댓글 토큰 prefetch 실패:', error);
+      CommentLogger.error('❌ 댓글 토큰 prefetch 실패:', error);
       throw error;
     }
   },
@@ -55,7 +56,7 @@ export const commentApi = {
    * @param totalCountText 미리 조회한 댓글 수 텍스트
    */
   async getCommentsWithToken(token: string, totalCountText?: string): Promise<CommentsResponseDto> {
-    console.log('💬 댓글 조회 시작 (토큰 사용)');
+    CommentLogger.log('💬 댓글 조회 시작 (토큰 사용)');
 
     try {
       const response = await fetch(
@@ -68,7 +69,7 @@ export const commentApi = {
       }
 
       const data = await response.json();
-      console.log(`✅ 댓글 ${data.comments?.length || 0}개 조회 완료`);
+      CommentLogger.log(`✅ 댓글 ${data.comments?.length || 0}개 조회 완료`);
 
       return {
         comments: data.comments || [],
@@ -76,7 +77,7 @@ export const commentApi = {
         hasMore: data.hasMore || false,
       };
     } catch (error) {
-      console.error('❌ 댓글 조회 실패:', error);
+      CommentLogger.error('❌ 댓글 조회 실패:', error);
       throw error;
     }
   },
@@ -91,7 +92,7 @@ export const commentApi = {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     sortBy: 'TOP' | 'NEWEST' = 'TOP',
   ): Promise<CommentsResponseDto> {
-    console.log('💬 댓글 조회 시작:', videoId);
+    CommentLogger.log('💬 댓글 조회 시작:', videoId);
 
     try {
       const response = await fetch(`${EDGE_FUNCTION_URL}?videoId=${encodeURIComponent(videoId)}`);
@@ -102,7 +103,7 @@ export const commentApi = {
       }
 
       const data = await response.json();
-      console.log(`✅ 댓글 ${data.comments?.length || 0}개 조회 완료`);
+      CommentLogger.log(`✅ 댓글 ${data.comments?.length || 0}개 조회 완료`);
 
       return {
         comments: data.comments || [],
@@ -110,7 +111,7 @@ export const commentApi = {
         hasMore: data.hasMore || false,
       };
     } catch (error) {
-      console.error('❌ 댓글 조회 실패:', error);
+      CommentLogger.error('❌ 댓글 조회 실패:', error);
       throw error;
     }
   },

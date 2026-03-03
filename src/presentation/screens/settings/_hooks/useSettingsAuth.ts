@@ -21,6 +21,7 @@ import { useDialog } from '@/presentation/components/dialog';
 import { analyticsService } from '@/shared/analytics';
 import { openStoreUrl } from '@/shared/utils/storeUtils';
 import { appConfigApi } from '@/features/app-config/api/appConfigApi';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 
 // 외부 URL 상수
 const FEEDBACK_URL = 'https://soonsak.featurebase.app/en/p/pideubaegi-pilyohaeyo';
@@ -53,7 +54,7 @@ interface UseSettingsAuthReturn {
 
 export function useSettingsAuth(): UseSettingsAuthReturn {
   const navigation = useNavigation<NavigationProp>();
-  const { signOut, status } = useAuth();
+  const { signOut, status, displayName, user } = useAuth();
   const isLoggedIn = status === 'authenticated';
   const { showDialog, showConfirmDialog } = useDialog();
   const { refreshToken } = usePushNotification();
@@ -145,6 +146,9 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   // 로그아웃 처리
   const handleLogout = useCallback(async () => {
     try {
+      // 로그아웃 전에 웹훅 호출 (닉네임 정보가 있을 때)
+      wowPointWebhook.onLogout({ nickname: displayName });
+
       await signOut();
 
       // logout 이벤트 로깅
@@ -158,7 +162,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
         buttonText: '확인',
       });
     }
-  }, [signOut, resetToLoginScreen, showDialog]);
+  }, [signOut, resetToLoginScreen, showDialog, displayName]);
 
   // 로그아웃 확인 다이얼로그
   const handleLogoutPress = useCallback(async () => {
@@ -179,6 +183,9 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
 
     setIsWithdrawing(true);
     try {
+      // 회원탈퇴 전에 웹훅 호출 (닉네임 정보가 있을 때)
+      wowPointWebhook.onWithdraw({ nickname: displayName });
+
       await authApi.withdrawUser();
 
       // account_delete 이벤트 로깅
@@ -194,7 +201,7 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     } finally {
       setIsWithdrawing(false);
     }
-  }, [isWithdrawing, resetToLoginScreen, showDialog]);
+  }, [isWithdrawing, resetToLoginScreen, showDialog, displayName]);
 
   // 회원탈퇴 확인 다이얼로그
   const handleWithdrawPress = useCallback(async () => {

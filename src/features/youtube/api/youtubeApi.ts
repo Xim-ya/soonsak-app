@@ -13,6 +13,7 @@ import {
 import { extractVideoId, buildThumbnailUrl } from '../utils';
 import { oembedScraper } from './scrapers/oembedScraper';
 import { pageScraper } from './scrapers/pageScraper';
+import { YouTubeLogger } from '@/shared/utils/logger';
 
 /**
  * 백그라운드 작업 실행기 - UI 블로킹 방지
@@ -47,7 +48,7 @@ export const youtubeApi = {
         throw new YouTubeApiError('Invalid YouTube URL or video ID', YouTubeErrorCode.INVALID_URL);
       }
 
-      console.log('🎯 YouTube 메타데이터 수집 시작:', videoId);
+      YouTubeLogger.log('🎯 YouTube 메타데이터 수집 시작:', videoId);
       const startTime = Date.now();
 
       // 병렬로 데이터 수집
@@ -61,7 +62,7 @@ export const youtubeApi = {
         scrapedResult.status === 'fulfilled' ? scrapedResult.value : ({} as ScrapedVideoDto);
 
       const endTime = Date.now();
-      console.log(`⏱️ 데이터 수집 완료 (${endTime - startTime}ms)`);
+      YouTubeLogger.log(`⏱️ 데이터 수집 완료 (${endTime - startTime}ms)`);
 
       // oEmbed 성공 시: oEmbed + 스크래핑 데이터 병합
       if (oembedData) {
@@ -71,7 +72,7 @@ export const youtubeApi = {
       // oEmbed 실패 + 스크래핑 성공 시: 스크래핑 데이터만으로 구성
       // (임베드 제한 영상은 oEmbed가 401 반환하지만 페이지 스크래핑은 정상 동작)
       if (scrapedData.viewCount !== undefined) {
-        console.log('⚠️ oEmbed 실패 → 스크래핑 데이터로 대체');
+        YouTubeLogger.log('⚠️ oEmbed 실패 → 스크래핑 데이터로 대체');
         return this.buildFromScrapedData(scrapedData, videoId);
       }
 

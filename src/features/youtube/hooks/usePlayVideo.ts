@@ -25,6 +25,7 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { appConfigManager } from '@/features/app-config';
 import { ContentType } from '@/shared/types/content/contentType.enum';
+import { PlayerLogger } from '@/shared/utils/logger';
 import { buildYouTubeUrl } from '../utils/urlParser';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
@@ -60,14 +61,14 @@ export function usePlayVideo(): UsePlayVideoResult {
       // 심사 버전이면 YouTube 웹 URL로 외부 앱 열기
       // iOS Universal Links로 YouTube 앱이 설치되어 있으면 자동으로 앱에서 열림
       if (isReviewVersion) {
-        console.log('[usePlayVideo] 심사 버전 감지 → YouTube로 이동');
+        PlayerLogger.log('심사 버전 감지 → YouTube로 이동');
 
         const youtubeUrl = buildYouTubeUrl(videoId);
 
         try {
           await Linking.openURL(youtubeUrl);
         } catch (error) {
-          console.error('[usePlayVideo] YouTube 열기 실패:', error);
+          PlayerLogger.error('YouTube 열기 실패:', error);
         }
         return;
       }

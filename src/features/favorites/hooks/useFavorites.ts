@@ -6,9 +6,13 @@ import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { analyticsService } from '@/shared/analytics';
+import { Logger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { favoritesApi } from '../api/favoritesApi';
 import type { ToggleFavoriteParams } from '../types';
 import { FavoriteModel, FavoriteStatusModel } from '../types/favoriteModel';
+
+const FavoritesLogger = Logger.create('Favorites');
 
 /** 캐시 시간 상수 */
 const FIVE_MINUTES = 5 * 60 * 1000;
@@ -112,6 +116,14 @@ export const useToggleFavorite = () => {
         action: wasAdded ? 'add' : 'remove',
         screen_name: params.screenName ?? 'content_detail',
       });
+
+      // 찜 추가 시에만 웹훅 호출
+      if (wasAdded) {
+        wowPointWebhook.onVideoFavorite({
+          ...(params.nickname && { nickname: params.nickname }),
+          ...(params.videoTitle && { videoTitle: params.videoTitle }),
+        });
+      }
     },
 
     onError: (_error, _params, context) => {
@@ -119,7 +131,7 @@ export const useToggleFavorite = () => {
       if (context?.previousStatus) {
         queryClient.setQueryData(context.queryKey, context.previousStatus);
       }
-      console.error('찜 토글 실패:', _error);
+      FavoritesLogger.error('찜 토글 실패:', _error);
     },
 
     onSettled: (_data, _error, params) => {

@@ -1,6 +1,9 @@
 import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
+import { Logger } from '@/shared/utils/logger';
+
+const ReviewFunnelLogger = Logger.create('ReviewFunnel');
 import type {
   ReviewFunnelSessionDto,
   CreateFunnelSessionParams,
@@ -60,7 +63,7 @@ export const reviewFunnelApi = {
       .single();
 
     if (error) {
-      console.error('퍼널 세션 생성 실패:', error);
+      ReviewFunnelLogger.error('퍼널 세션 생성 실패:', error);
       throw new Error(`Failed to create funnel session: ${error.message}`);
     }
 
@@ -83,7 +86,7 @@ export const reviewFunnelApi = {
       .is('has_reviewed', null);
 
     if (error) {
-      console.error('퍼널 진입 처리 실패:', error);
+      ReviewFunnelLogger.error('퍼널 진입 처리 실패:', error);
     }
   },
 
@@ -107,7 +110,7 @@ export const reviewFunnelApi = {
       .eq('has_reviewed', false);
 
     if (error) {
-      console.error('리뷰 완료 처리 실패:', error);
+      ReviewFunnelLogger.error('리뷰 완료 처리 실패:', error);
     }
   },
 
@@ -125,7 +128,7 @@ export const reviewFunnelApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('퍼널 세션 조회 실패:', error);
+      ReviewFunnelLogger.error('퍼널 세션 조회 실패:', error);
       return null;
     }
 
@@ -157,7 +160,7 @@ export const reviewFunnelApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('퍼널 통계 조회 실패:', error);
+      ReviewFunnelLogger.error('퍼널 통계 조회 실패:', error);
       throw new Error(`Failed to fetch funnel stats: ${error.message}`);
     }
 

@@ -9,6 +9,9 @@
 
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { PUSH_DATABASE } from '@/shared/config/dbConfig';
+import { Logger } from '@/shared/utils/logger';
+
+const NotificationLogger = Logger.create('Notification');
 import type {
   NotificationListParams,
   NotificationListResult,
@@ -64,7 +67,7 @@ async function getPushTokenIdByToken(userId: string, pushToken: string): Promise
     .single();
 
   if (error || !data) {
-    console.warn('[NotificationApi] push_token_id 조회 실패:', error?.message);
+    NotificationLogger.warn('push_token_id 조회 실패:', error?.message);
     return null;
   }
 
@@ -231,7 +234,7 @@ export const notificationApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('[NotificationApi] 알림 목록 조회 실패:', error);
+      NotificationLogger.error('알림 목록 조회 실패:', error);
       throw new Error(`Failed to fetch notifications: ${error.message}`);
     }
 
@@ -279,7 +282,7 @@ export const notificationApi = {
       .is('read_at', null);
 
     if (error) {
-      console.error('[NotificationApi] 읽지 않은 알림 개수 조회 실패:', error);
+      NotificationLogger.error('읽지 않은 알림 개수 조회 실패:', error);
       throw new Error(`Failed to fetch unread count: ${error.message}`);
     }
 

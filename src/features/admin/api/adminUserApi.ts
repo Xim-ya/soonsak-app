@@ -8,6 +8,7 @@ import { supabaseClient } from '@/shared/api/supabaseClient';
 import { AUTH_DATABASE, PUSH_DATABASE } from '@/shared/config/dbConfig';
 import type { UserRole } from '@/features/auth/types';
 import type { PushData } from '../types/pushAction';
+import { AdminLogger } from '@/shared/utils/logger';
 
 // ============================================================================
 // Types
@@ -192,7 +193,7 @@ export const adminUserApi = {
         .eq('action_type', 'nav_review_funnel');
 
       if (sentUsersError) {
-        console.error('리뷰 퍼널 발송 유저 조회 실패:', sentUsersError);
+        AdminLogger.error('리뷰 퍼널 발송 유저 조회 실패:', sentUsersError);
         throw new Error(`Failed to fetch review funnel sent users: ${sentUsersError.message}`);
       }
 
@@ -248,7 +249,7 @@ export const adminUserApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('유저 목록 조회 실패:', error);
+      AdminLogger.error('유저 목록 조회 실패:', error);
       throw new Error(`Failed to fetch users: ${error.message}`);
     }
 
@@ -294,7 +295,7 @@ export const adminUserApi = {
       .select('*', { count: 'exact', head: true });
 
     if (totalError) {
-      console.error('전체 유저 카운트 조회 실패:', totalError);
+      AdminLogger.error('전체 유저 카운트 조회 실패:', totalError);
       throw new Error(`Failed to count total users: ${totalError.message}`);
     }
 
@@ -316,13 +317,13 @@ export const adminUserApi = {
 
     // 개별 쿼리 에러 로깅 (치명적이지 않으므로 경고만)
     if (userResult.error) {
-      console.warn('user 역할 카운트 조회 실패:', userResult.error);
+      AdminLogger.warn('user 역할 카운트 조회 실패:', userResult.error);
     }
     if (adminResult.error) {
-      console.warn('admin 역할 카운트 조회 실패:', adminResult.error);
+      AdminLogger.warn('admin 역할 카운트 조회 실패:', adminResult.error);
     }
     if (bannedResult.error) {
-      console.warn('banned 역할 카운트 조회 실패:', bannedResult.error);
+      AdminLogger.warn('banned 역할 카운트 조회 실패:', bannedResult.error);
     }
 
     return {
@@ -370,16 +371,16 @@ export const adminUserApi = {
 
     // 에러 로깅 (치명적이지 않으므로 경고만)
     if (totalResult.error) {
-      console.warn('총 유저 수 조회 실패:', totalResult.error);
+      AdminLogger.warn('총 유저 수 조회 실패:', totalResult.error);
     }
     if (memberDauResult.error) {
-      console.warn('회원 DAU 조회 실패:', memberDauResult.error);
+      AdminLogger.warn('회원 DAU 조회 실패:', memberDauResult.error);
     }
     if (nonMemberDauResult.error) {
-      console.warn('비회원 DAU 조회 실패:', nonMemberDauResult.error);
+      AdminLogger.warn('비회원 DAU 조회 실패:', nonMemberDauResult.error);
     }
     if (newUsersResult.error) {
-      console.warn('신규 가입자 조회 실패:', newUsersResult.error);
+      AdminLogger.warn('신규 가입자 조회 실패:', newUsersResult.error);
     }
 
     const memberDau = memberDauResult.count ?? 0;
@@ -413,7 +414,7 @@ export const adminUserApi = {
       .single();
 
     if (userError) {
-      console.error('유저 정보 조회 실패:', userError);
+      AdminLogger.error('유저 정보 조회 실패:', userError);
       throw new Error(`Failed to fetch user: ${userError.message}`);
     }
 
@@ -424,7 +425,7 @@ export const adminUserApi = {
       .eq('user_id', userId);
 
     if (pushError) {
-      console.error('푸시 토큰 조회 실패:', pushError);
+      AdminLogger.error('푸시 토큰 조회 실패:', pushError);
       // 푸시 토큰 조회 실패는 치명적이지 않으므로 빈 배열로 처리
     }
 
@@ -447,13 +448,13 @@ export const adminUserApi = {
 
     // 부분 실패 로깅 (치명적이지 않으므로 경고만)
     if (watchHistoryResult.error) {
-      console.warn('시청기록 통계 조회 실패:', watchHistoryResult.error);
+      AdminLogger.warn('시청기록 통계 조회 실패:', watchHistoryResult.error);
     }
     if (favoritesResult.error) {
-      console.warn('찜 통계 조회 실패:', favoritesResult.error);
+      AdminLogger.warn('찜 통계 조회 실패:', favoritesResult.error);
     }
     if (ratingsResult.error) {
-      console.warn('평가 통계 조회 실패:', ratingsResult.error);
+      AdminLogger.warn('평가 통계 조회 실패:', ratingsResult.error);
     }
 
     return {
@@ -501,7 +502,7 @@ export const adminUserApi = {
       .eq('id', userId);
 
     if (error) {
-      console.error('유저 역할 변경 실패:', error);
+      AdminLogger.error('유저 역할 변경 실패:', error);
       throw new Error(`Failed to update user role: ${error.message}`);
     }
   },
@@ -548,7 +549,7 @@ export const adminUserApi = {
       .eq('is_active', true);
 
     if (tokenError) {
-      console.error('푸시 토큰 조회 실패:', tokenError);
+      AdminLogger.error('푸시 토큰 조회 실패:', tokenError);
       throw new Error(`Failed to fetch push tokens: ${tokenError.message}`);
     }
 
@@ -613,7 +614,7 @@ export const adminUserApi = {
       .single();
 
     if (notificationError) {
-      console.error('푸시 알림 기록 생성 실패:', notificationError);
+      AdminLogger.error('푸시 알림 기록 생성 실패:', notificationError);
       // 기록 실패해도 발송은 계속 진행
     }
 
@@ -700,7 +701,7 @@ export const adminUserApi = {
           .insert(receipts);
 
         if (receiptsError) {
-          console.error('푸시 수신 기록 생성 실패:', receiptsError);
+          AdminLogger.error('푸시 수신 기록 생성 실패:', receiptsError);
           // 기록 실패해도 결과는 반환
         }
       }
@@ -721,7 +722,7 @@ export const adminUserApi = {
       if (error instanceof Error && error.name === 'AbortError') {
         throw new Error('Push notification request timed out');
       }
-      console.error('푸시 발송 실패:', error);
+      AdminLogger.error('푸시 발송 실패:', error);
       throw error;
     }
   },
@@ -750,7 +751,7 @@ export const adminUserApi = {
       .limit(normalizeLimit(limit));
 
     if (error) {
-      console.error('시청기록 조회 실패:', error);
+      AdminLogger.error('시청기록 조회 실패:', error);
       throw new Error(`Failed to fetch watch history: ${error.message}`);
     }
 
@@ -798,7 +799,7 @@ export const adminUserApi = {
       .limit(normalizeLimit(limit));
 
     if (error) {
-      console.error('찜 목록 조회 실패:', error);
+      AdminLogger.error('찜 목록 조회 실패:', error);
       throw new Error(`Failed to fetch favorites: ${error.message}`);
     }
 
@@ -841,7 +842,7 @@ export const adminUserApi = {
       .limit(normalizeLimit(limit));
 
     if (error) {
-      console.error('평가 목록 조회 실패:', error);
+      AdminLogger.error('평가 목록 조회 실패:', error);
       throw new Error(`Failed to fetch ratings: ${error.message}`);
     }
 
@@ -880,7 +881,7 @@ export const adminUserApi = {
       .order('created_at', { ascending: false });
 
     if (notificationError) {
-      console.error('리뷰 퍼널 발송 기록 조회 실패:', notificationError);
+      AdminLogger.error('리뷰 퍼널 발송 기록 조회 실패:', notificationError);
       throw new Error(`Failed to fetch review funnel history: ${notificationError.message}`);
     }
 
@@ -892,7 +893,7 @@ export const adminUserApi = {
       .maybeSingle();
 
     if (sessionError) {
-      console.error('리뷰 퍼널 세션 조회 실패:', sessionError);
+      AdminLogger.error('리뷰 퍼널 세션 조회 실패:', sessionError);
       // 세션 조회 실패는 치명적이지 않으므로 null로 처리
     }
 

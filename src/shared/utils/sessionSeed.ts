@@ -5,12 +5,14 @@
  * 같은 세션에서는 동일한 시드를 반환합니다.
  */
 
+import { Logger } from '@/shared/utils/logger';
+
 // 앱 로드 시점에 0~1 사이 랜덤 시드 생성
 // 모듈이 로드될 때 즉시 생성되어 핫 리로드에도 새 값 보장
 const sessionSeed: number = Math.random();
 
 // 디버깅: 시드 값 확인
-console.log('[SessionSeed] Generated:', sessionSeed);
+Logger.log('SessionSeed Generated:', sessionSeed);
 
 /**
  * 현재 세션의 랜덤 시드를 반환합니다.

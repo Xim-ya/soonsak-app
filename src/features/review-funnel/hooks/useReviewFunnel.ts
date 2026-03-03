@@ -6,8 +6,11 @@ import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { openStoreReviewPage } from '@/shared/utils/storeUtils';
 import { appConfigApi } from '@/features/app-config/api/appConfigApi';
+import { Logger } from '@/shared/utils/logger';
 import { reviewFunnelApi } from '../api/reviewFunnelApi';
 import type { ReviewFunnelSessionDto, ReviewType, RecommendedContent } from '../types';
+
+const ReviewFunnelLogger = Logger.create('ReviewFunnel');
 
 type FunnelViewStep = 'letter' | 'content';
 
@@ -83,7 +86,7 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
         setError(null);
       } catch (err) {
         if (!isMounted) return;
-        if (__DEV__) console.error('퍼널 초기화 실패:', err);
+        ReviewFunnelLogger.error('퍼널 초기화 실패:', err);
         setError('초기화에 실패했습니다.');
       } finally {
         if (isMounted) setIsLoading(false);
@@ -146,7 +149,7 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
       // 스토어 URL로 이동 (fallback)
       await openStoreReviewPage(storeUrlRef.current);
     } catch (err) {
-      if (__DEV__) console.error('[ReviewFunnel] 인앱 리뷰 요청 실패:', err);
+      ReviewFunnelLogger.error('인앱 리뷰 요청 실패:', err);
     }
   }, [markReviewCompleted]);
 
@@ -159,7 +162,7 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
       await markReviewCompleted('write_review');
       await openStoreReviewPage(storeUrlRef.current);
     } catch (err) {
-      if (__DEV__) console.error('[ReviewFunnel] 스토어 리뷰 요청 실패:', err);
+      ReviewFunnelLogger.error('스토어 리뷰 요청 실패:', err);
     }
   }, [markReviewCompleted]);
 

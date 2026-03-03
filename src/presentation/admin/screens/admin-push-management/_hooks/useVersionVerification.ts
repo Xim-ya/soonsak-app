@@ -6,6 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
+import { VersionLogger } from '@/shared/utils/logger';
 import { adminPushApi } from '@/features/admin/api/adminPushApi';
 
 // ============================================================================
@@ -139,7 +140,7 @@ export function useVersionVerification({
         count: versionInfo?.count ?? 0,
       });
     } catch (error) {
-      console.error('[useVersionVerification] 버전 조회 실패:', error);
+      VersionLogger.error('버전 조회 실패:', error);
       setVerificationState({
         status: 'error',
         version: normalizedVersion,

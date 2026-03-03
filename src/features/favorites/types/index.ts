@@ -36,6 +36,12 @@ interface ToggleFavoriteParams {
   readonly contentType: ContentType;
   /** 화면 이름 (GA 로깅용, 기본값: 'content_detail') */
   readonly screenName?: string;
+  /** 유저 ID (웹훅 알림용) */
+  readonly userId?: string;
+  /** 유저 닉네임 (웹훅 알림용) */
+  readonly nickname?: string;
+  /** 영상 제목 (웹훅 알림용) */
+  readonly videoTitle?: string;
 }
 
 /**

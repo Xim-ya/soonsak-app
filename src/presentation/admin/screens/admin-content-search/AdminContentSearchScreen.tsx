@@ -25,6 +25,7 @@ import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { adminContentApi } from '@/features/admin/api';
+import { AdminLogger } from '@/shared/utils/logger';
 import type { SearchMultiItemDto } from '@/features/tmdb/types/common';
 import { contentTypeConfigs, ContentType } from '@/shared/types/content/contentType.enum';
 import { useDebounce } from '@/shared/hooks/useDebounce';
@@ -221,7 +222,7 @@ export default function AdminContentSearchScreen() {
           });
         }
       } catch (error) {
-        console.error('콘텐츠 교체 실패:', error);
+        AdminLogger.error('콘텐츠 교체 실패:', error);
         await showDialog({
           title: '오류',
           description: '콘텐츠를 교체하지 못했어요. 다시 시도해주세요.',

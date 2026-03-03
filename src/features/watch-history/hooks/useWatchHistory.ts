@@ -10,9 +10,12 @@ import {
   UseQueryResult,
 } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { Logger } from '@/shared/utils/logger';
 import { watchHistoryApi } from '../api/watchHistoryApi';
 import type { CreateWatchHistoryParams } from '../types';
 import { WatchHistoryModel, WatchHistoryCalendarModel } from '../types/watchHistoryModel';
+
+const WatchHistoryLogger = Logger.create('WatchHistory');
 
 /** 캐시 시간 상수 */
 const THIRTY_SECONDS = 30 * 1000;
@@ -308,7 +311,7 @@ export const useAddWatchHistory = () => {
       queryClient.invalidateQueries({ queryKey: watchHistoryKeys.all(userId) });
     },
     onError: (error) => {
-      console.error('시청 기록 추가 실패:', error);
+      WatchHistoryLogger.error('시청 기록 추가 실패:', error);
     },
   });
 };
@@ -327,7 +330,7 @@ export const useDeleteWatchHistory = () => {
       queryClient.invalidateQueries({ queryKey: watchHistoryKeys.all(userId) });
     },
     onError: (error) => {
-      console.error('시청 기록 삭제 실패:', error);
+      WatchHistoryLogger.error('시청 기록 삭제 실패:', error);
     },
   });
 };
@@ -346,7 +349,7 @@ export const useClearAllWatchHistory = () => {
       queryClient.invalidateQueries({ queryKey: watchHistoryKeys.all(userId) });
     },
     onError: (error) => {
-      console.error('전체 시청 기록 삭제 실패:', error);
+      WatchHistoryLogger.error('전체 시청 기록 삭제 실패:', error);
     },
   });
 };

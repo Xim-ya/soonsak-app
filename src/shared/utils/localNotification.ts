@@ -6,6 +6,7 @@
  */
 import * as Notifications from 'expo-notifications';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { NotificationLogger } from '@/shared/utils/logger';
 
 interface LocalNotificationOptions {
   title: string;
@@ -51,13 +52,11 @@ export async function sendLocalNotification(
       trigger: null, // 즉시 발송
     });
 
-    if (__DEV__) {
-      console.log('[LocalNotification] 알림 발송:', { title, body, screen });
-    }
+    NotificationLogger.log('알림 발송:', { title, body, screen });
 
     return identifier;
   } catch (error) {
-    console.error('[LocalNotification] 알림 발송 실패:', error);
+    NotificationLogger.error('알림 발송 실패:', error);
     return null;
   }
 }

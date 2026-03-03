@@ -52,9 +52,10 @@ interface UseContentInfoActionsReturn {
 export function useContentInfoActions({
   contentId,
   contentType,
+  contentTitle,
 }: UseContentInfoActionsParams): UseContentInfoActionsReturn {
   // 인증 상태
-  const { status } = useAuth();
+  const { status, displayName } = useAuth();
   const isLoggedIn = status === 'authenticated';
 
   // 찜 상태 및 토글
@@ -84,8 +85,8 @@ export function useContentInfoActions({
       setLoginDialogVisible(true);
       return;
     }
-    toggleFavorite({ contentId, contentType });
-  }, [isLoggedIn, contentId, contentType, toggleFavorite]);
+    toggleFavorite({ contentId, contentType, nickname: displayName, videoTitle: contentTitle });
+  }, [isLoggedIn, contentId, contentType, toggleFavorite, displayName, contentTitle]);
 
   // 평점 버튼 클릭 핸들러
   const handleRatingPress = useCallback(() => {
@@ -100,9 +101,9 @@ export function useContentInfoActions({
   // 평점 등록 핸들러
   const handleSubmitRating = useCallback(
     (rating: number) => {
-      setRating({ contentId, contentType, rating });
+      setRating({ contentId, contentType, rating, contentTitle });
     },
-    [contentId, contentType, setRating],
+    [contentId, contentType, contentTitle, setRating],
   );
 
   // 평점 바텀시트 닫기
@@ -120,7 +121,7 @@ export function useContentInfoActions({
   const loginSuccessCallback = useMemo(() => {
     if (pendingAction === 'favorite') {
       return () => {
-        toggleFavorite({ contentId, contentType });
+        toggleFavorite({ contentId, contentType, nickname: displayName, videoTitle: contentTitle });
         setPendingAction(null);
       };
     }

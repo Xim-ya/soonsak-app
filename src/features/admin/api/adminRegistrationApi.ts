@@ -6,6 +6,7 @@
  */
 
 import { contentApi } from '@/features/content/api/contentApi';
+import { RegistrationLogger } from '@/shared/utils/logger';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
 
 // ============================================================================
@@ -109,7 +110,7 @@ export const adminRegistrationApi = {
    */
   registerVideo: async (videoId: string): Promise<VideoRegistrationResult> => {
     const url = `${BACKEND_URL}/videos/${videoId}/register`;
-    console.log('[AdminRegistration] 영상 등록 요청:', url);
+    RegistrationLogger.log('영상 등록 요청:', url);
 
     try {
       const response = await fetch(url, {
@@ -119,16 +120,16 @@ export const adminRegistrationApi = {
         },
       });
 
-      console.log('[AdminRegistration] 응답 상태:', response.status);
+      RegistrationLogger.log('응답 상태:', response.status);
 
       const text = await response.text();
-      console.log('[AdminRegistration] 응답 원본:', text);
+      RegistrationLogger.log('응답 원본:', text);
 
       let data;
       try {
         data = JSON.parse(text);
       } catch {
-        console.error('[AdminRegistration] JSON 파싱 실패:', text);
+        RegistrationLogger.error('JSON 파싱 실패:', text);
         return {
           success: false,
           videoId,
@@ -142,7 +143,7 @@ export const adminRegistrationApi = {
       }
 
       if (!response.ok) {
-        console.error('[AdminRegistration] 등록 실패:', data);
+        RegistrationLogger.error('등록 실패:', data);
         return {
           success: false,
           videoId,
@@ -157,7 +158,7 @@ export const adminRegistrationApi = {
 
       // HTTP 200/201이지만 success: false인 경우 처리
       if (data.success === false) {
-        console.log('[AdminRegistration] 등록 실패 (success: false):', data);
+        RegistrationLogger.log('등록 실패 (success: false):', data);
         return {
           success: false,
           videoId,
@@ -170,10 +171,10 @@ export const adminRegistrationApi = {
         };
       }
 
-      console.log('[AdminRegistration] 등록 성공:', data);
+      RegistrationLogger.log('등록 성공:', data);
       return data;
     } catch (err) {
-      console.error('[AdminRegistration] 네트워크 오류:', err);
+      RegistrationLogger.error('네트워크 오류:', err);
       return {
         success: false,
         videoId,
@@ -284,7 +285,7 @@ export const adminRegistrationApi = {
           }
         });
       } catch (err) {
-        console.error('[AdminRegistration] posterPath 조회 실패:', err);
+        RegistrationLogger.error('posterPath 조회 실패:', err);
         // posterPath 조회 실패는 무시 (등록 결과는 유지)
       }
     }
@@ -315,7 +316,7 @@ export const adminRegistrationApi = {
       : channelIdOrHandle;
 
     const url = `${BACKEND_URL}/channels/${cleanId}/register?maxVideos=${maxVideos}`;
-    console.log('[AdminRegistration] 채널 등록 요청:', url);
+    RegistrationLogger.log('채널 등록 요청:', url);
 
     try {
       const response = await fetch(url, {
@@ -325,16 +326,16 @@ export const adminRegistrationApi = {
         },
       });
 
-      console.log('[AdminRegistration] 응답 상태:', response.status);
+      RegistrationLogger.log('응답 상태:', response.status);
 
       const text = await response.text();
-      console.log('[AdminRegistration] 응답 원본:', text);
+      RegistrationLogger.log('응답 원본:', text);
 
       let data;
       try {
         data = JSON.parse(text);
       } catch {
-        console.error('[AdminRegistration] JSON 파싱 실패:', text);
+        RegistrationLogger.error('JSON 파싱 실패:', text);
         return {
           success: false,
           channelId: cleanId,
@@ -352,7 +353,7 @@ export const adminRegistrationApi = {
       }
 
       if (!response.ok) {
-        console.error('[AdminRegistration] 등록 실패:', data);
+        RegistrationLogger.error('등록 실패:', data);
         return {
           success: false,
           channelId: cleanId,
@@ -369,7 +370,7 @@ export const adminRegistrationApi = {
         };
       }
 
-      console.log('[AdminRegistration] 등록 성공:', data);
+      RegistrationLogger.log('등록 성공:', data);
       // 백엔드 응답에 success 필드가 없으면 추가하고, 별칭 필드도 추가
       return {
         success: data.successCount > 0 || data.processedCount > 0,
@@ -379,7 +380,7 @@ export const adminRegistrationApi = {
         ...data,
       };
     } catch (err) {
-      console.error('[AdminRegistration] 네트워크 오류:', err);
+      RegistrationLogger.error('네트워크 오류:', err);
       return {
         success: false,
         channelId: cleanId,
@@ -414,7 +415,7 @@ export const adminRegistrationApi = {
       : channelIdOrHandle;
 
     const url = `${BACKEND_URL}/channels/${cleanId}/register-all?maxVideos=${maxVideos}`;
-    console.log('[AdminRegistration] 채널 전체 등록 요청:', url);
+    RegistrationLogger.log('채널 전체 등록 요청:', url);
 
     try {
       const response = await fetch(url, {
@@ -424,16 +425,16 @@ export const adminRegistrationApi = {
         },
       });
 
-      console.log('[AdminRegistration] 응답 상태:', response.status);
+      RegistrationLogger.log('응답 상태:', response.status);
 
       const text = await response.text();
-      console.log('[AdminRegistration] 응답 원본:', text);
+      RegistrationLogger.log('응답 원본:', text);
 
       let data;
       try {
         data = JSON.parse(text);
       } catch {
-        console.error('[AdminRegistration] JSON 파싱 실패:', text);
+        RegistrationLogger.error('JSON 파싱 실패:', text);
         return {
           success: false,
           channelId: cleanId,
@@ -451,7 +452,7 @@ export const adminRegistrationApi = {
       }
 
       if (!response.ok) {
-        console.error('[AdminRegistration] 등록 실패:', data);
+        RegistrationLogger.error('등록 실패:', data);
         return {
           success: false,
           channelId: cleanId,
@@ -468,7 +469,7 @@ export const adminRegistrationApi = {
         };
       }
 
-      console.log('[AdminRegistration] 등록 성공:', data);
+      RegistrationLogger.log('등록 성공:', data);
       // 백엔드 응답에 success 필드가 없으면 추가하고, 별칭 필드도 추가
       return {
         success: data.successCount > 0 || data.processedCount > 0,
@@ -478,7 +479,7 @@ export const adminRegistrationApi = {
         ...data,
       };
     } catch (err) {
-      console.error('[AdminRegistration] 네트워크 오류:', err);
+      RegistrationLogger.error('네트워크 오류:', err);
       return {
         success: false,
         channelId: cleanId,

@@ -7,6 +7,7 @@
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { PUSH_DATABASE } from '@/shared/config/dbConfig';
 import type { PushData } from '../types/pushAction';
+import { PushLogger } from '@/shared/utils/logger';
 
 // ============================================================================
 // Types
@@ -226,7 +227,7 @@ export const adminPushApi = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('푸시 템플릿 목록 조회 실패:', error);
+      PushLogger.error('푸시 템플릿 목록 조회 실패:', error);
       throw new Error(`Failed to fetch push templates: ${error.message}`);
     }
 
@@ -263,7 +264,7 @@ export const adminPushApi = {
       .single();
 
     if (error) {
-      console.error('푸시 템플릿 상세 조회 실패:', error);
+      PushLogger.error('푸시 템플릿 상세 조회 실패:', error);
       throw new Error(`Failed to fetch push template: ${error.message}`);
     }
 
@@ -327,7 +328,7 @@ export const adminPushApi = {
       .single();
 
     if (error) {
-      console.error('푸시 템플릿 생성 실패:', error);
+      PushLogger.error('푸시 템플릿 생성 실패:', error);
       throw new Error(`Failed to create push template: ${error.message}`);
     }
 
@@ -375,7 +376,7 @@ export const adminPushApi = {
       .eq('id', templateId);
 
     if (error) {
-      console.error('푸시 템플릿 수정 실패:', error);
+      PushLogger.error('푸시 템플릿 수정 실패:', error);
       throw new Error(`Failed to update push template: ${error.message}`);
     }
   },
@@ -390,7 +391,7 @@ export const adminPushApi = {
       .eq('id', templateId);
 
     if (error) {
-      console.error('푸시 템플릿 삭제 실패:', error);
+      PushLogger.error('푸시 템플릿 삭제 실패:', error);
       throw new Error(`Failed to delete push template: ${error.message}`);
     }
   },
@@ -411,7 +412,7 @@ export const adminPushApi = {
       .eq('id', templateId);
 
     if (error) {
-      console.error('푸시 템플릿 스케줄 상태 변경 실패:', error);
+      PushLogger.error('푸시 템플릿 스케줄 상태 변경 실패:', error);
       throw new Error(`Failed to update template schedule status: ${error.message}`);
     }
   },
@@ -491,7 +492,7 @@ export const adminPushApi = {
       .limit(limit);
 
     if (error) {
-      console.error('최근 발송 내역 조회 실패:', error);
+      PushLogger.error('최근 발송 내역 조회 실패:', error);
       throw new Error(`Failed to fetch recent notifications: ${error.message}`);
     }
 
@@ -551,7 +552,7 @@ export const adminPushApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('푸시 발송 내역 조회 실패:', error);
+      PushLogger.error('푸시 발송 내역 조회 실패:', error);
       throw new Error(`Failed to fetch push receipts: ${error.message}`);
     }
 
@@ -653,7 +654,7 @@ export const adminPushApi = {
       .eq('is_active', true);
 
     if (tokenError) {
-      console.error('활성 토큰 조회 실패:', tokenError);
+      PushLogger.error('활성 토큰 조회 실패:', tokenError);
       throw new Error(`Failed to fetch active tokens: ${tokenError.message}`);
     }
 
@@ -675,7 +676,7 @@ export const adminPushApi = {
       .in('id', userIds);
 
     if (profileError) {
-      console.error('프로필 버전 조회 실패:', profileError);
+      PushLogger.error('프로필 버전 조회 실패:', profileError);
       throw new Error(`Failed to fetch profile versions: ${profileError.message}`);
     }
 
@@ -748,7 +749,7 @@ export const adminPushApi = {
       const { data: profileData, error: profileError } = await profileQuery;
 
       if (profileError) {
-        console.error('프로필 조회 실패:', profileError);
+        PushLogger.error('프로필 조회 실패:', profileError);
         throw new Error(`Failed to fetch profiles: ${profileError.message}`);
       }
 
@@ -773,7 +774,7 @@ export const adminPushApi = {
     const { data: tokens, error: tokenError } = await tokenQuery;
 
     if (tokenError) {
-      console.error('푸시 토큰 조회 실패:', tokenError);
+      PushLogger.error('푸시 토큰 조회 실패:', tokenError);
       throw new Error(`Failed to fetch push tokens: ${tokenError.message}`);
     }
 
@@ -835,7 +836,7 @@ export const adminPushApi = {
       .single();
 
     if (notificationError) {
-      console.error('푸시 알림 기록 생성 실패:', notificationError);
+      PushLogger.error('푸시 알림 기록 생성 실패:', notificationError);
       throw new Error(`Failed to create notification record: ${notificationError.message}`);
     }
 
@@ -925,7 +926,7 @@ export const adminPushApi = {
         totalSentCount += batchSentCount;
         totalFailedCount += batchFailedCount;
       } catch (error) {
-        console.error('배치 푸시 발송 실패:', error);
+        PushLogger.error('배치 푸시 발송 실패:', error);
         totalFailedCount += batch.length;
       }
     }

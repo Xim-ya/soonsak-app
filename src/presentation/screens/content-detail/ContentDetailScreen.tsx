@@ -189,7 +189,7 @@ function ContentDetailContent({
     handleToggleFavorite,
     handleCloseActionSheet,
     handleCloseDialog,
-  } = useFavoriteAction({ contentId, contentType });
+  } = useFavoriteAction({ contentId, contentType, contentTitle: title });
   void _handleMorePress; // lint 무시 (어드민 액션에서 별도 처리)
 
   return (

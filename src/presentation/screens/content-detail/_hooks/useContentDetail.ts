@@ -6,6 +6,7 @@ import { MovieDto } from '@/features/tmdb/types/movieDto';
 import { TvSeriesDto } from '@/features/tmdb/types/tvDto';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
+import { ContentLogger } from '@/shared/utils/logger';
 
 /**
  * Supabase에서 커스텀 backdrop_path 조회
@@ -87,7 +88,7 @@ export function useContentDetail(
 
         return model;
       } catch (error) {
-        console.error('[useContentDetail] 콘텐츠 상세 정보 조회 실패:', {
+        ContentLogger.error('콘텐츠 상세 정보 조회 실패:', {
           contentId,
           contentType,
           error,

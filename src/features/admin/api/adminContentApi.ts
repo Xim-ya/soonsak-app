@@ -11,6 +11,7 @@ import type { MovieDto } from '@/features/tmdb/types/movieDto';
 import type { TvSeriesDto } from '@/features/tmdb/types/tvDto';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ContentStatus } from '@/features/content/types';
+import { ContentLogger } from '@/shared/utils/logger';
 
 export const adminContentApi = {
   /**
@@ -31,7 +32,7 @@ export const adminContentApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error('Backdrop 업데이트 실패:', error);
+      ContentLogger.error('Backdrop 업데이트 실패:', error);
       throw new Error(`Failed to update backdrop path: ${error.message}`);
     }
   },
@@ -55,7 +56,7 @@ export const adminContentApi = {
       .eq('id', videoId);
 
     if (error) {
-      console.error('비디오 상태 업데이트 실패:', error);
+      ContentLogger.error('비디오 상태 업데이트 실패:', error);
       throw new Error(`Failed to update video status: ${error.message}`);
     }
   },
@@ -78,7 +79,7 @@ export const adminContentApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error('콘텐츠 상태 업데이트 실패:', error);
+      ContentLogger.error('콘텐츠 상태 업데이트 실패:', error);
       throw new Error(`Failed to update content status: ${error.message}`);
     }
   },
@@ -116,7 +117,7 @@ export const adminContentApi = {
 
     if (checkError && checkError.code !== 'PGRST116') {
       // PGRST116 = no rows returned (정상적인 "없음" 상태)
-      console.error('콘텐츠 존재 여부 확인 실패:', checkError);
+      ContentLogger.error('콘텐츠 존재 여부 확인 실패:', checkError);
       throw new Error(`Failed to check content existence: ${checkError.message}`);
     }
 
@@ -187,14 +188,14 @@ export const adminContentApi = {
           .insert(contentData);
 
         if (insertError) {
-          console.error('새 콘텐츠 생성 실패:', insertError);
+          ContentLogger.error('새 콘텐츠 생성 실패:', insertError);
           throw new Error(`Failed to create new content: ${insertError.message}`);
         }
 
         newContentCreated = true;
-        console.log(`새 콘텐츠 생성됨: ${newContentType}/${newContentId}`);
+        ContentLogger.log(`새 콘텐츠 생성됨: ${newContentType}/${newContentId}`);
       } catch (error) {
-        console.error('TMDB 정보 조회 또는 콘텐츠 생성 실패:', error);
+        ContentLogger.error('TMDB 정보 조회 또는 콘텐츠 생성 실패:', error);
         throw error;
       }
     }
@@ -207,7 +208,7 @@ export const adminContentApi = {
       .eq('content_type', oldContentType);
 
     if (countError) {
-      console.error('비디오 수 조회 실패:', countError);
+      ContentLogger.error('비디오 수 조회 실패:', countError);
       throw new Error(`Failed to count videos: ${countError.message}`);
     }
 
@@ -224,7 +225,7 @@ export const adminContentApi = {
       .eq('id', videoId);
 
     if (updateError) {
-      console.error('비디오 재매핑 실패:', updateError);
+      ContentLogger.error('비디오 재매핑 실패:', updateError);
       throw new Error(`Failed to remap video: ${updateError.message}`);
     }
 
@@ -237,7 +238,7 @@ export const adminContentApi = {
         .eq('content_type', oldContentType);
 
       if (deleteError) {
-        console.error('기존 콘텐츠 삭제 실패:', deleteError);
+        ContentLogger.error('기존 콘텐츠 삭제 실패:', deleteError);
         // 비디오 재매핑은 성공했으므로 에러를 throw하지 않음
       }
     }
@@ -275,7 +276,7 @@ export const adminContentApi = {
       .order('uploaded_at', { ascending: false });
 
     if (error) {
-      console.error('비디오 목록 조회 실패:', error);
+      ContentLogger.error('비디오 목록 조회 실패:', error);
       throw new Error(`Failed to fetch content videos: ${error.message}`);
     }
 
@@ -307,7 +308,7 @@ export const adminContentApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error('비디오 개수 조회 실패:', error);
+      ContentLogger.error('비디오 개수 조회 실패:', error);
       throw new Error(`Failed to count videos: ${error.message}`);
     }
 
@@ -337,7 +338,7 @@ export const adminContentApi = {
       .eq('content_type', contentType);
 
     if (resetError) {
-      console.error('기존 대표 비디오 해제 실패:', resetError);
+      ContentLogger.error('기존 대표 비디오 해제 실패:', resetError);
       throw new Error(`Failed to reset primary video: ${resetError.message}`);
     }
 
@@ -348,7 +349,7 @@ export const adminContentApi = {
       .eq('id', newPrimaryVideoId);
 
     if (updateError) {
-      console.error('새 대표 비디오 설정 실패:', updateError);
+      ContentLogger.error('새 대표 비디오 설정 실패:', updateError);
       throw new Error(`Failed to set primary video: ${updateError.message}`);
     }
   },
@@ -365,7 +366,7 @@ export const adminContentApi = {
       .eq('id', videoId);
 
     if (error) {
-      console.error('결말포함 여부 업데이트 실패:', error);
+      ContentLogger.error('결말포함 여부 업데이트 실패:', error);
       throw new Error(`Failed to update includes_ending: ${error.message}`);
     }
   },
@@ -460,7 +461,7 @@ export const adminVideoApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('비디오 목록 조회 실패:', error);
+      ContentLogger.error('비디오 목록 조회 실패:', error);
       throw new Error(`Failed to fetch videos: ${error.message}`);
     }
 
@@ -498,7 +499,7 @@ export const adminVideoApi = {
       .select('*', { count: 'exact', head: true });
 
     if (totalError) {
-      console.error('전체 비디오 카운트 조회 실패:', totalError);
+      ContentLogger.error('전체 비디오 카운트 조회 실패:', totalError);
       throw new Error(`Failed to count total videos: ${totalError.message}`);
     }
 

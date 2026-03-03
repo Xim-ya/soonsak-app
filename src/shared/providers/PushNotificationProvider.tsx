@@ -43,8 +43,11 @@ import {
   getOrCreateDeviceId,
   linkDeviceToUser,
   incrementDeviceEntryCount,
+  getDeviceEntryInfo,
 } from '@/shared/utils/deviceId';
 import { userApi } from '@/features/user/api/userApi';
+import { PushLogger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 
 /** PushNotificationContext 값 타입 */
 interface PushNotificationContextValue {
@@ -67,7 +70,7 @@ interface PushNotificationProviderProps {
 }
 
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
-  const { status, user, signOut } = useAuth();
+  const { status, user, signOut, displayName } = useAuth();
   const queryClient = useQueryClient();
   const { expoPushToken, notification, permissionStatus, refreshToken, error } =
     usePushNotifications();
@@ -95,11 +98,9 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     const registerDevice = async () => {
       try {
         await getOrCreateDeviceId();
-        if (__DEV__) {
-          console.log('[PushNotificationProvider] 디바이스 등록 완료');
-        }
+        PushLogger.log('디바이스 등록 완료');
       } catch (error) {
-        console.error('[PushNotificationProvider] 디바이스 등록 실패:', error);
+        PushLogger.error('디바이스 등록 실패:', error);
       }
     };
 
@@ -109,9 +110,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // 푸시 알림 수신 시 읽지 않은 알림 개수 캐시 무효화 (벨 뱃지 & 앱 뱃지 갱신)
   useEffect(() => {
     if (notification && user) {
-      if (__DEV__) {
-        console.log('[PushNotificationProvider] 알림 수신 - 캐시 무효화');
-      }
+      PushLogger.log('알림 수신 - 캐시 무효화');
       // 읽지 않은 알림 개수 캐시 무효화
       queryClient.invalidateQueries({
         queryKey: notificationKeys.unreadCount(user.id, expoPushToken),
@@ -131,30 +130,48 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     // 이미 카운트했으면 무시
     if (hasCountedRef.current) return;
 
-    console.log('[EntryCount] ========== 앱 진입 감지 ==========');
-    console.log('[EntryCount] Auth Status:', status);
+    PushLogger.log('========== 앱 진입 감지 ==========');
+    PushLogger.log('Auth Status:', status);
 
     const incrementEntryCount = async () => {
       try {
-        if (status === 'authenticated' && user) {
+        const isLoggedIn = status === 'authenticated' && !!user;
+        let entryInfo: { entryCount: number; lastVisitAt: string | null } | null = null;
+
+        if (isLoggedIn && user) {
+          // 로그인 유저: 진입 정보 조회 (카운트 증가 전)
+          entryInfo = await userApi.getEntryInfo(user.id);
+
           // 로그인 유저: profiles.entry_count 증가 + 앱 버전 업데이트
           await Promise.all([
             userApi.incrementEntryCount(user.id),
             userApi.updateLastUsedVersion(user.id),
           ]);
         } else {
+          // 비로그인 유저: 진입 정보 조회 (카운트 증가 전)
+          entryInfo = await getDeviceEntryInfo();
+
           // 비로그인 유저: devices.entry_count 증가
           await incrementDeviceEntryCount();
         }
+
+        // 앱 진입 웹훅 호출 (Slack 알림)
+        wowPointWebhook.onAppEntry({
+          nickname: displayName,
+          isLoggedIn,
+          ...(entryInfo && { visitCount: entryInfo.entryCount + 1 }),
+          ...(entryInfo?.lastVisitAt && { lastVisitAt: entryInfo.lastVisitAt }),
+        });
+
         hasCountedRef.current = true;
-        console.log('[EntryCount] ================================');
+        PushLogger.log('================================');
       } catch (error) {
-        console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+        PushLogger.error('진입 카운트 증가 실패:', error);
       }
     };
 
     incrementEntryCount();
-  }, [status, user]);
+  }, [status, user, displayName]);
 
   // 앱이 종료 상태(Killed)에서 푸시 알림으로 시작된 경우 처리
   // status가 idle이면 AuthProvider 세션 복원이 완료되지 않았으므로 대기
@@ -171,9 +188,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
         // 알림 응답 ID로 중복 처리 방지
         const notificationId = response.notification.request.identifier;
         if (handledNotificationIdsRef.current.has(notificationId)) {
-          if (__DEV__) {
-            console.log('[PushNotificationProvider] 이미 처리한 알림, 무시:', notificationId);
-          }
+          PushLogger.log('이미 처리한 알림, 무시:', notificationId);
           return;
         }
 
@@ -217,7 +232,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
           handleInitialNotification();
         } else {
           // 타임아웃: navigationRef가 5초 내 준비되지 않음
-          console.error('[PushNotificationProvider] navigationRef 준비 타임아웃 - 알림 처리 실패');
+          PushLogger.error('navigationRef 준비 타임아웃 - 알림 처리 실패');
         }
       }
     }, 100);
@@ -233,18 +248,14 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
     const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
       if (!navigationRef.isReady()) {
-        if (__DEV__) {
-          console.warn('[PushNotificationProvider] navigationRef가 준비되지 않음');
-        }
+        PushLogger.warn('navigationRef가 준비되지 않음');
         return;
       }
 
       // 알림 응답 ID로 중복 처리 방지
       const notificationId = response.notification.request.identifier;
       if (handledNotificationIdsRef.current.has(notificationId)) {
-        if (__DEV__) {
-          console.log('[PushNotificationProvider] 이미 처리한 알림, 무시:', notificationId);
-        }
+        PushLogger.log('이미 처리한 알림, 무시:', notificationId);
         return;
       }
 
@@ -300,11 +311,9 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
         // 푸시 토큰 동기화 (push_tokens 테이블)
         await pushTokenApi.syncToken(user.id, expoPushToken);
         lastSyncedRef.current = { userId: user.id, token: expoPushToken };
-        if (__DEV__) {
-          console.log('[PushNotificationProvider] 토큰 동기화 완료');
-        }
+        PushLogger.log('토큰 동기화 완료');
       } catch (err) {
-        console.error('[PushNotificationProvider] 토큰 동기화 실패:', err);
+        PushLogger.error('토큰 동기화 실패:', err);
       }
     };
 

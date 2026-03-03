@@ -6,6 +6,7 @@
  */
 
 import analytics from '@react-native-firebase/analytics';
+import { AnalyticsLogger } from '@/shared/utils/logger';
 import {
   AnalyticsEvent,
   type AnalyticsEventName,
@@ -106,7 +107,7 @@ function serializeParams<T extends object>(params: T): EventParams {
  */
 function logEvent(eventName: AnalyticsEventName, params?: EventParams): void {
   if (__DEV__) {
-    console.log(`[Analytics] ${eventName}`, params ?? {});
+    AnalyticsLogger.log(`${eventName}`, params ?? {});
     return;
   }
 
@@ -114,9 +115,7 @@ function logEvent(eventName: AnalyticsEventName, params?: EventParams): void {
   analytics()
     .logEvent(eventName, params)
     .catch((error) => {
-      if (__DEV__) {
-        console.error(`[Analytics] Failed to log event ${eventName}:`, error);
-      }
+      AnalyticsLogger.error(`Failed to log event ${eventName}:`, error);
     });
 }
 
@@ -125,7 +124,7 @@ function logEvent(eventName: AnalyticsEventName, params?: EventParams): void {
  */
 function logScreenView(screenName: string, screenClass?: string): void {
   if (__DEV__) {
-    console.log(`[Analytics] screen_view: ${screenName}`);
+    AnalyticsLogger.log(`screen_view: ${screenName}`);
     return;
   }
 
@@ -135,9 +134,7 @@ function logScreenView(screenName: string, screenClass?: string): void {
       screen_class: screenClass ?? screenName,
     })
     .catch((error) => {
-      if (__DEV__) {
-        console.error(`[Analytics] Failed to log screen view ${screenName}:`, error);
-      }
+      AnalyticsLogger.error(`Failed to log screen view ${screenName}:`, error);
     });
 }
 

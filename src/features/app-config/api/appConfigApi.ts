@@ -13,6 +13,9 @@ import type {
   MaintenanceMode,
   MaintenanceModeDto,
 } from '../types';
+import { Logger } from '@/shared/utils/logger';
+
+const AppConfigLogger = Logger.create('AppConfig');
 
 /** 현재 플랫폼 */
 const currentPlatform: AppPlatform = Platform.OS === 'ios' ? 'ios' : 'android';
@@ -57,9 +60,7 @@ export const appConfigApi = {
       .single();
 
     if (error) {
-      if (__DEV__) {
-        console.error('[appConfigApi] 버전 정책 조회 실패:', error);
-      }
+      AppConfigLogger.error('버전 정책 조회 실패:', error);
       return null;
     }
 
@@ -77,9 +78,7 @@ export const appConfigApi = {
       .single();
 
     if (error) {
-      if (__DEV__) {
-        console.error('[appConfigApi] 점검 모드 조회 실패:', error);
-      }
+      AppConfigLogger.error('점검 모드 조회 실패:', error);
       return null;
     }
 
