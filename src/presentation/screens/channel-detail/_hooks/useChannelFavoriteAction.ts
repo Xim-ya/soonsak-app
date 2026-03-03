@@ -38,7 +38,7 @@ export function useChannelFavoriteAction({
   channelName,
 }: UseChannelFavoriteActionParams): UseChannelFavoriteActionReturn {
   // 인증 상태
-  const { status } = useAuth();
+  const { status, displayName } = useAuth();
   const isLoggedIn = status === 'authenticated';
 
   // 채널 찜 상태 및 토글
@@ -60,7 +60,7 @@ export function useChannelFavoriteAction({
   const executeLoginSuccessCallback = useCallback(() => {
     setPendingAction(null);
     // 로그인 후 찜 등록 실행
-    toggleFavorite({ channelId });
+    toggleFavorite({ channelId, nickname: displayName, channelName });
 
     // GA4 channel_favorite_toggle 이벤트 로깅 (로그인 후 찜 추가)
     analyticsService.channelFavoriteToggle({
@@ -68,7 +68,7 @@ export function useChannelFavoriteAction({
       channel_name: channelName ?? '',
       action: 'add',
     });
-  }, [toggleFavorite, channelId, channelName]);
+  }, [toggleFavorite, channelId, channelName, displayName]);
 
   // 로그인 성공 시 콜백 (pendingAction이 있을 때만)
   const loginSuccessCallback = pendingAction ? executeLoginSuccessCallback : undefined;
@@ -102,14 +102,14 @@ export function useChannelFavoriteAction({
     });
 
     toggleFavorite(
-      { channelId },
+      { channelId, nickname: displayName, channelName },
       {
         onSettled: () => {
           isProcessingRef.current = false;
         },
       },
     );
-  }, [isLoggedIn, channelId, channelName, toggleFavorite, isPending, favoriteStatus?.isFavorited]);
+  }, [isLoggedIn, channelId, channelName, toggleFavorite, isPending, favoriteStatus?.isFavorited, displayName]);
 
   // 로그인 다이얼로그 닫기
   const handleCloseDialog = useCallback(() => {

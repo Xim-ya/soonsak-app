@@ -8,6 +8,7 @@ import { useCallback } from 'react';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useDialog } from '@/presentation/components/dialog';
+import { ChannelLogger } from '@/shared/utils/logger';
 import {
   adminChannelApi,
   type ChannelDetailItem,
@@ -146,7 +147,7 @@ export function useChannelDetail(channelId: string): UseChannelDetailReturn {
       }
     },
     onError: async (err) => {
-      console.error('채널 삭제 실패:', err);
+      ChannelLogger.error('채널 삭제 실패:', err);
       const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.DELETE_FAILED);
       await showDialog({
         title: '오류',

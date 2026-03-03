@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
+import { AdminLogger } from '@/shared/utils/logger';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { contentApi } from '@/features/content/api/contentApi';
@@ -120,7 +121,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
       const models = results.map(contentSearchFromDto);
       setSearchResults(models);
     } catch (err) {
-      console.error('검색 실패:', err);
+      AdminLogger.error('검색 실패:', err);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -159,7 +160,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
         }
         setUserContents(data);
       } catch (err) {
-        console.error('유저 콘텐츠 로드 실패:', err);
+        AdminLogger.error('유저 콘텐츠 로드 실패:', err);
         setUserContents([]);
       } finally {
         setIsLoadingUserContents(false);
@@ -185,7 +186,7 @@ export const ContentSearchSelector = memo(function ContentSearchSelector({
           const models = videoList.map(videoSearchFromDto);
           setVideos(models);
         } catch (err) {
-          console.error('비디오 로드 실패:', err);
+          AdminLogger.error('비디오 로드 실패:', err);
           setVideos([]);
         } finally {
           setIsLoadingVideos(false);

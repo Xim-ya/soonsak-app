@@ -21,6 +21,7 @@ import { Platform } from 'react-native';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
+import { PushLogger } from '@/shared/utils/logger';
 
 /** 시뮬레이터 여부 확인 */
 const isSimulator = !Device.isDevice;
@@ -62,9 +63,7 @@ export interface UsePushNotificationsResult {
 async function getExpoPushToken(): Promise<string | null> {
   // 시뮬레이터에서는 푸시 토큰 획득 불가 (iOS 제한)
   if (isSimulator) {
-    if (__DEV__) {
-      console.log('[PushNotifications] 시뮬레이터에서는 푸시 토큰을 획득할 수 없습니다.');
-    }
+    PushLogger.log('시뮬레이터에서는 푸시 토큰을 획득할 수 없습니다.');
     return null;
   }
 
@@ -83,7 +82,7 @@ async function getExpoPushToken(): Promise<string | null> {
     Constants?.expoConfig?.extra?.['eas']?.projectId ?? Constants?.easConfig?.projectId;
 
   if (!projectId) {
-    console.error('[PushNotifications] EAS Project ID를 찾을 수 없습니다.');
+    PushLogger.error('EAS Project ID를 찾을 수 없습니다.');
     return null;
   }
 
@@ -92,7 +91,7 @@ async function getExpoPushToken(): Promise<string | null> {
     const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
     return tokenData.data;
   } catch (error) {
-    console.error('[PushNotifications] 토큰 획득 실패:', error);
+    PushLogger.error('토큰 획득 실패:', error);
     return null;
   }
 }
@@ -147,9 +146,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
     const token = await getExpoPushToken();
     if (token) {
       setExpoPushToken(token);
-      if (__DEV__) {
-        console.log('[PushNotifications] 토큰 재획득:', token);
-      }
+      PushLogger.log('토큰 재획득:', token);
     }
     return token;
   }, [expoPushToken]);
@@ -157,9 +154,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
   useEffect(() => {
     let mounted = true;
 
-    if (__DEV__) {
-      console.log('[PushNotifications] 훅 초기화, isSimulator:', isSimulator);
-    }
+    PushLogger.log('훅 초기화, isSimulator:', isSimulator);
 
     // 초기화 함수
     const initialize = async () => {
@@ -169,18 +164,14 @@ export function usePushNotifications(): UsePushNotificationsResult {
 
       // 2. 토큰 획득 (시뮬레이터에서는 스킵)
       if (isSimulator) {
-        if (__DEV__) {
-          console.log('[PushNotifications] 시뮬레이터: 권한 획득 완료, 토큰 스킵');
-        }
+        PushLogger.log('시뮬레이터: 권한 획득 완료, 토큰 스킵');
         return;
       }
 
       const token = await getExpoPushToken();
       if (mounted && token) {
         setExpoPushToken(token);
-        if (__DEV__) {
-          console.log('[PushNotifications] Expo Push Token:', token);
-        }
+        PushLogger.log('Expo Push Token:', token);
       }
     };
 
@@ -192,9 +183,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
       notificationListener.current = Notifications.addNotificationReceivedListener((notif) => {
         if (mounted) {
           setNotification(notif);
-          if (__DEV__) {
-            console.log('[PushNotifications] Foreground 알림 수신:', notif.request.content.title);
-          }
+          PushLogger.log('Foreground 알림 수신:', notif.request.content.title);
         }
       });
     }

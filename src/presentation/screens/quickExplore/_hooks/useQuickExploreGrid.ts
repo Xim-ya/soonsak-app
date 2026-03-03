@@ -12,6 +12,9 @@ import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { AppSize } from '@/shared/utils/appSize';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { isFilterActive } from '@/shared/types/filter/contentFilter';
+import { Logger } from '@/shared/utils/logger';
+
+const QuickExploreLogger = Logger.create('QuickExplore');
 
 // 그리드 레이아웃 상수
 const GRID_UNIT_WIDTH = 256;
@@ -214,14 +217,12 @@ export function useQuickExploreGrid(filter?: ContentFilter): UseQuickExploreGrid
     contentMapRef.current = newMap;
     setContentMap(newMap);
     setIsInitialLoadDone(true);
-    if (__DEV__) {
-      console.log(
-        `[QuickExploreGrid] 초기 로드 완료, 콘텐츠 수: ${initialContents.length}, 배치 범위: (${positions[0]?.row},${positions[0]?.col}) ~ (${positions[initialContents.length - 1]?.row},${positions[initialContents.length - 1]?.col})`,
-      );
-      console.log(
-        `[QuickExploreGrid] 현재 뷰포트: row(${visibleRange.startRow}~${visibleRange.endRow}), col(${visibleRange.startCol}~${visibleRange.endCol})`,
-      );
-    }
+    QuickExploreLogger.log(
+      `초기 로드 완료, 콘텐츠 수: ${initialContents.length}, 배치 범위: (${positions[0]?.row},${positions[0]?.col}) ~ (${positions[initialContents.length - 1]?.row},${positions[initialContents.length - 1]?.col})`,
+    );
+    QuickExploreLogger.log(
+      `현재 뷰포트: row(${visibleRange.startRow}~${visibleRange.endRow}), col(${visibleRange.startCol}~${visibleRange.endCol})`,
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialContents]);
 
@@ -248,11 +249,9 @@ export function useQuickExploreGrid(filter?: ContentFilter): UseQuickExploreGrid
         ) {
           return prev;
         }
-        if (__DEV__) {
-          console.log(
-            `[QuickExploreGrid] 뷰포트 변경: row(${startRow}~${endRow}), col(${startCol}~${endCol})`,
-          );
-        }
+        QuickExploreLogger.log(
+          `뷰포트 변경: row(${startRow}~${endRow}), col(${startCol}~${endCol})`,
+        );
         return { startRow, endRow, startCol, endCol };
       });
     },
@@ -333,7 +332,7 @@ export function useQuickExploreGrid(filter?: ContentFilter): UseQuickExploreGrid
           return newMap;
         });
       } catch (error) {
-        console.error('콘텐츠 로드 실패:', error);
+        QuickExploreLogger.error('콘텐츠 로드 실패:', error);
       } finally {
         setIsLoading(false);
       }
@@ -398,8 +397,7 @@ export function useQuickExploreGrid(filter?: ContentFilter): UseQuickExploreGrid
   // 랜덤 콘텐츠 선택 (포커스 기능용)
   const getRandomContent = useCallback((): ContentWithPosition | null => {
     const entries = Array.from(contentMapRef.current.entries());
-    if (__DEV__)
-      console.log(`[QuickExploreGrid] getRandomContent 호출, 콘텐츠 맵 크기: ${entries.length}`);
+    QuickExploreLogger.log(`getRandomContent 호출, 콘텐츠 맵 크기: ${entries.length}`);
     if (entries.length === 0) return null;
 
     const randomIndex = Math.floor(Math.random() * entries.length);

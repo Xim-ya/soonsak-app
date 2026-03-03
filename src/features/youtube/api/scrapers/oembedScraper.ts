@@ -3,6 +3,7 @@
  */
 
 import { OEmbedDto, YouTubeApiError, YouTubeErrorCode } from '../../types';
+import { ScraperLogger } from '@/shared/utils/logger';
 
 /**
  * oEmbed API를 통해 YouTube 비디오 기본 정보 가져오기
@@ -34,7 +35,7 @@ export const oembedScraper = {
       }
 
       const data = await response.json();
-      console.log('✅ oEmbed 데이터 수신:', {
+      ScraperLogger.log('✅ oEmbed 데이터 수신:', {
         title: data.title,
         author: data.author_name,
         thumbnail: data.thumbnail_url,
@@ -46,7 +47,7 @@ export const oembedScraper = {
         throw error;
       }
 
-      console.error('❌ oEmbed API 에러:', error);
+      ScraperLogger.error('❌ oEmbed API 에러:', error);
       throw new YouTubeApiError('oEmbed API 네트워크 오류', YouTubeErrorCode.NETWORK_ERROR, true);
     }
   },

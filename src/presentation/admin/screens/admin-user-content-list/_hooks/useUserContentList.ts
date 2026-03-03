@@ -16,6 +16,7 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDialog } from '@/presentation/components/dialog';
+import { AdminLogger } from '@/shared/utils/logger';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import type { PushData } from '@/features/admin/types/pushAction';
@@ -117,7 +118,7 @@ export function useUserContentList({
         }
         setItems(data);
       } catch (err) {
-        console.error('데이터 로드 실패:', err);
+        AdminLogger.error('데이터 로드 실패:', err);
         setItems([]);
       } finally {
         setIsLoading(false);
@@ -198,7 +199,7 @@ export function useUserContentList({
         });
       }
     } catch (err) {
-      console.error('푸시 발송 실패:', err);
+      AdminLogger.error('푸시 발송 실패:', err);
       await showDialog({
         title: '발송 실패',
         description: '푸시 알림을 발송하지 못했어요',

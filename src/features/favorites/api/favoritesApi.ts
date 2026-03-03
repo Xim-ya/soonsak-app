@@ -1,6 +1,9 @@
 import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
+import { Logger } from '@/shared/utils/logger';
+
+const FavoritesLogger = Logger.create('Favorites');
 import type {
   FavoriteDto,
   FavoriteWithContentDto,
@@ -53,7 +56,7 @@ export const favoritesApi = {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('찜 개수 조회 실패:', error);
+      FavoritesLogger.error('찜 개수 조회 실패:', error);
       return 0;
     }
 
@@ -82,7 +85,7 @@ export const favoritesApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('찜 상태 조회 실패:', error);
+      FavoritesLogger.error('찜 상태 조회 실패:', error);
       return { isFavorited: false, favoriteId: null };
     }
 
@@ -124,7 +127,7 @@ export const favoritesApi = {
           return mapWithField<FavoriteDto>(existing.data);
         }
       }
-      console.error('찜 추가 실패:', error);
+      FavoritesLogger.error('찜 추가 실패:', error);
       throw new Error(`Failed to add favorite: ${error.message}`);
     }
 
@@ -145,7 +148,7 @@ export const favoritesApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error('찜 삭제 실패:', error);
+      FavoritesLogger.error('찜 삭제 실패:', error);
       throw new Error(`Failed to remove favorite: ${error.message}`);
     }
   },
@@ -189,7 +192,7 @@ export const favoritesApi = {
       .eq('user_id', user.id);
 
     if (countError) {
-      console.error('찜 목록 수 조회 실패:', countError);
+      FavoritesLogger.error('찜 목록 수 조회 실패:', countError);
       throw new Error(`Failed to count favorites: ${countError.message}`);
     }
 
@@ -216,7 +219,7 @@ export const favoritesApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('찜 목록 조회 실패:', error);
+      FavoritesLogger.error('찜 목록 조회 실패:', error);
       throw new Error(`Failed to fetch favorites: ${error.message}`);
     }
 

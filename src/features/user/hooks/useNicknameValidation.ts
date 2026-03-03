@@ -16,6 +16,7 @@
 import { useCallback } from 'react';
 import { validateNicknameSync, NICKNAME_ERRORS } from '../constants/nicknameValidation';
 import { userApi } from '../api/userApi';
+import { UserLogger } from '@/shared/utils/logger';
 import type { NicknameValidationError } from '../types';
 
 interface UseNicknameValidationReturn {
@@ -69,7 +70,7 @@ export function useNicknameValidation(): UseNicknameValidationReturn {
         }
       } catch {
         // 중복 체크 실패 시 일단 통과 (저장 시 서버에서 재검증)
-        console.error('닉네임 중복 체크 실패');
+        UserLogger.error('닉네임 중복 체크 실패');
       }
 
       return null;

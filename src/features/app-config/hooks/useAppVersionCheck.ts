@@ -13,12 +13,10 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
 import type { UpdateStatus, AppVersionPolicy, VersionCheckResult } from '../types';
+import { VersionLogger } from '@/shared/utils/logger';
 
 /** AsyncStorage 키 */
 const DISMISSED_VERSION_KEY = '@app_config/dismissed_soft_update_version';
-
-/** 개발 모드 여부 */
-const isDev = __DEV__;
 
 /**
  * 현재 앱 버전 가져오기
@@ -36,9 +34,7 @@ async function saveDismissedVersion(version: string): Promise<void> {
   try {
     await AsyncStorage.setItem(DISMISSED_VERSION_KEY, version);
   } catch (error) {
-    if (isDev) {
-      console.error('[useAppVersionCheck] dismissed 버전 저장 실패:', error);
-    }
+    VersionLogger.error('dismissed 버전 저장 실패:', error);
   }
 }
 
@@ -49,9 +45,7 @@ async function getDismissedVersion(): Promise<string | null> {
   try {
     return await AsyncStorage.getItem(DISMISSED_VERSION_KEY);
   } catch (error) {
-    if (isDev) {
-      console.error('[useAppVersionCheck] dismissed 버전 조회 실패:', error);
-    }
+    VersionLogger.error('dismissed 버전 조회 실패:', error);
     return null;
   }
 }
@@ -147,9 +141,7 @@ export function useAppVersionCheck(
     const storeUrl = storeUrlRef.current;
     if (storeUrl) {
       Linking.openURL(storeUrl).catch((error) => {
-        if (isDev) {
-          console.error('[useAppVersionCheck] 스토어 열기 실패:', error);
-        }
+        VersionLogger.error('스토어 열기 실패:', error);
       });
     } else {
       // 기본 스토어 URL
@@ -181,24 +173,18 @@ export function useAppVersionCheck(
       try {
         const currentVersion = getAppVersion();
 
-        if (isDev) {
-          console.log('[useAppVersionCheck] 현재 버전:', currentVersion);
-        }
+        VersionLogger.log('현재 버전:', currentVersion);
 
         // 서버에서 버전 정책 조회
         const policy = await appConfigApi.getVersionPolicy();
 
         if (!policy) {
-          if (isDev) {
-            console.log('[useAppVersionCheck] 버전 정책 없음, 체크 스킵');
-          }
+          VersionLogger.log('버전 정책 없음, 체크 스킵');
           setIsChecked(true);
           return;
         }
 
-        if (isDev) {
-          console.log('[useAppVersionCheck] 버전 정책:', policy);
-        }
+        VersionLogger.log('버전 정책:', policy);
 
         // 버전 체크 결과 계산
         const result = calculateVersionCheckResult(currentVersion, policy);
@@ -226,9 +212,7 @@ export function useAppVersionCheck(
 
           // 이미 이 버전에서 닫기를 누른 경우 스킵
           if (dismissedVersion === result.targetVersion) {
-            if (isDev) {
-              console.log('[useAppVersionCheck] 권장 업데이트 이미 dismissed:', dismissedVersion);
-            }
+            VersionLogger.log('권장 업데이트 이미 dismissed:', dismissedVersion);
             setIsChecked(true);
             return;
           }
@@ -239,9 +223,7 @@ export function useAppVersionCheck(
           setIsChecked(true);
         }
       } catch (error) {
-        if (isDev) {
-          console.error('[useAppVersionCheck] 버전 체크 실패:', error);
-        }
+        VersionLogger.error('버전 체크 실패:', error);
         // 에러 발생 시에도 앱은 정상 실행
         setIsChecked(true);
       }

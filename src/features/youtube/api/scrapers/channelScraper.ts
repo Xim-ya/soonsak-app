@@ -10,6 +10,7 @@
 
 import { ScrapedChannelDto, YouTubeApiError, YouTubeErrorCode } from '../../types';
 import { parseAbbreviatedNumber } from '../../utils';
+import { ScraperLogger } from '@/shared/utils/logger';
 
 /**
  * 작업 분할 유틸리티 - UI 블로킹 방지
@@ -33,7 +34,7 @@ export const channelScraper = {
     // 동의 우회 파라미터 추가 (Android에서 Cookie 헤더가 무시되는 문제 해결)
     const url = `${baseUrl}?hl=ko&persist_hl=1&gl=KR`;
 
-    console.log('🔍 채널 스크래핑 시작:', channelId);
+    ScraperLogger.log('🔍 채널 스크래핑 시작:', channelId);
 
     try {
       const response = await fetch(url, {
@@ -82,7 +83,7 @@ export const channelScraper = {
       if (error instanceof YouTubeApiError) {
         throw error;
       }
-      console.error('❌ 채널 페이지 스크래핑 에러:', error);
+      ScraperLogger.error('❌ 채널 페이지 스크래핑 에러:', error);
       throw new YouTubeApiError(
         '채널 페이지 스크래핑 중 오류 발생',
         YouTubeErrorCode.PARSING_ERROR,

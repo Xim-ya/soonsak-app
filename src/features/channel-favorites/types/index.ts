@@ -17,6 +17,12 @@ interface ChannelFavoriteDto {
  */
 interface ToggleChannelFavoriteParams {
   readonly channelId: string;
+  /** 유저 ID (웹훅 알림용) */
+  readonly userId?: string;
+  /** 유저 닉네임 (웹훅 알림용) */
+  readonly nickname?: string;
+  /** 채널 이름 (웹훅 알림용) */
+  readonly channelName?: string;
 }
 
 /**

@@ -16,6 +16,7 @@ import type { ContentType } from '@/shared/types/content/contentType.enum';
 interface UseFavoriteActionParams {
   readonly contentId: number;
   readonly contentType: ContentType;
+  readonly contentTitle?: string;
 }
 
 interface UseFavoriteActionReturn {
@@ -40,9 +41,10 @@ interface UseFavoriteActionReturn {
 export function useFavoriteAction({
   contentId,
   contentType,
+  contentTitle,
 }: UseFavoriteActionParams): UseFavoriteActionReturn {
   // 인증 상태
-  const { status } = useAuth();
+  const { status, displayName } = useAuth();
   const isLoggedIn = status === 'authenticated';
 
   // 찜 상태 및 토글
@@ -83,14 +85,14 @@ export function useFavoriteAction({
     lastCallTimeRef.current = now;
     isProcessingRef.current = true;
     toggleFavorite(
-      { contentId, contentType },
+      { contentId, contentType, nickname: displayName, videoTitle: contentTitle },
       {
         onSettled: () => {
           isProcessingRef.current = false;
         },
       },
     );
-  }, [isLoggedIn, contentId, contentType, toggleFavorite, isPending]);
+  }, [isLoggedIn, contentId, contentType, toggleFavorite, isPending, displayName, contentTitle]);
 
   // 액션 바텀시트 닫기
   const handleCloseActionSheet = useCallback(() => {

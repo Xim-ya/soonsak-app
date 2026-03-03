@@ -6,6 +6,7 @@
 
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { CONTENT_DATABASE, CHANNEL_DATABASE } from '@/shared/config/dbConfig';
+import { ChannelLogger } from '@/shared/utils/logger';
 
 // ============================================================================
 // Types
@@ -120,7 +121,7 @@ export const adminChannelApi = {
     const { data: channels, error: channelsError } = await query;
 
     if (channelsError) {
-      console.error('채널 목록 조회 실패:', channelsError);
+      ChannelLogger.error('채널 목록 조회 실패:', channelsError);
       throw new Error(`Failed to fetch channels: ${channelsError.message}`);
     }
 
@@ -137,7 +138,7 @@ export const adminChannelApi = {
           .eq('channel_id', channel.id);
 
         if (videoCountError) {
-          console.warn(`채널 ${channel.id}의 비디오 수 조회 실패:`, videoCountError);
+          ChannelLogger.warn(`채널 ${channel.id}의 비디오 수 조회 실패:`, videoCountError);
         }
 
         // 고유 콘텐츠 수 조회 (content_id, content_type 조합으로 카운트)
@@ -147,7 +148,7 @@ export const adminChannelApi = {
           .eq('channel_id', channel.id);
 
         if (contentCountError) {
-          console.warn(`채널 ${channel.id}의 콘텐츠 수 조회 실패:`, contentCountError);
+          ChannelLogger.warn(`채널 ${channel.id}의 콘텐츠 수 조회 실패:`, contentCountError);
         }
 
         // 고유 콘텐츠 수 계산 (content_id + content_type 조합)
@@ -193,7 +194,7 @@ export const adminChannelApi = {
       .single();
 
     if (channelError) {
-      console.error('채널 상세 조회 실패:', channelError);
+      ChannelLogger.error('채널 상세 조회 실패:', channelError);
       throw new Error(`Failed to fetch channel detail: ${channelError.message}`);
     }
 
@@ -204,7 +205,7 @@ export const adminChannelApi = {
       .eq('channel_id', channelId);
 
     if (videoCountError) {
-      console.warn('채널 비디오 수 조회 실패:', videoCountError);
+      ChannelLogger.warn('채널 비디오 수 조회 실패:', videoCountError);
     }
 
     // 고유 콘텐츠 수 조회
@@ -214,7 +215,7 @@ export const adminChannelApi = {
       .eq('channel_id', channelId);
 
     if (contentCountError) {
-      console.warn('채널 콘텐츠 수 조회 실패:', contentCountError);
+      ChannelLogger.warn('채널 콘텐츠 수 조회 실패:', contentCountError);
     }
 
     const uniqueContents = new Set(
@@ -269,7 +270,7 @@ export const adminChannelApi = {
       .order('uploaded_at', { ascending: false });
 
     if (videosError) {
-      console.error('채널 비디오 목록 조회 실패:', videosError);
+      ChannelLogger.error('채널 비디오 목록 조회 실패:', videosError);
       throw new Error(`Failed to fetch channel videos: ${videosError.message}`);
     }
 
@@ -365,7 +366,7 @@ export const adminChannelApi = {
       .eq('channel_id', channelId);
 
     if (videosError) {
-      console.error('채널 비디오 조회 실패:', videosError);
+      ChannelLogger.error('채널 비디오 조회 실패:', videosError);
       throw new Error(`Failed to fetch channel videos: ${videosError.message}`);
     }
 
@@ -397,7 +398,7 @@ export const adminChannelApi = {
         .eq('content_type', content.contentType);
 
       if (countError) {
-        console.warn(`콘텐츠 ${key}의 비디오 수 조회 실패:`, countError);
+        ChannelLogger.warn(`콘텐츠 ${key}의 비디오 수 조회 실패:`, countError);
         continue;
       }
 
@@ -422,7 +423,7 @@ export const adminChannelApi = {
         .in('id', videoIds);
 
       if (deleteVideosError) {
-        console.error('비디오 삭제 실패:', deleteVideosError);
+        ChannelLogger.error('비디오 삭제 실패:', deleteVideosError);
         throw new Error(`Failed to delete videos: ${deleteVideosError.message}`);
       }
     }
@@ -437,7 +438,7 @@ export const adminChannelApi = {
         .eq('content_type', content.contentType);
 
       if (deleteContentError) {
-        console.warn(`콘텐츠 ${content.contentId} 삭제 실패:`, deleteContentError);
+        ChannelLogger.warn(`콘텐츠 ${content.contentId} 삭제 실패:`, deleteContentError);
       } else {
         deletedContentsCount += 1;
       }
@@ -450,7 +451,7 @@ export const adminChannelApi = {
       .eq('id', channelId);
 
     if (deleteChannelError) {
-      console.error('채널 삭제 실패:', deleteChannelError);
+      ChannelLogger.error('채널 삭제 실패:', deleteChannelError);
       throw new Error(`Failed to delete channel: ${deleteChannelError.message}`);
     }
 

@@ -1,6 +1,9 @@
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { getAuthUser, requireAuth } from '@/shared/api/authUtils';
 import { mapWithField } from '@/shared/utils/fieldMapper';
+import { Logger } from '@/shared/utils/logger';
+
+const ChannelFavoritesLogger = Logger.create('ChannelFavorites');
 import type {
   ChannelFavoriteDto,
   ToggleChannelFavoriteParams,
@@ -31,7 +34,7 @@ export const channelFavoritesApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('채널 찜 상태 조회 실패:', error);
+      ChannelFavoritesLogger.error('채널 찜 상태 조회 실패:', error);
       return { isFavorited: false, favoriteId: null };
     }
 
@@ -74,7 +77,7 @@ export const channelFavoritesApi = {
         // 데이터가 없으면 재시도 (삭제 후 다시 추가된 경우)
         throw new Error('채널 찜 상태가 변경되었습니다. 다시 시도해주세요.');
       }
-      console.error('채널 찜 추가 실패:', error);
+      ChannelFavoritesLogger.error('채널 찜 추가 실패:', error);
       throw new Error(`Failed to add channel favorite: ${error.message}`);
     }
 
@@ -94,7 +97,7 @@ export const channelFavoritesApi = {
       .eq('channel_id', channelId);
 
     if (error) {
-      console.error('채널 찜 삭제 실패:', error);
+      ChannelFavoritesLogger.error('채널 찜 삭제 실패:', error);
       throw new Error(`Failed to remove channel favorite: ${error.message}`);
     }
   },
@@ -137,7 +140,7 @@ export const channelFavoritesApi = {
       .order('created_at', { ascending: false });
 
     if (error) {
-      console.error('찜한 채널 ID 목록 조회 실패:', error);
+      ChannelFavoritesLogger.error('찜한 채널 ID 목록 조회 실패:', error);
       return [];
     }
 

@@ -9,7 +9,10 @@ import { MovieDto } from '../types/movieDto';
 import { TvSeriesDto } from '../types/tvDto';
 import { tmdbApi } from '../api/tmdbApi';
 import { ContentType } from '@/shared/types/content/contentType.enum';
+import { Logger } from '@/shared/utils/logger';
 import { tmdbKeys } from './tmdbQueryKeys';
+
+const TMDBLogger = Logger.create('TMDB');
 
 /**
  * 콘텐츠 상세 정보 조회 Hook
@@ -45,7 +48,7 @@ export const useContentDetail = (
         return response.data;
       } catch (error) {
         // 에러 로깅
-        console.error('[useContentDetail] 콘텐츠 상세 정보 조회 실패:', {
+        TMDBLogger.error('콘텐츠 상세 정보 조회 실패:', {
           contentId: id,
           contentType,
           // eslint-disable-next-line indent

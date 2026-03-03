@@ -16,6 +16,7 @@
 import { useCallback, useState, useEffect } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { PushLogger } from '@/shared/utils/logger';
 import { contentApi } from '@/features/content/api/contentApi';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import {
@@ -125,7 +126,7 @@ export function usePushContentSelect({
       const results = await contentApi.searchContentsKorean(trimmed, 30);
       setSearchResults(results.map(contentFromDto));
     } catch (err) {
-      console.error('검색 실패:', err);
+      PushLogger.error('검색 실패:', err);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -171,7 +172,7 @@ export function usePushContentSelect({
         }
         setUserContents(data);
       } catch (err) {
-        console.error('유저 콘텐츠 로드 실패:', err);
+        PushLogger.error('유저 콘텐츠 로드 실패:', err);
         setUserContents([]);
       } finally {
         setIsLoadingUserContents(false);
@@ -195,7 +196,7 @@ export function usePushContentSelect({
           );
           setVideos(videoList.map(videoFromDto));
         } catch (err) {
-          console.error('비디오 로드 실패:', err);
+          PushLogger.error('비디오 로드 실패:', err);
           setVideos([]);
         } finally {
           setIsLoadingVideos(false);

@@ -2,6 +2,9 @@ import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { WATCH_PROGRESS_POLICY } from '@/presentation/components/progress';
+import { Logger } from '@/shared/utils/logger';
+
+const WatchHistoryLogger = Logger.create('WatchHistory');
 import type {
   WatchHistoryDto,
   WatchHistoryWithContentDto,
@@ -84,7 +87,7 @@ export const watchHistoryApi = {
       .eq('is_fully_watched', true);
 
     if (error) {
-      console.error('완료된 시청 개수 조회 실패:', error);
+      WatchHistoryLogger.error('완료된 시청 개수 조회 실패:', error);
       return 0;
     }
 
@@ -113,7 +116,7 @@ export const watchHistoryApi = {
       .eq('is_fully_watched', true);
 
     if (countError) {
-      console.error('완료된 시청 목록 수 조회 실패:', countError);
+      WatchHistoryLogger.error('완료된 시청 목록 수 조회 실패:', countError);
       throw new Error(`Failed to count fully watched: ${countError.message}`);
     }
 
@@ -141,7 +144,7 @@ export const watchHistoryApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('완료된 시청 목록 조회 실패:', error);
+      WatchHistoryLogger.error('완료된 시청 목록 조회 실패:', error);
       throw new Error(`Failed to fetch fully watched: ${error.message}`);
     }
 
@@ -186,7 +189,7 @@ export const watchHistoryApi = {
       .single();
 
     if (error) {
-      console.error('시청 기록 추가 실패:', error);
+      WatchHistoryLogger.error('시청 기록 추가 실패:', error);
       throw new Error(`Failed to add watch history: ${error.message}`);
     }
 
@@ -226,7 +229,7 @@ export const watchHistoryApi = {
       .order('last_watched_at', { ascending: false });
 
     if (error) {
-      console.error('캘린더 시청 기록 조회 실패:', error);
+      WatchHistoryLogger.error('캘린더 시청 기록 조회 실패:', error);
       throw new Error(`Failed to fetch calendar history: ${error.message}`);
     }
 
@@ -290,7 +293,7 @@ export const watchHistoryApi = {
       .eq('user_id', user.id);
 
     if (countError) {
-      console.error('시청 기록 수 조회 실패:', countError);
+      WatchHistoryLogger.error('시청 기록 수 조회 실패:', countError);
       throw new Error(`Failed to count watch history: ${countError.message}`);
     }
 
@@ -317,7 +320,7 @@ export const watchHistoryApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('시청 기록 목록 조회 실패:', error);
+      WatchHistoryLogger.error('시청 기록 목록 조회 실패:', error);
       throw new Error(`Failed to fetch watch history: ${error.message}`);
     }
 
@@ -372,7 +375,7 @@ export const watchHistoryApi = {
       .limit(fetchLimit);
 
     if (error) {
-      console.error('고유 콘텐츠 시청 기록 조회 실패:', error);
+      WatchHistoryLogger.error('고유 콘텐츠 시청 기록 조회 실패:', error);
       throw new Error(`Failed to fetch unique content history: ${error.message}`);
     }
 
@@ -416,7 +419,7 @@ export const watchHistoryApi = {
       .eq('user_id', user.id);
 
     if (error) {
-      console.error('시청 기록 삭제 실패:', error);
+      WatchHistoryLogger.error('시청 기록 삭제 실패:', error);
       throw new Error(`Failed to delete watch history: ${error.message}`);
     }
   },
@@ -430,7 +433,7 @@ export const watchHistoryApi = {
     const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('user_id', user.id);
 
     if (error) {
-      console.error('전체 시청 기록 삭제 실패:', error);
+      WatchHistoryLogger.error('전체 시청 기록 삭제 실패:', error);
       throw new Error(`Failed to clear watch history: ${error.message}`);
     }
   },
@@ -471,7 +474,7 @@ export const watchHistoryApi = {
 
     // unique constraint violation (code 23505)이 아니면 에러 발생
     if (insertError.code !== '23505') {
-      console.error('시청 진행률 생성 실패:', insertError);
+      WatchHistoryLogger.error('시청 진행률 생성 실패:', insertError);
       throw new Error(`Failed to create watch progress: ${insertError.message}`);
     }
 
@@ -485,7 +488,7 @@ export const watchHistoryApi = {
       .maybeSingle();
 
     if (selectError) {
-      console.error('기존 시청 기록 조회 실패:', selectError);
+      WatchHistoryLogger.error('기존 시청 기록 조회 실패:', selectError);
       throw new Error(`Failed to fetch existing watch progress: ${selectError.message}`);
     }
 
@@ -509,7 +512,7 @@ export const watchHistoryApi = {
       .eq('id', existingRecord.id);
 
     if (updateError) {
-      console.error('시청 진행률 업데이트 실패:', updateError);
+      WatchHistoryLogger.error('시청 진행률 업데이트 실패:', updateError);
       throw new Error(`Failed to update watch progress: ${updateError.message}`);
     }
   },
@@ -551,7 +554,7 @@ export const watchHistoryApi = {
       .order('last_watched_at', { ascending: false });
 
     if (error) {
-      console.error('날짜별 시청 기록 조회 실패:', error);
+      WatchHistoryLogger.error('날짜별 시청 기록 조회 실패:', error);
       throw new Error(`Failed to fetch history by date: ${error.message}`);
     }
 
@@ -594,7 +597,7 @@ export const watchHistoryApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('시청 진행률 조회 실패:', {
+      WatchHistoryLogger.error('시청 진행률 조회 실패:', {
         contentId,
         contentType,
         error,
@@ -646,7 +649,7 @@ export const watchHistoryApi = {
     );
 
     if (error) {
-      console.error('영상 완료 처리 실패:', error);
+      WatchHistoryLogger.error('영상 완료 처리 실패:', error);
       throw new Error(`Failed to mark as fully watched: ${error.message}`);
     }
   },

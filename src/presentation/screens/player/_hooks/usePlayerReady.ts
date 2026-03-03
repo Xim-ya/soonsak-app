@@ -15,6 +15,7 @@ import { contentApi } from '@/features/content/api/contentApi';
 import { useAddWatchHistory } from '@/features/watch-history';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
+import { PlayerLogger } from '@/shared/utils/logger';
 
 interface UsePlayerReadyParams {
   readonly contentId: number;
@@ -46,7 +47,7 @@ export function usePlayerReady({
   const { mutate: addWatchHistory } = useAddWatchHistory();
 
   const handleReady = () => {
-    console.log('플레이어 준비 완료');
+    PlayerLogger.log('플레이어 준비 완료');
 
     if (!isFallbackMode) {
       setIsPlayerReady(true);

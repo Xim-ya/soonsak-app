@@ -9,9 +9,7 @@ import { Linking, Platform } from 'react-native';
 import * as Application from 'expo-application';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
-
-/** 개발 모드 여부 */
-const isDev = __DEV__;
+import { VersionLogger } from '@/shared/utils/logger';
 
 /**
  * 현재 앱 버전 가져오기
@@ -50,9 +48,7 @@ export function useAppVersionInfo(): UseAppVersionInfoReturn {
         : 'https://play.google.com/store/apps/details?id=com.soonsak.app');
 
     Linking.openURL(url).catch((error) => {
-      if (isDev) {
-        console.error('[useAppVersionInfo] 스토어 열기 실패:', error);
-      }
+      VersionLogger.error('스토어 열기 실패:', error);
     });
   }, [storeUrl]);
 
@@ -67,9 +63,7 @@ export function useAppVersionInfo(): UseAppVersionInfoReturn {
           setStoreUrl(policy.storeUrl);
         }
       } catch (error) {
-        if (isDev) {
-          console.error('[useAppVersionInfo] 버전 정보 조회 실패:', error);
-        }
+        VersionLogger.error('버전 정보 조회 실패:', error);
       } finally {
         setIsLoading(false);
       }

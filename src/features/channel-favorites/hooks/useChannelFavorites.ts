@@ -5,12 +5,16 @@
 import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
+import { Logger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { channelFavoritesApi } from '../api/channelFavoritesApi';
 import type { ToggleChannelFavoriteParams } from '../types';
 import {
   ChannelFavoriteStatusModel,
   fromChannelFavoriteStatusDto,
 } from '../types/channelFavoriteModel';
+
+const ChannelFavoritesLogger = Logger.create('ChannelFavorites');
 
 /** 캐시 시간 상수 */
 const FIVE_MINUTES = 5 * 60 * 1000;
@@ -98,10 +102,18 @@ export const useToggleChannelFavorite = () => {
       return { previousStatus, queryKey };
     },
 
-    onSuccess: (_data, _params, context) => {
+    onSuccess: (_data, params, context) => {
       // 스낵바 표시
       const wasAdded = !context?.previousStatus?.isFavorited;
       showGlobalInfo(wasAdded ? '채널을 찜했어요!' : '채널 찜을 취소했어요');
+
+      // 찜 추가 시에만 웹훅 호출
+      if (wasAdded) {
+        wowPointWebhook.onChannelFavorite({
+          ...(params.nickname && { nickname: params.nickname }),
+          ...(params.channelName && { channelName: params.channelName }),
+        });
+      }
     },
 
     onError: (_error, _params, context) => {
@@ -109,7 +121,7 @@ export const useToggleChannelFavorite = () => {
       if (context?.previousStatus) {
         queryClient.setQueryData(context.queryKey, context.previousStatus);
       }
-      console.error('채널 찜 토글 실패:', _error);
+      ChannelFavoritesLogger.error('채널 찜 토글 실패:', _error);
     },
 
     onSettled: (_data, _error, params) => {

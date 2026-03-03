@@ -6,9 +6,13 @@ import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { analyticsService } from '@/shared/analytics';
+import { Logger } from '@/shared/utils/logger';
+import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
 import { ratingsApi } from '../api/ratingsApi';
 import type { SetRatingParams } from '../types';
 import { RatingModel, RatingStatusModel } from '../types/ratingModel';
+
+const RatingsLogger = Logger.create('Ratings');
 
 /** 캐시 시간 상수 */
 const TWO_MINUTES = 2 * 60 * 1000;
@@ -56,7 +60,7 @@ export const useRatingStatus = (
  */
 export const useSetRating = () => {
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const userId = user?.id ?? null;
 
   return useMutation({
@@ -97,6 +101,13 @@ export const useSetRating = () => {
           rating: params.rating,
           action: hadPreviousRating ? 'update' : 'add',
         });
+
+        // Slack 웹훅 알림 (평점 등록/수정 시에만)
+        wowPointWebhook.onVideoRating({
+          nickname: displayName,
+          ...(params.contentTitle && { videoTitle: params.contentTitle }),
+          rating: params.rating,
+        });
       }
     },
 
@@ -105,7 +116,7 @@ export const useSetRating = () => {
       if (context?.previousStatus) {
         queryClient.setQueryData(context.queryKey, context.previousStatus);
       }
-      console.error('평점 등록 실패:', _error);
+      RatingsLogger.error('평점 등록 실패:', _error);
     },
 
     onSettled: (_data, _error, params) => {

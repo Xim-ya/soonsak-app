@@ -1,6 +1,9 @@
 import type { User } from '@supabase/supabase-js';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
+import { Logger } from '@/shared/utils/logger';
+
+const RatingsLogger = Logger.create('Ratings');
 import type {
   RatingDto,
   SetRatingParams,
@@ -60,7 +63,7 @@ export const ratingsApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('평점 상태 조회 실패:', error);
+      RatingsLogger.error('평점 상태 조회 실패:', error);
       return { hasRating: false, rating: null, ratingId: null };
     }
 
@@ -113,7 +116,7 @@ export const ratingsApi = {
       .single();
 
     if (error) {
-      console.error('평점 등록/수정 실패:', error);
+      RatingsLogger.error('평점 등록/수정 실패:', error);
       throw new Error(`Failed to set rating: ${error.message}`);
     }
 
@@ -139,7 +142,7 @@ export const ratingsApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error('평점 삭제 실패:', error);
+      RatingsLogger.error('평점 삭제 실패:', error);
       throw new Error(`Failed to remove rating: ${error.message}`);
     }
   },
@@ -160,7 +163,7 @@ export const ratingsApi = {
       .gt('rating', 0);
 
     if (error) {
-      console.error('평점 개수 조회 실패:', error);
+      RatingsLogger.error('평점 개수 조회 실패:', error);
       return 0;
     }
 
@@ -189,7 +192,7 @@ export const ratingsApi = {
       .gt('rating', 0);
 
     if (countError) {
-      console.error('평점 목록 수 조회 실패:', countError);
+      RatingsLogger.error('평점 목록 수 조회 실패:', countError);
       throw new Error(`Failed to count ratings: ${countError.message}`);
     }
 
@@ -217,7 +220,7 @@ export const ratingsApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('평점 목록 조회 실패:', error);
+      RatingsLogger.error('평점 목록 조회 실패:', error);
       throw new Error(`Failed to fetch ratings: ${error.message}`);
     }
 

@@ -6,6 +6,7 @@ import * as KakaoLogin from '@react-native-seoul/kakao-login';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { AUTH_DATABASE } from '@/shared/config/dbConfig';
+import { AuthLogger } from '@/shared/utils/logger';
 import {
   AUTH_ERROR_CODES,
   AUTH_ERROR_MESSAGES,
@@ -21,7 +22,7 @@ const isDev = __DEV__;
 /** 에러 로깅 (개발 모드에서만) */
 function logError(message: string, error: unknown): void {
   if (isDev) {
-    console.error(`[AuthApi] ${message}:`, error);
+    AuthLogger.error(`[AuthApi] ${message}:`, error);
   }
 }
 
@@ -55,7 +56,7 @@ function isUserCancelled(error: unknown, provider: SocialProvider): boolean {
   const errorCode = (error as Error & { code?: string }).code;
 
   if (__DEV__) {
-    console.log('[AuthApi] Error code:', errorCode, 'provider:', provider);
+    AuthLogger.log('[AuthApi] Error code:', errorCode, 'provider:', provider);
   }
 
   if (provider === 'apple') {
@@ -90,7 +91,7 @@ async function signInWithGoogleNative(): Promise<AuthResultDto> {
     const signInResult = await GoogleSignin.signIn();
 
     if (__DEV__) {
-      console.log('[AuthApi] Google signIn result type:', signInResult.type);
+      AuthLogger.log('[AuthApi] Google signIn result type:', signInResult.type);
     }
 
     // 규칙 1.2: 조건부 로직은 await 전에 평가
@@ -153,7 +154,7 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
 
     if (__DEV__) {
       // 민감한 토큰 정보는 마스킹 처리
-      console.log('[AuthApi] Kakao login result:', {
+      AuthLogger.log('[AuthApi] Kakao login result:', {
         accessTokenExpiresAt: loginResult.accessTokenExpiresAt,
         refreshTokenExpiresAt: loginResult.refreshTokenExpiresAt,
         hasIdToken: !!loginResult.idToken,
@@ -176,7 +177,7 @@ async function signInWithKakaoNative(): Promise<AuthResultDto> {
     }
 
     if (__DEV__) {
-      console.log('[AuthApi] Kakao idToken 획득 성공');
+      AuthLogger.log('[AuthApi] Kakao idToken 획득 성공');
     }
 
     // Step 3: Supabase에 ID 토큰으로 세션 교환
@@ -244,7 +245,7 @@ export const authApi = {
     try {
       // 디버깅: 현재 앱 번들 ID 확인
       if (__DEV__) {
-        console.log('[AuthApi] Apple - Bundle ID:', Application.applicationId);
+        AuthLogger.log('[AuthApi] Apple - Bundle ID:', Application.applicationId);
       }
 
       // Apple 로그인 요청
@@ -267,10 +268,10 @@ export const authApi = {
           const tokenParts = idToken.split('.');
           if (tokenParts[1]) {
             const payload = JSON.parse(atob(tokenParts[1]));
-            console.log('[AuthApi] Apple - Token audience (aud):', payload.aud);
+            AuthLogger.log('[AuthApi] Apple - Token audience (aud):', payload.aud);
           }
         } catch {
-          console.log('[AuthApi] Apple - Could not decode token');
+          AuthLogger.log('[AuthApi] Apple - Could not decode token');
         }
       }
 
@@ -361,7 +362,7 @@ export const authApi = {
     } catch (kakaoError) {
       // 카카오 로그인을 사용하지 않았거나 이미 로그아웃된 경우 무시
       if (isDev) {
-        console.log('[AuthApi] Kakao logout skipped (not logged in via Kakao):', kakaoError);
+        AuthLogger.log('[AuthApi] Kakao logout skipped (not logged in via Kakao):', kakaoError);
       }
     }
 
@@ -441,7 +442,7 @@ export const authApi = {
       await KakaoLogin.logout();
     } catch (kakaoError) {
       if (isDev) {
-        console.log('[AuthApi] Kakao logout skipped during withdrawal:', kakaoError);
+        AuthLogger.log('[AuthApi] Kakao logout skipped during withdrawal:', kakaoError);
       }
     }
 
