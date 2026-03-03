@@ -26,6 +26,7 @@ export const routePages = {
   adminChannelManagement: 'AdminChannelManagement',
   adminChannelDetail: 'AdminChannelDetail',
   adminPushManagement: 'AdminPushManagement',
+  adminVersionManagement: 'AdminVersionManagement',
   reviewFunnel: 'ReviewFunnel',
 } as const;
 
