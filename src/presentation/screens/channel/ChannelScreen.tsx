@@ -57,6 +57,7 @@ import { ChannelVideoCard, calculateCardHeight } from './_components/ChannelVide
 import { TabletVideoCard } from './_components/TabletVideoCard';
 import { SortSelector } from '@/presentation/components/sort';
 import { ChannelProvider, useChannel } from './_provider/ChannelProvider';
+import { ContentSource } from '@/shared/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -178,6 +179,7 @@ function ChannelContent() {
         type: video.contentType,
         title: video.contentTitle,
         videoId: video.videoId,
+        source: ContentSource.CHANNEL_TAB,
       });
     },
     [navigation],
@@ -193,6 +195,7 @@ function ChannelContent() {
     (channel: ChannelItemModel) => {
       const params: RootStackParamList[typeof routePages.channelDetail] = {
         channelId: channel.id,
+        source: 'channel_tab',
       };
       if (channel.name) params.channelName = channel.name;
       if (channel.logoUrl) params.channelLogoUrl = channel.logoUrl;

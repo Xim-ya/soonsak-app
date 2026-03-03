@@ -5,6 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
+import { analyticsService } from '@/shared/analytics';
 
 interface UseCalendarNavigationReturn {
   selectedYear: number;
@@ -25,23 +26,51 @@ export function useCalendarNavigation(): UseCalendarNavigationReturn {
 
   const handlePrevMonth = useCallback(() => {
     setSelectedMonth((prev) => {
+      let newMonth: number;
+      let newYear = selectedYear;
+
       if (prev === 1) {
-        setSelectedYear((y) => y - 1);
-        return 12;
+        newYear = selectedYear - 1;
+        newMonth = 12;
+        setSelectedYear(newYear);
+      } else {
+        newMonth = prev - 1;
       }
-      return prev - 1;
+
+      // 캘린더 월 변경 이벤트 로깅
+      analyticsService.myCalendarMonthChange({
+        year: newYear,
+        month: newMonth,
+        navigation_type: 'arrow',
+      });
+
+      return newMonth;
     });
-  }, []);
+  }, [selectedYear]);
 
   const handleNextMonth = useCallback(() => {
     setSelectedMonth((prev) => {
+      let newMonth: number;
+      let newYear = selectedYear;
+
       if (prev === 12) {
-        setSelectedYear((y) => y + 1);
-        return 1;
+        newYear = selectedYear + 1;
+        newMonth = 1;
+        setSelectedYear(newYear);
+      } else {
+        newMonth = prev + 1;
       }
-      return prev + 1;
+
+      // 캘린더 월 변경 이벤트 로깅
+      analyticsService.myCalendarMonthChange({
+        year: newYear,
+        month: newMonth,
+        navigation_type: 'arrow',
+      });
+
+      return newMonth;
     });
-  }, []);
+  }, [selectedYear]);
 
   const handleOpenMonthPicker = useCallback(() => {
     setIsMonthPickerVisible(true);
@@ -52,6 +81,13 @@ export function useCalendarNavigation(): UseCalendarNavigationReturn {
   }, []);
 
   const handleApplyMonthYear = useCallback((year: number, month: number) => {
+    // 캘린더 월 변경 이벤트 로깅 (swipe는 드롭다운 선택을 의미)
+    analyticsService.myCalendarMonthChange({
+      year,
+      month,
+      navigation_type: 'swipe',
+    });
+
     setSelectedYear(year);
     setSelectedMonth(month);
   }, []);

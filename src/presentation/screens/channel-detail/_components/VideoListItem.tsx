@@ -23,7 +23,9 @@ import { AppSize } from '@/shared/utils/appSize';
 import { formatter } from '@/shared/utils/formatter';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { ChannelVideoModel } from '../_types';
+import { useChannelDetail } from '../_provider/ChannelDetailProvider';
 
 /** 썸네일 크기 (16:9 비율) */
 const THUMBNAIL_WIDTH = AppSize.ratioWidth(160);
@@ -36,15 +38,25 @@ interface VideoListItemProps {
 
 function VideoListItemComponent({ video }: VideoListItemProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { channelId } = useChannelDetail();
 
   const handlePress = useCallback(() => {
+    // GA4 channel_video_click 이벤트 로깅
+    analyticsService.channelVideoClick({
+      channel_id: channelId,
+      content_id: video.contentId,
+      content_type: video.contentType,
+      video_id: video.id,
+    });
+
     navigation.navigate(routePages.contentDetail, {
       id: video.contentId,
       title: video.contentTitle,
       type: video.contentType,
       videoId: video.id,
+      source: ContentSource.CHANNEL_DETAIL,
     });
-  }, [navigation, video]);
+  }, [navigation, video, channelId]);
 
   // 썸네일 URL (YouTube 썸네일 또는 기본 이미지)
   const thumbnailUrl = video.thumbnailUrl ?? '';

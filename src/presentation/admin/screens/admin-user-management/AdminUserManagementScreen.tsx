@@ -163,7 +163,9 @@ export default function AdminUserManagementScreen() {
     if (isLoading) return null;
     return (
       <EmptyContainer>
-        <EmptyText>{showTodaySignupsOnly ? '오늘 가입한 유저가 없어요' : '유저가 없어요'}</EmptyText>
+        <EmptyText>
+          {showTodaySignupsOnly ? '오늘 가입한 유저가 없어요' : '유저가 없어요'}
+        </EmptyText>
       </EmptyContainer>
     );
   }, [isLoading, showTodaySignupsOnly]);

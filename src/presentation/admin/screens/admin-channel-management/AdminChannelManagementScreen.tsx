@@ -85,7 +85,7 @@ export default function AdminChannelManagementScreen() {
 
   // FlatList 최적화: 아이템 레이아웃 (고정 높이)
   const getItemLayout = useCallback(
-    (_: any, index: number) => ({
+    (_: ArrayLike<ChannelManagementItemType> | null | undefined, index: number) => ({
       length: ITEM_HEIGHT,
       offset: ITEM_HEIGHT * index,
       index,

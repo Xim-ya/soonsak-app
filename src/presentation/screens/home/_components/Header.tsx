@@ -18,6 +18,7 @@ import Animated, {
   useAnimatedStyle,
   interpolate,
   Extrapolation,
+  runOnJS,
 } from 'react-native-reanimated';
 import { useTopBannerContents } from '../_hooks/useTopBannerContents';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -25,6 +26,7 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { TopContentModel } from '../_types/TopContentModel';
 import { AppImage, ContentFit } from '@/presentation/components/image/AppImage';
 import { AppSize } from '@/shared/utils/appSize';
@@ -167,15 +169,24 @@ export function Header({ scrollY }: HeaderProps) {
     onPressPagination,
     onProgressChange,
     onSnapToItem,
+    onGestureStart,
     handleRetry,
   } = useTopBannerContents();
 
   const handleContentPress = useCallback(
-    (item: TopContentModel) => {
+    (item: TopContentModel, bannerIndex: number) => {
+      // 배너 클릭 이벤트 로깅
+      analyticsService.homeBannerClick({
+        content_id: item.id,
+        content_type: item.type,
+        banner_index: bannerIndex,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: item.id,
         type: item.type,
         title: item.title,
+        source: ContentSource.HOME_BANNER,
       });
     },
     [navigation],
@@ -211,14 +222,14 @@ export function Header({ scrollY }: HeaderProps) {
 
   /** 태블릿 배너 카드 렌더링 */
   const renderTabletBannerCard = useCallback(
-    ({ item }: { item: TopContentModel }) => {
+    ({ item, index }: { item: TopContentModel; index: number }) => {
       const keywords = item.keywords ?? [];
       const keywordText = keywords.join(' · ');
 
       return (
         <TabletCardContainer
           style={{ width: tabletItemWidth, height: tabletHeight }}
-          onPress={() => handleContentPress(item)}
+          onPress={() => handleContentPress(item, index)}
           activeOpacity={0.9}
         >
           {/* 배경 이미지 */}
@@ -253,8 +264,8 @@ export function Header({ scrollY }: HeaderProps) {
 
   /** 폰 배너 카드 렌더링 */
   const renderPhoneBannerCard = useCallback(
-    ({ item }: { item: TopContentModel }) => (
-      <Pressable onPress={() => handleContentPress(item)}>
+    ({ item, index }: { item: TopContentModel; index: number }) => (
+      <Pressable onPress={() => handleContentPress(item, index)}>
         {item.backdropImgUrl ? (
           <FadeInImage
             key={`${item.id}-${item.type}`}
@@ -325,7 +336,13 @@ export function Header({ scrollY }: HeaderProps) {
             loop={true}
             overscrollEnabled={true}
             onConfigurePanGesture={(panGesture) => {
-              panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
+              panGesture
+                .activeOffsetX([-10, 10])
+                .failOffsetY([-5, 5])
+                .onStart(() => {
+                  'worklet';
+                  runOnJS(onGestureStart)();
+                });
             }}
             renderItem={renderTabletBannerCard}
           />
@@ -360,7 +377,13 @@ export function Header({ scrollY }: HeaderProps) {
           autoPlay={true}
           autoPlayInterval={3000}
           onConfigurePanGesture={(panGesture) => {
-            panGesture.activeOffsetX([-10, 10]).failOffsetY([-5, 5]);
+            panGesture
+              .activeOffsetX([-10, 10])
+              .failOffsetY([-5, 5])
+              .onStart(() => {
+                'worklet';
+                runOnJS(onGestureStart)();
+              });
           }}
           renderItem={renderPhoneBannerCard}
         />

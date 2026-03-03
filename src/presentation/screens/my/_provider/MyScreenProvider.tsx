@@ -19,6 +19,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import {
   useWatchHistoryCalendar,
   useFullyWatchedCount,
@@ -129,11 +130,17 @@ export function MyScreenProvider({ children }: MyScreenProviderProps) {
 
   // 설정 페이지 이동 핸들러
   const handleSettingsPress = useCallback(() => {
+    // MY 설정 클릭 이벤트 로깅
+    analyticsService.mySettingsClick();
+
     navigation.navigate(routePages.settings);
   }, [navigation]);
 
   // 프로필 클릭 핸들러
   const handleProfilePress = useCallback(() => {
+    // MY 프로필 편집 클릭 이벤트 로깅
+    analyticsService.myProfileEditClick();
+
     if (isGuest) {
       setLoginDialogVisible(true);
     } else {
@@ -144,10 +151,17 @@ export function MyScreenProvider({ children }: MyScreenProviderProps) {
   // 시청 기록 아이템 클릭 핸들러 (콘텐츠 상세 페이지로 이동)
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
+      // MY 시청 기록 클릭 이벤트 로깅
+      analyticsService.myWatchHistoryClick({
+        content_id: item.contentId,
+        content_type: item.contentType,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: item.contentId,
         type: item.contentType,
         title: item.contentTitle,
+        source: ContentSource.MY_WATCH_HISTORY,
         initialData: {
           backdropPath: item.contentBackdropPath,
           posterPath: item.contentPosterPath,
@@ -161,28 +175,46 @@ export function MyScreenProvider({ children }: MyScreenProviderProps) {
 
   // 통계 섹션 클릭 핸들러 (initialTab: 0=찜했어요, 1=평가했어요, 2=봤어요)
   const handleFavoritesPress = useCallback(() => {
+    // MY 통계 클릭 이벤트 로깅
+    analyticsService.myStatsClick({
+      stat_type: 'favorites',
+      count: favoritesCount,
+    });
+
     if (isGuest) {
       setLoginDialogVisible(true);
       return;
     }
     navigation.navigate(routePages.userContentList, { initialTab: 0 });
-  }, [isGuest, navigation]);
+  }, [isGuest, navigation, favoritesCount]);
 
   const handleRatingsPress = useCallback(() => {
+    // MY 통계 클릭 이벤트 로깅
+    analyticsService.myStatsClick({
+      stat_type: 'ratings',
+      count: ratingsCount,
+    });
+
     if (isGuest) {
       setLoginDialogVisible(true);
       return;
     }
     navigation.navigate(routePages.userContentList, { initialTab: 1 });
-  }, [isGuest, navigation]);
+  }, [isGuest, navigation, ratingsCount]);
 
   const handleWatchedPress = useCallback(() => {
+    // MY 통계 클릭 이벤트 로깅
+    analyticsService.myStatsClick({
+      stat_type: 'watched',
+      count: watchedCount,
+    });
+
     if (isGuest) {
       setLoginDialogVisible(true);
       return;
     }
     navigation.navigate(routePages.userContentList, { initialTab: 2 });
-  }, [isGuest, navigation]);
+  }, [isGuest, navigation, watchedCount]);
 
   // 시청기록 전체 보기 핸들러
   const handleViewAllWatchHistory = useCallback(() => {
@@ -196,13 +228,20 @@ export function MyScreenProvider({ children }: MyScreenProviderProps) {
   // 캘린더 날짜 클릭 핸들러 (해당 날짜의 시청기록 페이지로 이동)
   const handleCalendarDatePress = useCallback(
     (date: string) => {
+      // 캘린더 날짜 클릭 이벤트 로깅
+      const historyItem = calendarData?.find((item) => item.watchedDate === date);
+      analyticsService.myCalendarDateClick({
+        date,
+        watch_count: historyItem?.count ?? 0,
+      });
+
       if (isGuest) {
         setLoginDialogVisible(true);
         return;
       }
       navigation.navigate(routePages.watchHistory, { date });
     },
-    [isGuest, navigation],
+    [isGuest, navigation, calendarData],
   );
 
   const contextValue: MyScreenContextType = useMemo(

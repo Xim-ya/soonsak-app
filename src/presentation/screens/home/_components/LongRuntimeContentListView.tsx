@@ -7,6 +7,7 @@ import {
   CardSkeletonBox,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
+import { ContentSource } from '@/shared/analytics';
 import { useLongRuntimeContents } from '../_hooks/useLongRuntimeContents';
 import { LongRuntimeContentModel } from '../_types/longRuntimeContentModel.home';
 
@@ -19,6 +20,7 @@ const LongRuntimeItem = React.memo(({ item }: { item: LongRuntimeContentModel })
   <ContentCardImage
     item={item}
     titleLeftOffset={TITLE_LEFT_OFFSET}
+    source={ContentSource.HOME_LONG_RUNTIME}
     overlay={
       <RuntimeChipWrapper>
         <DarkChip content={item.formattedRuntime} />

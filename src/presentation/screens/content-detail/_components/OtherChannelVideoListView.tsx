@@ -17,6 +17,7 @@ import PlayButtonSvg from '@assets/icons/play_button.svg';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '../_hooks/useContentDetail';
+import { analyticsService } from '@/shared/analytics';
 
 interface VideoItemViewProps {
   item: OtherChannelVideoModel;
@@ -35,6 +36,20 @@ function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
 
   const handlePlayPress = useCallback(async () => {
     if (!item.contentType) return;
+
+    // GA4 content_detail_other_video_click 이벤트 로깅
+    analyticsService.contentDetailOtherVideoClick({
+      video_id: item.id,
+      content_id: item.contentId,
+      content_type: item.contentType,
+    });
+
+    // GA4 content_detail_other_video_click 이벤트 로깅
+    analyticsService.contentDetailOtherVideoClick({
+      video_id: item.id,
+      content_id: item.contentId,
+      content_type: item.contentType,
+    });
 
     await playVideo({
       videoId: item.id,

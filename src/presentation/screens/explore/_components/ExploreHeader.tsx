@@ -24,6 +24,7 @@ import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptD
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { analyticsService } from '@/shared/analytics';
 import LightningIcon from '@assets/icons/lightning.svg';
 import { CurationCarousel } from './CurationCarousel';
 import { CurationPromptCard } from './CurationPromptCard';
@@ -67,6 +68,9 @@ const ExploreHeader = React.memo(function ExploreHeader(): React.ReactElement {
 
   // 빠른탐색 페이지로 이동 (비로그인 시 로그인 다이얼로그 표시)
   const handleQuickExplorePress = useCallback(() => {
+    // explore_quick_explore_click 이벤트 로깅
+    analyticsService.exploreQuickExploreClick();
+
     if (!isLoggedIn) {
       setPendingNavigation('quickExplore');
       setLoginDialogVisible(true);

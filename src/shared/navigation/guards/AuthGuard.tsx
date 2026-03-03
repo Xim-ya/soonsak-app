@@ -96,7 +96,7 @@ export function AuthGuard(): null {
         index: 1,
         routes: [
           { name: routePages.mainTabs },
-          { name: routePages.login, params: { canGoBack: false } },
+          { name: routePages.login, params: { canGoBack: false, referrerScreen: currentScreen } },
         ],
       });
 

@@ -27,6 +27,7 @@ import { useNicknameValidation } from '@/features/user/hooks/useNicknameValidati
 import { userApi } from '@/features/user/api/userApi';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { RootStackParamList } from '@/shared/navigation/types';
+import { analyticsService } from '@/shared/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -131,6 +132,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
       // 영구 거부된 경우 다이얼로그 표시
       if (!permissionResult.canAskAgain) {
         setIsPermissionDialogVisible(true);
+        analyticsService.profileImageChange({ result: 'permission_denied' });
       }
       return;
     }
@@ -144,6 +146,9 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
 
     if (!result.canceled && result.assets[0]) {
       setPickedImageUri(result.assets[0].uri);
+      analyticsService.profileImageChange({ result: 'success' });
+    } else {
+      analyticsService.profileImageChange({ result: 'cancelled' });
     }
   }, []);
 
@@ -213,6 +218,13 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
 
       // AuthProvider의 프로필 데이터 새로고침
       await refreshProfile();
+
+      // 프로필 설정 완료 이벤트 로깅
+      const hasProfileImage = uploadedAvatarUrl !== undefined && uploadedAvatarUrl.trim() !== '';
+      analyticsService.profileSetupComplete({
+        mode,
+        has_profile_image: hasProfileImage,
+      });
 
       // 프로필 설정 완료 표시 (ProfileSetupNavigator에서 다시 리다이렉트 방지)
       if (mode === 'initial') {

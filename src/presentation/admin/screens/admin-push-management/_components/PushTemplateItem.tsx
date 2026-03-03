@@ -89,7 +89,9 @@ function PushTemplateItemComponent({
         </InfoItem>
         <InfoItem>
           <InfoLabel>반복</InfoLabel>
-          <InfoValue>{template.recurrenceType === 'none' ? '1회' : template.recurrenceType}</InfoValue>
+          <InfoValue>
+            {template.recurrenceType === 'none' ? '1회' : template.recurrenceType}
+          </InfoValue>
         </InfoItem>
         <InfoItem>
           <InfoLabel>우선순위</InfoLabel>

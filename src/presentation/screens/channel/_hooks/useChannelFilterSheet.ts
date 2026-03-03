@@ -13,6 +13,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
+import { analyticsService } from '@/shared/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -102,6 +103,12 @@ export function useChannelFilterSheet(): UseChannelFilterSheetReturn {
 
   const requestChannelSelection = useCallback(
     (tempFilter: ContentFilter) => {
+      // GA4 channel_selection_open 이벤트 로깅
+      analyticsService.channelSelectionOpen({
+        current_channel_count: tempFilter.channelIds.length,
+        source: 'channel_tab',
+      });
+
       setPendingFilter(tempFilter);
       setIsVisible(false);
       navigation.navigate(routePages.channelSelection, {

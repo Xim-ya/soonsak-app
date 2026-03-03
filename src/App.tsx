@@ -1,4 +1,4 @@
-import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme, NavigationState } from '@react-navigation/native';
 import { useFonts } from 'expo-font';
 import { StatusBar } from 'expo-status-bar';
 import { QueryClient, QueryClientProvider, QueryCache, MutationCache } from '@tanstack/react-query';
@@ -6,7 +6,7 @@ import StackNavigator from './shared/navigation/navigator/StackNavigator';
 import '@/shared/extensions/arrayExtension';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useEffect } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
 import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
 import { enableScreens } from 'react-native-screens';
@@ -16,6 +16,7 @@ import { ContentFilterProvider } from '@/shared/context/ContentFilterContext';
 import { SnackbarProvider } from '@/shared/providers/SnackbarProvider';
 import { DialogProvider } from '@/presentation/components/dialog';
 import { isAppError } from '@/shared/errors';
+import { analyticsService } from '@/shared/analytics';
 import { linkingConfig } from '@/features/push-notifications';
 import { useSyncAppBadge } from '@/features/notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
@@ -97,6 +98,16 @@ const queryClient = new QueryClient({
       const message = isAppError(error) ? error.userMessage : '오류가 발생했습니다';
       showGlobalSnackbar(message);
 
+      // GA 에러 로깅
+      const errorCode = isAppError(error) ? error.code : 'UNKNOWN';
+      const screenName = (query.meta?.['screenName'] as string) ?? 'unknown';
+      analyticsService.errorOccurred({
+        error_type: 'api',
+        error_code: errorCode,
+        error_message: message,
+        screen_name: screenName,
+      });
+
       // 개발 모드에서 콘솔 로그
       if (__DEV__) {
         console.error('[QueryCache Error]', message, error);
@@ -119,6 +130,16 @@ const queryClient = new QueryClient({
       // 에러 메시지 표시
       const message = isAppError(error) ? error.userMessage : '오류가 발생했습니다';
       showGlobalSnackbar(message);
+
+      // GA 에러 로깅
+      const errorCode = isAppError(error) ? error.code : 'UNKNOWN';
+      const screenName = (mutation.meta?.['screenName'] as string) ?? 'unknown';
+      analyticsService.errorOccurred({
+        error_type: 'api',
+        error_code: errorCode,
+        error_message: message,
+        screen_name: screenName,
+      });
 
       // 개발 모드에서 콘솔 로그
       if (__DEV__) {
@@ -152,6 +173,20 @@ function AppBadgeSyncer() {
   return null;
 }
 
+/**
+ * 현재 네비게이션 상태에서 활성 화면 이름을 가져옴
+ */
+function getActiveRouteName(state: NavigationState | undefined): string | undefined {
+  if (!state) return undefined;
+
+  const route = state.routes[state.index];
+  if (route.state) {
+    // 중첩 네비게이터가 있으면 재귀적으로 탐색
+    return getActiveRouteName(route.state as NavigationState);
+  }
+  return route.name;
+}
+
 // AppSize 초기화를 위한 내부 컴포넌트
 function AppContent({
   showUpdateDialog,
@@ -167,6 +202,19 @@ function AppContent({
   dismissDialog: () => void;
 }) {
   const insets = useSafeAreaInsets();
+  const routeNameRef = useRef<string | undefined>(undefined);
+
+  // 네비게이션 상태 변경 시 화면 로깅
+  const onNavigationStateChange = useCallback(() => {
+    const previousRouteName = routeNameRef.current;
+    const currentRouteName = getActiveRouteName(navigationRef.current?.getState());
+
+    if (currentRouteName && previousRouteName !== currentRouteName) {
+      analyticsService.screenView(currentRouteName);
+    }
+
+    routeNameRef.current = currentRouteName;
+  }, []);
 
   useEffect(() => {
     // AppSize 초기화
@@ -206,7 +254,15 @@ function AppContent({
       <AuthProvider>
         <PushNotificationProvider>
           <AppBadgeSyncer />
-          <NavigationContainer ref={navigationRef} theme={navigationTheme} linking={linkingConfig}>
+          <NavigationContainer
+            ref={navigationRef}
+            theme={navigationTheme}
+            linking={linkingConfig}
+            onReady={() => {
+              routeNameRef.current = getActiveRouteName(navigationRef.current?.getState());
+            }}
+            onStateChange={onNavigationStateChange}
+          >
             <StackNavigator />
           </NavigationContainer>
         </PushNotificationProvider>

@@ -25,6 +25,7 @@ import { Tabs, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
+import type { ExploreTabName } from '@/shared/analytics/types/events';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
 import { useExplore } from '../_provider/ExploreProvider';
@@ -202,6 +203,14 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
     return [...contents, ...placeholders];
   }, [contents, columnCount]);
 
+  // 콘텐츠 클릭 핸들러 (position 포함)
+  const handleItemPress = useCallback(
+    (content: ExploreContentModel, position: number) => {
+      handleContentPress(content, tabName as ExploreTabName, position);
+    },
+    [handleContentPress, tabName],
+  );
+
   const renderItem: ListRenderItem<GridItem> = useCallback(
     ({ item, index }) => {
       const isLastInRow = (index + 1) % columnCount === 0;
@@ -211,13 +220,20 @@ const ExploreTabContent = React.memo(function ExploreTabContent({
         return <ItemWrapper cardWidth={cardWidth} isLastInRow={isLastInRow} />;
       }
 
+      // 콘텐츠 아이템의 실제 위치 (placeholder 제외)
+      const position = index;
+
       return (
         <ItemWrapper cardWidth={cardWidth} isLastInRow={isLastInRow}>
-          <ExploreContentCard content={item} onPress={handleContentPress} cardWidth={cardWidth} />
+          <ExploreContentCard
+            content={item}
+            onPress={() => handleItemPress(item, position)}
+            cardWidth={cardWidth}
+          />
         </ItemWrapper>
       );
     },
-    [handleContentPress, columnCount, cardWidth],
+    [handleItemPress, columnCount, cardWidth],
   );
 
   const keyExtractor = useCallback((item: GridItem, index: number) => {

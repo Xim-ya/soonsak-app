@@ -5,6 +5,7 @@
 import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
+import { analyticsService } from '@/shared/analytics';
 import { ratingsApi } from '../api/ratingsApi';
 import type { SetRatingParams } from '../types';
 import { RatingModel, RatingStatusModel } from '../types/ratingModel';
@@ -81,12 +82,21 @@ export const useSetRating = () => {
       return { previousStatus, queryKey };
     },
 
-    onSuccess: (_data, params) => {
+    onSuccess: (_data, params, context) => {
       // 스낵바 표시
       if (params.rating === 0) {
         showGlobalInfo('평점을 취소했어요');
       } else {
         showGlobalInfo('평점을 매겼어요');
+
+        // GA4 content_rating_submit 이벤트 로깅 (평점 등록/수정 시에만)
+        const hadPreviousRating = context?.previousStatus?.hasRating ?? false;
+        analyticsService.contentRatingSubmit({
+          content_id: params.contentId,
+          content_type: params.contentType,
+          rating: params.rating,
+          action: hadPreviousRating ? 'update' : 'add',
+        });
       }
     },
 

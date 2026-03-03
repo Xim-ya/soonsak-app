@@ -16,7 +16,7 @@
  * />
  */
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native';
 import styled from '@emotion/native';
 import { useNavigation } from '@react-navigation/native';
@@ -24,6 +24,7 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useSocialLogin } from '@/presentation/screens/login/_hooks/useSocialLogin';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import KakaoLogo from '@assets/icons/kakao_logo.svg';
@@ -48,21 +49,42 @@ interface LoginPromptDialogProps {
   readonly onClose: () => void;
   /** 로그인 성공 시 호출 (찜 토글 등 후속 액션 실행용) */
   readonly onLoginSuccess?: (() => void) | undefined;
+  /** 로그인 화면 진입 경로 (GA 로깅용) */
+  readonly referrerScreen?: string | undefined;
+  /** 로그인 유도 트리거 (GA 로깅용: favorite, rating 등) */
+  readonly trigger?: string | undefined;
 }
 
 function LoginPromptDialog({
   visible,
   onClose,
   onLoginSuccess,
+  referrerScreen,
+  trigger,
 }: LoginPromptDialogProps): React.ReactElement {
   const navigation = useNavigation<NavigationProp>();
-  const { handleLogin, loadingProvider } = useSocialLogin();
+  const { handleLogin, loadingProvider } = useSocialLogin(referrerScreen ?? 'login_prompt');
 
   const isKakaoLoading = loadingProvider === 'kakao';
 
+  // 다이얼로그 표시 시 GA 로깅
+  useEffect(() => {
+    if (visible) {
+      analyticsService.loginPromptShow({
+        trigger: trigger ?? 'unknown',
+        screen_name: referrerScreen ?? 'unknown',
+      });
+    }
+  }, [visible, trigger, referrerScreen]);
+
   const handleBackdropPress = useCallback(() => {
+    analyticsService.loginPromptAction({
+      action: 'close',
+      trigger: trigger ?? 'unknown',
+      referrer_screen: referrerScreen ?? 'unknown',
+    });
     onClose();
-  }, [onClose]);
+  }, [onClose, trigger, referrerScreen]);
 
   const handleDialogPress = useCallback(() => {
     // 다이얼로그 내부 터치 시 이벤트 전파 방지
@@ -70,18 +92,29 @@ function LoginPromptDialog({
 
   // 카카오 로그인 핸들러
   const handleKakaoLogin = useCallback(() => {
+    analyticsService.loginPromptAction({
+      action: 'kakao_login',
+      trigger: trigger ?? 'unknown',
+      referrer_screen: referrerScreen ?? 'unknown',
+    });
     handleLogin('kakao', onLoginSuccess);
     onClose();
-  }, [handleLogin, onClose, onLoginSuccess]);
+  }, [handleLogin, onClose, onLoginSuccess, trigger, referrerScreen]);
 
   // 다른 방법으로 로그인 핸들러
   const handleOtherLogin = useCallback(() => {
+    analyticsService.loginPromptAction({
+      action: 'other_login',
+      trigger: trigger ?? 'unknown',
+      referrer_screen: referrerScreen ?? 'unknown',
+    });
     navigation.navigate(routePages.login, {
       canGoBack: true,
       ...(onLoginSuccess && { onLoginSuccess }), // undefined가 아닐 때만 전달
+      ...(referrerScreen && { referrerScreen }), // GA 로깅용 리퍼러
     });
     onClose();
-  }, [navigation, onClose, onLoginSuccess]);
+  }, [navigation, onClose, onLoginSuccess, referrerScreen, trigger]);
 
   return (
     <Modal

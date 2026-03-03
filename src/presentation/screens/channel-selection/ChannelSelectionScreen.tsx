@@ -17,6 +17,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
+import { analyticsService } from '@/shared/analytics';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
@@ -49,14 +50,25 @@ export default function ChannelSelectionScreen(): React.ReactElement {
   const route = useRoute<ChannelSelectionRouteProp>();
   const { selectedChannelIds } = route.params;
 
-  const { channels, selectedIds, toggleChannel, resetSelection } =
+  const { channels, selectedIds, initialSelectedIds, toggleChannel, resetSelection } =
     useChannelSelection(selectedChannelIds);
 
   // 적용 버튼 핸들러
   const handleApply = useCallback(() => {
+    // 변경된 채널 수 계산: 추가된 것 + 제거된 것
+    const addedCount = selectedIds.filter((id) => !initialSelectedIds.includes(id)).length;
+    const removedCount = initialSelectedIds.filter((id) => !selectedIds.includes(id)).length;
+    const changedCount = addedCount + removedCount;
+
+    // GA4 channel_selection_apply 이벤트 로깅
+    analyticsService.channelSelectionApply({
+      selected_count: selectedIds.length,
+      changed_count: changedCount,
+    });
+
     channelSelectionBridge.setChannelResult(selectedIds);
     navigation.goBack();
-  }, [selectedIds, navigation]);
+  }, [selectedIds, initialSelectedIds, navigation]);
 
   // 초기화 액션 버튼
   const resetAction = (

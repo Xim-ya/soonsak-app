@@ -1,0 +1,5 @@
+{
+  "react-native": {
+    "analytics_debug_enabled": true
+  }
+}

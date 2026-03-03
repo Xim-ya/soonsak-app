@@ -8,6 +8,7 @@ import {
   isValidAuthErrorCode,
 } from '@/features/auth/constants/authErrors';
 import type { SocialProvider, AuthErrorDto } from '@/features/auth/types';
+import { analyticsService, type LoginReferrerType } from '@/shared/analytics';
 
 /** AuthErrorDto 타입 가드 */
 function isAuthError(error: unknown): error is AuthErrorDto {
@@ -56,15 +57,17 @@ async function handleAuthError(
  * 소셜 로그인 처리 및 에러 핸들링을 담당합니다.
  * 로그인 성공 시 AuthProvider에서 상태가 자동으로 업데이트됩니다.
  *
+ * @param referrerScreen - 로그인 화면 진입 경로 (GA 로깅용)
+ *
  * @example
- * const { handleLogin, loadingProvider } = useSocialLogin();
+ * const { handleLogin, loadingProvider } = useSocialLogin('my_tab');
  *
  * <SocialLoginButtonGroup
  *   onLogin={handleLogin}
  *   loadingProvider={loadingProvider}
  * />
  */
-export function useSocialLogin() {
+export function useSocialLogin(referrerScreen: LoginReferrerType | string) {
   const { showDialog } = useDialog();
   const [loadingProvider, setLoadingProvider] = useState<SocialProvider | null>(null);
 
@@ -72,18 +75,40 @@ export function useSocialLogin() {
     async (provider: SocialProvider, onSuccess?: () => void) => {
       setLoadingProvider(provider);
 
+      // login_attempt 이벤트 로깅
+      analyticsService.loginAttempt({
+        method: provider,
+        referrer_screen: referrerScreen,
+      });
+
       try {
+        let result;
         switch (provider) {
           case 'google':
-            await authApi.signInWithGoogle();
+            result = await authApi.signInWithGoogle();
             break;
           case 'apple':
-            await authApi.signInWithApple();
+            result = await authApi.signInWithApple();
             break;
           case 'kakao':
-            await authApi.signInWithKakao();
+            result = await authApi.signInWithKakao();
             break;
         }
+
+        // login_success 이벤트 로깅
+        // is_new_user: Supabase user의 created_at과 last_sign_in_at을 비교하여 판단
+        const user = result?.user;
+        const isNewUser =
+          user?.created_at && user?.last_sign_in_at
+            ? new Date(user.created_at).getTime() === new Date(user.last_sign_in_at).getTime()
+            : false;
+
+        analyticsService.loginSuccess({
+          method: provider,
+          is_new_user: isNewUser,
+          referrer_screen: referrerScreen,
+        });
+
         // 로그인 성공 시 AuthProvider에서 상태 자동 업데이트
         // 네비게이션 변경도 자동 처리됨
         onSuccess?.();
@@ -91,12 +116,38 @@ export function useSocialLogin() {
         if (__DEV__) {
           console.error('[useSocialLogin] Login error:', error);
         }
+
+        // 에러 타입에 따라 이벤트 로깅
+        if (isAuthError(error)) {
+          if (isUserCancelledError(error.code)) {
+            // login_cancel 이벤트 로깅
+            analyticsService.loginCancel({
+              method: provider,
+              referrer_screen: referrerScreen,
+            });
+          } else {
+            // login_failure 이벤트 로깅
+            analyticsService.loginFailure({
+              method: provider,
+              error_code: error.code,
+              referrer_screen: referrerScreen,
+            });
+          }
+        } else {
+          // 알 수 없는 에러는 failure로 로깅
+          analyticsService.loginFailure({
+            method: provider,
+            error_code: 'unknown_error',
+            referrer_screen: referrerScreen,
+          });
+        }
+
         await handleAuthError(error, showDialog);
       } finally {
         setLoadingProvider(null);
       }
     },
-    [showDialog],
+    [showDialog, referrerScreen],
   );
 
   return {

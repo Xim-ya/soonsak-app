@@ -3,7 +3,7 @@
  */
 
 import { memo } from 'react';
-import { View, Image } from 'react-native';
+import { Image } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -35,8 +35,7 @@ const NOTIFICATION_TYPE_LABELS: Record<string, string> = {
 };
 
 /** 기본 아바타 URL */
-const DEFAULT_AVATAR =
-  'https://ui-avatars.com/api/?background=random&color=fff&name=U&size=40';
+const DEFAULT_AVATAR = 'https://ui-avatars.com/api/?background=random&color=fff&name=U&size=40';
 
 function PushReceiptListItemComponent({ receipt }: PushReceiptListItemProps) {
   const statusColor = DELIVERY_STATUS_COLORS[receipt.deliveryStatus] ?? colors.gray03;
@@ -51,9 +50,7 @@ function PushReceiptListItemComponent({ receipt }: PushReceiptListItemProps) {
           defaultSource={{ uri: DEFAULT_AVATAR }}
         />
         <UserInfo>
-          <UserName numberOfLines={1}>
-            {receipt.userDisplayName ?? '이름 없음'}
-          </UserName>
+          <UserName numberOfLines={1}>{receipt.userDisplayName ?? '이름 없음'}</UserName>
           <UserEmail numberOfLines={1}>{receipt.userEmail ?? '-'}</UserEmail>
         </UserInfo>
       </UserSection>

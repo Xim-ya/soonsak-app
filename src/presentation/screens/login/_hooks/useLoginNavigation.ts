@@ -23,6 +23,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { handlePendingNavigation, pendingNavigationStore } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
 import type { AuthState } from '@/features/auth/types';
+import { analyticsService, LoginReferrer } from '@/shared/analytics';
 import { useSocialLogin } from './useSocialLogin';
 
 type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList, typeof routePages.login>;
@@ -48,16 +49,28 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
   const route = useRoute<LoginRouteProp>();
   const insets = useSafeAreaInsets();
   const { status } = useAuth();
-  const { handleLogin, loadingProvider } = useSocialLogin();
 
   // canGoBack 파라미터 확인 (다른 화면에서 로그인 페이지로 이동한 경우 true)
   const canGoBack = route.params?.canGoBack ?? false;
+
+  // referrerScreen 파라미터 (GA 로깅용)
+  const referrerScreen = route.params?.referrerScreen ?? LoginReferrer.INITIAL;
+
+  const { handleLogin, loadingProvider } = useSocialLogin(referrerScreen);
 
   // 이전 인증 상태 추적 (로그인 성공 감지용)
   const prevStatusRef = useRef<AuthState['status']>(status);
 
   // onLoginSuccess 콜백 (찜/평점 등 pending 액션 실행용)
   const onLoginSuccess = route.params?.onLoginSuccess;
+
+  // login_start 이벤트 로깅 (화면 진입 시 1회)
+  useEffect(() => {
+    analyticsService.loginStart({
+      referrer_screen: referrerScreen,
+      can_go_back: canGoBack,
+    });
+  }, []);
 
   // 메인 화면으로 이동 (온보딩 완료 표시 후)
   const navigateToMain = useCallback(async () => {
@@ -106,12 +119,17 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
 
   // 비회원 둘러보기 처리
   const handleGuestPress = useCallback(() => {
+    // login_skip 이벤트 로깅
+    analyticsService.loginSkip({
+      referrer_screen: referrerScreen,
+    });
+
     if (canGoBack) {
       navigation.goBack();
     } else {
       navigateToMain();
     }
-  }, [canGoBack, navigation, navigateToMain]);
+  }, [canGoBack, navigation, navigateToMain, referrerScreen]);
 
   // 뒤로가기 처리
   const handleGoBack = useCallback(() => {

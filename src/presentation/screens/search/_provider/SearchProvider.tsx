@@ -1,5 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode, useMemo } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
 import { useDebounce } from '@/shared/hooks/useDebounce';
+import { analyticsService } from '@/shared/analytics';
 import { useSearch } from '../_hooks/useSearch';
 import { SearchResultModel } from '../_types/searchResultModel';
 
@@ -44,8 +53,25 @@ interface SearchProviderProps {
 export function SearchProvider({ children }: SearchProviderProps) {
   const [searchText, setSearchText] = useState('');
   const debouncedSearchText = useDebounce(searchText, DEBOUNCE_DELAY_MS);
+  const prevSearchTermRef = useRef<string>('');
 
   const { data: results, isLoading, error, isEmpty } = useSearch(debouncedSearchText);
+
+  // search_query 이벤트 로깅 (검색어 변경 및 결과 로딩 완료 시)
+  useEffect(() => {
+    const trimmedQuery = debouncedSearchText.trim();
+    const hasQuery = trimmedQuery.length > 0;
+    const isQueryChanged = prevSearchTermRef.current !== trimmedQuery;
+    const isResultsReady = !isLoading && results !== undefined;
+
+    if (hasQuery && isQueryChanged && isResultsReady) {
+      analyticsService.searchQuery({
+        search_term: trimmedQuery,
+        results_count: results.length,
+      });
+      prevSearchTermRef.current = trimmedQuery;
+    }
+  }, [debouncedSearchText, isLoading, results]);
 
   const clearSearchText = () => {
     setSearchText('');

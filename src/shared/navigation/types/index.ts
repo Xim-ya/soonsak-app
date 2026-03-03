@@ -14,6 +14,7 @@
 import { routePages } from '../constant/routePages';
 import { ContentType } from '@/shared/types/content/contentType.enum';
 import type { ProfileSetupMode } from '@/features/user/types';
+import type { ContentSourceType } from '@/shared/analytics';
 
 // routePages 객체의 값들을 Union 타입으로 추출
 // 예: "MainTabs" | "ContentDetail"
@@ -50,8 +51,9 @@ export type RootStackParamList = {
     | {
         canGoBack?: boolean;
         onLoginSuccess?: () => void; // 로그인 성공 후 실행할 콜백 (찜/평점 등)
+        referrerScreen?: string; // 로그인 화면 진입 경로 (GA 로깅용)
       }
-    | undefined; // 로그인 - canGoBack, onLoginSuccess 선택적 파라미터
+    | undefined; // 로그인 - canGoBack, onLoginSuccess, referrerScreen 선택적 파라미터
   [routePages.mainTabs]: undefined; // 탭 네비게이터 - 파라미터 없음
   [routePages.contentDetail]: {
     id: number; // 콘텐츠 ID
@@ -59,7 +61,8 @@ export type RootStackParamList = {
     type: ContentType; // 콘텐츠 타입 (movie | series | unknown)
     videoId?: string; // 특정 비디오 ID (선택 - 없으면 primary 비디오 사용)
     initialData?: ContentDetailInitialData; // 프리로드 데이터 (선택 - 배경 이미지 등)
-  }; // 콘텐츠 상세 - id, type 필수, title, videoId, initialData 선택
+    source?: ContentSourceType; // 콘텐츠 진입 경로 (GA 로깅용)
+  }; // 콘텐츠 상세 - id, type 필수, title, videoId, initialData, source 선택
   [routePages.player]: {
     videoId: string;
     title: string;
@@ -72,8 +75,13 @@ export type RootStackParamList = {
     channelName?: string; // 채널 이름 (선택 - 없으면 API 조회)
     channelLogoUrl?: string; // 채널 로고 URL (선택 - 없으면 API 조회)
     subscriberCount?: number; // 구독자 수 (선택 - 없으면 API 조회)
+    source?: string; // 채널 상세 진입 경로 (GA 로깅용)
   }; // 채널 상세 - channelId만 필수, 나머지는 API로 조회 가능
-  [routePages.search]: undefined; // 검색 - 파라미터 없음
+  [routePages.search]:
+    | {
+        source?: string; // 검색 화면 진입 경로 (GA 로깅용) - 'explore' | 'channel_detail' 등
+      }
+    | undefined; // 검색 - source 선택, 파라미터 전체 생략 가능
   [routePages.channelSelection]: {
     selectedChannelIds: string[]; // 현재 선택된 채널 ID 목록
   }; // 채널 선택 - 바텀시트에서 전체 채널 선택 시 사용

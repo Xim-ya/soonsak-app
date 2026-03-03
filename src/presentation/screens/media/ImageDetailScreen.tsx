@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { TouchableOpacity, StatusBar } from 'react-native';
 import styled from '@emotion/native';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -8,6 +8,7 @@ import Gallery from 'react-native-awesome-gallery';
 import { ScreenRouteProp } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
+import { analyticsService } from '@/shared/analytics';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
@@ -32,6 +33,7 @@ function ImageDetailScreenComponent() {
 
   const { data: images } = useContentImages(contentId, contentType, backdropPath);
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const previousIndexRef = useRef(initialIndex);
 
   const imageUrls = useMemo(
     () =>
@@ -45,9 +47,22 @@ function ImageDetailScreenComponent() {
     navigation.goBack();
   }, [navigation]);
 
-  const handleIndexChange = useCallback((index: number) => {
-    setCurrentIndex(index);
-  }, []);
+  const handleIndexChange = useCallback(
+    (index: number) => {
+      const fromIndex = previousIndexRef.current;
+      // 인덱스가 변경되었을 때만 스와이프 이벤트 로깅
+      if (fromIndex !== index) {
+        analyticsService.imageDetailSwipe({
+          content_id: contentId,
+          from_index: fromIndex,
+          to_index: index,
+        });
+      }
+      previousIndexRef.current = index;
+      setCurrentIndex(index);
+    },
+    [contentId],
+  );
 
   const indexText = `${currentIndex + 1}/${images.length}`;
 
