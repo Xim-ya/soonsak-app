@@ -1,9 +1,11 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Platform, Linking } from 'react-native';
+import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as StoreReview from 'expo-store-review';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { openStoreReviewPage } from '@/shared/utils/storeUtils';
+import { appConfigApi } from '@/features/app-config/api/appConfigApi';
 import { Logger } from '@/shared/utils/logger';
 import { reviewFunnelApi } from '../api/reviewFunnelApi';
 import type { ReviewFunnelSessionDto, ReviewType, RecommendedContent } from '../types';
@@ -34,34 +36,6 @@ interface UseReviewFunnelReturn {
 }
 
 /**
- * 스토어 설정
- */
-const STORE_CONFIG = {
-  iosAppId: '6758769228',
-  androidPackageName: Constants.expoConfig?.android?.package ?? 'com.soonsak.app',
-} as const;
-
-/**
- * 스토어 리뷰 페이지 열기
- */
-const openStoreReviewPage = async (): Promise<void> => {
-  if (Platform.OS === 'ios') {
-    const iosUrl = `https://apps.apple.com/app/id${STORE_CONFIG.iosAppId}?action=write-review`;
-    await Linking.openURL(iosUrl);
-  } else {
-    // Android: market:// 먼저 시도, 실패 시 HTTPS 폴백
-    const marketUrl = `market://details?id=${STORE_CONFIG.androidPackageName}`;
-    const webUrl = `https://play.google.com/store/apps/details?id=${STORE_CONFIG.androidPackageName}`;
-
-    try {
-      await Linking.openURL(marketUrl);
-    } catch {
-      await Linking.openURL(webUrl);
-    }
-  }
-};
-
-/**
  * 리뷰 퍼널 로직 훅
  */
 export function useReviewFunnel(): UseReviewFunnelReturn {
@@ -76,9 +50,11 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
 
   // 세션 참조 (리렌더링 방지)
   const sessionRef = useRef<ReviewFunnelSessionDto | null>(null);
+  // 서버 스토어 URL 참조
+  const storeUrlRef = useRef<string | null>(null);
 
   /**
-   * 초기화: 세션 생성 + 진입 처리 + 콘텐츠 로드
+   * 초기화: 세션 생성 + 진입 처리 + 콘텐츠 로드 + 스토어 URL 조회
    */
   useEffect(() => {
     let isMounted = true;
@@ -96,15 +72,17 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
         if (!isMounted) return;
         sessionRef.current = session;
 
-        // 2. 병렬 처리: 진입 처리 + 시청기록 로드
+        // 2. 병렬 처리: 진입 처리 + 시청기록 로드 + 스토어 URL 조회
         const shouldMarkEntered = session.hasReviewed !== true;
-        const [, contents] = await Promise.all([
+        const [, contents, versionPolicy] = await Promise.all([
           shouldMarkEntered ? reviewFunnelApi.markAsEntered(session.id) : Promise.resolve(),
           reviewFunnelApi.getRandomWatchedContents(3),
+          appConfigApi.getVersionPolicy(),
         ]);
 
         if (!isMounted) return;
         setWatchedContents(contents);
+        storeUrlRef.current = versionPolicy?.storeUrl ?? null;
         setError(null);
       } catch (err) {
         if (!isMounted) return;
@@ -169,7 +147,7 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
       }
 
       // 스토어 URL로 이동 (fallback)
-      await openStoreReviewPage();
+      await openStoreReviewPage(storeUrlRef.current);
     } catch (err) {
       ReviewFunnelLogger.error('인앱 리뷰 요청 실패:', err);
     }
@@ -182,7 +160,7 @@ export function useReviewFunnel(): UseReviewFunnelReturn {
   const handleWriteReviewClick = useCallback(async () => {
     try {
       await markReviewCompleted('write_review');
-      await openStoreReviewPage();
+      await openStoreReviewPage(storeUrlRef.current);
     } catch (err) {
       ReviewFunnelLogger.error('스토어 리뷰 요청 실패:', err);
     }

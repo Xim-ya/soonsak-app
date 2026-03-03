@@ -48,16 +48,22 @@ const formatter = {
     if (num <= 1000) {
       return num.toString();
     } else if (num > 1000 && num < 10000) {
-      // 1000 이상 10000 미만: 1.4천 형태
+      // 1000 이상 10000 미만: 1.4천 형태 (소수점이 0이면 생략: 2.0천 -> 2천)
       const subString = strNum.substring(0, 2);
-      const result = subString.charAt(0) + '.' + subString.charAt(1);
-      return `${result}${isViewCount ? '천회' : '천'}`;
+      const suffix = isViewCount ? '천회' : '천';
+      if (subString.charAt(1) === '0') {
+        return `${subString.charAt(0)}${suffix}`;
+      }
+      return `${subString.charAt(0)}.${subString.charAt(1)}${suffix}`;
     } else if (num >= 10000) {
       if (strNum.length === 5) {
-        // 5자리 수 (10000~99999): 1.2만 형태
+        // 5자리 수 (10000~99999): 1.2만 형태 (소수점이 0이면 생략: 2.0만 -> 2만)
         const subString = strNum.substring(0, 2);
-        const result = subString.charAt(0) + '.' + subString.charAt(1);
-        return `${result}${isViewCount ? '만회' : '만'}`;
+        const suffix = isViewCount ? '만회' : '만';
+        if (subString.charAt(1) === '0') {
+          return `${subString.charAt(0)}${suffix}`;
+        }
+        return `${subString.charAt(0)}.${subString.charAt(1)}${suffix}`;
       } else {
         // 6자리 이상: 소숫점 없음, 32만 형태
         const result = strNum.substring(0, strNum.length - 4);

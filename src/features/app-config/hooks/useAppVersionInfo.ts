@@ -5,10 +5,10 @@
  */
 
 import { useEffect, useState, useCallback } from 'react';
-import { Linking, Platform } from 'react-native';
 import * as Application from 'expo-application';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
+import { openStoreUrl } from '@/shared/utils/storeUtils';
 import { VersionLogger } from '@/shared/utils/logger';
 
 /**
@@ -39,17 +39,9 @@ export function useAppVersionInfo(): UseAppVersionInfoReturn {
 
   const currentVersion = getAppVersion();
 
-  // 스토어 열기
+  // 스토어 열기 (서버 URL 우선, 없으면 플랫폼별 기본 URL)
   const openStore = useCallback(() => {
-    const url =
-      storeUrl ??
-      (Platform.OS === 'ios'
-        ? 'https://apps.apple.com/app/id6758769228'
-        : 'https://play.google.com/store/apps/details?id=com.soonsak.app');
-
-    Linking.openURL(url).catch((error) => {
-      VersionLogger.error('스토어 열기 실패:', error);
-    });
+    openStoreUrl(storeUrl);
   }, [storeUrl]);
 
   // 버전 정보 조회

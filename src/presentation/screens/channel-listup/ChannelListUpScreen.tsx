@@ -148,7 +148,7 @@ export default function ChannelListUpScreen(): React.ReactElement {
   // 초기 로딩
   if (isLoading) {
     return (
-      <BasePage useSafeArea>
+      <BasePage useSafeArea safeAreaBottom={false}>
         <BackButtonAppBar title="전체 채널" />
         <LoadingContainer>
           <ActivityIndicator color={colors.gray02} />
@@ -158,7 +158,7 @@ export default function ChannelListUpScreen(): React.ReactElement {
   }
 
   return (
-    <BasePage useSafeArea>
+    <BasePage useSafeArea safeAreaBottom={false}>
       <BackButtonAppBar title="전체 채널" />
       <FlatList
         data={channels}

@@ -92,6 +92,7 @@ function AdminActionModals({
         contentId={contentId}
         contentType={contentType}
         videoId={currentVideoId}
+        currentVideoStatus={currentVideoStatus}
       />
 
       {/* 메인 이미지(Backdrop) 선택 모달 */}

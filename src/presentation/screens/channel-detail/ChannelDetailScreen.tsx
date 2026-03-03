@@ -29,6 +29,23 @@ import HeartFilledSvg from '@assets/icons/heart_filled.svg';
 
 type ChannelDetailRouteParams = ScreenRouteProp<typeof routePages.channelDetail>;
 
+// 태블릿 레이아웃 상수
+const TABLET_MAX_WIDTH = 500;
+const isLargeScreen = AppSize.isLargeScreen();
+
+// FlatList 자체 스타일 (태블릿에서 가운데 정렬)
+const FLATLIST_STYLE = isLargeScreen
+  ? { alignSelf: 'center' as const, width: TABLET_MAX_WIDTH }
+  : undefined;
+
+const CONTENT_CONTAINER_STYLE = {
+  paddingHorizontal: 16,
+};
+
+const COLUMN_WRAPPER_STYLE = {
+  gap: 9,
+};
+
 /**
  * ChannelDetailScreen - 채널 상세 화면
  *
@@ -205,8 +222,9 @@ function ChannelDetailContent() {
         renderItem={renderItem}
         keyExtractor={keyExtractor}
         numColumns={viewMode === 'card' ? 3 : 1}
-        contentContainerStyle={{ paddingHorizontal: 16 }}
-        columnWrapperStyle={viewMode === 'card' ? { gap: 9 } : undefined}
+        style={FLATLIST_STYLE}
+        contentContainerStyle={CONTENT_CONTAINER_STYLE}
+        columnWrapperStyle={viewMode === 'card' ? COLUMN_WRAPPER_STYLE : undefined}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={renderHeader}
         ListFooterComponent={<Gap size={106} />}

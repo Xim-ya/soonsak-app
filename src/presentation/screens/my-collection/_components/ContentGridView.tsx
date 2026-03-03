@@ -4,6 +4,7 @@ import styled from '@emotion/native';
 import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { AppSize } from '@/shared/utils/appSize';
 import type { UserContentItem } from '../_types';
 import {
   MemoizedContentGridItem,
@@ -81,6 +82,15 @@ const ListHeaderSpacer = () => <HeaderSpacer />;
 /* 스타일 상수 (인라인 객체 재생성 방지) */
 const scrollViewStyle = { flex: 1 };
 
+// 태블릿 최대 컨테이너 너비
+const TABLET_MAX_WIDTH = 500;
+const isLargeScreen = AppSize.isLargeScreen();
+
+// FlatList 자체 스타일 (태블릿에서 가운데 정렬)
+const flatListStyle = isLargeScreen
+  ? { alignSelf: 'center' as const, width: TABLET_MAX_WIDTH }
+  : undefined;
+
 const columnWrapperStyle = {
   gap: GRID_COLUMN_GAP,
   paddingHorizontal: HORIZONTAL_PADDING,
@@ -141,6 +151,7 @@ function ContentGridView({
       renderItem={renderItem}
       keyExtractor={keyExtractor}
       numColumns={NUM_COLUMNS}
+      style={flatListStyle}
       columnWrapperStyle={columnWrapperStyle}
       contentContainerStyle={contentContainerStyle}
       showsVerticalScrollIndicator={false}

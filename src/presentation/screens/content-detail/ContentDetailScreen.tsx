@@ -196,6 +196,7 @@ function ContentDetailContent({
     <>
       <BasePage
         useSafeArea={false}
+        safeAreaBottom={false}
         touchableWithoutFeedback={false}
         automaticallyAdjustKeyboardInsets={false}
         dismissKeyboardOnTap={false}
@@ -218,7 +219,7 @@ function ContentDetailContent({
           {...(title && { title })}
           onMorePress={adminAction.handleMorePress}
         />
-        <TabsContainer paddingTop={insets.top} paddingBottom={Math.max(insets.bottom, 16)}>
+        <TabsContainer paddingTop={insets.top}>
           <Tabs.Container
             renderHeader={() => <Header />}
             renderTabBar={(props) => <TabBar {...props} />}
@@ -298,11 +299,8 @@ const BackgroundContainer = styled(Animated.View)<{ safeAreaHeight: number }>(
   }),
 );
 
-const TabsContainer = styled.View<{ paddingTop: number; paddingBottom: number }>(
-  ({ paddingTop, paddingBottom }) => ({
-    flex: 1,
-    backgroundColor: colors.black,
-    paddingTop,
-    paddingBottom,
-  }),
-);
+const TabsContainer = styled.View<{ paddingTop: number }>(({ paddingTop }) => ({
+  flex: 1,
+  backgroundColor: colors.black,
+  paddingTop,
+}));
