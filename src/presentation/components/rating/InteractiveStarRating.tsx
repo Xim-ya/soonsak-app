@@ -5,6 +5,9 @@
  * - tap: 별을 탭하여 선택 (필터용)
  * - drag: 드래그/터치로 0.5 단위 선택 (평점 등록용)
  *
+ * react-native-gesture-handler를 사용하여 ScrollView 내부에서도
+ * 드래그 모드가 정상 작동합니다.
+ *
  * @example
  * // 필터용 (1~5 정수, 탭)
  * <InteractiveStarRating
@@ -25,7 +28,9 @@
  */
 
 import React, { useCallback, useRef, useState } from 'react';
-import { View, LayoutChangeEvent, GestureResponderEvent } from 'react-native';
+import { View, LayoutChangeEvent } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { runOnJS } from 'react-native-reanimated';
 import styled from '@emotion/native';
 import StarBlankSvg from '@assets/icons/star_blank.svg';
 import StarFilledSvg from '@assets/icons/star_filled.svg';
@@ -72,14 +77,15 @@ function InteractiveStarRating({
 
   // 터치 위치로 별점 계산
   const calculateRatingFromPosition = useCallback(
-    (pageX: number): number => {
-      if (containerLayout.width === 0) return 0;
+    (absoluteX: number): number => {
+      // 레이아웃 미측정 시 최소값 반환 (도메인 밖 값 방지)
+      if (containerLayout.width === 0) return step === 0.5 ? 0.5 : 1;
 
-      const relativeX = pageX - containerLayout.x;
+      const relativeX = absoluteX - containerLayout.x;
       const starWidth = size + gap;
       const totalWidth = starWidth * TOTAL_STARS - gap;
 
-      if (relativeX <= 0) return 0;
+      if (relativeX <= 0) return step === 0.5 ? 0.5 : 1;
       if (relativeX >= totalWidth) return 5;
 
       const starIndex = Math.floor(relativeX / starWidth);
@@ -113,25 +119,38 @@ function InteractiveStarRating({
     [mode, value, onChange],
   );
 
-  // 드래그 모드: 터치 이동
-  const handleResponderMove = useCallback(
-    (event: GestureResponderEvent) => {
-      if (mode !== 'drag') return;
-      const rating = calculateRatingFromPosition(event.nativeEvent.pageX);
+  // 드래그 중 별점 업데이트 (JS 스레드에서 실행)
+  const handleDragUpdate = useCallback(
+    (absoluteX: number) => {
+      const rating = calculateRatingFromPosition(absoluteX);
       onChange(rating);
     },
-    [mode, calculateRatingFromPosition, onChange],
+    [calculateRatingFromPosition, onChange],
   );
 
-  // 드래그 모드: 터치 종료
-  const handleResponderRelease = useCallback(
-    (event: GestureResponderEvent) => {
-      if (mode !== 'drag') return;
-      const rating = calculateRatingFromPosition(event.nativeEvent.pageX);
+  // 드래그 종료 처리 (JS 스레드에서 실행)
+  const handleDragEndCallback = useCallback(
+    (absoluteX: number) => {
+      const rating = calculateRatingFromPosition(absoluteX);
       onDragEnd?.(rating);
     },
-    [mode, calculateRatingFromPosition, onDragEnd],
+    [calculateRatingFromPosition, onDragEnd],
   );
+
+  // 드래그 제스처 (react-native-gesture-handler 사용)
+  const panGesture = Gesture.Pan()
+    .onBegin((event) => {
+      if (mode !== 'drag') return;
+      runOnJS(handleDragUpdate)(event.absoluteX);
+    })
+    .onUpdate((event) => {
+      if (mode !== 'drag') return;
+      runOnJS(handleDragUpdate)(event.absoluteX);
+    })
+    .onEnd((event) => {
+      if (mode !== 'drag') return;
+      runOnJS(handleDragEndCallback)(event.absoluteX);
+    });
 
   // 별 렌더링
   const renderStar = (index: number) => {
@@ -155,17 +174,21 @@ function InteractiveStarRating({
     return <StarIcon key={starValue} width={size} height={size} />;
   };
 
-  const dragResponderProps = {
-    onStartShouldSetResponder: () => true,
-    onMoveShouldSetResponder: () => true,
-    onResponderMove: handleResponderMove,
-    onResponderRelease: handleResponderRelease,
-  };
-
-  const containerProps = mode === 'drag' ? dragResponderProps : {};
+  // 드래그 모드일 때 GestureDetector로 감싸기
+  if (mode === 'drag') {
+    return (
+      <GestureDetector gesture={panGesture}>
+        <Animated.View>
+          <Container ref={containerRef} onLayout={handleLayout} gap={gap}>
+            {Array.from({ length: TOTAL_STARS }, (_, index) => renderStar(index))}
+          </Container>
+        </Animated.View>
+      </GestureDetector>
+    );
+  }
 
   return (
-    <Container ref={containerRef} onLayout={handleLayout} gap={gap} {...containerProps}>
+    <Container ref={containerRef} onLayout={handleLayout} gap={gap}>
       {Array.from({ length: TOTAL_STARS }, (_, index) => renderStar(index))}
     </Container>
   );

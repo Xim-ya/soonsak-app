@@ -17,7 +17,7 @@ import { isFilterActive } from '@/shared/types/filter/contentFilter';
 const GRID_UNIT_WIDTH = 256;
 const CARD_HEIGHT = 344;
 const CARD_MARGIN = 10;
-const BUFFER_CELLS = 2; // 뷰포트 밖 버퍼 셀 수
+const BUFFER_CELLS = 1; // 뷰포트 밖 버퍼 셀 수 (메모리 최적화)
 const BATCH_SIZE = 20; // 한 번에 로드할 콘텐츠 수
 export const ZIGZAG_OFFSET = 192; // 지그재그 오프셋 (짝수 인덱스 셀에 적용)
 

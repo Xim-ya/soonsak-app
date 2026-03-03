@@ -10,7 +10,16 @@
  * </ExploreProvider>
  */
 
-import { createContext, useContext, ReactNode, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  ReactNode,
+  useCallback,
+  useState,
+  useEffect,
+  useRef,
+} from 'react';
+import { AppState, AppStateStatus } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
@@ -26,6 +35,9 @@ type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 /** Explore Context 타입 */
 interface ExploreContextType {
+  // 탐색 시드 (앱 진입 시 생성, 백그라운드 복귀 시 갱신)
+  readonly exploreSeed: number;
+
   // 필터 관련 상태
   readonly filter: ContentFilter;
   readonly isVisible: boolean;
@@ -73,6 +85,22 @@ export function ExploreProvider({ children }: ExploreProviderProps) {
   const navigation = useNavigation<NavigationProp>();
   const gradientOpacity = useSharedValue(0);
 
+  // 탐색 시드: 앱 진입 시 생성, 백그라운드 복귀 시 갱신 (전체 탭 랜덤 정렬용)
+  const [exploreSeed, setExploreSeed] = useState(() => Math.random());
+  const appStateRef = useRef(AppState.currentState);
+
+  // 앱이 백그라운드에서 포그라운드로 돌아올 때 새로운 시드 생성
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (nextAppState: AppStateStatus) => {
+      if (appStateRef.current.match(/inactive|background/) && nextAppState === 'active') {
+        setExploreSeed(Math.random());
+      }
+      appStateRef.current = nextAppState;
+    });
+
+    return () => subscription.remove();
+  }, []);
+
   // 필터 시트 관련 상태 및 액션
   const {
     filter,
@@ -113,6 +141,9 @@ export function ExploreProvider({ children }: ExploreProviderProps) {
   );
 
   const contextValue: ExploreContextType = {
+    // 탐색 시드
+    exploreSeed,
+
     // 필터 관련 상태
     filter,
     isVisible,

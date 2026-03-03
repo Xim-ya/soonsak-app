@@ -215,7 +215,7 @@ function CommentsBottomSheet({ visible, onClose }: CommentsBottomSheetProps): Re
           ) : (
             <FlatList
               data={comments}
-              renderItem={({ item }) => <CommentItemView comment={item} />}
+              renderItem={({ item }) => <CommentItemView comment={item} showReplyCount={false} />}
               keyExtractor={(item) => item.id}
               ItemSeparatorComponent={ItemSeparator}
               contentContainerStyle={{

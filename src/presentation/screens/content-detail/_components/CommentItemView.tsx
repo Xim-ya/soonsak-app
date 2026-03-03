@@ -5,6 +5,7 @@ import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { CommentModel } from '../_types/commentModel.cd';
+import ThumbFilledIcon from '@assets/icons/thumb_filled.svg';
 
 interface CommentItemViewProps {
   /** 댓글 데이터 */
@@ -56,7 +57,12 @@ const CommentItemView = memo(function CommentItemView({
         <CommentText numberOfLines={maxLines}>{comment.content}</CommentText>
         <Gap size={8} />
         <MetricsRow>
-          {comment.likeCountText && <LikeCount>👍 {comment.likeCountText}</LikeCount>}
+          {comment.likeCountText && (
+            <LikeCount>
+              <ThumbFilledIcon width={16} height={16} color={colors.gray02} />
+              <LikeCountText>{comment.likeCountText}</LikeCountText>
+            </LikeCount>
+          )}
           {comment.isHearted && <HeartedBadge>❤️</HeartedBadge>}
           {showReplyCount && comment.replyCount > 0 && (
             <ReplyCount>답글 {comment.replyCount}개</ReplyCount>
@@ -109,9 +115,15 @@ const MetricsRow = styled.View({
   alignItems: 'center',
 });
 
-const LikeCount = styled.Text({
+const LikeCount = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+});
+
+const LikeCountText = styled.Text({
   ...textStyles.alert2,
   color: colors.gray02,
+  marginLeft: 3,
 });
 
 const ReplyCount = styled.Text({

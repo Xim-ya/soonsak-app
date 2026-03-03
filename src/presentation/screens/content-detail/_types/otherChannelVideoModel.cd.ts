@@ -21,6 +21,8 @@ export interface OtherChannelVideoModel {
   readonly contentId: number;
   /** 콘텐츠 타입 (movie, tv 등) */
   readonly contentType: ContentType | undefined;
+  /** 런타임 (초 단위) */
+  readonly runtime?: number;
 }
 
 export namespace OtherChannelVideoModel {
@@ -37,6 +39,7 @@ export namespace OtherChannelVideoModel {
       channelId: dto.channelId ?? '',
       contentId: dto.contentId,
       contentType: dto.contentType,
+      runtime: dto.runtime,
     };
   }
 

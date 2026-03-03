@@ -50,13 +50,18 @@ interface HeaderBackgroundProps {
 export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) => {
   const { id, type } = useContentDetailRoute();
   const { data: contentInfo } = useContentDetail(Number(id), type);
-  const { primaryVideo, watchProgress, preloadedBackdropPath, preloadedWatchProgress } =
-    useContentVideos();
+  const {
+    primaryVideo,
+    watchProgress,
+    preloadedBackdropPath,
+    preloadedWatchProgress,
+    switchedThumbnailUrl,
+  } = useContentVideos();
 
   // 시청 진행률: API 응답 우선, 없으면 프리로드 데이터 사용
   const effectiveWatchProgress = watchProgress ?? preloadedWatchProgress;
 
-  const { toggleImages, opacityValues } = useImageTransition();
+  const { toggleImages, switchToSecondary, opacityValues } = useImageTransition();
   const { playVideo } = usePlayVideo();
 
   // YouTube 데이터 가져오기 - primaryVideo가 있을 때만 요청
@@ -77,7 +82,16 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const youtubeOpacity = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
-    if (!youtubeLoading && videoInfo?.thumbnails?.high) {
+    // 전환된 썸네일이 있는 경우: opacity 리셋 후 fade-in (1→1 방지)
+    if (switchedThumbnailUrl) {
+      youtubeOpacity.setValue(0);
+      RNAnimated.timing(youtubeOpacity, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    } else if (!youtubeLoading && videoInfo?.thumbnails?.high) {
+      // YouTube 썸네일 로드 완료 시 fade-in
       RNAnimated.timing(youtubeOpacity, {
         toValue: 1,
         duration: 600,
@@ -86,7 +100,16 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
     } else if (youtubeLoading) {
       youtubeOpacity.setValue(0);
     }
-  }, [youtubeLoading, videoInfo?.thumbnails?.high, youtubeOpacity]);
+  }, [youtubeLoading, videoInfo?.thumbnails?.high, youtubeOpacity, switchedThumbnailUrl]);
+
+  // 전환된 썸네일이 있으면 secondary 상태로 전환 (YouTube/썸네일이 배경에 표시)
+  // switchToSecondary를 의존성에서 제외하여 switchedThumbnailUrl 변경 시에만 호출
+  useEffect(() => {
+    if (switchedThumbnailUrl) {
+      switchToSecondary();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [switchedThumbnailUrl]);
 
   // 위로 당길 때 백드롭 이미지 scale 증가
   const backdropAnimatedStyle = useAnimatedStyle(() => {
@@ -111,13 +134,20 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const imageUrls = useMemo(() => {
     // API 응답 우선, 없으면 프리로드된 경로 사용
     const backdropPath = contentInfo?.backdropPath ?? preloadedBackdropPath;
+    // 다른 영상 클릭 시 해당 썸네일 우선 사용
+    const youtubeUrl = switchedThumbnailUrl || videoInfo?.thumbnails?.high || '';
     return {
-      youtube: videoInfo?.thumbnails?.high || '',
+      youtube: youtubeUrl,
       tmdb: backdropPath
         ? formatter.prefixTmdbImgUrl(backdropPath, { size: TmdbImageSize.w780 })
         : '',
     };
-  }, [contentInfo?.backdropPath, preloadedBackdropPath, videoInfo?.thumbnails?.high]);
+  }, [
+    contentInfo?.backdropPath,
+    preloadedBackdropPath,
+    videoInfo?.thumbnails?.high,
+    switchedThumbnailUrl,
+  ]);
 
   // 콘텐츠 제목
   const contentTitle = contentInfo?.title ?? '';
@@ -203,7 +233,7 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
               }}
             />
           )}
-          {/* YouTube 배경 이미지 */}
+          {/* YouTube/전환된 썸네일 배경 이미지 */}
           {imageUrls.youtube && (
             <RNAnimatedBackgroundImage
               source={{ uri: imageUrls.youtube }}

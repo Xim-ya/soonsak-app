@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Image } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { contentApi } from '@/features/content/api/contentApi';
@@ -9,10 +9,13 @@ import { appConfigManager } from '@/features/app-config';
 /** 배너 콘텐츠 프리로드 개수 */
 const BANNER_PRELOAD_COUNT = 5;
 
-/** 프리로드 최대 대기 시간 (ms) */
-const PRELOAD_TIMEOUT_MS = 2000;
+/** Lottie 스플래시 애니메이션 시간 (ms) - 2.5초 */
+const LOTTIE_SPLASH_DURATION_MS = 2500;
 
-// 스플래시 화면 자동 숨김 방지
+/** 프리로드 최대 대기 시간 (ms) - 10초, 이후 강제 완료 */
+const PRELOAD_GUARD_TIMEOUT_MS = 10000;
+
+// 네이티브 스플래시 화면 자동 숨김 방지
 SplashScreen.preventAutoHideAsync().catch(() => {
   // 이미 숨겨진 경우 무시
 });
@@ -32,13 +35,34 @@ export function getPreloadedBannerContents(): ContentDto[] | null {
 }
 
 /**
- * 앱 시작 시 배너 이미지 프리로드 (최대 2초 대기)
+ * 앱 시작 시 Lottie 스플래시 + 배너 이미지 프리로드 (병렬 실행)
+ *
+ * 1. 네이티브 스플래시 즉시 숨김
+ * 2. Lottie 2.5초 재생 + 프리로드 병렬 실행
+ * 3. 둘 다 완료되면 isReady = true
  */
 export function useAppPreload() {
+  const [showLottieSplash, setShowLottieSplash] = useState(true);
   const [isReady, setIsReady] = useState(false);
-  const isReadyRef = useRef(false);
+  const preloadCompleteRef = useRef(false);
+  const lottieCompleteRef = useRef(false);
 
+  // 네이티브 스플래시 즉시 숨기기 (Lottie로 대체)
   useEffect(() => {
+    SplashScreen.hideAsync();
+  }, []);
+
+  // 프리로드 + Lottie 타이머 병렬 실행
+  useEffect(() => {
+    // 프리로드 완료 체크 및 상태 업데이트
+    const checkAndFinish = () => {
+      if (preloadCompleteRef.current && lottieCompleteRef.current) {
+        setShowLottieSplash(false);
+        setIsReady(true);
+      }
+    };
+
+    // 프리로드 로직
     async function preloadResources() {
       try {
         // appConfigManager 초기화 (버전 정책, 점검 모드 등)
@@ -70,29 +94,36 @@ export function useAppPreload() {
       } catch (error) {
         // 프리로드 실패해도 앱은 정상 실행
         console.warn('[Preload] 프리로드 중 오류 (무시됨):', error);
+      } finally {
+        preloadCompleteRef.current = true;
+        checkAndFinish();
       }
     }
 
-    // 타임아웃과 프리로드 경쟁
-    const timeoutPromise = new Promise<void>((resolve) => {
-      setTimeout(() => {
-        console.log('[Preload] 타임아웃 - 앱 시작');
-        resolve();
-      }, PRELOAD_TIMEOUT_MS);
-    });
+    // Lottie 타이머 (2.5초)
+    const lottieTimer = setTimeout(() => {
+      console.log('[Preload] Lottie 애니메이션 완료');
+      lottieCompleteRef.current = true;
+      checkAndFinish();
+    }, LOTTIE_SPLASH_DURATION_MS);
 
-    Promise.race([preloadResources(), timeoutPromise]).finally(() => {
-      isReadyRef.current = true;
-      setIsReady(true);
-    });
+    // 프리로드 guard timeout (무한 대기 방지)
+    const guardTimer = setTimeout(() => {
+      if (!preloadCompleteRef.current) {
+        console.warn('[Preload] 프리로드 타임아웃 - 강제 완료 처리');
+        preloadCompleteRef.current = true;
+        checkAndFinish();
+      }
+    }, PRELOAD_GUARD_TIMEOUT_MS);
+
+    // 프리로드 시작
+    preloadResources();
+
+    return () => {
+      clearTimeout(lottieTimer);
+      clearTimeout(guardTimer);
+    };
   }, []);
 
-  // 스플래시 숨기기 콜백 (안정적인 참조 - deps 없음)
-  const hideSplash = useCallback(async () => {
-    if (isReadyRef.current) {
-      await SplashScreen.hideAsync();
-    }
-  }, []);
-
-  return { isReady, hideSplash };
+  return { isReady, showLottieSplash };
 }

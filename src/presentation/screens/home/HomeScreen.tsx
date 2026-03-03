@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { View, TouchableOpacity, Text } from 'react-native';
+import { View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
@@ -37,11 +37,6 @@ export default function HomeScreen() {
     handleTargetLayout,
   } = useScrollLazyLoad();
 
-  // 리뷰 퍼널 테스트 버튼 핸들러
-  const handleReviewFunnelTest = useCallback(() => {
-    navigation.navigate(routePages.reviewFunnel);
-  }, [navigation]);
-
   // 시청기록 아이템 클릭 핸들러
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
@@ -77,12 +72,6 @@ export default function HomeScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Header scrollY={scrollY} />
-        {/* TODO: 테스트용 리뷰 퍼널 버튼 - 배포 전 제거 */}
-        <TestButtonContainer>
-          <TestButton onPress={handleReviewFunnelTest} activeOpacity={0.8}>
-            <TestButtonText>리뷰 퍼널 테스트</TestButtonText>
-          </TestButton>
-        </TestButtonContainer>
         <WatchHistorySectionView
           title="시청 중인 콘텐츠"
           onItemPress={handleWatchHistoryItemPress}
@@ -104,23 +93,4 @@ export default function HomeScreen() {
 const Container = styled.View({
   backgroundColor: colors.black,
   flex: 1,
-});
-
-// TODO: 테스트용 - 배포 전 제거
-const TestButtonContainer = styled.View({
-  paddingHorizontal: 16,
-  paddingVertical: 12,
-});
-
-const TestButton = styled.TouchableOpacity({
-  backgroundColor: colors.main,
-  paddingVertical: 14,
-  borderRadius: 10,
-  alignItems: 'center',
-});
-
-const TestButtonText = styled.Text({
-  color: colors.black,
-  fontSize: 15,
-  fontWeight: '700',
 });

@@ -24,6 +24,19 @@ export function useImageTransition() {
     setShowSecondary(!showSecondary);
   }, [fadeAnim, showSecondary]);
 
+  // 강제로 secondary 상태로 전환 (다른 영상 클릭 시 사용)
+  const switchToSecondary = useCallback(() => {
+    if (!showSecondary) {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        easing: Easing.out(Easing.ease),
+        useNativeDriver: true,
+      }).start();
+      setShowSecondary(true);
+    }
+  }, [fadeAnim, showSecondary]);
+
   // opacity 값들 메모이제이션
   const opacityValues = useMemo(
     () => ({
@@ -42,6 +55,7 @@ export function useImageTransition() {
   return {
     showSecondary,
     toggleImages,
+    switchToSecondary,
     opacityValues,
   };
 }
