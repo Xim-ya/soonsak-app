@@ -7,7 +7,7 @@
  * - 기존 평점이 있으면 표시
  */
 
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState, useRef } from 'react';
 import { Modal } from 'react-native';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -20,6 +20,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -45,6 +46,8 @@ interface RatingBottomSheetProps {
   readonly onSubmitRating: (rating: number) => void;
   /** 닫기 콜백 */
   readonly onClose: () => void;
+  /** 화면 이름 (GA 로깅용) */
+  readonly screenName?: string | undefined;
 }
 
 function RatingBottomSheet({
@@ -53,6 +56,7 @@ function RatingBottomSheet({
   currentRating,
   onSubmitRating,
   onClose,
+  screenName,
 }: RatingBottomSheetProps) {
   // 시트 높이 계산
   const sheetHeight =
@@ -66,9 +70,17 @@ function RatingBottomSheet({
   const overlayOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(sheetHeight);
 
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
+
   // visible 상태 변경 시 초기화
   useEffect(() => {
     if (visible) {
+      actionTakenRef.current = false;
+      analyticsService.bottomSheetOpen({
+        sheet_type: 'rating',
+        screen_name: screenName ?? 'unknown',
+      });
       setSelectedRating(currentRating ?? 0);
       overlayOpacity.value = withTiming(1, { duration: 200 });
       sheetTranslateY.value = withTiming(0, {
@@ -79,10 +91,15 @@ function RatingBottomSheet({
       overlayOpacity.value = 0;
       sheetTranslateY.value = sheetHeight;
     }
-  }, [visible, currentRating, overlayOpacity, sheetTranslateY, sheetHeight]);
+  }, [visible, currentRating, overlayOpacity, sheetTranslateY, sheetHeight, screenName]);
 
   // 닫기 애니메이션
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'rating',
+      screen_name: screenName ?? 'unknown',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       sheetHeight,
@@ -91,11 +108,12 @@ function RatingBottomSheet({
         runOnJS(onClose)();
       },
     );
-  }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight]);
+  }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight, screenName]);
 
   // 평점 제출 핸들러
   const handleSubmitRating = useCallback(
     (rating: number) => {
+      actionTakenRef.current = true;
       onSubmitRating(rating);
       handleClose();
     },

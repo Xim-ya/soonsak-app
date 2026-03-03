@@ -13,6 +13,8 @@ import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { analyticsService } from '@/shared/analytics';
+import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 
 /**
  *  채널 정보를 보여주는 뷰
@@ -20,6 +22,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 function ChannelInfoView() {
   const { primaryVideo } = useContentVideos();
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { id: contentId } = useContentDetailRoute();
 
   // 현재 선택된 대표 비디오의 채널 ID를 사용
   const channelId = primaryVideo?.channelId;
@@ -28,13 +31,20 @@ function ChannelInfoView() {
   const handlePress = useCallback(() => {
     if (isLoading || error || !channelId || !channel) return;
 
+    // GA4 content_detail_channel_click 이벤트 로깅
+    analyticsService.contentDetailChannelClick({
+      channel_id: channelId,
+      channel_name: channel.name,
+      content_id: Number(contentId),
+    });
+
     navigation.navigate(routePages.channelDetail, {
       channelId: channelId,
       channelName: channel.name,
       channelLogoUrl: channel.images?.avatar,
       subscriberCount: channel.subscriberCount,
     });
-  }, [isLoading, error, channelId, channel, navigation]);
+  }, [isLoading, error, channelId, channel, navigation, contentId]);
 
   // 채널 ID가 없거나 에러 시 빈 컴포넌트 반환
   if (!channelId || error) {

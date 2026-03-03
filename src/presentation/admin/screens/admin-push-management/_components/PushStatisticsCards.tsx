@@ -2,7 +2,7 @@
  * PushStatisticsCards - 푸시 통계 카드
  */
 
-import { View, ActivityIndicator } from 'react-native';
+import { ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';

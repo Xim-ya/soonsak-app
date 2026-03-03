@@ -34,6 +34,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { AppSize } from '@/shared/utils/appSize';
+import { analyticsService } from '@/shared/analytics';
 import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import {
@@ -355,6 +356,12 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
       );
     }
 
+    // quick_explore_focus_animation_start 이벤트 로깅
+    analyticsService.quickExploreFocusAnimationStart({
+      content_id: target.content.id,
+      content_type: target.content.type,
+    });
+
     // 이전 포커스 타이머 정리
     if (focusTimerRef.current) {
       clearTimeout(focusTimerRef.current);
@@ -405,6 +412,13 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
 
     // 빠르게 포커스 해제
     focusTimerRef.current = setTimeout(() => {
+      // quick_explore_focus_animation_end 이벤트 로깅
+      analyticsService.quickExploreFocusAnimationEnd({
+        content_id: target.content.id,
+        content_type: target.content.type,
+        animation_completed: true,
+      });
+
       setFocusedCellKey(null);
       setIsFocusMode(false);
       focusTimerRef.current = null;

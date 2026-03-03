@@ -7,6 +7,7 @@ import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { SectionContentListView } from './SectionContentListView';
 import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { TabRoutes } from '@/shared/navigation/constant/tabConfigs';
 import { useRecentContents } from '../_hooks/useRecentContents';
 
@@ -23,11 +24,20 @@ export function RecentContentView() {
     useRecentContents();
 
   const handleContentTapped = useCallback(
-    (content: BaseContentModel) => {
+    (content: BaseContentModel, position: number) => {
+      // 섹션 콘텐츠 클릭 이벤트 로깅
+      analyticsService.homeSectionClick({
+        section_type: 'recent',
+        content_id: content.id,
+        content_type: content.type,
+        position,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: content.id,
         title: content.title,
         type: content.type,
+        source: ContentSource.HOME_RECENT,
       });
     },
     [navigation],
@@ -40,6 +50,12 @@ export function RecentContentView() {
   }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const handleTitlePress = useCallback(() => {
+    // 더보기 클릭 이벤트 로깅
+    analyticsService.homeSectionMoreClick({
+      section_type: 'recent',
+      destination: 'explore_latest',
+    });
+
     navigation.navigate(TabRoutes.Explore, { initialTab: 'latest' });
   }, [navigation]);
 

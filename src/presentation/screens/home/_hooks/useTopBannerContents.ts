@@ -7,6 +7,7 @@ import { TopContentModel, fromContentDto, isValidTopContent } from '../_types/To
 import { contentApi } from '@/features/content/api/contentApi';
 import { getPreloadedBannerContents } from '@/shared/hooks/useAppPreload';
 import { formatter } from '@/shared/utils/formatter';
+import { analyticsService, type BannerSwipeType } from '@/shared/analytics';
 
 /** 배너에 표시할 콘텐츠 수 */
 const BANNER_CONTENT_LIMIT = 5;
@@ -69,20 +70,21 @@ export function useTopBannerContents() {
     refetch();
   }, [refetch]);
 
-  const onPressPagination = useCallback(
-    (index: number) => {
-      ref.current?.scrollTo({
-        count: index - progress.value,
-        animated: true,
-      });
-    },
-    [progress],
-  );
+  // 현재 인덱스 추적 (progress.value 직접 접근 방지)
+  const currentIndexRef = useRef<number>(0);
+
+  const onPressPagination = useCallback((index: number) => {
+    ref.current?.scrollTo({
+      count: index - currentIndexRef.current,
+      animated: true,
+    });
+  }, []);
 
   // 페이지 변경 시 opacity 애니메이션 처리
   const onProgressChange = useCallback(
     (_offsetProgress: number, absoluteProgress: number) => {
       progress.value = absoluteProgress;
+      currentIndexRef.current = Math.round(absoluteProgress) % (headerInfo.length || 1);
 
       // 중간 지점에서 아이템 변경 (Flutter와 동일한 로직)
       const hasItems = headerInfo && headerInfo.length > 0;
@@ -123,15 +125,69 @@ export function useTopBannerContents() {
     [headerInfo, currentItem, progress, infoOpacity],
   );
 
+  // 이전 인덱스 참조 (스와이프 로깅용)
+  const prevIndexRef = useRef<number>(0);
+  // 스와이프 타입 (수동/자동)
+  const swipeTypeRef = useRef<BannerSwipeType>('auto');
+  // 배너 노출 시간 추적
+  const bannerViewStartTimeRef = useRef<number>(Date.now());
+  // 이미 로깅한 배너 인덱스 추적 (세션당 1회만 viewed 로깅)
+  const viewedBannersRef = useRef<Set<number>>(new Set());
+
   // 스냅 완료 시 호출되는 함수
-  const onSnapToItem = (index: number) => {
-    if (headerInfo && headerInfo.length > 0 && index >= 0 && index < headerInfo.length) {
-      const item = headerInfo[index];
-      if (item) {
-        setCurrentItem(item);
+  const onSnapToItem = useCallback(
+    (index: number) => {
+      if (headerInfo && headerInfo.length > 0 && index >= 0 && index < headerInfo.length) {
+        const item = headerInfo[index];
+        const fromIndex = prevIndexRef.current;
+        const isManualSwipe = swipeTypeRef.current === 'manual';
+
+        // 수동 스와이프일 때만 로깅 (자동 스와이프는 로깅하지 않음)
+        if (fromIndex !== index && isManualSwipe) {
+          const prevItem = headerInfo[fromIndex];
+
+          // 이전 배너 노출 이벤트 로깅 (세션당 배너별 1회만)
+          if (prevItem && !viewedBannersRef.current.has(fromIndex)) {
+            const viewDuration = Date.now() - bannerViewStartTimeRef.current;
+            analyticsService.homeBannerViewed({
+              content_id: prevItem.id,
+              content_type: prevItem.type,
+              banner_index: fromIndex,
+              view_duration_ms: viewDuration,
+            });
+            viewedBannersRef.current.add(fromIndex);
+          }
+
+          // 배너 스와이프 이벤트 로깅
+          analyticsService.homeBannerSwipe({
+            from_index: fromIndex,
+            to_index: index,
+            swipe_type: 'manual',
+          });
+        }
+
+        // 새 배너 노출 시작 시간 기록
+        bannerViewStartTimeRef.current = Date.now();
+        // 스와이프 타입 초기화 (다음은 auto로 가정)
+        swipeTypeRef.current = 'auto';
+        prevIndexRef.current = index;
+
+        if (item) {
+          setCurrentItem(item);
+        }
       }
-    }
-  };
+    },
+    [headerInfo],
+  );
+
+  // 수동 스와이프 감지 (pagination 클릭 시)
+  const onPressPaginationWithTracking = useCallback(
+    (index: number) => {
+      swipeTypeRef.current = 'manual';
+      onPressPagination(index);
+    },
+    [onPressPagination],
+  );
 
   // 초기 아이템 설정
   useEffect(() => {
@@ -157,6 +213,11 @@ export function useTopBannerContents() {
     });
   }, [headerInfo]);
 
+  // 사용자 제스처로 인한 수동 스와이프 감지
+  const onGestureStart = useCallback(() => {
+    swipeTypeRef.current = 'manual';
+  }, []);
+
   return {
     // Data
     headerInfo,
@@ -170,9 +231,10 @@ export function useTopBannerContents() {
     infoOpacity,
 
     // Handlers
-    onPressPagination,
+    onPressPagination: onPressPaginationWithTracking,
     onProgressChange,
     onSnapToItem,
+    onGestureStart,
     handleRetry,
   };
 }

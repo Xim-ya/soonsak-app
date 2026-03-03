@@ -16,6 +16,7 @@ import { authApi } from '@/features/auth/api/authApi';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useDialog } from '@/presentation/components/dialog';
+import { analyticsService } from '@/shared/analytics';
 
 // 외부 URL 상수
 const FEEDBACK_URL = 'mailto:support@soonsak.app';
@@ -67,6 +68,11 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
 
   // 알림 설정 변경 핸들러
   const handleNotificationToggle = useCallback((value: boolean) => {
+    // 알림 토글 이벤트 로깅
+    analyticsService.settingsNotificationToggle({
+      enabled: value,
+    });
+
     setIsNotificationEnabled(value);
     // TODO: 알림 설정 저장 로직 구현
   }, []);
@@ -91,6 +97,10 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   const handleLogout = useCallback(async () => {
     try {
       await signOut();
+
+      // logout 이벤트 로깅
+      analyticsService.logout();
+
       resetToLoginScreen();
     } catch {
       await showDialog({
@@ -121,6 +131,10 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     setIsWithdrawing(true);
     try {
       await authApi.withdrawUser();
+
+      // account_delete 이벤트 로깅
+      analyticsService.accountDelete();
+
       resetToLoginScreen();
     } catch {
       await showDialog({
@@ -147,20 +161,23 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   }, [handleWithdraw, showConfirmDialog]);
 
   // 외부 URL 열기 함수들
-  const openFeedbackUrl = useCallback(
-    () => openExternalUrl(FEEDBACK_URL, '메일 앱을 열 수 없습니다.'),
-    [openExternalUrl],
-  );
+  const openFeedbackUrl = useCallback(() => {
+    // 피드백 클릭 이벤트 로깅
+    analyticsService.settingsFeedbackClick();
+    return openExternalUrl(FEEDBACK_URL, '메일 앱을 열 수 없습니다.');
+  }, [openExternalUrl]);
 
-  const openPrivacyUrl = useCallback(
-    () => openExternalUrl(PRIVACY_URL, '페이지를 열 수 없습니다.'),
-    [openExternalUrl],
-  );
+  const openPrivacyUrl = useCallback(() => {
+    // 개인정보 클릭 이벤트 로깅
+    analyticsService.settingsPrivacyClick();
+    return openExternalUrl(PRIVACY_URL, '페이지를 열 수 없습니다.');
+  }, [openExternalUrl]);
 
-  const openAppStoreUrl = useCallback(
-    () => openExternalUrl(APP_STORE_URL, '스토어를 열 수 없습니다.'),
-    [openExternalUrl],
-  );
+  const openAppStoreUrl = useCallback(() => {
+    // 앱 평가 클릭 이벤트 로깅
+    analyticsService.settingsRateAppClick();
+    return openExternalUrl(APP_STORE_URL, '스토어를 열 수 없습니다.');
+  }, [openExternalUrl]);
 
   // 관리자 화면 네비게이션
   const navigateToAdmin = useCallback(

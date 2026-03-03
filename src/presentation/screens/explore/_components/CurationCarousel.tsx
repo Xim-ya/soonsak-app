@@ -18,6 +18,7 @@ import colors from '@/shared/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource } from '@/shared/analytics';
 import { usePersonalizedCurationVideos } from '@/features/recommendations';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
 import {
@@ -71,6 +72,7 @@ function CurationCarousel() {
         title: video.contentTitle,
         type: video.contentType,
         videoId: video.videoId,
+        source: ContentSource.EXPLORE_CURATION,
       });
     },
     [navigation],

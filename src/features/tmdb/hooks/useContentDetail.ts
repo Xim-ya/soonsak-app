@@ -48,13 +48,10 @@ export const useContentDetail = (
         console.error('[useContentDetail] 콘텐츠 상세 정보 조회 실패:', {
           contentId: id,
           contentType,
+          // eslint-disable-next-line indent
           error:
             error instanceof TmdbApiError
-              ? {
-                  message: error.message,
-                  code: error.statusCode,
-                  status: error.statusCode,
-                }
+              ? { message: error.message, code: error.statusCode, status: error.statusCode }
               : error,
         });
         throw error; // React Query가 처리하도록 에러 재발생

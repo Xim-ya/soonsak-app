@@ -16,6 +16,7 @@ import { FlatList, TouchableOpacity } from 'react-native';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { useYouTubeChannel } from '@/features/youtube';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
+import { analyticsService } from '@/shared/analytics';
 
 interface VideoItemViewProps {
   item: OtherChannelVideoModel;
@@ -28,6 +29,13 @@ const VideoItemView = React.memo(({ item, onPress }: VideoItemViewProps) => {
 
   const handlePress = useCallback(() => {
     onPress(item);
+    // GA4 content_detail_other_video_click 이벤트 로깅
+    // ximya todo
+    //  analyticsService.contentDetailOtherVideoClick({
+    //   video_id: item.id,
+    //   content_id: item.contentId,
+    //   content_type: item.contentType  ,
+    // });
   }, [onPress, item]);
 
   // 런타임 포맷팅

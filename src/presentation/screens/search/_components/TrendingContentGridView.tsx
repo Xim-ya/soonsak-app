@@ -10,6 +10,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { useTrendingTopFifteen } from '../_hooks/useTrendingTopFifteen';
 import { TrendingContentModel } from '../_types/trendingContentModel';
@@ -81,12 +82,20 @@ const TrendingGridItem = React.memo(({ item }: { item: TrendingContentModel }) =
   const navigation = useNavigation<NavigationProp>();
 
   const handlePress = useCallback(() => {
+    // trending_content_click 이벤트 로깅
+    analyticsService.trendingContentClick({
+      content_id: item.id,
+      content_type: item.type,
+      rank: item.rank,
+    });
+
     navigation.navigate(routePages.contentDetail, {
       id: item.id,
       title: item.title,
       type: item.type,
+      source: ContentSource.SEARCH_TRENDING,
     });
-  }, [navigation, item.id, item.title, item.type]);
+  }, [navigation, item.id, item.title, item.type, item.rank]);
 
   // formatter.prefixTmdbImgUrl은 단순 문자열 변환이므로 useMemo 오버헤드 불필요
   // backdropPath 우선, posterPath fallback, 둘 다 없으면 빈 문자열 (LoadableImageView가 에러 UI 표시)

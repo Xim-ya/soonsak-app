@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from 'react';
+import { memo, useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -11,6 +11,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
 import { SearchResultModel } from '../_types/searchResultModel';
 
@@ -26,6 +27,8 @@ const ITEM_PADDING = 16;
 
 interface SearchResultItemProps {
   readonly item: SearchResultModel;
+  readonly position: number;
+  readonly searchTerm: string;
 }
 
 /**
@@ -34,20 +37,33 @@ interface SearchResultItemProps {
  * 포스터 이미지, 제목, 콘텐츠 타입, 개봉년도를 표시합니다.
  * 클릭 시 콘텐츠 상세 화면으로 이동합니다.
  */
-const SearchResultItem = memo(function SearchResultItem({ item }: SearchResultItemProps) {
+const SearchResultItem = memo(function SearchResultItem({
+  item,
+  position,
+  searchTerm,
+}: SearchResultItemProps) {
   const navigation = useNavigation<NavigationProp>();
 
   // initialData로 포스터 경로를 전달하여 API 응답 전에 즉시 표시
   const handlePress = useCallback(() => {
+    // search_result_click 이벤트 로깅
+    analyticsService.searchResultClick({
+      search_term: searchTerm,
+      content_id: item.id,
+      content_type: item.contentType,
+      position,
+    });
+
     navigation.navigate(routePages.contentDetail, {
       id: item.id,
       title: item.title,
       type: item.contentType,
+      source: ContentSource.SEARCH_RESULT,
       ...(item.posterPath && {
         initialData: { posterPath: item.posterPath },
       }),
     });
-  }, [navigation, item.id, item.title, item.contentType, item.posterPath]);
+  }, [navigation, item.id, item.title, item.contentType, item.posterPath, position, searchTerm]);
 
   // 포스터 이미지 URL 생성
   const posterUrl = item.posterPath

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,6 +10,7 @@ import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { ImageGrid } from '@/presentation/components/image/ImageGrid';
+import { analyticsService } from '@/shared/analytics';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { AppSize } from '@/shared/utils/appSize';
 import colors from '@/shared/styles/colors';
@@ -35,8 +36,24 @@ function MediaListScreenComponent() {
   const heroImage = images[0];
   const gridImages = useMemo(() => images.slice(1), [images]);
 
+  // GA4 media_list_view 이벤트 로깅
+  useEffect(() => {
+    if (images.length > 0) {
+      analyticsService.mediaListView({
+        content_id: contentId,
+        content_type: contentType,
+        total_count: images.length,
+      });
+    }
+  }, [contentId, contentType, images.length]);
+
   const handleImagePress = useCallback(
     (index: number) => {
+      // GA4 media_image_click 이벤트 로깅
+      analyticsService.mediaImageClick({
+        content_id: contentId,
+        image_index: index,
+      });
       navigation.navigate(routePages.imageDetail, {
         contentId,
         contentType,

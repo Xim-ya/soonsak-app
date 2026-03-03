@@ -17,6 +17,7 @@ import {
   useCallback,
   useRef,
   useMemo,
+  useEffect,
   ReactNode,
 } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
@@ -24,6 +25,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
+// ExploreContentType은 현재 미사용 (향후 분석 시 활용 예정)
 import type { RootStackParamList } from '@/shared/navigation/types';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import type { BaseContentModel } from '@/shared/types/content/baseContentModel';
@@ -51,7 +54,10 @@ interface QuickExploreContextType {
 
   // 액션 핸들러
   /** 콘텐츠 클릭 핸들러 */
-  readonly handleContentPress: (content: BaseContentModel) => void;
+  readonly handleContentPress: (
+    content: BaseContentModel,
+    clickType?: 'focused' | 'direct',
+  ) => void;
   /** 검색 버튼 클릭 핸들러 (랜덤 콘텐츠 포커스) */
   readonly handleSearchPress: () => void;
   /** 필터 버튼 클릭 핸들러 */
@@ -83,6 +89,11 @@ export function QuickExploreProvider({ children }: QuickExploreProviderProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
   const gridRef = useRef<ContentGridRef>(null);
 
+  // quick_explore_start 이벤트 로깅 (마운트 시 1회)
+  useEffect(() => {
+    analyticsService.quickExploreStart();
+  }, []);
+
   // 공유 필터 컨텍스트에서 필터 상태 가져오기
   const { filter, setFilter, isFilterApplied } = useContentFilter();
 
@@ -112,13 +123,21 @@ export function QuickExploreProvider({ children }: QuickExploreProviderProps) {
     }, []),
   );
 
-  // 콘텐츠 클릭 핸들러
+  // 콘텐츠 클릭 핸들러 (click_type은 기본값 'direct')
   const handleContentPress = useCallback(
-    (content: BaseContentModel) => {
+    (content: BaseContentModel, clickType: 'focused' | 'direct' = 'direct') => {
+      // quick_explore_content_click 이벤트 로깅
+      analyticsService.quickExploreContentClick({
+        content_id: content.id,
+        content_type: content.type,
+        click_type: clickType,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: content.id,
         title: content.title,
         type: content.type,
+        source: ContentSource.QUICK_EXPLORE,
       });
     },
     [navigation],
@@ -138,6 +157,12 @@ export function QuickExploreProvider({ children }: QuickExploreProviderProps) {
   // 필터 적용 핸들러
   const handleFilterApply = useCallback(
     (newFilter: ContentFilter) => {
+      // quick_explore_filter_apply 이벤트 로깅
+      analyticsService.quickExploreFilterApply({
+        genres: newFilter.genreIds.map(String),
+        channels: newFilter.channelIds,
+      });
+
       setFilter(newFilter);
       setPendingFilter(null);
       setIsFilterVisible(false);

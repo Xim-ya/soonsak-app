@@ -7,6 +7,7 @@ import Animated from 'react-native-reanimated';
 import colors from '@/shared/styles/colors';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { WatchHistorySectionView, type WatchHistoryModelType } from '@/features/watch-history';
 import Gap from '@/presentation/components/view/Gap';
 import { Header } from './_components/Header';
@@ -39,10 +40,19 @@ export default function HomeScreen() {
   // 시청기록 아이템 클릭 핸들러
   const handleWatchHistoryItemPress = useCallback(
     (item: WatchHistoryModelType) => {
+      // 홈 섹션 콘텐츠 클릭 이벤트 로깅
+      analyticsService.homeSectionClick({
+        section_type: 'watch_history',
+        content_id: item.contentId,
+        content_type: item.contentType,
+        position: 0, // 홈에서는 단일 아이템이므로 position 0
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: item.contentId,
         type: item.contentType,
         title: item.contentTitle,
+        source: ContentSource.HOME_WATCH_HISTORY,
         initialData: {
           backdropPath: item.contentBackdropPath,
           posterPath: item.contentPosterPath,

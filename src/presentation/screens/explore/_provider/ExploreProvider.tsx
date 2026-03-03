@@ -26,6 +26,8 @@ import { SharedValue, useSharedValue } from 'react-native-reanimated';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
+import type { ExploreTabName } from '@/shared/analytics/types/events';
 import type { ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreFilterSheet } from '../_hooks/useExploreFilterSheet';
 
@@ -57,7 +59,11 @@ interface ExploreContextType {
   readonly closeLoginDialog: () => void;
 
   // 네비게이션 핸들러
-  readonly handleContentPress: (content: ExploreContentModel) => void;
+  readonly handleContentPress: (
+    content: ExploreContentModel,
+    tabName: ExploreTabName,
+    position: number,
+  ) => void;
 
   // 애니메이션 관련
   readonly gradientOpacity: SharedValue<number>;
@@ -115,11 +121,20 @@ export function ExploreProvider({ children }: ExploreProviderProps) {
 
   // 콘텐츠 클릭 핸들러
   const handleContentPress = useCallback(
-    (content: ExploreContentModel) => {
+    (content: ExploreContentModel, tabName: ExploreTabName, position: number) => {
+      // explore_content_click 이벤트 로깅
+      analyticsService.exploreContentClick({
+        content_id: content.id,
+        content_type: content.type,
+        tab_name: tabName,
+        position,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: content.id,
         title: content.title,
         type: content.type,
+        source: ContentSource.EXPLORE_GRID,
       });
     },
     [navigation],

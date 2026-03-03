@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useCallback } from 'react';
+import React, { useMemo, useEffect, useCallback, useRef } from 'react';
 import { Modal, FlatList } from 'react-native';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -12,6 +12,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import Gap from '@/presentation/components/view/Gap';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -79,8 +80,16 @@ function CommentsBottomSheet({ visible, onClose }: CommentsBottomSheetProps): Re
   const overlayOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(SHEET_HEIGHT);
 
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
+
   // 닫기 애니메이션 후 실제로 모달 닫기
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'comments',
+      screen_name: 'content_detail',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       SHEET_HEIGHT,
@@ -94,6 +103,11 @@ function CommentsBottomSheet({ visible, onClose }: CommentsBottomSheetProps): Re
   // visible 상태에 따른 애니메이션
   useEffect(() => {
     if (visible) {
+      actionTakenRef.current = false;
+      analyticsService.bottomSheetOpen({
+        sheet_type: 'comments',
+        screen_name: 'content_detail',
+      });
       overlayOpacity.value = withTiming(1, { duration: 200 });
       sheetTranslateY.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) });
     }

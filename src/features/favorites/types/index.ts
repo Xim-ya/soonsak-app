@@ -34,6 +34,8 @@ interface FavoriteWithContentDto extends FavoriteDto {
 interface ToggleFavoriteParams {
   readonly contentId: number;
   readonly contentType: ContentType;
+  /** 화면 이름 (GA 로깅용, 기본값: 'content_detail') */
+  readonly screenName?: string;
 }
 
 /**

@@ -19,6 +19,7 @@ const IS_IOS_26_OR_LATER = IOS_VERSION >= 26;
 const TAB_BAR_HEIGHT = 56;
 const BLUR_INTENSITY = 80;
 
+/* eslint-disable @typescript-eslint/no-require-imports */
 // 커스텀 PNG 아이콘 (iOS 26+ 네이티브 탭바용)
 const TAB_ICONS: Record<TabRoutes, ImageSourcePropType> = {
   [TabRoutes.Home]: require('@assets/icons/tab/home_tab.png'),
@@ -26,6 +27,7 @@ const TAB_ICONS: Record<TabRoutes, ImageSourcePropType> = {
   [TabRoutes.Channel]: require('@assets/icons/tab/channel_tab.png'),
   [TabRoutes.My]: require('@assets/icons/tab/my_tab.png'),
 };
+/* eslint-enable @typescript-eslint/no-require-imports */
 
 // 탭 라벨
 const TAB_LABELS: Record<TabRoutes, string> = {

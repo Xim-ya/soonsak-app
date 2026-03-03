@@ -10,10 +10,11 @@
  * </ProfileSetupProvider>
  */
 
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { createContext, useContext, useMemo, useEffect, type ReactNode } from 'react';
 import { useProfileSetup } from '../_hooks/useProfileSetup';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { ButtonState } from '@/presentation/components/button';
+import { analyticsService } from '@/shared/analytics';
 
 /** Context 타입 정의 */
 interface ProfileSetupContextType {
@@ -87,6 +88,11 @@ export function ProfileSetupProvider({
     isSettingsErrorDialogVisible,
     closeSettingsErrorDialog,
   } = useProfileSetup({ mode });
+
+  // 프로필 설정 화면 진입 이벤트 로깅
+  useEffect(() => {
+    analyticsService.profileSetupStart({ mode });
+  }, [mode]);
 
   // 모드별 UI 텍스트
   const buttonText = mode === 'initial' ? '시작하기' : '저장';

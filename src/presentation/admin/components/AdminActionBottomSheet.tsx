@@ -105,14 +105,17 @@ function AdminActionBottomSheet({
   }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight]);
 
   // ID 복사 핸들러
-  const handleCopyId = useCallback(async (label: string, value: string) => {
-    await Clipboard.setStringAsync(value);
-    await showDialog({
-      title: '복사됨',
-      description: `${label}: ${value}`,
-      buttonText: '확인',
-    });
-  }, [showDialog]);
+  const handleCopyId = useCallback(
+    async (label: string, value: string) => {
+      await Clipboard.setStringAsync(value);
+      await showDialog({
+        title: '복사됨',
+        description: `${label}: ${value}`,
+        buttonText: '확인',
+      });
+    },
+    [showDialog],
+  );
 
   // 액션 선택 핸들러
   const handleSelectAction = useCallback(

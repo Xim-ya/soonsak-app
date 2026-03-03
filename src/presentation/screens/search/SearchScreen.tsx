@@ -1,11 +1,13 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import Gap from '@/presentation/components/view/Gap';
 import { BasePage } from '@/presentation/components/page';
 import colors from '@/shared/styles/colors';
+import { analyticsService } from '@/shared/analytics';
+import type { RootStackParamList } from '@/shared/navigation/types';
 import { SearchProvider } from './_provider/SearchProvider';
 import { SearchBar } from './_components/SearchBar';
 import { SearchResultList } from './_components/SearchResultList';
@@ -33,6 +35,13 @@ const backArrowSvg = `
  */
 export default function SearchScreen() {
   const navigation = useNavigation();
+  const route = useRoute<RouteProp<RootStackParamList, 'Search'>>();
+
+  // search_start 이벤트 로깅 (화면 진입 시)
+  useEffect(() => {
+    const source = route.params?.source ?? 'unknown';
+    analyticsService.searchStart({ source });
+  }, [route.params?.source]);
 
   const handleBackPress = useCallback(() => {
     navigation.goBack();

@@ -11,7 +11,9 @@ import { AppSize } from '@/shared/utils/appSize';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import { ChannelVideoModel } from '../_types';
+import { useChannelDetail } from '../_provider/ChannelDetailProvider';
 
 interface VideoGridItemProps {
   video: ChannelVideoModel;
@@ -22,6 +24,7 @@ const POSTER_HEIGHT = ITEM_WIDTH * (165 / 109);
 
 export function VideoGridItem({ video }: VideoGridItemProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
+  const { channelId } = useChannelDetail();
 
   const posterUrl = formatter.prefixTmdbImgUrl(video.contentPosterPath, {
     size: TmdbImageSize.w342,
@@ -30,11 +33,20 @@ export function VideoGridItem({ video }: VideoGridItemProps) {
   const runtimeText = video.runtime ? formatter.formatRuntime(video.runtime) : '';
 
   const handlePress = () => {
+    // GA4 channel_video_click 이벤트 로깅
+    analyticsService.channelVideoClick({
+      channel_id: channelId,
+      content_id: video.contentId,
+      content_type: video.contentType,
+      video_id: video.id,
+    });
+
     navigation.navigate(routePages.contentDetail, {
       id: video.contentId,
       title: video.contentTitle,
       type: video.contentType,
       videoId: video.id,
+      source: ContentSource.CHANNEL_DETAIL,
     });
   };
 

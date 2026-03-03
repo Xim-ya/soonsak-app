@@ -20,6 +20,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -51,6 +52,11 @@ function MonthYearPickerBottomSheet() {
   const yearListRef = useRef<FlatList>(null);
   const monthListRef = useRef<FlatList>(null);
 
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
+  // 이전 visible 상태 추적 (중복 bottomSheetOpen 방지)
+  const wasMonthPickerVisibleRef = useRef(false);
+
   // 애니메이션 값
   const overlayOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(SHEET_HEIGHT);
@@ -58,6 +64,18 @@ function MonthYearPickerBottomSheet() {
   // visible 상태에 따른 초기화
   useEffect(() => {
     if (isMonthPickerVisible) {
+      // 새로 열릴 때만 GA 로깅 (이전에 닫혀있었을 때만)
+      const isNewOpen = !wasMonthPickerVisibleRef.current;
+      wasMonthPickerVisibleRef.current = true;
+
+      if (isNewOpen) {
+        actionTakenRef.current = false;
+        analyticsService.bottomSheetOpen({
+          sheet_type: 'month_year_picker',
+          screen_name: 'my',
+        });
+      }
+
       setTempYear(selectedYear);
       setTempMonth(selectedMonth);
 
@@ -83,11 +101,19 @@ function MonthYearPickerBottomSheet() {
           viewPosition: 0.5,
         });
       }, 100);
+    } else {
+      // 닫힐 때 상태 리셋
+      wasMonthPickerVisibleRef.current = false;
     }
   }, [isMonthPickerVisible, selectedYear, selectedMonth, overlayOpacity, sheetTranslateY]);
 
   // 닫기 애니메이션
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'month_year_picker',
+      screen_name: 'my',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       SHEET_HEIGHT,
@@ -100,6 +126,7 @@ function MonthYearPickerBottomSheet() {
 
   // 적용 핸들러
   const handleApply = useCallback(() => {
+    actionTakenRef.current = true;
     handleApplyMonthYear(tempYear, tempMonth);
     handleClose();
   }, [tempYear, tempMonth, handleApplyMonthYear, handleClose]);

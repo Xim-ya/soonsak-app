@@ -125,8 +125,13 @@ function RelatedContentTabView({ appBarOpacity }: { appBarOpacity: SharedValue<n
         <GridContainer>
           {rows.map((row, rowIndex) => (
             <Row key={rowIndex}>
-              {row.map((content) => (
-                <MemoizedRelatedContentGridItem key={content.id} content={content} />
+              {row.map((content, colIndex) => (
+                <MemoizedRelatedContentGridItem
+                  key={content.id}
+                  content={content}
+                  sourceContentId={contentId}
+                  position={rowIndex * 3 + colIndex}
+                />
               ))}
               {/* 마지막 행이 3개 미만일 때 빈 공간 채우기 */}
               {row.length < 3 &&

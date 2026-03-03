@@ -12,6 +12,7 @@ import { routePages } from '@/shared/navigation/constant/routePages';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { CARD_SLIDER } from '@/presentation/components/slider/HorizontalCardSlider';
+import type { ContentSourceType } from '@/shared/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -28,6 +29,8 @@ interface ContentCardImageProps {
   overlay?: ReactNode;
   /** 타이틀 텍스트 left 오프셋 (기본값: 8, 오버레이가 있으면 60 권장) */
   titleLeftOffset?: number;
+  /** GA 로깅용 source 파라미터 */
+  source?: ContentSourceType;
 }
 
 /**
@@ -35,7 +38,7 @@ interface ContentCardImageProps {
  * 이미지 + 그래디언트 + 타이틀 + 네비게이션 + 오버레이 슬롯
  */
 const ContentCardImage = React.memo(
-  ({ item, overlay, titleLeftOffset = 8 }: ContentCardImageProps) => {
+  ({ item, overlay, titleLeftOffset = 8, source }: ContentCardImageProps) => {
     const navigation = useNavigation<NavigationProp>();
 
     // initialData로 이미지 경로를 전달하여 API 응답 전에 즉시 표시
@@ -48,8 +51,9 @@ const ContentCardImage = React.memo(
           ...(item.backdropPath && { backdropPath: item.backdropPath }),
           posterPath: item.posterPath,
         },
+        ...(source && { source }),
       });
-    }, [navigation, item.id, item.title, item.type, item.backdropPath, item.posterPath]);
+    }, [navigation, item.id, item.title, item.type, item.backdropPath, item.posterPath, source]);
 
     const imageUrl = useMemo(
       () =>

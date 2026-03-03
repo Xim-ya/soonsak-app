@@ -26,8 +26,10 @@ function SearchResultList() {
   const { results, isLoading, isEmpty, error, debouncedSearchText } = useSearchContext();
 
   const renderItem = useCallback(
-    ({ item }: { item: SearchResultModel }) => <SearchResultItem item={item} />,
-    [],
+    ({ item, index }: { item: SearchResultModel; index: number }) => (
+      <SearchResultItem item={item} position={index} searchTerm={debouncedSearchText.trim()} />
+    ),
+    [debouncedSearchText],
   );
 
   // 상태 플래그: 일관된 긍정형 네이밍으로 가독성 향상

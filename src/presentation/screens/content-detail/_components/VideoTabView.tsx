@@ -12,6 +12,9 @@ import { OtherChannelVideoListView } from './OtherChannelVideoListView';
 import { ChannelInfoView } from './ChannelInfoView';
 import { FeaturedCommentView } from './FeaturedCommentView';
 import { CommentsBottomSheet } from './CommentsBottomSheet';
+import { analyticsService } from '@/shared/analytics';
+import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
+import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 
 /** 태블릿 콘텐츠 레이아웃 상수 */
@@ -34,6 +37,10 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
   // Tabs.ScrollView ref
   const scrollViewRef = useRef<ScrollRef | null>(null);
 
+  // 콘텐츠 정보 가져오기 (GA 로깅용)
+  const { id: contentId } = useContentDetailRoute();
+  const { commentTotalCountText } = useContentVideos();
+
   // 태블릿 레이아웃 스타일
   const isLargeScreen = AppSize.isLargeScreen();
   const tabletContentStyle = isLargeScreen ? TABLET_CONTENT_STYLE : undefined;
@@ -43,8 +50,25 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
 
   // 바텀시트 열기/닫기 핸들러
   const handleShowComments = useCallback(() => {
+    // GA4 content_detail_comment_open 이벤트 로깅
+    // commentTotalCountText 예: "1.2만개" -> 숫자 추출
+    const commentCountMatch = commentTotalCountText?.match(/[\d,.]+/);
+    const commentCountStr = commentCountMatch?.[0]?.replace(/,/g, '') ?? '0';
+    // 만개 단위 처리
+    let commentCount = parseFloat(commentCountStr);
+    if (commentTotalCountText?.includes('만')) {
+      commentCount = Math.floor(commentCount * 10000);
+    } else if (commentTotalCountText?.includes('천')) {
+      commentCount = Math.floor(commentCount * 1000);
+    }
+
+    analyticsService.contentDetailCommentOpen({
+      content_id: Number(contentId),
+      comment_count: commentCount || 0,
+    });
+
     setIsCommentsVisible(true);
-  }, []);
+  }, [contentId, commentTotalCountText]);
 
   const handleCloseComments = useCallback(() => {
     setIsCommentsVisible(false);

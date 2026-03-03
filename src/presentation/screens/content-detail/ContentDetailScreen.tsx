@@ -12,7 +12,7 @@ import { AppSize } from '@/shared/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { TabBar } from './_components/TabBar';
 import { ContentTabView } from './_components/VideoTabView';
 import { RelatedContentTabView } from './_components/OriginContentTabView';
@@ -24,13 +24,15 @@ import { ContentType } from '@/shared/types/content/contentType.enum';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
 import { useAdminContentActions, AdminContentAction } from '@/features/admin';
 import { useContentDetail } from './_hooks/useContentDetail';
+import { analyticsService, ContentSource } from '@/shared/analytics';
+import type { ContentSourceType } from '@/shared/analytics';
 
 // 모듈 레벨 상수 (매 렌더마다 새 객체 생성 방지)
 const PAGER_PROPS = { scrollEnabled: false };
 
 export default function ContentDetailScreen() {
   const route = useRoute<ScreenRouteProp<typeof routePages.contentDetail>>();
-  const { id, type, title, videoId, initialData } = route.params;
+  const { id, type, title, videoId, initialData, source } = route.params;
 
   const contentId = Number(id);
   const contentType = type as ContentType;
@@ -46,6 +48,7 @@ export default function ContentDetailScreen() {
         contentId={contentId}
         contentType={contentType}
         title={title || undefined}
+        source={source}
       />
     </ContentDetailProvider>
   );
@@ -62,10 +65,12 @@ function ContentDetailContent({
   contentId,
   contentType,
   title,
+  source,
 }: {
   contentId: number;
   contentType: ContentType;
   title: string | undefined;
+  source: ContentSourceType | undefined;
 }) {
   const navigation = useNavigation<NavigationProp>();
   const insets = useSafeAreaInsets();
@@ -77,7 +82,23 @@ function ContentDetailContent({
   // 콘텐츠 상세 정보 (현재 backdrop 경로 가져오기 위해)
   const { data: contentDetail } = useContentDetail(contentId, contentType);
 
+  // GA4 content_view 이벤트 로깅 (콘텐츠별 1회)
+  // contentId 변경 시에도 새 콘텐츠에 대해 로깅하기 위해 마지막 로깅한 콘텐츠 ID를 추적
+  const lastLoggedContentIdRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (contentDetail && lastLoggedContentIdRef.current !== contentId) {
+      lastLoggedContentIdRef.current = contentId;
+      analyticsService.contentView({
+        content_id: contentId,
+        content_type: contentType,
+        content_title: contentDetail.title,
+        source: source ?? ContentSource.EXPLORE_GRID,
+      });
+    }
+  }, [contentId, contentType, contentDetail, source]);
+
   // 어드민 액션 (훅 내부에서 isAdmin 체크, 분리 시 이 훅만 제거하면 됨)
+  /* eslint-disable indent */
   const adminAction = useAdminContentActions({
     contentId,
     contentType,
@@ -91,6 +112,7 @@ function ContentDetailContent({
         }
       : undefined,
   });
+  /* eslint-enable indent */
 
   // CHANGE_CONTENT 액션 선택 시 콘텐츠 검색 화면으로 이동
   useEffect(() => {
@@ -163,11 +185,12 @@ function ContentDetailContent({
     isToggling,
     isLoginDialogVisible,
     isActionSheetVisible,
-    handleMorePress,
+    handleMorePress: _handleMorePress,
     handleToggleFavorite,
     handleCloseActionSheet,
     handleCloseDialog,
   } = useFavoriteAction({ contentId, contentType });
+  void _handleMorePress; // lint 무시 (어드민 액션에서 별도 처리)
 
   return (
     <>

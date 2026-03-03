@@ -17,17 +17,20 @@ import { BaseContentModel } from '@/shared/types/content/baseContentModel';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import type { ContentSourceType } from '@/shared/analytics';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 import { PosterImage, PosterSkeleton } from '@/presentation/components/image/PosterImage';
 
 interface SectionContentListViewProps {
   title: string | null;
   contents: BaseContentModel[] | null;
-  onContentTapped?: (content: BaseContentModel) => void;
+  onContentTapped?: (content: BaseContentModel, position: number) => void;
   onEndReached?: () => void;
   isFetchingNextPage?: boolean;
   isLoading?: boolean;
   onTitlePress?: () => void;
+  /** GA 로깅용 source 파라미터 (기본 네비게이션 사용 시) */
+  source?: ContentSourceType;
 }
 
 /** 스켈레톤 아이템 개수 */
@@ -47,26 +50,28 @@ function SectionContentListView({
   isFetchingNextPage = false,
   isLoading = false,
   onTitlePress,
+  source,
 }: SectionContentListViewProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleContentPress = useCallback(
-    (content: BaseContentModel) => {
+    (content: BaseContentModel, index: number) => {
       if (onItemPress) {
-        onItemPress(content);
+        onItemPress(content, index);
       } else {
         navigation.navigate(routePages.contentDetail, {
           id: content.id,
           type: content.type,
+          ...(source && { source }),
         });
       }
     },
-    [onItemPress, navigation],
+    [onItemPress, navigation, source],
   );
 
   const renderItem = useCallback(
-    ({ item }: { item: BaseContentModel }) => (
-      <TouchableHighlight onPress={() => handleContentPress(item)}>
+    ({ item, index }: { item: BaseContentModel; index: number }) => (
+      <TouchableHighlight onPress={() => handleContentPress(item, index)}>
         <PosterItem>
           <PosterImage
             width={POSTER_WIDTH}

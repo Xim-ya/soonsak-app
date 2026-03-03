@@ -7,7 +7,7 @@
  * 태블릿에서는 카드 너비가 props로 전달되어 가변 열 수를 지원합니다.
  */
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { Image, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -53,7 +53,7 @@ interface ExploreContentCardProps {
   /** 콘텐츠 데이터 */
   readonly content: ExploreContentModel;
   /** 카드 클릭 콜백 */
-  readonly onPress: (content: ExploreContentModel) => void;
+  readonly onPress: () => void;
   /** 동적 카드 너비 (태블릿 그리드용) */
   readonly cardWidth?: number;
 }
@@ -63,10 +63,6 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
   onPress,
   cardWidth: propCardWidth,
 }: ExploreContentCardProps): React.ReactElement {
-  const handlePress = useCallback(() => {
-    onPress(content);
-  }, [content, onPress]);
-
   // 동적 카드 크기 (props 우선, 없으면 기본값)
   const cardWidth = propCardWidth ?? DEFAULT_LAYOUT.cardWidth;
   const cardHeight = Math.round(cardWidth / CARD_ASPECT_RATIO);
@@ -85,7 +81,7 @@ const ExploreContentCard = React.memo(function ExploreContentCard({
 
   return (
     <CardContainer
-      onPress={handlePress}
+      onPress={onPress}
       activeOpacity={0.8}
       cardWidth={cardWidth}
       cardHeight={cardHeight}
