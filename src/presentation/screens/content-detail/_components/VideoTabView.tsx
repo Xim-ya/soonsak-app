@@ -1,5 +1,5 @@
 import { Tabs } from 'react-native-collapsible-tab-view';
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
 import { AppSize } from '@/shared/utils/appSize';
@@ -12,6 +12,7 @@ import { OtherChannelVideoListView } from './OtherChannelVideoListView';
 import { ChannelInfoView } from './ChannelInfoView';
 import { FeaturedCommentView } from './FeaturedCommentView';
 import { CommentsBottomSheet } from './CommentsBottomSheet';
+import { useContentVideos } from '../_provider/ContentDetailProvider';
 
 /** 태블릿 콘텐츠 레이아웃 상수 */
 const TABLET_CONTENT_MAX_WIDTH = 800;
@@ -21,9 +22,17 @@ const TABLET_CONTENT_STYLE = {
   alignSelf: 'center' as const,
 };
 
+interface ScrollRef {
+  scrollTo: (options: { y: number; animated: boolean }) => void;
+}
+
 // 메모이제이션된 탭 컴포넌트
 function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> }) {
   useTabScrollListener(appBarOpacity);
+  const { registerScrollRef } = useContentVideos();
+
+  // Tabs.ScrollView ref
+  const scrollViewRef = useRef<ScrollRef | null>(null);
 
   // 태블릿 레이아웃 스타일
   const isLargeScreen = AppSize.isLargeScreen();
@@ -41,9 +50,23 @@ function VideoTabView({ appBarOpacity }: { appBarOpacity: SharedValue<number> })
     setIsCommentsVisible(false);
   }, []);
 
+  // 스크롤 ref 등록
+  useEffect(() => {
+    registerScrollRef({
+      scrollToTop: () => {
+        scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+      },
+    });
+
+    return () => {
+      registerScrollRef(null);
+    };
+  }, [registerScrollRef]);
+
   return (
     <>
       <Tabs.ScrollView
+        ref={scrollViewRef}
         style={styles.scrollView}
         contentContainerStyle={isLargeScreen ? styles.tabletScrollContent : styles.scrollContent}
         showsVerticalScrollIndicator={false}

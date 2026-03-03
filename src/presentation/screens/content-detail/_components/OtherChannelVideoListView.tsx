@@ -1,91 +1,77 @@
-import { useMemo, useCallback } from 'react';
+import React, { useMemo, useCallback } from 'react';
 import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import {
   DarkedLinearShadow,
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
+import DarkChip from '@/presentation/components/chip/DarkChip';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
+import { formatter } from '@/shared/utils/formatter';
 import styled from '@emotion/native';
 import { FlatList, TouchableOpacity } from 'react-native';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
-import { useYouTubeChannel, usePlayVideo } from '@/features/youtube';
-import PlayButtonSvg from '@assets/icons/play_button.svg';
+import { useYouTubeChannel } from '@/features/youtube';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
-import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
-import { useContentDetail } from '../_hooks/useContentDetail';
 
 interface VideoItemViewProps {
   item: OtherChannelVideoModel;
-  contentTitle: string;
+  onPress: (item: OtherChannelVideoModel) => void;
 }
 
-interface OtherChannelVideoListViewProps {
-  /** 콘텐츠 제목 (외부에서 전달, 없으면 내부 훅으로 조회) */
-  contentTitle?: string;
-}
-
-// 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
-function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
+// 비디오 아이템 컴포넌트
+const VideoItemView = React.memo(({ item, onPress }: VideoItemViewProps) => {
   const { data: channel } = useYouTubeChannel(item.channelId);
-  const { playVideo } = usePlayVideo();
 
-  const handlePlayPress = useCallback(async () => {
-    if (!item.contentType) return;
+  const handlePress = useCallback(() => {
+    onPress(item);
+  }, [onPress, item]);
 
-    await playVideo({
-      videoId: item.id,
-      title: contentTitle || item.title,
-      contentId: item.contentId,
-      contentType: item.contentType,
-    });
-  }, [playVideo, item, contentTitle]);
+  // 런타임 포맷팅
+  const runtimeText = item.runtime ? formatter.formatRuntime(item.runtime) : undefined;
 
   return (
     <VideoItemContainer>
-      <ThumbnailTouchable onPress={handlePlayPress} activeOpacity={0.8}>
+      <ThumbnailTouchable onPress={handlePress} activeOpacity={0.8}>
         <ThumbnailWrapper>
           <LoadableImageView
             source={item.thumbnailUrl}
-            width={thumbnailWidth}
-            height={thumbnailHeight}
-            borderRadius={4}
+            width={THUMBNAIL_WIDTH}
+            height={THUMBNAIL_HEIGHT}
+            borderRadius={THUMBNAIL_BORDER_RADIUS}
           />
-          <DarkedLinearShadow height={thumbnailHeight} align={LinearAlign.bottomTop} />
-          {/* 재생 버튼 아이콘 */}
-          <PlayButtonContainer>
-            <PlayButtonSvg width={64} height={64} />
-          </PlayButtonContainer>
+          <DarkedLinearShadow height={THUMBNAIL_HEIGHT} align={LinearAlign.bottomTop} />
+          {/* 좌측 하단 채널 정보 */}
           <ChannelInfoWrapper>
             <ChannelLogoImage source={channel?.images?.avatar ?? ''} size={28} />
             <Gap size={8} />
             <ChannelName numberOfLines={1}>{channel?.name ?? ''}</ChannelName>
           </ChannelInfoWrapper>
+          {/* 우측 하단 러닝타임 */}
+          {runtimeText && (
+            <RuntimeChipWrapper>
+              <DarkChip content={runtimeText} />
+            </RuntimeChipWrapper>
+          )}
         </ThumbnailWrapper>
       </ThumbnailTouchable>
-      <Gap size={6} />
+      <Gap size={8} />
       <VideoTitle numberOfLines={2}>{item.title}</VideoTitle>
     </VideoItemContainer>
   );
-}
+});
 
-function OtherChannelVideoListView({
-  contentTitle: externalContentTitle,
-}: OtherChannelVideoListViewProps = {}) {
-  const { videos, primaryVideo } = useContentVideos();
+VideoItemView.displayName = 'VideoItemView';
 
-  // 외부에서 contentTitle이 전달되지 않은 경우에만 route와 content detail 조회
-  const shouldFetchInternal = externalContentTitle === undefined;
-  const { id, type } = useContentDetailRoute();
-  const { data: contentDetail } = useContentDetail(Number(id), type, {
-    enabled: shouldFetchInternal,
-  });
+/** 아이템 간격 컴포넌트 (렌더링 최적화) */
+const ItemSeparator = React.memo(() => <Gap size={ITEM_GAP} />);
+ItemSeparator.displayName = 'OtherVideoItemSeparator';
 
-  // 콘텐츠 제목: 외부 props 우선, 없으면 내부 훅에서 조회
-  const contentTitle = shouldFetchInternal ? (contentDetail?.title ?? '') : externalContentTitle;
+function OtherChannelVideoListView() {
+  const { videos, primaryVideo, switchToVideo } = useContentVideos();
 
   // primaryVideo를 제외한 나머지 비디오들을 Model로 변환
   // 정렬은 DB에서 처리됨 (includes_ending DESC, runtime DESC)
@@ -96,6 +82,35 @@ function OtherChannelVideoListView({
 
     return OtherChannelVideoModel.fromDtoList(filteredVideos);
   }, [videos, primaryVideo]);
+
+  // 아이템 클릭 핸들러
+  const handleItemPress = useCallback(
+    (item: OtherChannelVideoModel) => {
+      switchToVideo(item.id, item.thumbnailUrl);
+    },
+    [switchToVideo],
+  );
+
+  // renderItem 메모이제이션
+  const renderItem = useCallback(
+    ({ item }: { item: OtherChannelVideoModel }) => (
+      <VideoItemView item={item} onPress={handleItemPress} />
+    ),
+    [handleItemPress],
+  );
+
+  // keyExtractor 메모이제이션
+  const keyExtractor = useCallback((item: OtherChannelVideoModel) => item.id, []);
+
+  // getItemLayout - 스크롤 성능 최적화
+  const getItemLayout = useCallback(
+    (_: ArrayLike<OtherChannelVideoModel> | null | undefined, index: number) => ({
+      length: SNAP_INTERVAL,
+      offset: SNAP_INTERVAL * index,
+      index,
+    }),
+    [],
+  );
 
   // 다른 비디오가 없으면 섹션 숨김
   if (otherVideos.length === 0) {
@@ -109,18 +124,41 @@ function OtherChannelVideoListView({
       <VideoListView
         horizontal
         data={otherVideos}
-        renderItem={({ item }) => <VideoItemView item={item} contentTitle={contentTitle} />}
-        keyExtractor={(item) => item.id}
-        ItemSeparatorComponent={() => <Gap size={12} />}
+        renderItem={renderItem}
+        keyExtractor={keyExtractor}
+        getItemLayout={getItemLayout}
+        ItemSeparatorComponent={ItemSeparator}
         showsHorizontalScrollIndicator={false}
+        snapToInterval={SNAP_INTERVAL}
+        snapToAlignment="start"
+        decelerationRate="fast"
+        removeClippedSubviews
+        maxToRenderPerBatch={5}
+        windowSize={3}
+        initialNumToRender={3}
       />
     </Container>
   );
 }
 
 /* Styled Components */
-const thumbnailWidth = AppSize.ratioWidth(196);
-const thumbnailHeight = thumbnailWidth * (122 / 196);
+// 16:9 비율 유지
+const THUMBNAIL_WIDTH = AppSize.ratioWidth(240);
+const THUMBNAIL_HEIGHT = THUMBNAIL_WIDTH * (9 / 16);
+const THUMBNAIL_BORDER_RADIUS = 8;
+
+// 스냅 간격: 아이템 너비 + 간격
+const ITEM_GAP = 12;
+const SNAP_INTERVAL = THUMBNAIL_WIDTH + ITEM_GAP;
+
+// 정보 영역 높이
+const INFO_SECTION_GAP = 8;
+const VIDEO_TITLE_LINE_HEIGHT = 22;
+const VIDEO_TITLE_MAX_LINES = 2;
+const INFO_SECTION_HEIGHT = VIDEO_TITLE_LINE_HEIGHT * VIDEO_TITLE_MAX_LINES;
+
+// 전체 아이템 높이
+const ITEM_HEIGHT = THUMBNAIL_HEIGHT + INFO_SECTION_GAP + INFO_SECTION_HEIGHT;
 
 const Container = styled.View({
   backgroundColor: colors.black,
@@ -130,58 +168,57 @@ const Container = styled.View({
 
 const SectionTitle = styled.Text({
   ...textStyles.title2,
+  color: colors.white,
   paddingLeft: 16,
 });
 
 const VideoItemContainer = styled.View({
-  width: thumbnailWidth,
+  width: THUMBNAIL_WIDTH,
+  height: ITEM_HEIGHT,
 });
 
 const VideoListView = styled(FlatList<OtherChannelVideoModel>)({
-  paddingLeft: 16,
+  paddingHorizontal: 16,
 });
 
 const ThumbnailTouchable = styled(TouchableOpacity)({
-  width: thumbnailWidth,
-  height: thumbnailHeight,
+  width: THUMBNAIL_WIDTH,
+  height: THUMBNAIL_HEIGHT,
 });
 
 const ThumbnailWrapper = styled.View({
-  width: thumbnailWidth,
-  height: thumbnailHeight,
-  borderRadius: 4,
+  width: THUMBNAIL_WIDTH,
+  height: THUMBNAIL_HEIGHT,
+  borderRadius: THUMBNAIL_BORDER_RADIUS,
   overflow: 'hidden',
-  backgroundColor: 'black',
-});
-
-const PlayButtonContainer = styled.View({
-  position: 'absolute',
-  top: '50%',
-  left: '50%',
-  width: 64,
-  height: 64,
-  transform: [{ translateX: -32 }, { translateY: -32 }],
-  zIndex: 10,
-});
-
-const VideoTitle = styled.Text({
-  ...textStyles.body3,
-  color: colors.white,
+  backgroundColor: colors.gray05,
 });
 
 const ChannelInfoWrapper = styled.View({
   position: 'absolute',
-  bottom: 8,
-  left: 8,
-  right: 8,
+  bottom: 10,
+  left: 10,
   flexDirection: 'row',
   alignItems: 'center',
+  maxWidth: '60%',
 });
 
 const ChannelName = styled.Text({
-  ...textStyles.alert1,
-  color: colors.gray03,
+  ...textStyles.alert2,
+  color: colors.white,
   flex: 1,
+});
+
+const RuntimeChipWrapper = styled.View({
+  position: 'absolute',
+  bottom: 10,
+  right: 10,
+});
+
+const VideoTitle = styled.Text({
+  ...textStyles.body2,
+  color: colors.white,
+  lineHeight: VIDEO_TITLE_LINE_HEIGHT,
 });
 
 export { OtherChannelVideoListView };

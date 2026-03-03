@@ -37,6 +37,12 @@ interface ContentDetailContextType {
   preloadedPosterPath: string | null;
   /** 프리로드된 시청 진행률 (API 응답 전에 사용) */
   preloadedWatchProgress: PreloadedWatchProgress | null;
+  /** 비디오 전환 함수 (다른 영상 클릭 시 사용) */
+  switchToVideo: (videoId: string, thumbnailUrl?: string) => void;
+  /** 스크롤 ref 콜백 등록 함수 */
+  registerScrollRef: (ref: { scrollToTop: () => void } | null) => void;
+  /** 전환된 비디오의 썸네일 URL (헤더 배경에 사용) */
+  switchedThumbnailUrl: string | null;
 }
 
 const ContentDetailContext = createContext<ContentDetailContextType | undefined>(undefined);
@@ -69,25 +75,41 @@ export function ContentDetailProvider({
   const [videos, setVideos] = useState<VideoDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [currentVideoId, setCurrentVideoId] = useState<string | undefined>(videoId);
+  const [switchedThumbnailUrl, setSwitchedThumbnailUrl] = useState<string | null>(null);
 
-  const fetchVideos = async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      const videosData = await contentApi.getVideosByContent(contentId, contentType);
-      setVideos(videosData);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : '비디오 조회 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // 스크롤 ref 관리
+  const scrollRefCallback = useRef<{ scrollToTop: () => void } | null>(null);
 
   const refetch = () => {
+    const fetchVideos = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const videosData = await contentApi.getVideosByContent(contentId, contentType);
+        setVideos(videosData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '비디오 조회 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchVideos();
   };
 
   useEffect(() => {
+    const fetchVideos = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        const videosData = await contentApi.getVideosByContent(contentId, contentType);
+        setVideos(videosData);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : '비디오 조회 중 오류가 발생했습니다.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
     fetchVideos();
   }, [contentId, contentType]);
 
@@ -101,21 +123,34 @@ export function ContentDetailProvider({
   }, [contentId, contentType]);
 
   // 대표 비디오 선택 로직
-  // 1순위: videoId가 전달된 경우 해당 비디오 사용 (채널 상세에서 특정 비디오 선택 시)
+  // 1순위: currentVideoId가 있는 경우 해당 비디오 사용 (다른 영상 클릭 시)
   // 2순위: isPrimary가 true인 비디오
   // 3순위(폴백): 모든 비디오가 isPrimary=false인 경우 첫 번째 비디오 사용
   const primaryVideo: VideoDto | null = useMemo(() => {
     if (videos.length === 0) return null;
 
-    // videoId가 전달된 경우 해당 비디오를 우선 선택
-    if (videoId) {
-      const targetVideo = videos.find((video) => video.id === videoId);
+    // currentVideoId가 전달된 경우 해당 비디오를 우선 선택
+    if (currentVideoId) {
+      const targetVideo = videos.find((video) => video.id === currentVideoId);
       if (targetVideo) return targetVideo;
     }
 
-    // videoId가 없거나 찾지 못한 경우 기존 로직 적용
+    // currentVideoId가 없거나 찾지 못한 경우 기존 로직 적용
     return videos.find((video) => video.isPrimary) ?? videos[0] ?? null;
-  }, [videos, videoId]);
+  }, [videos, currentVideoId]);
+
+  // 비디오 전환 함수
+  const switchToVideo = (newVideoId: string, thumbnailUrl?: string) => {
+    setCurrentVideoId(newVideoId);
+    setSwitchedThumbnailUrl(thumbnailUrl ?? null);
+    // 스크롤을 최상단으로 이동
+    scrollRefCallback.current?.scrollToTop();
+  };
+
+  // 스크롤 ref 등록 함수
+  const registerScrollRef = (ref: { scrollToTop: () => void } | null) => {
+    scrollRefCallback.current = ref;
+  };
 
   // 댓글 토큰 prefetch (페이지 진입 시 미리 조회)
   const {
@@ -155,6 +190,9 @@ export function ContentDetailProvider({
     preloadedBackdropPath: initialData?.backdropPath ?? null,
     preloadedPosterPath: initialData?.posterPath ?? null,
     preloadedWatchProgress,
+    switchToVideo,
+    registerScrollRef,
+    switchedThumbnailUrl,
   };
 
   return (
