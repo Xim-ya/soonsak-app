@@ -38,7 +38,7 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
   const padding = AppSize.ratioWidth(16);
 
   const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath ?? '', {
-    size: TmdbImageSize.w500,
+    size: TmdbImageSize.w342,
   });
 
   return (
@@ -79,9 +79,11 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
 
         {/* 콘텐츠 정보 */}
         <ContentInfo padding={padding}>
-          {/* 콘텐츠 타입 칩 */}
-          <TypeChip>
-            <TypeChipText>{contentTypeConfigs[content.type].label}</TypeChipText>
+          {/* 콘텐츠 타입 칩 - 영화/시리즈는 파란색(흰 텍스트), 나머지는 초록색(검정 텍스트) */}
+          <TypeChip chipColor={content.type === 'movie' || content.type === 'tv' ? colors.primary : colors.green}>
+            <TypeChipText textColor={content.type === 'movie' || content.type === 'tv' ? colors.white : colors.black}>
+              {contentTypeConfigs[content.type].label}
+            </TypeChipText>
           </TypeChip>
 
           {/* 제목 */}
@@ -158,19 +160,19 @@ const ContentInfo = styled.View<{ padding: number }>(({ padding }) => ({
   padding,
 }));
 
-const TypeChip = styled.View({
-  backgroundColor: colors.yellow,
+const TypeChip = styled.View<{ chipColor: string }>(({ chipColor }) => ({
+  backgroundColor: chipColor,
   paddingHorizontal: 8,
   paddingVertical: 4,
   borderRadius: 10,
   alignSelf: 'flex-start',
   marginBottom: 8,
-});
+}));
 
-const TypeChipText = styled.Text({
+const TypeChipText = styled.Text<{ textColor: string }>(({ textColor }) => ({
   ...textStyles.alert1,
-  color: colors.black,
-});
+  color: textColor,
+}));
 
 const TitleText = styled.Text({
   ...textStyles.title1,
@@ -201,7 +203,7 @@ const FocusBorder = styled.View<{
   height: cardHeight,
   borderRadius,
   borderWidth: 3,
-  borderColor: colors.yellow,
+  borderColor: colors.primary,
 }));
 
 // content.id와 isFocused가 같으면 리렌더링 방지
