@@ -218,7 +218,7 @@ function ContentDetailContent({
           {...(title && { title })}
           onMorePress={adminAction.handleMorePress}
         />
-        <TabsContainer paddingTop={insets.top}>
+        <TabsContainer paddingTop={insets.top} paddingBottom={Math.max(insets.bottom, 16)}>
           <Tabs.Container
             renderHeader={() => <Header />}
             renderTabBar={(props) => <TabBar {...props} />}
@@ -298,8 +298,11 @@ const BackgroundContainer = styled(Animated.View)<{ safeAreaHeight: number }>(
   }),
 );
 
-const TabsContainer = styled.View<{ paddingTop: number }>(({ paddingTop }) => ({
-  flex: 1,
-  backgroundColor: colors.black,
-  paddingTop,
-}));
+const TabsContainer = styled.View<{ paddingTop: number; paddingBottom: number }>(
+  ({ paddingTop, paddingBottom }) => ({
+    flex: 1,
+    backgroundColor: colors.black,
+    paddingTop,
+    paddingBottom,
+  }),
+);

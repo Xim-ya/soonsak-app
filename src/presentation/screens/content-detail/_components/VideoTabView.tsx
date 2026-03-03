@@ -15,7 +15,6 @@ import { CommentsBottomSheet } from './CommentsBottomSheet';
 import { analyticsService } from '@/shared/analytics';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
-import { useContentVideos } from '../_provider/ContentDetailProvider';
 
 /** 태블릿 콘텐츠 레이아웃 상수 */
 const TABLET_CONTENT_MAX_WIDTH = 800;
