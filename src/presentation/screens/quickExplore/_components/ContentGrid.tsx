@@ -208,6 +208,7 @@ function FocusedCellOverlay({
 
 // 레이아웃 상수
 const DRAG_MULTIPLIER = 1.5;
+const VIEWPORT_UPDATE_THROTTLE = 150; // 드래그 중 뷰포트 업데이트 주기 (ms)
 
 // 스프링 애니메이션 설정
 const SPRING_CONFIG = {
@@ -253,6 +254,9 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
   // 드래그 시작 위치
   const startX = useSharedValue(0);
   const startY = useSharedValue(0);
+
+  // 드래그 중 뷰포트 업데이트 throttle
+  const lastViewportUpdateRef = useRef(0);
 
   // 포커스 상태 (셀 위치 기반으로 매칭 - content ID보다 확실함)
   const [focusedCellKey, setFocusedCellKey] = useState<string | null>(null);
@@ -424,6 +428,18 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
     [onContentPress],
   );
 
+  // 드래그 중 throttled 뷰포트 업데이트 (화면 밖 셀 제거)
+  const throttledUpdateViewport = useCallback(
+    (x: number, y: number) => {
+      const now = Date.now();
+      if (now - lastViewportUpdateRef.current >= VIEWPORT_UPDATE_THROTTLE) {
+        lastViewportUpdateRef.current = now;
+        updateViewport(x, y);
+      }
+    },
+    [updateViewport],
+  );
+
   // 팬 제스처 (항상 활성 상태, 포커스 모드는 콜백에서 shared value로 체크)
   const panGesture = Gesture.Pan()
     .onStart(() => {
@@ -435,8 +451,12 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
     .onUpdate((event) => {
       'worklet';
       if (isFocusModeShared.value) return;
-      translateX.value = startX.value + event.translationX * DRAG_MULTIPLIER;
-      translateY.value = startY.value + event.translationY * DRAG_MULTIPLIER;
+      const newX = startX.value + event.translationX * DRAG_MULTIPLIER;
+      const newY = startY.value + event.translationY * DRAG_MULTIPLIER;
+      translateX.value = newX;
+      translateY.value = newY;
+      // 드래그 중에도 뷰포트 업데이트 (throttled, 화면 밖 셀 제거)
+      runOnJS(throttledUpdateViewport)(newX, newY);
     })
     .onEnd((event) => {
       'worklet';
