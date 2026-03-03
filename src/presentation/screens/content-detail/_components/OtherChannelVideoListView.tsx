@@ -11,19 +11,13 @@ import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
 import styled from '@emotion/native';
 import { FlatList, TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
-import { useYouTubeChannel } from '@/features/youtube';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { useYouTubeChannel, usePlayVideo } from '@/features/youtube';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '../_hooks/useContentDetail';
 import { analyticsService } from '@/shared/analytics';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface VideoItemViewProps {
   item: OtherChannelVideoModel;
@@ -38,9 +32,9 @@ interface OtherChannelVideoListViewProps {
 // 비디오 아이템 컴포넌트 (훅 사용을 위해 별도 분리)
 function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
   const { data: channel } = useYouTubeChannel(item.channelId);
-  const navigation = useNavigation<NavigationProp>();
+  const { playVideo } = usePlayVideo();
 
-  const handlePlayPress = useCallback(() => {
+  const handlePlayPress = useCallback(async () => {
     if (!item.contentType) return;
 
     // GA4 content_detail_other_video_click 이벤트 로깅
@@ -50,13 +44,20 @@ function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
       content_type: item.contentType,
     });
 
-    navigation.navigate(routePages.player, {
+    // GA4 content_detail_other_video_click 이벤트 로깅
+    analyticsService.contentDetailOtherVideoClick({
+      video_id: item.id,
+      content_id: item.contentId,
+      content_type: item.contentType,
+    });
+
+    await playVideo({
       videoId: item.id,
       title: contentTitle || item.title,
       contentId: item.contentId,
       contentType: item.contentType,
     });
-  }, [navigation, item, contentTitle]);
+  }, [playVideo, item, contentTitle]);
 
   return (
     <VideoItemContainer>

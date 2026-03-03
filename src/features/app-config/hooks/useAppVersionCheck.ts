@@ -155,8 +155,8 @@ export function useAppVersionCheck(
       // 기본 스토어 URL
       const defaultUrl =
         Platform.OS === 'ios'
-          ? 'https://apps.apple.com/app/soonsak'
-          : 'https://play.google.com/store/apps/details?id=com.soonsak';
+          ? 'https://apps.apple.com/app/id6758769228'
+          : 'https://play.google.com/store/apps/details?id=com.soonsak.app';
       Linking.openURL(defaultUrl);
     }
   }, []);

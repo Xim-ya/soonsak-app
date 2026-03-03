@@ -28,6 +28,7 @@ import AdminContentRegistrationScreen from '../../../presentation/admin/screens/
 import AdminChannelManagementScreen from '../../../presentation/admin/screens/admin-channel-management/AdminChannelManagementScreen';
 import AdminChannelDetailScreen from '../../../presentation/admin/screens/admin-channel-detail/AdminChannelDetailScreen';
 import AdminPushManagementScreen from '../../../presentation/admin/screens/admin-push-management/AdminPushManagementScreen';
+import ReviewFunnelScreen from '../../../presentation/screens/review-funnel/ReviewFunnelScreen';
 import { RootStackParamList } from '../types';
 import { routePages } from '../constant/routePages';
 import { AuthGuard } from '../guards/AuthGuard';
@@ -229,6 +230,11 @@ export default function StackNavigator() {
       <Stack.Screen
         name={routePages.adminPushManagement}
         component={AdminPushManagementScreen}
+        options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name={routePages.reviewFunnel}
+        component={ReviewFunnelScreen}
         options={{ headerShown: false }}
       />
     </Stack.Navigator>

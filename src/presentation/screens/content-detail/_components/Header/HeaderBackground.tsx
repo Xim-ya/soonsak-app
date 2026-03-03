@@ -7,9 +7,6 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
 import {
   DarkedLinearShadow,
   LinearAlign,
@@ -24,15 +21,17 @@ import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { AppSize } from '@/shared/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { useYouTubeVideo, buildYouTubeUrl } from '@/features/youtube';
+import {
+  useYouTubeVideo,
+  buildYouTubeUrl,
+  usePlayVideo,
+  useSyncVideoMetrics,
+} from '@/features/youtube';
 import { useContentDetailRoute } from '../../_hooks/useContentDetailRoute';
 import {
   shouldShowProgressBar,
   calculateProgressPercent,
 } from '@/presentation/components/progress';
-
-type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
 interface HeaderBackgroundProps {
   scrollY?: SharedValue<number>;
@@ -58,11 +57,18 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const effectiveWatchProgress = watchProgress ?? preloadedWatchProgress;
 
   const { toggleImages, opacityValues } = useImageTransition();
-  const navigation = useNavigation<NavigationProp>();
+  const { playVideo } = usePlayVideo();
 
   // YouTube 데이터 가져오기 - primaryVideo가 있을 때만 요청
   const youtubeUrl = primaryVideo ? buildYouTubeUrl(primaryVideo.id) : null;
   const { data: videoInfo, isLoading: youtubeLoading } = useYouTubeVideo(youtubeUrl ?? '');
+
+  // YouTube 지표를 DB에 동기화 (오늘 갱신 안 됐으면)
+  useSyncVideoMetrics({
+    videoId: primaryVideo?.id,
+    viewCount: videoInfo?.metrics.viewCount,
+    likeCount: videoInfo?.metrics.likeCount,
+  });
 
   // TMDB 배경 이미지 페이드인 애니메이션
   const tmdbOpacity = useRef(new RNAnimated.Value(0)).current;
@@ -129,20 +135,27 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const canResume = isSameVideo && hasValidProgress;
 
   // 재생 버튼 핸들러
-  const handlePlayPress = useCallback(() => {
+  const handlePlayPress = useCallback(async () => {
     if (!primaryVideo) return;
 
-    const playerParams = {
+    // 기본 파라미터
+    const baseParams = {
       videoId: primaryVideo.id,
       title: contentTitle || primaryVideo.title || '',
       contentId: Number(id),
       contentType: type,
-      ...(canResume &&
-        effectiveWatchProgress && { startSeconds: effectiveWatchProgress.progressSeconds }),
     };
 
-    navigation.navigate(routePages.player, playerParams);
-  }, [navigation, primaryVideo, contentTitle, id, type, canResume, effectiveWatchProgress]);
+    // 이어보기 가능하면 startSeconds 추가
+    if (canResume && effectiveWatchProgress?.progressSeconds) {
+      await playVideo({
+        ...baseParams,
+        startSeconds: effectiveWatchProgress.progressSeconds,
+      });
+    } else {
+      await playVideo(baseParams);
+    }
+  }, [playVideo, primaryVideo, contentTitle, id, type, canResume, effectiveWatchProgress]);
 
   // 썸네일 클릭 핸들러
   const handleThumbnailPress = useCallback(() => {

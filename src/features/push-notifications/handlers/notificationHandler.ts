@@ -97,8 +97,8 @@ function handleNavigation(action: NavigationAction, options: HandleNotificationO
  * - Android Package: expo-constants에서 자동으로 가져옴
  */
 const getStoreConfig = () => ({
-  iosAppId: '6738924478',
-  androidPackageName: Constants.expoConfig?.android?.package ?? 'com.quickExplore.app',
+  iosAppId: '6758769228',
+  androidPackageName: Constants.expoConfig?.android?.package ?? 'com.soonsak.app',
 });
 
 /**
