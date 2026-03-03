@@ -11,6 +11,7 @@ import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '../_hooks/useContentDetail';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { ImageGrid } from '@/presentation/components/image/ImageGrid';
+import { analyticsService } from '@/shared/analytics';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { AppSize } from '@/shared/utils/appSize';
 import textStyles from '@/shared/styles/textStyles';
@@ -46,6 +47,12 @@ function MediaSectionViewComponent() {
 
   const handleImagePress = useCallback(
     (index: number) => {
+      // GA4 content_detail_media_click 이벤트 로깅
+      analyticsService.contentDetailMediaClick({
+        content_id: Number(id),
+        content_type: type,
+        image_index: index,
+      });
       navigation.navigate(routePages.imageDetail, {
         contentId: Number(id),
         contentType: type,

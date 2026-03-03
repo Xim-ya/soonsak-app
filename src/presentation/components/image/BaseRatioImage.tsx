@@ -42,8 +42,10 @@ function BaseRatioImageComponent({
   source,
   aspectRatio,
   borderRadius = IMAGE_DEFAULTS.borderRadius,
-  enableCache = IMAGE_DEFAULTS.enableCache,
+  // enableCache는 현재 미사용 (향후 캐시 정책 구현 시 활용 예정)
+  enableCache: _enableCache = IMAGE_DEFAULTS.enableCache,
 }: BaseRatioImageProps) {
+  void _enableCache; // lint 무시
   const height = Math.round(width / aspectRatio);
   const hasSource = typeof source === 'string' && source.trim().length > 0;
 

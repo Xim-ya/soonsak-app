@@ -7,7 +7,7 @@
  * useExplore 훅을 통해 필터 상태에 접근합니다.
  */
 
-import { useCallback, useState, useRef, useLayoutEffect } from 'react';
+import { useCallback, useState, useLayoutEffect } from 'react';
 import { ScrollView, TouchableOpacity, Platform } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -18,13 +18,19 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { TabBarProps, useCurrentTabScrollY, useFocusedTab } from 'react-native-collapsible-tab-view';
+import {
+  TabBarProps,
+  useCurrentTabScrollY,
+  useFocusedTab,
+} from 'react-native-collapsible-tab-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { analyticsService } from '@/shared/analytics';
+import type { ExploreTabName } from '@/shared/analytics/types/events';
 import { EXPLORE_SORT_TABS } from '../_types/exploreTypes';
 import { useExplore } from '../_provider/ExploreProvider';
 
@@ -92,9 +98,10 @@ type ExploreTabBarProps<T extends string> = TabBarProps<T>;
 
 const ExploreTabBar = <T extends string>({
   tabNames,
-  indexDecimal,
+  indexDecimal: _indexDecimal,
   onTabPress,
 }: ExploreTabBarProps<T>) => {
+  void _indexDecimal; // lint 무시 (collapsible-tab-view에서 전달되지만 현재 미사용)
   const navigation = useNavigation<NavigationProp>();
 
   // 라이브러리에서 현재 포커스된 탭 가져오기
@@ -115,6 +122,11 @@ const ExploreTabBar = <T extends string>({
     (name: T) => {
       setActiveTab(name);
       onTabPress(name);
+
+      // explore_tab_change 이벤트 로깅
+      analyticsService.exploreTabChange({
+        tab_name: name as ExploreTabName,
+      });
     },
     [onTabPress],
   );
@@ -136,7 +148,9 @@ const ExploreTabBar = <T extends string>({
 
   // 검색 버튼 핸들러
   const handleSearchPress = useCallback(() => {
-    navigation.navigate(routePages.search);
+    // explore_search_click 이벤트 로깅
+    analyticsService.exploreSearchClick();
+    navigation.navigate(routePages.search, { source: 'explore' });
   }, [navigation]);
 
   // 스크롤 위치 감지하여 그라데이션 opacity 업데이트

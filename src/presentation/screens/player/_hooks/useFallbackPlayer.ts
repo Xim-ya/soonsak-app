@@ -18,6 +18,7 @@ import {
 } from '@/features/youtube';
 import { useDialog } from '@/presentation/components/dialog';
 import { supabaseClient } from '@/shared/api/supabaseClient';
+import { analyticsService } from '@/shared/analytics';
 
 interface UseFallbackPlayerParams {
   readonly videoId: string;
@@ -61,6 +62,15 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
     async (error: { code: number; message: string }) => {
       console.error('플레이어 에러:', error);
 
+      const isEmbedRestricted = isEmbeddedRestrictedError(error);
+
+      // GA4 플레이어 에러 로깅
+      analyticsService.playerError({
+        video_id: videoId,
+        error_code: error.code,
+        fallback_used: isEmbedRestricted,
+      });
+
       // 비디오 상태를 needs_review로 변경해야 하는 에러인지 확인 (2, 5, 100, 101)
       if (isVideoNeedsReviewError(error.code)) {
         console.log(`에러 코드 ${error.code} 감지 → 비디오 상태를 needs_review로 변경`);
@@ -79,8 +89,6 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
           console.error('비디오 상태 업데이트 중 예외 발생:', err);
         }
       }
-
-      const isEmbedRestricted = isEmbeddedRestrictedError(error);
 
       if (isEmbedRestricted) {
         console.log('임베드 제한 감지 → YouTube 모바일 사이트 fallback 전환');

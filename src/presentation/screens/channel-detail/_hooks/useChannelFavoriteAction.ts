@@ -11,9 +11,11 @@
 import { useCallback, useState, useRef } from 'react';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useChannelFavoriteStatus, useToggleChannelFavorite } from '@/features/channel-favorites';
+import { analyticsService } from '@/shared/analytics';
 
 interface UseChannelFavoriteActionParams {
   readonly channelId: string;
+  readonly channelName?: string;
 }
 
 interface UseChannelFavoriteActionReturn {
@@ -33,6 +35,7 @@ interface UseChannelFavoriteActionReturn {
 
 export function useChannelFavoriteAction({
   channelId,
+  channelName,
 }: UseChannelFavoriteActionParams): UseChannelFavoriteActionReturn {
   // 인증 상태
   const { status } = useAuth();
@@ -58,7 +61,14 @@ export function useChannelFavoriteAction({
     setPendingAction(null);
     // 로그인 후 찜 등록 실행
     toggleFavorite({ channelId });
-  }, [toggleFavorite, channelId]);
+
+    // GA4 channel_favorite_toggle 이벤트 로깅 (로그인 후 찜 추가)
+    analyticsService.channelFavoriteToggle({
+      channel_id: channelId,
+      channel_name: channelName ?? '',
+      action: 'add',
+    });
+  }, [toggleFavorite, channelId, channelName]);
 
   // 로그인 성공 시 콜백 (pendingAction이 있을 때만)
   const loginSuccessCallback = pendingAction ? executeLoginSuccessCallback : undefined;
@@ -80,6 +90,17 @@ export function useChannelFavoriteAction({
 
     lastCallTimeRef.current = now;
     isProcessingRef.current = true;
+
+    // 현재 찜 상태를 기반으로 액션 결정 (토글이므로 반대 액션)
+    const action = favoriteStatus?.isFavorited ? 'remove' : 'add';
+
+    // GA4 channel_favorite_toggle 이벤트 로깅
+    analyticsService.channelFavoriteToggle({
+      channel_id: channelId,
+      channel_name: channelName ?? '',
+      action,
+    });
+
     toggleFavorite(
       { channelId },
       {
@@ -88,7 +109,7 @@ export function useChannelFavoriteAction({
         },
       },
     );
-  }, [isLoggedIn, channelId, toggleFavorite, isPending]);
+  }, [isLoggedIn, channelId, channelName, toggleFavorite, isPending, favoriteStatus?.isFavorited]);
 
   // 로그인 다이얼로그 닫기
   const handleCloseDialog = useCallback(() => {

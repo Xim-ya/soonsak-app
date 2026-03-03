@@ -10,6 +10,7 @@ import {
   CardSkeletonBox,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
+import { ContentSource } from '@/shared/analytics';
 import { useWeeklyTopTen } from '../_hooks/useWeeklyTopTen';
 import { TopTenContentModel } from '../_types/topTenContentModel.home';
 
@@ -21,7 +22,11 @@ const TITLE_LEFT_OFFSET = 60;
  */
 const TopTenItem = React.memo(({ item }: { item: TopTenContentModel }) => (
   <ItemContainer>
-    <ContentCardImage item={item} titleLeftOffset={TITLE_LEFT_OFFSET} />
+    <ContentCardImage
+      item={item}
+      titleLeftOffset={TITLE_LEFT_OFFSET}
+      source={ContentSource.HOME_TOP10}
+    />
     <RankBadge>
       <RankText>{formatter.toOrdinal(item.rank)}</RankText>
     </RankBadge>

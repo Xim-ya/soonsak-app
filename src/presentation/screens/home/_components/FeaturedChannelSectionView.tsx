@@ -9,6 +9,7 @@ import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { analyticsService } from '@/shared/analytics';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 import { useFeaturedChannels } from '../_hooks/useFeaturedChannels';
 import { FeaturedChannelModel } from '../_types/featuredChannelModel.home';
@@ -33,34 +34,43 @@ const _SKELETON_DATA = createSkeletonData(5);
 /**
  * 채널 아이템 컴포넌트
  */
-const ChannelItem = React.memo(({ channel }: { channel: FeaturedChannelModel }) => {
-  const navigation = useNavigation<NavigationProp>();
+const ChannelItem = React.memo(
+  ({ channel, position }: { channel: FeaturedChannelModel; position: number }) => {
+    const navigation = useNavigation<NavigationProp>();
 
-  const handlePress = useCallback(() => {
-    navigation.navigate(routePages.channelDetail, {
-      channelId: channel.id,
-      channelName: channel.name,
-      channelLogoUrl: channel.logoUrl,
-      subscriberCount: channel.subscriberCount,
-    });
-  }, [navigation, channel]);
+    const handlePress = useCallback(() => {
+      // 홈 채널 클릭 이벤트 로깅
+      analyticsService.homeChannelClick({
+        channel_id: channel.id,
+        channel_name: channel.name,
+        position,
+      });
 
-  return (
-    <ItemContainer>
-      <ItemTouchable
-        onPress={handlePress}
-        activeOpacity={0.8}
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={`${channel.name} 채널로 이동`}
-      >
-        <ChannelLogoImage source={channel.logoUrl} size={AVATAR_SIZE} />
-        <Gap size={10} />
-        <ChannelNameText numberOfLines={1}>{channel.name}</ChannelNameText>
-      </ItemTouchable>
-    </ItemContainer>
-  );
-});
+      navigation.navigate(routePages.channelDetail, {
+        channelId: channel.id,
+        channelName: channel.name,
+        channelLogoUrl: channel.logoUrl,
+        subscriberCount: channel.subscriberCount,
+      });
+    }, [navigation, channel, position]);
+
+    return (
+      <ItemContainer>
+        <ItemTouchable
+          onPress={handlePress}
+          activeOpacity={0.8}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel={`${channel.name} 채널로 이동`}
+        >
+          <ChannelLogoImage source={channel.logoUrl} size={AVATAR_SIZE} />
+          <Gap size={10} />
+          <ChannelNameText numberOfLines={1}>{channel.name}</ChannelNameText>
+        </ItemTouchable>
+      </ItemContainer>
+    );
+  },
+);
 ChannelItem.displayName = 'ChannelItem';
 
 /**
@@ -102,12 +112,18 @@ function FeaturedChannelSectionView() {
 
   // 전체 채널 목록으로 이동
   const handleTitlePress = useCallback(() => {
+    // 더보기 클릭 이벤트 로깅
+    analyticsService.homeSectionMoreClick({
+      section_type: 'featured_channel',
+      destination: 'channel_all',
+    });
+
     navigation.navigate(routePages.channelAll);
   }, [navigation]);
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<_ListItem>) =>
-      isSkeleton(item) ? <ChannelSkeletonItem /> : <ChannelItem channel={item} />,
+    ({ item, index }: ListRenderItemInfo<_ListItem>) =>
+      isSkeleton(item) ? <ChannelSkeletonItem /> : <ChannelItem channel={item} position={index} />,
     [],
   );
 

@@ -1,6 +1,16 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
 import type { SortType } from '@/shared/types/sort';
 import type { ViewMode } from '@/presentation/components/view-mode';
+import { analyticsService } from '@/shared/analytics';
 import { useChannelInfo } from '../_hooks/useChannelInfo';
 import { useChannelContents } from '../_hooks/useChannelContents';
 import { ChannelVideoModel } from '../_types';
@@ -43,6 +53,8 @@ interface ChannelDetailProviderProps {
   readonly channelName?: string | undefined;
   readonly channelLogoUrl?: string | undefined;
   readonly subscriberCount?: number | undefined;
+  /** 채널 상세 진입 경로 (GA 로깅용) */
+  readonly source?: string | undefined;
 }
 
 /**
@@ -67,6 +79,7 @@ export function ChannelDetailProvider({
   channelName,
   channelLogoUrl,
   subscriberCount,
+  source = 'direct',
 }: ChannelDetailProviderProps) {
   // 정렬 상태 (기본값: 최신순)
   const [sortType, setSortType] = useState<SortType>('latest');
@@ -81,6 +94,21 @@ export function ChannelDetailProvider({
       channelLogoUrl,
       subscriberCount,
     });
+
+  // GA4 channel_view 이벤트 로깅 (채널별 1회)
+  // channelId 변경 시에도 새 채널에 대해 로깅하기 위해 마지막 로깅한 채널 키를 추적
+  const lastLoggedChannelKeyRef = useRef<string | null>(null);
+  useEffect(() => {
+    const channelKey = `${channelId}_${source}`;
+    if (displayName && lastLoggedChannelKeyRef.current !== channelKey) {
+      analyticsService.channelView({
+        channel_id: channelId,
+        channel_name: displayName,
+        source,
+      });
+      lastLoggedChannelKeyRef.current = channelKey;
+    }
+  }, [channelId, displayName, source]);
 
   // 채널 콘텐츠 관리 (정렬 타입 전달)
   const { videos, isLoading, fetchNextPage, hasNextPage, totalCount } = useChannelContents(

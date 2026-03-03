@@ -62,29 +62,6 @@ export default function AdminPrimaryVideoSelectScreen() {
     navigation.goBack();
   }, [navigation]);
 
-  // 비디오 선택 핸들러
-  const handleSelectVideo = useCallback(async (video: ContentVideoItem) => {
-    // 이미 대표 비디오인 경우
-    if (video.isPrimary) {
-      await showDialog({
-        title: '알림',
-        description: '이미 대표 비디오로 설정되어 있어요',
-        buttonText: '확인',
-      });
-      return;
-    }
-
-    const result = await showConfirmDialog({
-      title: '대표 비디오 변경',
-      description: `"${video.title}"을(를) 대표 비디오로 설정할까요?`,
-      leftButtonText: '취소',
-      rightButtonText: '변경',
-    });
-    if (result === 'right') {
-      handleChangePrimary(video.id, video.title);
-    }
-  }, [showDialog, showConfirmDialog]);
-
   // 대표 비디오 변경 처리
   const handleChangePrimary = useCallback(
     async (videoId: string, videoTitle: string) => {
@@ -122,6 +99,32 @@ export default function AdminPrimaryVideoSelectScreen() {
       }
     },
     [contentId, contentType, queryClient, refetch, showDialog],
+  );
+
+  // 비디오 선택 핸들러
+  const handleSelectVideo = useCallback(
+    async (video: ContentVideoItem) => {
+      // 이미 대표 비디오인 경우
+      if (video.isPrimary) {
+        await showDialog({
+          title: '알림',
+          description: '이미 대표 비디오로 설정되어 있어요',
+          buttonText: '확인',
+        });
+        return;
+      }
+
+      const result = await showConfirmDialog({
+        title: '대표 비디오 변경',
+        description: `"${video.title}"을(를) 대표 비디오로 설정할까요?`,
+        leftButtonText: '취소',
+        rightButtonText: '변경',
+      });
+      if (result === 'right') {
+        handleChangePrimary(video.id, video.title);
+      }
+    },
+    [showDialog, showConfirmDialog, handleChangePrimary],
   );
 
   const renderItem = useCallback(

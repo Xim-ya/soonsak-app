@@ -42,6 +42,7 @@ export namespace ContentCollectionModel {
   /**
    * ContentDto를 CollectionContentModel로 변환
    */
+  // eslint-disable-next-line no-inner-declarations
   function contentToModel(dto: ContentDto): CollectionContentModel {
     return {
       id: dto.id,

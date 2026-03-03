@@ -14,6 +14,7 @@ export interface CreditPersonModel {
   readonly profilePath: string | null;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace CreditPersonModel {
   /**
    * TV/Movie Credits 응답에서 CreditPersonModel[] 변환

@@ -8,6 +8,7 @@ import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { AppSize } from '@/shared/utils/appSize';
+import { analyticsService } from '@/shared/analytics';
 import type { UserContentItem } from '../_types';
 import { RatingOverlay } from './RatingOverlay';
 
@@ -37,6 +38,13 @@ function ContentGridItem({ item, showRating = false }: ContentGridItemProps) {
 
   // initialData로 포스터 경로를 전달하여 API 응답 전에 즉시 표시
   const handlePress = useCallback(() => {
+    // 콜렉션 콘텐츠 클릭 이벤트 로깅
+    analyticsService.myCollectionContentClick({
+      content_id: item.contentId,
+      content_type: item.contentType,
+      rating: item.rating ?? undefined,
+    });
+
     navigation.push(routePages.contentDetail, {
       id: item.contentId,
       title: item.contentTitle,
@@ -45,7 +53,14 @@ function ContentGridItem({ item, showRating = false }: ContentGridItemProps) {
         posterPath: item.contentPosterPath,
       },
     });
-  }, [navigation, item.contentId, item.contentTitle, item.contentType, item.contentPosterPath]);
+  }, [
+    navigation,
+    item.contentId,
+    item.contentTitle,
+    item.contentType,
+    item.contentPosterPath,
+    item.rating,
+  ]);
 
   return (
     <Container>

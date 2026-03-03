@@ -37,15 +37,9 @@ export async function sendLocalNotification(
 
   try {
     // 딥링크 데이터 구성 (screen이 있을 때만 action 포함)
-    const data = screen
-      ? {
-          action: {
-            type: 'NAVIGATION',
-            screen,
-            params,
-          },
-        }
-      : {};
+    // prettier-ignore
+    // eslint-disable-next-line indent
+    const data = screen ? { action: { type: 'NAVIGATION', screen, params } } : {};
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {

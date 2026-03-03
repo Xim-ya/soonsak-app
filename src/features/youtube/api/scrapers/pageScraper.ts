@@ -798,6 +798,7 @@ export const pageScraper = {
   /**
    * ytData에서 데이터 추출 (공통 로직)
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   extractFromYtData(ytData: any, data: ScrapedVideoDto): void {
     try {
       // videoPrimaryInfoRenderer에서 정보 추출

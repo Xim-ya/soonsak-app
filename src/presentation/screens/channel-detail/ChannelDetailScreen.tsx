@@ -37,7 +37,7 @@ type ChannelDetailRouteParams = ScreenRouteProp<typeof routePages.channelDetail>
  */
 export default function ChannelDetailScreen() {
   const route = useRoute<ChannelDetailRouteParams>();
-  const { channelId, channelName, channelLogoUrl, subscriberCount } = route.params;
+  const { channelId, channelName, channelLogoUrl, subscriberCount, source } = route.params;
 
   return (
     <ChannelDetailProvider
@@ -45,6 +45,7 @@ export default function ChannelDetailScreen() {
       channelName={channelName}
       channelLogoUrl={channelLogoUrl}
       subscriberCount={subscriberCount}
+      source={source}
     >
       <ChannelDetailContent />
     </ChannelDetailProvider>
@@ -84,7 +85,7 @@ function ChannelDetailContent() {
     handleToggleFavorite,
     handleCloseDialog,
     loginSuccessCallback,
-  } = useChannelFavoriteAction({ channelId });
+  } = useChannelFavoriteAction({ channelId, channelName: displayName });
 
   // 스크롤 애니메이션 관리
   const { handleScroll, gradientAnimatedStyle } = useScrollAnimation();

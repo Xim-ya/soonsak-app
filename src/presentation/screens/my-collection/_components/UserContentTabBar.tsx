@@ -1,10 +1,11 @@
-import React, { memo, useState, useCallback, useEffect } from 'react';
+import React, { memo, useState, useCallback, useEffect, useRef } from 'react';
 import { TouchableOpacity, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { type TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { analyticsService, type MyCollectionTab } from '@/shared/analytics';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -50,8 +51,31 @@ export function UserContentTabBar<T extends string>({
     }
   }, [focusedTab]);
 
+  // 탭 이름을 analytics 타입으로 변환
+  const toTabType = (name: string): MyCollectionTab => {
+    if (name === '찜했어요') return 'favorites';
+    if (name === '평가했어요') return 'ratings';
+    return 'watched';
+  };
+
+  // 화면 진입 시 초기 탭 로깅 (최초 1회만)
+  const hasLoggedViewRef = useRef(false);
+  useEffect(() => {
+    if (!hasLoggedViewRef.current && activeTab) {
+      hasLoggedViewRef.current = true;
+      analyticsService.myCollectionView({
+        initial_tab: toTabType(activeTab),
+      });
+    }
+  }, [activeTab]);
+
   const handleTabPress = useCallback(
     (name: T) => {
+      // 탭 변경 이벤트 로깅
+      analyticsService.myCollectionTabChange({
+        tab_name: toTabType(name),
+      });
+
       setActiveTab(name);
       onTabPress(name);
     },

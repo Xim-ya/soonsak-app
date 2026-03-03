@@ -47,6 +47,7 @@ module.exports = {
       infoPlist: {
         CFBundleName: '순삭',
         CFBundleDisplayName: '순삭',
+        FIRDebugEnabled: true,
       },
     },
     android: {
@@ -99,6 +100,7 @@ module.exports = {
       '@react-native-firebase/app',
       '@react-native-firebase/crashlytics',
       './plugins/withFirebaseModularHeaders',
+      './plugins/withFirebaseAnalyticsDebugView',
     ].filter(Boolean),
     extra: {
       eas: {

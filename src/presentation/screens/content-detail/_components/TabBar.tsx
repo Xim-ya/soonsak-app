@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
@@ -6,6 +6,8 @@ import { TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
+import { analyticsService } from '@/shared/analytics';
+import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 
 interface TabItemProps {
   name: string;
@@ -34,9 +36,15 @@ export const TabBar = <T extends string>({
   // 라이브러리에서 현재 포커스된 탭 가져오기 (초기값용)
   const focusedTab = useFocusedTab();
 
+  // 콘텐츠 ID 가져오기 (GA 로깅용)
+  const { id: contentId } = useContentDetailRoute();
+
   // 플리커링 방지를 위해 자체 상태 관리 (iOS/Android 공통)
   // lazy initializer로 초기값 설정
   const [activeTab, setActiveTab] = useState<T>(() => (focusedTab as T) || tabNames[0]!);
+
+  // 이전 탭 추적 (탭 전환 시 from_tab 판별용)
+  const previousTabRef = useRef<T>(activeTab);
 
   // focusedTab 변경 시 동기화
   useEffect(() => {
@@ -47,10 +55,21 @@ export const TabBar = <T extends string>({
 
   const handleTabPress = useCallback(
     (name: T) => {
+      // 탭 전환 시 GA4 이벤트 로깅 (같은 탭 클릭 시에는 로깅하지 않음)
+      if (previousTabRef.current !== name) {
+        const tabName = name === '영상' ? 'video_info' : 'related_content';
+        const parsedContentId = contentId != null ? Number(contentId) : 0;
+        analyticsService.contentDetailTabSwitch({
+          tab_name: tabName as 'video_info' | 'related_content',
+          content_id: parsedContentId,
+        });
+        previousTabRef.current = name;
+      }
+
       setActiveTab(name);
       onTabPress(name);
     },
-    [onTabPress],
+    [onTabPress, contentId],
   );
 
   // 컴포넌트 내부에서 읽어 AppSize 갱신 반영
@@ -82,7 +101,7 @@ export const TabBar = <T extends string>({
   return (
     <TabBarContainer style={tabletContainerStyle}>
       <TabsContainer style={tabletTabsStyle}>
-        {tabNames.map((name, index) => {
+        {tabNames.map((name) => {
           const tabProp = tabProps?.[name as keyof typeof tabProps];
           const label = (tabProp as { label?: string })?.label || name;
 

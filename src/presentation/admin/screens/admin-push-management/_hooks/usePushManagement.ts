@@ -130,13 +130,8 @@ export function usePushManagement() {
 
   // 스케줄 상태 변경 mutation
   const updateStatusMutation = useMutation({
-    mutationFn: ({
-      templateId,
-      status,
-    }: {
-      templateId: string;
-      status: PushScheduleStatus;
-    }) => adminPushApi.updateTemplateScheduleStatus(templateId, status),
+    mutationFn: ({ templateId, status }: { templateId: string; status: PushScheduleStatus }) =>
+      adminPushApi.updateTemplateScheduleStatus(templateId, status),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.templates });
       queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
@@ -221,16 +216,20 @@ export function usePushManagement() {
   // 템플릿 삭제
   const handleDeleteTemplate = useCallback(
     (templateId: string, templateName: string) => {
-      Alert.alert('템플릿 삭제', `"${templateName}" 템플릿을 삭제할까요?\n이 작업은 되돌릴 수 없어요.`, [
-        { text: '아니오', style: 'cancel' },
-        {
-          text: '삭제',
-          style: 'destructive',
-          onPress: () => {
-            deleteMutation.mutate(templateId);
+      Alert.alert(
+        '템플릿 삭제',
+        `"${templateName}" 템플릿을 삭제할까요?\n이 작업은 되돌릴 수 없어요.`,
+        [
+          { text: '아니오', style: 'cancel' },
+          {
+            text: '삭제',
+            style: 'destructive',
+            onPress: () => {
+              deleteMutation.mutate(templateId);
+            },
           },
-        },
-      ]);
+        ],
+      );
     },
     [deleteMutation],
   );

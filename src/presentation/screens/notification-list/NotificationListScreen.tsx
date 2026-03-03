@@ -13,7 +13,13 @@
  */
 
 import { useCallback, useMemo } from 'react';
-import { FlatList, RefreshControl, ActivityIndicator, ListRenderItem, TouchableOpacity } from 'react-native';
+import {
+  FlatList,
+  RefreshControl,
+  ActivityIndicator,
+  ListRenderItem,
+  TouchableOpacity,
+} from 'react-native';
 import styled from '@emotion/native';
 import textStyles from '@/shared/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';

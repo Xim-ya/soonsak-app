@@ -20,6 +20,7 @@ import colors from '@/shared/styles/colors';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { analyticsService } from '@/shared/analytics';
 import { useUnreadNotificationCount } from '../hooks/useNotifications';
 import BellIcon from '@assets/icons/bell.svg';
 
@@ -65,8 +66,13 @@ const NotificationBellButton = React.memo(
 
     // 규칙 5.2: useCallback으로 핸들러 메모이제이션
     const handlePress = useCallback(() => {
+      // MY 알림 클릭 이벤트 로깅
+      analyticsService.myNotificationClick({
+        has_unread: hasUnread,
+      });
+
       navigation.navigate(routePages.notificationList);
-    }, [navigation]);
+    }, [navigation, hasUnread]);
 
     // 비로그인 사용자에게는 표시하지 않음 (조건부 렌더링은 hooks 호출 후에)
     if (!isAuthenticated) {
