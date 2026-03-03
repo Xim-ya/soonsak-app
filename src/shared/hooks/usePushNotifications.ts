@@ -48,6 +48,8 @@ export interface UsePushNotificationsResult {
   permissionStatus: Notifications.PermissionStatus | null;
   /** 푸시 알림 권한 요청 */
   requestPermissions: () => Promise<boolean>;
+  /** 푸시 토큰 재획득 (권한 허용 후 토큰이 없을 때 사용) */
+  refreshToken: () => Promise<string | null>;
   /** 에러 메시지 */
   error: string | null;
 }
@@ -132,6 +134,26 @@ export function usePushNotifications(): UsePushNotificationsResult {
     }
   }, []);
 
+  // 토큰 재획득 함수 (권한 허용 후 토큰이 없을 때 사용)
+  const refreshToken = useCallback(async (): Promise<string | null> => {
+    // 이미 토큰이 있으면 그대로 반환
+    if (expoPushToken) return expoPushToken;
+
+    // 권한 확인
+    const { status } = await Notifications.getPermissionsAsync();
+    if (status !== 'granted') return null;
+
+    // 토큰 획득
+    const token = await getExpoPushToken();
+    if (token) {
+      setExpoPushToken(token);
+      if (__DEV__) {
+        console.log('[PushNotifications] 토큰 재획득:', token);
+      }
+    }
+    return token;
+  }, [expoPushToken]);
+
   useEffect(() => {
     let mounted = true;
 
@@ -190,6 +212,7 @@ export function usePushNotifications(): UsePushNotificationsResult {
     notification,
     permissionStatus,
     requestPermissions,
+    refreshToken,
     error,
   };
 }

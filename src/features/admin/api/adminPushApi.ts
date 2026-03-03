@@ -6,6 +6,7 @@
 
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { PUSH_DATABASE } from '@/shared/config/dbConfig';
+import type { PushData } from '../types/pushAction';
 
 // ============================================================================
 // Types
@@ -20,7 +21,8 @@ export type PushNotificationType =
   | 'system'
   | 'marketing'
   | 'reminder'
-  | 'recommendation';
+  | 'recommendation'
+  | 'review';
 
 /** 푸시 우선순위 */
 export type PushPriority = 'high' | 'normal' | 'low';
@@ -34,6 +36,7 @@ export type PushActionType =
   | 'nav_search'
   | 'nav_settings'
   | 'nav_userlist'
+  | 'nav_review_funnel'
   | 'action_settings'
   | 'action_refresh';
 
@@ -630,6 +633,308 @@ export const adminPushApi = {
       }),
       hasMore,
       nextCursor,
+    };
+  },
+
+  /**
+   * 활성 푸시 토큰의 앱 버전 목록 조회
+   *
+   * profiles.last_used_version 기준으로 버전별 토큰 수를 반환합니다.
+   *
+   * @returns 버전별 토큰 수 배열
+   */
+  getAvailableAppVersions: async (): Promise<
+    Array<{ version: string | null; count: number }>
+  > => {
+    // 1. 활성 푸시 토큰과 user_id 조회
+    const { data: tokenData, error: tokenError } = await supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
+      .select('id, user_id')
+      .eq('is_active', true);
+
+    if (tokenError) {
+      console.error('활성 토큰 조회 실패:', tokenError);
+      throw new Error(`Failed to fetch active tokens: ${tokenError.message}`);
+    }
+
+    if (!tokenData || tokenData.length === 0) {
+      return [];
+    }
+
+    // 2. 유저 ID 목록 추출
+    const userIds = [...new Set(tokenData.map((t) => t.user_id).filter(Boolean))];
+
+    if (userIds.length === 0) {
+      return [];
+    }
+
+    // 3. 유저별 last_used_version 조회
+    const { data: profileData, error: profileError } = await supabaseClient
+      .from('profiles')
+      .select('id, last_used_version')
+      .in('id', userIds);
+
+    if (profileError) {
+      console.error('프로필 버전 조회 실패:', profileError);
+      throw new Error(`Failed to fetch profile versions: ${profileError.message}`);
+    }
+
+    // 유저 ID -> 버전 매핑
+    const userVersionMap = new Map<string, string | null>();
+    for (const profile of profileData ?? []) {
+      userVersionMap.set(profile.id, profile.last_used_version as string | null);
+    }
+
+    // 버전별 토큰 수 집계 (각 토큰의 user_id로 버전 조회)
+    const versionCounts = new Map<string | null, number>();
+    for (const token of tokenData) {
+      const version = userVersionMap.get(token.user_id) ?? null;
+      versionCounts.set(version, (versionCounts.get(version) ?? 0) + 1);
+    }
+
+    // 배열로 변환 후 정렬 (null은 마지막으로)
+    return Array.from(versionCounts.entries())
+      .map(([version, count]) => ({ version, count }))
+      .sort((a, b) => {
+        if (a.version === null) return 1;
+        if (b.version === null) return -1;
+        return b.version.localeCompare(a.version); // 내림차순
+      });
+  },
+
+  /**
+   * 전체 푸시 발송 (활성 토큰에 발송)
+   *
+   * @param title - 푸시 알림 제목
+   * @param body - 푸시 알림 내용
+   * @param data - 딥링크 데이터 (선택)
+   * @param appVersion - 특정 앱 버전만 대상 (선택, null이면 버전 미지정 유저만)
+   */
+  sendBroadcastPush: async (
+    title: string,
+    body: string,
+    data?: PushData,
+    appVersion?: string | null,
+  ): Promise<{ success: boolean; sentCount: number; failedCount: number; totalTokens: number }> => {
+    // 푸시 알림 내용 검증
+    const trimmedTitle = title?.trim() ?? '';
+    const trimmedBody = body?.trim() ?? '';
+
+    if (trimmedBody.length === 0) {
+      throw new Error('Push notification body is required');
+    }
+    if (trimmedTitle.length > 100) {
+      throw new Error('Push notification title exceeds maximum length (100 characters)');
+    }
+    if (trimmedBody.length > 500) {
+      throw new Error('Push notification body exceeds maximum length (500 characters)');
+    }
+
+    // 앱 버전 필터가 있는 경우: profiles.last_used_version 기준으로 유저 필터링
+    let targetUserIds: string[] | null = null;
+
+    if (appVersion !== undefined) {
+      // 버전별 유저 ID 조회
+      let profileQuery = supabaseClient.from('profiles').select('id');
+
+      if (appVersion === null) {
+        // null인 경우: 버전 미지정 유저만
+        profileQuery = profileQuery.is('last_used_version', null);
+      } else {
+        // 특정 버전만
+        profileQuery = profileQuery.eq('last_used_version', appVersion);
+      }
+
+      const { data: profileData, error: profileError } = await profileQuery;
+
+      if (profileError) {
+        console.error('프로필 조회 실패:', profileError);
+        throw new Error(`Failed to fetch profiles: ${profileError.message}`);
+      }
+
+      targetUserIds = (profileData ?? []).map((p) => p.id);
+
+      if (targetUserIds.length === 0) {
+        return { success: false, sentCount: 0, failedCount: 0, totalTokens: 0 };
+      }
+    }
+
+    // 활성 푸시 토큰 조회 (유저 필터 적용)
+    let tokenQuery = supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
+      .select('id, token, user_id')
+      .eq('is_active', true);
+
+    // 유저 ID 필터 적용
+    if (targetUserIds !== null) {
+      tokenQuery = tokenQuery.in('user_id', targetUserIds);
+    }
+
+    const { data: tokens, error: tokenError } = await tokenQuery;
+
+    if (tokenError) {
+      console.error('푸시 토큰 조회 실패:', tokenError);
+      throw new Error(`Failed to fetch push tokens: ${tokenError.message}`);
+    }
+
+    if (!tokens || tokens.length === 0) {
+      return { success: false, sentCount: 0, failedCount: 0, totalTokens: 0 };
+    }
+
+    // action_type 매핑
+    let actionType = 'none';
+    let contentId: number | null = null;
+    let contentType: string | null = null;
+
+    const screenToActionType: Record<string, string> = {
+      ContentDetail: 'nav_content',
+      Player: 'nav_player',
+      ChannelDetail: 'nav_channel',
+      Search: 'nav_search',
+      Settings: 'nav_settings',
+      UserContentList: 'nav_userlist',
+      ReviewFunnel: 'nav_review_funnel',
+    };
+
+    const actionToActionType: Record<string, string> = {
+      OPEN_SETTINGS: 'action_settings',
+      REFRESH_DATA: 'action_refresh',
+    };
+
+    if (data?.action) {
+      if (data.action.type === 'NAVIGATION') {
+        const navAction = data.action;
+        actionType = screenToActionType[navAction.screen] ?? 'none';
+        if (navAction.screen === 'ContentDetail') {
+          const params = navAction.params as { id?: number; type?: string };
+          contentId = params.id ?? null;
+          contentType = params.type ?? null;
+        }
+      } else if (data.action.type === 'ACTION') {
+        actionType = actionToActionType[data.action.action] ?? 'none';
+      }
+    }
+
+    // push_notifications 테이블에 발송 기록 생성 (broadcast)
+    const userIds = [...new Set(tokens.map((t) => t.user_id).filter(Boolean))];
+    const { data: notification, error: notificationError } = await supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATIONS)
+      .insert({
+        notification_type: 'system',
+        title: trimmedTitle || '순삭',
+        body: trimmedBody,
+        data: data ?? null,
+        action_type: actionType,
+        content_id: contentId,
+        content_type: contentType,
+        user_id: null, // broadcast는 특정 유저 대상이 아님
+        is_broadcast: true,
+        target_user_ids: userIds,
+      })
+      .select('id')
+      .single();
+
+    if (notificationError) {
+      console.error('푸시 알림 기록 생성 실패:', notificationError);
+      throw new Error(`Failed to create notification record: ${notificationError.message}`);
+    }
+
+    const notificationId = notification?.id;
+
+    // Expo Push API로 발송 (배치 처리, 100개씩)
+    const BATCH_SIZE = 100;
+    let totalSentCount = 0;
+    let totalFailedCount = 0;
+
+    const pushData = data
+      ? { ...data, _notificationId: notificationId }
+      : notificationId
+        ? { _notificationId: notificationId }
+        : undefined;
+
+    for (let i = 0; i < tokens.length; i += BATCH_SIZE) {
+      const batch = tokens.slice(i, i + BATCH_SIZE);
+      const messages = batch.map((t) => ({
+        to: t.token,
+        ...(trimmedTitle.length > 0 && { title: trimmedTitle }),
+        body: trimmedBody,
+        sound: 'default' as const,
+        ...(pushData && { data: pushData }),
+      }));
+
+      try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+        const response = await fetch('https://exp.host/--/api/v2/push/send', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+          body: JSON.stringify(messages),
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          totalFailedCount += batch.length;
+          continue;
+        }
+
+        const result = await response.json();
+        const resultData = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+
+        // push_notification_receipts 테이블에 수신 기록 생성
+        if (notificationId) {
+          const now = new Date().toISOString();
+          const receipts = batch.map((token, index) => {
+            const ticketResult = resultData[index] as {
+              status?: string;
+              id?: string;
+              message?: string;
+              details?: { error?: string };
+            } | null;
+            const isSuccess = ticketResult?.status === 'ok';
+
+            return {
+              notification_id: notificationId,
+              user_id: token.user_id,
+              push_token_id: token.id,
+              expo_ticket_id: ticketResult?.id ?? null,
+              delivery_status: isSuccess ? 'sent' : 'failed',
+              error_code: ticketResult?.details?.error ?? null,
+              error_message: isSuccess ? null : (ticketResult?.message ?? null),
+              sent_at: isSuccess ? now : null,
+            };
+          });
+
+          await supabaseClient
+            .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
+            .insert(receipts);
+        }
+
+        const batchSentCount = resultData.filter(
+          (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'ok',
+        ).length;
+        const batchFailedCount = resultData.filter(
+          (r: { status?: string } | null) => r && typeof r === 'object' && r.status !== 'ok',
+        ).length;
+
+        totalSentCount += batchSentCount;
+        totalFailedCount += batchFailedCount;
+      } catch (error) {
+        console.error('배치 푸시 발송 실패:', error);
+        totalFailedCount += batch.length;
+      }
+    }
+
+    return {
+      success: totalSentCount > 0,
+      sentCount: totalSentCount,
+      failedCount: totalFailedCount,
+      totalTokens: tokens.length,
     };
   },
 };

@@ -85,6 +85,10 @@ export const UserInfoSection = memo(function UserInfoSection({ user }: UserInfoS
           <InfoValue>{user.entryCount}회</InfoValue>
         </InfoItem>
         <InfoItem>
+          <InfoLabel>앱 버전</InfoLabel>
+          <InfoValue>{user.lastUsedVersion ? `v${user.lastUsedVersion}` : '-'}</InfoValue>
+        </InfoItem>
+        <InfoItem>
           <InfoLabel>유저 ID</InfoLabel>
           <InfoValue numberOfLines={1} ellipsizeMode="middle">
             {user.id}

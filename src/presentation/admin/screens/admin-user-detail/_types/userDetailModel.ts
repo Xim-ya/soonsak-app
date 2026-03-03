@@ -32,6 +32,8 @@ export interface UserDetailModel {
   readonly watchHistoryCount: number;
   readonly favoritesCount: number;
   readonly ratingsCount: number;
+  /** 마지막 사용 앱 버전 */
+  readonly lastUsedVersion: string | null;
 }
 
 /**
@@ -58,5 +60,6 @@ export function userDetailFromDto(dto: UserDetailItem): UserDetailModel {
     watchHistoryCount: dto.watchHistoryCount,
     favoritesCount: dto.favoritesCount,
     ratingsCount: dto.ratingsCount,
+    lastUsedVersion: dto.lastUsedVersion,
   };
 }

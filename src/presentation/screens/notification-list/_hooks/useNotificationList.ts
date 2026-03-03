@@ -42,23 +42,31 @@ export function useNotificationList() {
     isRefetching,
   } = useInfiniteNotifications();
 
-  // 알림 목록 진입 이벤트 로깅 (최초 1회만)
-  const hasLoggedViewRef = useRef(false);
-  useEffect(() => {
-    if (!isLoading && !hasLoggedViewRef.current) {
-      hasLoggedViewRef.current = true;
-      const unreadCount = items.filter((item) => !item.readAt).length;
-      analyticsService.notificationListView({
-        unread_count: unreadCount,
-      });
-    }
-  }, [isLoading, items]);
-
   // 알림 클릭 처리
   const markAsClickedMutation = useMarkNotificationAsClicked();
 
   // 모든 알림 읽음 처리
   const markAllAsReadMutation = useMarkAllNotificationsAsRead();
+
+  // 알림 목록 진입 시 자동 읽음 처리 및 로깅 (최초 1회만)
+  const hasProcessedEntryRef = useRef(false);
+  useEffect(() => {
+    if (!isLoading && !isError && !hasProcessedEntryRef.current) {
+      hasProcessedEntryRef.current = true;
+
+      const unreadCount = items.filter((item) => !item.readAt).length;
+
+      // 1. 진입 이벤트 로깅
+      analyticsService.notificationListView({
+        unread_count: unreadCount,
+      });
+
+      // 2. 읽지 않은 알림이 있으면 자동으로 모두 읽음 처리 (뱃지 카운트 제거)
+      if (unreadCount > 0) {
+        markAllAsReadMutation.mutate();
+      }
+    }
+  }, [isLoading, items, markAllAsReadMutation]);
 
   /**
    * 알림 아이템 클릭 핸들러
@@ -106,21 +114,6 @@ export function useNotificationList() {
   }, [navigation]);
 
   /**
-   * 모든 알림 읽음 처리 핸들러
-   */
-  const handleMarkAllAsRead = useCallback(() => {
-    // 읽지 않은 알림 개수 계산
-    const unreadCount = items.filter((item) => !item.readAt).length;
-
-    // 모두 읽음 이벤트 로깅
-    analyticsService.notificationMarkAllRead({
-      count: unreadCount,
-    });
-
-    markAllAsReadMutation.mutate();
-  }, [markAllAsReadMutation, items]);
-
-  /**
    * 새로고침 핸들러
    */
   const handleRefresh = useCallback(() => {
@@ -148,7 +141,6 @@ export function useNotificationList() {
     // 핸들러
     handleNotificationPress,
     handleGoBack,
-    handleMarkAllAsRead,
     handleRefresh,
     handleLoadMore,
   };

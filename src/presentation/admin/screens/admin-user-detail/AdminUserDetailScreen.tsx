@@ -22,6 +22,7 @@ import {
   UserActivityStats,
   PushTokenStatus,
   PushNotificationSender,
+  ReviewFunnelHistory,
 } from './_components';
 import { useUserDetail } from './_hooks/useUserDetail';
 
@@ -117,6 +118,9 @@ export default function AdminUserDetailScreen() {
 
           {/* 푸시 토큰 상태 */}
           <PushTokenStatus tokens={user.pushTokens} />
+
+          {/* 리뷰 퍼널 기록 */}
+          <ReviewFunnelHistory userId={userId} />
 
           {/* 푸시 발송 */}
           <PushNotificationSender
