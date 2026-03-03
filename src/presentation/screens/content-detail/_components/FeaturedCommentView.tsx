@@ -4,6 +4,7 @@ import styled from '@emotion/native';
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
+import { appConfigManager } from '@/features/app-config';
 import { useFeaturedComment } from '../_hooks/useFeaturedComment';
 import { CommentItemView } from './CommentItemView';
 import { CommentSkeletonView } from './CommentSkeletonView';
@@ -26,7 +27,13 @@ interface FeaturedCommentViewProps {
 function FeaturedCommentView({
   onPressShowAll,
 }: FeaturedCommentViewProps): React.ReactElement | null {
+  const isReviewVersion = appConfigManager.isReviewVersion();
   const { featuredComment, totalCountText, isLoading, error } = useFeaturedComment();
+
+  // 심사 버전에서는 렌더링하지 않음
+  if (isReviewVersion) {
+    return null;
+  }
 
   // 에러 발생 시 또는 댓글이 없으면 렌더링하지 않음
   if (error || (!isLoading && !featuredComment)) {

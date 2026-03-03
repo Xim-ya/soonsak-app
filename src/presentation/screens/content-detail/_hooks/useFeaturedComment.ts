@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useYouTubeComments } from '@/features/youtube';
+import { appConfigManager } from '@/features/app-config';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { CommentModel, FeaturedCommentModel } from '../_types/commentModel.cd';
 
@@ -23,9 +24,11 @@ interface UseFeaturedCommentResult {
  * const { featuredComment, totalCountText, isLoading } = useFeaturedComment();
  */
 export function useFeaturedComment(): UseFeaturedCommentResult {
+  const isReviewVersion = appConfigManager.isReviewVersion();
   const { primaryVideo, commentToken, commentTotalCountText, isCommentTokenLoading } =
     useContentVideos();
-  const videoId = primaryVideo?.id;
+  // 심사 버전에서는 API 호출하지 않음
+  const videoId = isReviewVersion ? undefined : primaryVideo?.id;
 
   const {
     data: commentsData,

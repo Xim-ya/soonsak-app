@@ -1,37 +1,50 @@
 import React from 'react';
 import styled from '@emotion/native';
-import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
+import colors from '@/shared/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 
 /**
  * CommentSkeletonView - 댓글 로딩 스켈레톤 컴포넌트
  *
- * 댓글 데이터 로딩 중 표시되는 스켈레톤 UI입니다.
- * 프로필 이미지, 작성자명, 댓글 내용 영역의 플레이스홀더를 표시합니다.
+ * CommentItemView (maxLines=3)와 동일한 높이를 유지합니다.
+ * - HeaderRow: 18px (alert1 lineHeight)
+ * - Gap: 4px
+ * - CommentText 3줄: 60px (body3 lineHeight 20 × 3)
+ * - Gap: 8px
+ * - MetricsRow: 18px (alert2 lineHeight)
+ * 총: 108px
  *
  * @example
- * // 단일 스켈레톤
  * <CommentSkeletonView />
- *
- * // 여러 개의 스켈레톤 (로딩 리스트)
- * <>
- *   <CommentSkeletonView />
- *   <Gap size={16} />
- *   <CommentSkeletonView />
- * </>
  */
+
+// CommentItemView 높이 상수
+const HEADER_HEIGHT = 18; // alert1 lineHeight
+const TEXT_LINE_HEIGHT = 20; // body3 lineHeight
+const TEXT_LINES = 2;
+const TEXT_AREA_HEIGHT = TEXT_LINE_HEIGHT * TEXT_LINES; // 40px
+const METRICS_HEIGHT = 18; // alert2 lineHeight
+
 function CommentSkeletonView(): React.ReactElement {
   return (
     <Container>
-      <AvatarContainer>
-        <SkeletonView width={36} height={36} borderRadius={18} />
-      </AvatarContainer>
+      <AvatarSkeleton />
       <ContentContainer>
-        <SkeletonView width={100} height={18} borderRadius={4} />
-        <Gap size={8} />
-        <SkeletonView width={280} height={20} borderRadius={4} />
+        {/* 닉네임 */}
+        <HeaderRow>
+          <HeaderSkeleton />
+        </HeaderRow>
         <Gap size={4} />
-        <SkeletonView width={220} height={20} borderRadius={4} />
+        {/* 텍스트 2줄 */}
+        <TextAreaContainer>
+          <TextLineSkeleton style={{ width: '95%' }} />
+          <TextLineSkeleton style={{ width: '60%' }} />
+        </TextAreaContainer>
+        <Gap size={8} />
+        {/* 좋아요 */}
+        <MetricsRow>
+          <MetricsSkeleton />
+        </MetricsRow>
       </ContentContainer>
     </Container>
   );
@@ -43,12 +56,50 @@ const Container = styled.View({
   flexDirection: 'row',
 });
 
-const AvatarContainer = styled.View({
+const AvatarSkeleton = styled.View({
+  width: 36,
+  height: 36,
+  borderRadius: 18,
+  backgroundColor: colors.gray05,
   marginRight: 12,
 });
 
 const ContentContainer = styled.View({
   flex: 1,
+});
+
+const HeaderRow = styled.View({
+  height: HEADER_HEIGHT,
+  justifyContent: 'center',
+});
+
+const HeaderSkeleton = styled.View({
+  width: 120,
+  height: 13,
+  borderRadius: 4,
+  backgroundColor: colors.gray05,
+});
+
+const TextAreaContainer = styled.View({
+  gap: 6,
+});
+
+const TextLineSkeleton = styled.View({
+  height: 14,
+  borderRadius: 4,
+  backgroundColor: colors.gray05,
+});
+
+const MetricsRow = styled.View({
+  height: METRICS_HEIGHT,
+  justifyContent: 'center',
+});
+
+const MetricsSkeleton = styled.View({
+  width: 30,
+  height: 13,
+  borderRadius: 4,
+  backgroundColor: colors.gray05,
 });
 
 export { CommentSkeletonView };
