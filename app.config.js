@@ -31,13 +31,22 @@ module.exports = {
     icon: './assets/icon.png',
     userInterfaceStyle: 'dark',
     newArchEnabled: true,
+    updates: {
+      enabled: true,
+      url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
+      fallbackToCacheTimeout: 0,
+      checkAutomatically: 'ON_LOAD',
+    },
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#000000',
     },
     ios: {
-      supportsTablet: true,
+      supportsTablet: false,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
       googleServicesFile: './GoogleService-Info.plist',
@@ -47,7 +56,9 @@ module.exports = {
       infoPlist: {
         CFBundleName: '순삭',
         CFBundleDisplayName: '순삭',
-        FIRDebugEnabled: true,
+        CFBundleDevelopmentRegion: 'ko',
+        NSUserNotificationsUsageDescription: '숨은 명작 작품을 추천해 드릴게요',
+        ...(APP_VARIANT !== 'production' && { FIRDebugEnabled: true }),
       },
     },
     android: {
