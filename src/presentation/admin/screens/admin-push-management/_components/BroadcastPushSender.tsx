@@ -29,11 +29,8 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import {
-  type PushData,
-  type ActionTypeOption,
-  ACTION_TYPE_OPTIONS,
-} from '@/features/admin';
+import type { PushData, ActionTypeOption } from '@/features/admin';
+import { ACTION_TYPE_OPTIONS } from '@/features/admin';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import {
@@ -187,12 +184,14 @@ export const BroadcastPushSender = memo(function BroadcastPushSender({
     setBody('');
     setSelectedActionKey('none');
     setActionParams({});
+    setIsActionPickerVisible(false);
     resetVersionVerification(activePushTokens);
     setIsModalVisible(true);
   }, [activePushTokens, resetVersionVerification]);
 
   const handleCloseModal = useCallback(() => {
     setIsModalVisible(false);
+    setIsActionPickerVisible(false);
   }, []);
 
   const handleActionChange = useCallback((option: ActionTypeOption) => {
@@ -222,6 +221,11 @@ export const BroadcastPushSender = memo(function BroadcastPushSender({
       return;
     }
 
+    if (!hasValidTokens) {
+      Alert.alert('발송 불가', '대상 토큰이 없어요');
+      return;
+    }
+
     const verifiedVersion = getVerifiedVersion();
     if (!verifiedVersion) return;
 
@@ -239,15 +243,19 @@ export const BroadcastPushSender = memo(function BroadcastPushSender({
           text: '발송',
           style: 'destructive',
           onPress: async () => {
-            const pushData = buildPushData(selectedAction, actionParams);
-            const success = await onSend(
-              trimmedTitle,
-              trimmedBody,
-              pushData,
-              verifiedVersion.version,
-            );
-            if (success) {
-              setIsModalVisible(false);
+            try {
+              const pushData = buildPushData(selectedAction, actionParams);
+              const success = await onSend(
+                trimmedTitle,
+                trimmedBody,
+                pushData,
+                verifiedVersion.version,
+              );
+              if (success) {
+                setIsModalVisible(false);
+              }
+            } catch {
+              Alert.alert('발송 실패', '푸시 발송 중 오류가 발생했어요');
             }
           },
         },
@@ -257,6 +265,7 @@ export const BroadcastPushSender = memo(function BroadcastPushSender({
     isLoading,
     isFormValid,
     isVerified,
+    hasValidTokens,
     getVerifiedVersion,
     selectedAction,
     actionParams,

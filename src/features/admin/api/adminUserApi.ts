@@ -186,10 +186,15 @@ export const adminUserApi = {
     // 리뷰 퍼널 미발송 필터: 먼저 발송한 유저 ID 목록 조회
     let sentUserIds: string[] = [];
     if (reviewFunnelNotSent) {
-      const { data: sentUsers } = await supabaseClient
+      const { data: sentUsers, error: sentUsersError } = await supabaseClient
         .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATIONS)
         .select('user_id')
         .eq('action_type', 'nav_review_funnel');
+
+      if (sentUsersError) {
+        console.error('리뷰 퍼널 발송 유저 조회 실패:', sentUsersError);
+        throw new Error(`Failed to fetch review funnel sent users: ${sentUsersError.message}`);
+      }
 
       sentUserIds = [...new Set((sentUsers ?? []).map((u) => u.user_id).filter(Boolean))];
     }

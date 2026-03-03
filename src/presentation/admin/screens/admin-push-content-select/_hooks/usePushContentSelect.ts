@@ -143,6 +143,13 @@ export function usePushContentSelect({
     return () => clearTimeout(timer);
   }, [searchQuery, activeTab, handleSearch]);
 
+  // userId가 없어지면 activeTab을 'search'로 리셋
+  useEffect(() => {
+    if (!userId && activeTab !== 'search') {
+      setActiveTab('search');
+    }
+  }, [userId, activeTab]);
+
   // 탭 변경 시 유저 콘텐츠 로드 (userId가 있을 때만)
   useEffect(() => {
     if (activeTab === 'search' || !userId) return;

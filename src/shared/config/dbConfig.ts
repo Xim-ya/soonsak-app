@@ -64,6 +64,7 @@ export const AUTH_DATABASE = {
     UPDATED_AT: 'updated_at',
     LAST_LOGIN_AT: 'last_login_at',
     ENTRY_COUNT: 'entry_count',
+    LAST_USED_VERSION: 'last_used_version',
   },
   RPC: {
     INCREMENT_PROFILE_ENTRY_COUNT: 'increment_profile_entry_count',

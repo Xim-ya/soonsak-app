@@ -6,7 +6,7 @@
  */
 
 import { File as ExpoFile } from 'expo-file-system';
-import Constants from 'expo-constants';
+import * as Application from 'expo-application';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { AUTH_DATABASE } from '@/shared/config/dbConfig';
@@ -202,7 +202,7 @@ export const userApi = {
    * @param userId 사용자 ID
    */
   updateLastUsedVersion: async (userId: string): Promise<void> => {
-    const appVersion = Constants.expoConfig?.version ?? null;
+    const appVersion = Application.nativeApplicationVersion;
 
     if (!appVersion) {
       return;
@@ -212,10 +212,11 @@ export const userApi = {
       const { error } = await supabaseClient
         .from(AUTH_DATABASE.TABLES.PROFILES)
         .update({
-          last_used_version: appVersion,
+          [AUTH_DATABASE.COLUMNS.LAST_USED_VERSION]: appVersion,
           [AUTH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
         })
-        .eq(AUTH_DATABASE.COLUMNS.ID, userId);
+        .eq(AUTH_DATABASE.COLUMNS.ID, userId)
+        .neq(AUTH_DATABASE.COLUMNS.LAST_USED_VERSION, appVersion);
 
       if (error) throw error;
     } catch (error) {

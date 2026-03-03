@@ -5,7 +5,7 @@
  * Discriminated Union 패턴을 사용하여 상태를 명확하게 표현합니다.
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { adminPushApi } from '@/features/admin/api/adminPushApi';
 
 // ============================================================================
@@ -93,6 +93,17 @@ export function useVersionVerification({
     label: '전체',
     count: totalActiveTokens,
   });
+
+  // totalActiveTokens 변경 시 전체 대상 상태의 count 동기화
+  useEffect(() => {
+    setVerificationState((prev) => {
+      // 전체 대상(version: undefined)이고 검증 완료 상태일 때만 count 업데이트
+      if (prev.status === 'verified' && prev.version === undefined) {
+        return { ...prev, count: totalActiveTokens };
+      }
+      return prev;
+    });
+  }, [totalActiveTokens]);
 
   // 입력값 변경 시 검증 상태 초기화
   const handleInputChange = useCallback((text: string) => {

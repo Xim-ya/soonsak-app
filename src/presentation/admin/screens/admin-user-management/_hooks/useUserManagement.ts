@@ -155,7 +155,14 @@ export function useUserManagement(): UseUserManagementReturn {
       signupDateFrom: showTodaySignupsOnly ? getTodayStartIso() : null,
       reviewFunnelNotSent: showReviewFunnelNotSent,
     }),
-    [selectedRole, appliedSearchQuery, searchField, sortBy, showTodaySignupsOnly, showReviewFunnelNotSent],
+    [
+      selectedRole,
+      appliedSearchQuery,
+      searchField,
+      sortBy,
+      showTodaySignupsOnly,
+      showReviewFunnelNotSent,
+    ],
   );
 
   // 대시보드 통계 조회

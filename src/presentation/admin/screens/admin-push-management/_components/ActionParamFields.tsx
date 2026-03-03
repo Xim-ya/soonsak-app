@@ -240,6 +240,14 @@ export const ActionParamFields = memo(function ActionParamFields({
         return <UserContentListFields params={params} onUpdateParam={onUpdateParam} />;
       case 'ChannelDetail':
         return <ChannelDetailFields params={params} onUpdateParam={onUpdateParam} />;
+      case 'Player':
+        return (
+          <ContentDetailFields
+            params={params}
+            onUpdateParam={onUpdateParam}
+            onOpenContentSearch={onOpenContentSearch}
+          />
+        );
       case 'Search':
       case 'Settings':
         return <NoParamsHint hint="추가 파라미터 없음" />;

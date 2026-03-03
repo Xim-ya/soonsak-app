@@ -264,7 +264,11 @@ export const useMarkNotificationAsClicked = () => {
               ...page,
               notifications: page.notifications.map((notification) =>
                 notification.notificationId === notificationId
-                  ? { ...notification, readAt: now, clickedAt: now }
+                  ? {
+                      ...notification,
+                      readAt: notification.readAt ?? now,
+                      clickedAt: now,
+                    }
                   : notification,
               ),
             })),

@@ -170,6 +170,9 @@ export default function AdminPushManagementScreen() {
     [
       statistics,
       isStatisticsLoading,
+      activePushTokens,
+      isSendingBroadcast,
+      handleSendBroadcast,
       activeTab,
       handleTabChange,
       searchQuery,

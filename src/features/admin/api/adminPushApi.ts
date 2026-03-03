@@ -36,6 +36,7 @@ export type PushActionType =
   | 'nav_search'
   | 'nav_settings'
   | 'nav_userlist'
+  | 'nav_review_funnel'
   | 'action_settings'
   | 'action_refresh';
 
@@ -653,7 +654,7 @@ export const adminPushApi = {
 
     if (tokenError) {
       console.error('활성 토큰 조회 실패:', tokenError);
-      return [];
+      throw new Error(`Failed to fetch active tokens: ${tokenError.message}`);
     }
 
     if (!tokenData || tokenData.length === 0) {
@@ -675,7 +676,7 @@ export const adminPushApi = {
 
     if (profileError) {
       console.error('프로필 버전 조회 실패:', profileError);
-      return [];
+      throw new Error(`Failed to fetch profile versions: ${profileError.message}`);
     }
 
     // 유저 ID -> 버전 매핑
@@ -835,6 +836,7 @@ export const adminPushApi = {
 
     if (notificationError) {
       console.error('푸시 알림 기록 생성 실패:', notificationError);
+      throw new Error(`Failed to create notification record: ${notificationError.message}`);
     }
 
     const notificationId = notification?.id;
@@ -917,7 +919,7 @@ export const adminPushApi = {
           (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'ok',
         ).length;
         const batchFailedCount = resultData.filter(
-          (r: { status?: string } | null) => r && typeof r === 'object' && r.status === 'error',
+          (r: { status?: string } | null) => r && typeof r === 'object' && r.status !== 'ok',
         ).length;
 
         totalSentCount += batchSentCount;

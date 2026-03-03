@@ -274,7 +274,12 @@ export function usePushManagement() {
           queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
           return true;
         } else {
-          Alert.alert('발송 실패', '해당 조건의 활성 푸시 토큰이 없어요');
+          // 대상 토큰이 없는 경우와 발송 실패를 구분
+          const hasTargetTokens = result.totalTokens > 0;
+          const errorMessage = hasTargetTokens
+            ? `푸시 발송에 실패했어요.\n\n총 토큰: ${result.totalTokens}개\n실패: ${result.failedCount}건`
+            : '해당 조건의 활성 푸시 토큰이 없어요';
+          Alert.alert('발송 실패', errorMessage);
           return false;
         }
       } catch (error) {

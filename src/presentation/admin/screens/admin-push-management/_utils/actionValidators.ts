@@ -113,13 +113,16 @@ export function validateActionParams(
 
   if (selectedAction.type === 'navigation' && selectedAction.screen) {
     const validator = navigationValidators[selectedAction.screen];
-    return validator ? validator(params) : true;
+    // 알 수 없는 화면은 거부 (기본값: deny)
+    return validator ? validator(params) : false;
   }
 
   if (selectedAction.type === 'action' && selectedAction.action) {
     const validator = actionValidators[selectedAction.action];
-    return validator ? validator(params) : true;
+    // 알 수 없는 액션은 거부 (기본값: deny)
+    return validator ? validator(params) : false;
   }
 
-  return true;
+  // 알 수 없는 타입은 거부
+  return false;
 }

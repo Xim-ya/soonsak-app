@@ -188,11 +188,13 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
         // 푸시 클릭 추적 (비동기, 실패해도 무시)
         const dbNotificationId = extractNotificationId(data);
-        if (dbNotificationId && user?.id) {
-          pushTokenApi.trackNotificationClick(dbNotificationId, user.id);
+        const currentUser = userRef.current;
+        const currentToken = expoPushTokenRef.current;
+        if (dbNotificationId && currentUser?.id) {
+          pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
           // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
           queryClient.invalidateQueries({
-            queryKey: notificationKeys.unreadCount(user.id, expoPushToken),
+            queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
           });
         }
 
@@ -221,7 +223,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     }, 100);
 
     return () => clearInterval(checkReady);
-  }, [status]); // status가 idle에서 변경될 때 실행
+  }, [status, queryClient]); // status가 idle에서 변경될 때 실행
 
   // 앱이 실행 중일 때 푸시 알림 탭 처리
   // ref 패턴으로 최신 상태 참조 (구독 재등록 방지)

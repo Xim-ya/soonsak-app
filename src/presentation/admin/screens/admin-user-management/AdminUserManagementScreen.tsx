@@ -141,9 +141,7 @@ export default function AdminUserManagementScreen() {
             activeOpacity={0.7}
             isActive={showReviewFunnelNotSent}
           >
-            <FilterChipText isActive={showReviewFunnelNotSent}>
-              리뷰 유도 미발송
-            </FilterChipText>
+            <FilterChipText isActive={showReviewFunnelNotSent}>리뷰 유도 미발송</FilterChipText>
           </FilterChip>
         </SortAndFilterContainer>
       </>

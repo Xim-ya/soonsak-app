@@ -51,7 +51,7 @@ export function useNotificationList() {
   // 알림 목록 진입 시 자동 읽음 처리 및 로깅 (최초 1회만)
   const hasProcessedEntryRef = useRef(false);
   useEffect(() => {
-    if (!isLoading && !hasProcessedEntryRef.current) {
+    if (!isLoading && !isError && !hasProcessedEntryRef.current) {
       hasProcessedEntryRef.current = true;
 
       const unreadCount = items.filter((item) => !item.readAt).length;

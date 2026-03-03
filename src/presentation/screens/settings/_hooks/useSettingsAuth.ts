@@ -103,14 +103,17 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   }, [navigation]);
 
   // 알림 설정 변경 핸들러 - 시스템 설정으로 이동
-  const handleNotificationToggle = useCallback(() => {
-    // 알림 토글 이벤트 로깅
-    analyticsService.settingsNotificationToggle({
-      enabled: !isNotificationEnabled,
-    });
+  const handleNotificationToggle = useCallback(
+    (value: boolean) => {
+      // 알림 토글 이벤트 로깅
+      analyticsService.settingsNotificationToggle({
+        enabled: value,
+      });
 
-    openSystemSettings();
-  }, [isNotificationEnabled, openSystemSettings]);
+      openSystemSettings();
+    },
+    [openSystemSettings],
+  );
 
   // 외부 URL 열기 공통 핸들러
   const openExternalUrl = useCallback(

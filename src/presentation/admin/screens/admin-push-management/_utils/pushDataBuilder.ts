@@ -111,7 +111,14 @@ export function buildPushData(
   if (selectedAction.type === 'navigation' && selectedAction.screen) {
     const screen = selectedAction.screen;
     const paramsBuilder = navigationParamsBuilders[screen];
-    const navigationParams = paramsBuilder ? paramsBuilder(params) : {};
+
+    // 알 수 없는 화면에 대한 빌더가 없으면 빠르게 실패
+    if (!paramsBuilder) {
+      console.error(`[buildPushData] Unknown navigation screen: ${screen}`);
+      return undefined;
+    }
+
+    const navigationParams = paramsBuilder(params);
 
     return {
       version: '1.0',
