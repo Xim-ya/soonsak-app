@@ -7,7 +7,7 @@
  * const { isWithdrawing, handleLogoutPress, handleWithdrawPress } = useSettingsAuth();
  */
 
-import { useCallback, useState, useEffect, useRef, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { Linking, Platform, AppState } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
