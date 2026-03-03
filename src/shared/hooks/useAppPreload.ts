@@ -5,6 +5,7 @@ import { contentApi } from '@/features/content/api/contentApi';
 import { formatter } from '@/shared/utils/formatter';
 import { ContentDto } from '@/features/content/types';
 import { appConfigManager } from '@/features/app-config';
+import { AppLogger } from '@/shared/utils/logger';
 
 /** 배너 콘텐츠 프리로드 개수 */
 const BANNER_PRELOAD_COUNT = 5;
@@ -88,12 +89,12 @@ export function useAppPreload() {
         // 이미지 프리페치 (실패해도 계속 진행)
         await Promise.allSettled(allImageUrls.map((url) => Image.prefetch(url)));
 
-        console.log(
-          `[Preload] 배너 이미지 ${backdropUrls.length}개, 로고 ${logoUrls.length}개 프리로드 완료`,
+        AppLogger.log(
+          `배너 이미지 ${backdropUrls.length}개, 로고 ${logoUrls.length}개 프리로드 완료`,
         );
       } catch (error) {
         // 프리로드 실패해도 앱은 정상 실행
-        console.warn('[Preload] 프리로드 중 오류 (무시됨):', error);
+        AppLogger.warn('프리로드 중 오류 (무시됨):', error);
       } finally {
         preloadCompleteRef.current = true;
         checkAndFinish();
@@ -102,7 +103,7 @@ export function useAppPreload() {
 
     // Lottie 타이머 (2.5초)
     const lottieTimer = setTimeout(() => {
-      console.log('[Preload] Lottie 애니메이션 완료');
+      AppLogger.log('Lottie 애니메이션 완료');
       lottieCompleteRef.current = true;
       checkAndFinish();
     }, LOTTIE_SPLASH_DURATION_MS);
@@ -110,7 +111,7 @@ export function useAppPreload() {
     // 프리로드 guard timeout (무한 대기 방지)
     const guardTimer = setTimeout(() => {
       if (!preloadCompleteRef.current) {
-        console.warn('[Preload] 프리로드 타임아웃 - 강제 완료 처리');
+        AppLogger.warn('프리로드 타임아웃 - 강제 완료 처리');
         preloadCompleteRef.current = true;
         checkAndFinish();
       }

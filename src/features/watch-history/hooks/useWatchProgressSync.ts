@@ -13,8 +13,11 @@ import { useRef, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppState, type AppStateStatus } from 'react-native';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { Logger } from '@/shared/utils/logger';
 import { watchHistoryApi } from '../api/watchHistoryApi';
 import type { ContentType } from '@/shared/types/content/contentType.enum';
+
+const WatchProgressLogger = Logger.create('WatchProgress');
 
 /** YouTube 플레이어 상태 상수 */
 const PLAYER_STATE = {
@@ -102,7 +105,7 @@ export function useWatchProgressSync({
       // 동기화 성공 후 관련 쿼리 무효화 (watchHistory로 시작하는 모든 쿼리)
       queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
     } catch (error) {
-      console.error('시청 진행률 동기화 실패:', error);
+      WatchProgressLogger.error('시청 진행률 동기화 실패:', error);
     } finally {
       isSyncingRef.current = false;
     }
@@ -127,7 +130,7 @@ export function useWatchProgressSync({
       // 완료 처리 후 관련 쿼리 무효화
       queryClient.invalidateQueries({ queryKey: WATCH_HISTORY_QUERY_KEY });
     } catch (error) {
-      console.error('영상 완료 처리 실패:', error);
+      WatchProgressLogger.error('영상 완료 처리 실패:', error);
     }
   }, [isLoggedIn, contentId, contentType, videoId, queryClient]);
 

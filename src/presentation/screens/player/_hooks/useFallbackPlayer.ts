@@ -19,6 +19,7 @@ import {
 import { useDialog } from '@/presentation/components/dialog';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { analyticsService } from '@/shared/analytics';
+import { PlayerLogger } from '@/shared/utils/logger';
 
 interface UseFallbackPlayerParams {
   readonly videoId: string;
@@ -49,7 +50,7 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
         await Linking.openURL(youtubeUrl);
       }
     } catch (linkingError) {
-      console.error('링크 열기 실패:', linkingError);
+      PlayerLogger.error('링크 열기 실패:', linkingError);
       await showDialog({
         title: '오류',
         description: 'YouTube로 연결할 수 없습니다.',
@@ -60,7 +61,7 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
 
   const handleError = useCallback(
     async (error: { code: number; message: string }) => {
-      console.error('플레이어 에러:', error);
+      PlayerLogger.error('플레이어 에러:', error);
 
       const isEmbedRestricted = isEmbeddedRestrictedError(error);
 
@@ -73,7 +74,7 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
 
       // 비디오 상태를 needs_review로 변경해야 하는 에러인지 확인 (2, 5, 100, 101)
       if (isVideoNeedsReviewError(error.code)) {
-        console.log(`에러 코드 ${error.code} 감지 → 비디오 상태를 needs_review로 변경`);
+        PlayerLogger.log(`에러 코드 ${error.code} 감지 → 비디오 상태를 needs_review로 변경`);
         try {
           const { error: updateError } = await supabaseClient
             .from('videos')
@@ -81,17 +82,17 @@ export function useFallbackPlayer({ videoId }: UseFallbackPlayerParams): Fallbac
             .eq('id', videoId);
 
           if (updateError) {
-            console.error('비디오 상태 업데이트 실패:', updateError);
+            PlayerLogger.error('비디오 상태 업데이트 실패:', updateError);
           } else {
-            console.log(`비디오 ${videoId} 상태를 needs_review로 변경 완료`);
+            PlayerLogger.log(`비디오 ${videoId} 상태를 needs_review로 변경 완료`);
           }
         } catch (err) {
-          console.error('비디오 상태 업데이트 중 예외 발생:', err);
+          PlayerLogger.error('비디오 상태 업데이트 중 예외 발생:', err);
         }
       }
 
       if (isEmbedRestricted) {
-        console.log('임베드 제한 감지 → YouTube 모바일 사이트 fallback 전환');
+        PlayerLogger.log('임베드 제한 감지 → YouTube 모바일 사이트 fallback 전환');
         setIsFallbackMode(true);
       } else {
         const result = await showDialog({

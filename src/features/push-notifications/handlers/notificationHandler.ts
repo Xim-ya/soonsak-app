@@ -20,6 +20,7 @@ import {
   isValidNotificationPayload,
 } from '../types/notificationTypes';
 import { pendingNavigationStore } from '../store/pendingNavigationStore';
+import { PushLogger } from '@/shared/utils/logger';
 
 type NavigationRef = NavigationContainerRef<RootStackParamList>;
 
@@ -52,7 +53,7 @@ export async function handleNotification(
 ): Promise<boolean> {
   // 페이로드 유효성 검증
   if (!isValidNotificationPayload(data)) {
-    console.warn('[Notification] Invalid payload:', data);
+    PushLogger.warn('Invalid payload:', data);
     return false;
   }
 
@@ -68,10 +69,10 @@ export async function handleNotification(
       return handleSystemAction(action, options);
     }
 
-    console.warn('[Notification] Unknown action type:', action);
+    PushLogger.warn('Unknown action type:', action);
     return false;
   } catch (error) {
-    console.error('[Notification] Handler error:', error);
+    PushLogger.error('Handler error:', error);
     return false;
   }
 }
@@ -110,13 +111,13 @@ async function safeOpenURL(url: string): Promise<boolean> {
   try {
     const canOpen = await Linking.canOpenURL(url);
     if (!canOpen) {
-      console.warn('[Notification] URL을 열 수 없습니다:', url);
+      PushLogger.warn('URL을 열 수 없습니다:', url);
       return false;
     }
     await Linking.openURL(url);
     return true;
   } catch (error) {
-    console.error('[Notification] URL 열기 실패:', error);
+    PushLogger.error('URL 열기 실패:', error);
     return false;
   }
 }
@@ -154,7 +155,7 @@ async function handleSystemAction(
     case 'OPEN_URL': {
       const url = action.payload?.['url'] as string | undefined;
       if (!url) {
-        console.warn('[Notification] OPEN_URL: URL이 없습니다');
+        PushLogger.warn('OPEN_URL: URL이 없습니다');
         return false;
       }
       return await safeOpenURL(url);
@@ -168,7 +169,7 @@ async function handleSystemAction(
       return true;
 
     default:
-      console.warn('[Notification] Unknown system action:', action.action);
+      PushLogger.warn('Unknown system action:', action.action);
       return false;
   }
 }

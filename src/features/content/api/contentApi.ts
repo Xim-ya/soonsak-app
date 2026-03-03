@@ -1,5 +1,6 @@
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
+import { ContentLogger } from '@/shared/utils/logger';
 import {
   ContentDto,
   ContentWithVideoDto,
@@ -97,7 +98,7 @@ async function getUserWatchedContentIds(): Promise<number[] | null> {
     .eq('user_id', userData.user.id);
 
   if (watchedError) {
-    console.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
+    ContentLogger.error('시청 기록 콘텐츠 ID 조회 실패:', watchedError);
     return null;
   }
 
@@ -183,12 +184,12 @@ export const contentApi = {
     ]);
 
     if (countResult.error) {
-      console.error('콘텐츠 수 조회 실패:', countResult.error);
+      ContentLogger.error('콘텐츠 수 조회 실패:', countResult.error);
       throw new Error(`Failed to count contents: ${countResult.error.message}`);
     }
 
     if (dataResult.error) {
-      console.error('콘텐츠 조회 실패:', dataResult.error);
+      ContentLogger.error('콘텐츠 조회 실패:', dataResult.error);
       throw new Error(`Failed to fetch contents: ${dataResult.error.message}`);
     }
 
@@ -213,7 +214,7 @@ export const contentApi = {
       .order('runtime', { ascending: false, nullsFirst: false });
 
     if (error) {
-      console.error('비디오 조회 실패:', error);
+      ContentLogger.error('비디오 조회 실패:', error);
       throw new Error(`Failed to fetch videos: ${error.message}`);
     }
 
@@ -239,7 +240,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('한글 검색 실패:', error);
+      ContentLogger.error('한글 검색 실패:', error);
       throw new Error(`Failed to search contents: ${error.message}`);
     }
 
@@ -268,7 +269,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('등록된 콘텐츠 조회 실패:', error);
+      ContentLogger.error('등록된 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch registered contents: ${error.message}`);
     }
 
@@ -288,7 +289,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('조회수 증가 실패:', error);
+      ContentLogger.error('조회수 증가 실패:', error);
       // 조회수 증가 실패는 사용자 경험에 영향을 주지 않으므로 throw하지 않음
     }
   },
@@ -306,7 +307,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('재생수 증가 실패:', error);
+      ContentLogger.error('재생수 증가 실패:', error);
       // 재생수 증가 실패는 사용자 경험에 영향을 주지 않으므로 throw하지 않음
     }
   },
@@ -326,7 +327,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('인기 콘텐츠 조회 실패:', error);
+      ContentLogger.error('인기 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch top contents: ${error.message}`);
     }
 
@@ -360,7 +361,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('채널 콘텐츠 조회 실패:', error);
+      ContentLogger.error('채널 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch channel contents: ${error.message}`);
     }
 
@@ -432,7 +433,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('장르 기반 콘텐츠 조회 실패:', error);
+      ContentLogger.error('장르 기반 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch contents by genre: ${error.message}`);
     }
 
@@ -449,7 +450,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('러닝타임 긴 콘텐츠 조회 실패:', error);
+      ContentLogger.error('러닝타임 긴 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch long runtime contents: ${error.message}`);
     }
 
@@ -472,7 +473,7 @@ export const contentApi = {
       .select('*', { count: 'exact', head: true });
 
     if (countError) {
-      console.error('콘텐츠 수 조회 실패:', countError);
+      ContentLogger.error('콘텐츠 수 조회 실패:', countError);
       throw new Error(`Failed to count contents: ${countError.message}`);
     }
 
@@ -505,7 +506,7 @@ export const contentApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('랜덤 콘텐츠 조회 실패:', error);
+      ContentLogger.error('랜덤 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch random contents: ${error.message}`);
     }
 
@@ -535,7 +536,7 @@ export const contentApi = {
         .in('channel_id', filter.channelIds);
 
       if (videoError) {
-        console.error('채널 콘텐츠 ID 조회 실패:', videoError);
+        ContentLogger.error('채널 콘텐츠 ID 조회 실패:', videoError);
         throw new Error(`Failed to fetch channel content ids: ${videoError.message}`);
       }
 
@@ -563,7 +564,7 @@ export const contentApi = {
     const { count, error: countError } = await countQuery;
 
     if (countError) {
-      console.error('필터 콘텐츠 수 조회 실패:', countError);
+      ContentLogger.error('필터 콘텐츠 수 조회 실패:', countError);
       throw new Error(`Failed to count filtered contents: ${countError.message}`);
     }
 
@@ -588,7 +589,7 @@ export const contentApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('필터 랜덤 콘텐츠 조회 실패:', error);
+      ContentLogger.error('필터 랜덤 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch filtered random contents: ${error.message}`);
     }
 
@@ -605,7 +606,7 @@ export const contentApi = {
       .select('*', { count: 'exact', head: true });
 
     if (error) {
-      console.error('콘텐츠 수 조회 실패:', error);
+      ContentLogger.error('콘텐츠 수 조회 실패:', error);
       throw new Error(`Failed to count contents: ${error.message}`);
     }
 
@@ -621,7 +622,7 @@ export const contentApi = {
     const { data, error } = await supabaseClient.rpc(CONTENT_DATABASE.RPC.GET_CONTENT_COLLECTIONS);
 
     if (error) {
-      console.error('콘텐츠 컬렉션 조회 실패:', error);
+      ContentLogger.error('콘텐츠 컬렉션 조회 실패:', error);
       throw new Error(`Failed to fetch content collections: ${error.message}`);
     }
 
@@ -668,7 +669,7 @@ export const contentApi = {
       .eq('content_type', contentType);
 
     if (error) {
-      console.error(`콘텐츠 조회 실패 (${contentType}):`, error);
+      ContentLogger.error(`콘텐츠 조회 실패 (${contentType}):`, error);
       throw new Error(`Failed to fetch ${contentType} contents: ${error.message}`);
     }
 
@@ -762,7 +763,7 @@ export const contentApi = {
         .in('channel_id', filter.channelIds);
 
       if (videoError) {
-        console.error('채널 콘텐츠 ID 조회 실패:', videoError);
+        ContentLogger.error('채널 콘텐츠 ID 조회 실패:', videoError);
         throw new Error(`Failed to fetch channel content ids: ${videoError.message}`);
       }
 
@@ -787,7 +788,7 @@ export const contentApi = {
         .eq('includes_ending', true);
 
       if (endingError) {
-        console.error('결말 포함 콘텐츠 ID 조회 실패:', endingError);
+        ContentLogger.error('결말 포함 콘텐츠 ID 조회 실패:', endingError);
         throw new Error(`Failed to fetch ending content ids: ${endingError.message}`);
       }
 
@@ -830,7 +831,7 @@ export const contentApi = {
       );
 
       if (rpcError) {
-        console.error('시드 랜덤 콘텐츠 조회 실패:', rpcError);
+        ContentLogger.error('시드 랜덤 콘텐츠 조회 실패:', rpcError);
         throw new Error(`Failed to fetch seeded random contents: ${rpcError.message}`);
       }
 
@@ -865,7 +866,7 @@ export const contentApi = {
       );
 
       if (rpcError) {
-        console.error('인기순 콘텐츠 조회 실패:', rpcError);
+        ContentLogger.error('인기순 콘텐츠 조회 실패:', rpcError);
         throw new Error(`Failed to fetch popular contents: ${rpcError.message}`);
       }
 
@@ -901,7 +902,7 @@ export const contentApi = {
     const { count, error: countError } = await countQuery;
 
     if (countError) {
-      console.error('탐색 콘텐츠 수 조회 실패:', countError);
+      ContentLogger.error('탐색 콘텐츠 수 조회 실패:', countError);
       throw new Error(`Failed to count explore contents: ${countError.message}`);
     }
 
@@ -926,7 +927,7 @@ export const contentApi = {
     const { data, error } = await query;
 
     if (error) {
-      console.error('탐색 콘텐츠 조회 실패:', error);
+      ContentLogger.error('탐색 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch explore contents: ${error.message}`);
     }
 
@@ -948,7 +949,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('큐레이션 비디오 조회 실패:', error);
+      ContentLogger.error('큐레이션 비디오 조회 실패:', error);
       throw new Error(`Failed to fetch curation videos: ${error.message}`);
     }
 
@@ -1003,7 +1004,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('트렌딩 콘텐츠 조회 실패:', error);
+      ContentLogger.error('트렌딩 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch trending contents: ${error.message}`);
     }
 
@@ -1023,7 +1024,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('순삭 TOP 10 조회 실패:', error);
+      ContentLogger.error('순삭 TOP 10 조회 실패:', error);
       throw new Error(`Failed to fetch soonsak top ten: ${error.message}`);
     }
 
@@ -1050,7 +1051,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('최근 트렌딩 콘텐츠 조회 실패:', error);
+      ContentLogger.error('최근 트렌딩 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch recent trending contents: ${error.message}`);
     }
 
@@ -1074,7 +1075,7 @@ export const contentApi = {
     );
 
     if (error) {
-      console.error('배너 콘텐츠 조회 실패:', error);
+      ContentLogger.error('배너 콘텐츠 조회 실패:', error);
       throw new Error(`Failed to fetch banner contents: ${error.message}`);
     }
 
@@ -1155,7 +1156,7 @@ export const contentApi = {
     });
 
     if (error) {
-      console.error('채널 비디오 조회 실패:', error);
+      ContentLogger.error('채널 비디오 조회 실패:', error);
       throw new Error(`Failed to fetch channel videos: ${error.message}`);
     }
 

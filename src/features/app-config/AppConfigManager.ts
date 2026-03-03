@@ -21,9 +21,9 @@ import * as Application from 'expo-application';
 import { appConfigApi } from './api/appConfigApi';
 import { isVersionLowerThan } from './utils/versionUtils';
 import type { AppVersionPolicy, MaintenanceMode } from './types';
+import { Logger } from '@/shared/utils/logger';
 
-/** 개발 모드 여부 */
-const isDev = __DEV__;
+const AppConfigLogger = Logger.create('AppConfig');
 
 class AppConfigManager {
   /** 초기화 완료 여부 */
@@ -44,9 +44,7 @@ class AppConfigManager {
    */
   async initialize(): Promise<void> {
     if (this.initialized) {
-      if (isDev) {
-        console.log('[AppConfigManager] 이미 초기화됨');
-      }
+      AppConfigLogger.log('이미 초기화됨');
       return;
     }
 
@@ -61,17 +59,13 @@ class AppConfigManager {
 
       this.initialized = true;
 
-      if (isDev) {
-        console.log('[AppConfigManager] 초기화 완료:', {
-          currentVersion: this.currentVersion,
-          reviewVersion: versionPolicy?.reviewVersion,
-          isReviewVersion: this.isReviewVersion(),
-        });
-      }
+      AppConfigLogger.log('초기화 완료:', {
+        currentVersion: this.currentVersion,
+        reviewVersion: versionPolicy?.reviewVersion,
+        isReviewVersion: this.isReviewVersion(),
+      });
     } catch (error) {
-      if (isDev) {
-        console.error('[AppConfigManager] 초기화 실패:', error);
-      }
+      AppConfigLogger.error('초기화 실패:', error);
       // 초기화 실패해도 앱은 정상 실행되도록 함
       this.initialized = true;
     }
@@ -206,13 +200,9 @@ class AppConfigManager {
       this.versionPolicy = versionPolicy;
       this.maintenanceMode = maintenanceMode;
 
-      if (isDev) {
-        console.log('[AppConfigManager] 리로드 완료');
-      }
+      AppConfigLogger.log('리로드 완료');
     } catch (error) {
-      if (isDev) {
-        console.error('[AppConfigManager] 리로드 실패:', error);
-      }
+      AppConfigLogger.error('리로드 실패:', error);
     }
   }
 

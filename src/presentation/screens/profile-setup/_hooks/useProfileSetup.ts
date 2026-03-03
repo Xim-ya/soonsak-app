@@ -28,6 +28,9 @@ import { userApi } from '@/features/user/api/userApi';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { analyticsService } from '@/shared/analytics';
+import { Logger } from '@/shared/utils/logger';
+
+const ProfileSetupLogger = Logger.create('ProfileSetup');
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -165,7 +168,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
   const openSettings = useCallback(() => {
     setIsPermissionDialogVisible(false);
     Linking.openSettings().catch((err) => {
-      console.error('Failed to open settings:', err);
+      ProfileSetupLogger.error('Failed to open settings:', err);
       setIsSettingsErrorDialogVisible(true);
     });
   }, []);
@@ -236,7 +239,7 @@ export function useProfileSetup({ mode }: UseProfileSetupParams): UseProfileSetu
       // edit 모드: 설정 화면으로 복귀
       navigation.goBack();
     } catch (e) {
-      console.error('프로필 저장 실패:', e);
+      ProfileSetupLogger.error('프로필 저장 실패:', e);
       setError('저장에 실패했습니다. 다시 시도해주세요.');
     } finally {
       setIsLoading(false);

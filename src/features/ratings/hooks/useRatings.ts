@@ -6,9 +6,12 @@ import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
 import { analyticsService } from '@/shared/analytics';
+import { Logger } from '@/shared/utils/logger';
 import { ratingsApi } from '../api/ratingsApi';
 import type { SetRatingParams } from '../types';
 import { RatingModel, RatingStatusModel } from '../types/ratingModel';
+
+const RatingsLogger = Logger.create('Ratings');
 
 /** 캐시 시간 상수 */
 const TWO_MINUTES = 2 * 60 * 1000;
@@ -105,7 +108,7 @@ export const useSetRating = () => {
       if (context?.previousStatus) {
         queryClient.setQueryData(context.queryKey, context.previousStatus);
       }
-      console.error('평점 등록 실패:', _error);
+      RatingsLogger.error('평점 등록 실패:', _error);
     },
 
     onSettled: (_data, _error, params) => {

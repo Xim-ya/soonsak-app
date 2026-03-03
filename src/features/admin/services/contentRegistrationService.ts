@@ -14,6 +14,7 @@ import {
   sendContentRegistrationCompleteNotification,
   sendChannelRegistrationCompleteNotification,
 } from '@/shared/utils/localNotification';
+import { RegistrationLogger } from '@/shared/utils/logger';
 
 // ============================================================================
 // Types
@@ -86,13 +87,13 @@ class ContentRegistrationService {
    */
   async registerVideos(videoIds: string[]): Promise<void> {
     if (this.isRunning()) {
-      console.warn('[RegistrationService] 이미 등록 진행 중');
+      RegistrationLogger.warn('이미 등록 진행 중');
       return;
     }
 
     // 빈 배열 방어
     if (videoIds.length === 0) {
-      console.warn('[RegistrationService] 등록할 영상 ID가 없습니다');
+      RegistrationLogger.warn('등록할 영상 ID가 없습니다');
       return;
     }
 
@@ -149,7 +150,7 @@ class ContentRegistrationService {
     recentVideoCount: number = 10,
   ): Promise<void> {
     if (this.isRunning()) {
-      console.warn('[RegistrationService] 이미 등록 진행 중');
+      RegistrationLogger.warn('이미 등록 진행 중');
       return;
     }
 

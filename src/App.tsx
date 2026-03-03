@@ -28,6 +28,7 @@ import { AppDialog } from '@/presentation/components/dialog/AppDialog';
 import { LottieSplash } from '@/presentation/components/splash/LottieSplash';
 import * as Clarity from '@microsoft/react-native-clarity';
 import * as Sentry from '@sentry/react-native';
+import { AppLogger, ClarityLogger } from '@/shared/utils/logger';
 
 // Sentry 초기화 (앱 시작 시 가장 먼저 실행)
 const SENTRY_DSN = process.env['EXPO_PUBLIC_SENTRY_DSN'];
@@ -54,11 +55,7 @@ enableScreens(true);
 const GOOGLE_WEB_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID'];
 const GOOGLE_IOS_CLIENT_ID = process.env['EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID'];
 
-// 디버깅: 환경 변수 확인 (개발 모드에서만)
-if (__DEV__) {
-  console.log('[App] GOOGLE_WEB_CLIENT_ID:', GOOGLE_WEB_CLIENT_ID);
-  console.log('[App] GOOGLE_IOS_CLIENT_ID:', GOOGLE_IOS_CLIENT_ID);
-}
+// Google Client ID 환경 변수는 보안상 로깅하지 않음
 
 if (GOOGLE_WEB_CLIENT_ID) {
   configureGoogleSignin({
@@ -110,9 +107,7 @@ const queryClient = new QueryClient({
       });
 
       // 개발 모드에서 콘솔 로그
-      if (__DEV__) {
-        console.error('[QueryCache Error]', message, error);
-      }
+      AppLogger.error('[QueryCache Error]', message, error);
     },
   }),
   // 전역 Mutation 에러 핸들러
@@ -143,9 +138,7 @@ const queryClient = new QueryClient({
       });
 
       // 개발 모드에서 콘솔 로그
-      if (__DEV__) {
-        console.error('[MutationCache Error]', message, error);
-      }
+      AppLogger.error('[MutationCache Error]', message, error);
     },
   }),
 });
@@ -178,9 +171,11 @@ function AppBadgeSyncer() {
  * 현재 네비게이션 상태에서 활성 화면 이름을 가져옴
  */
 function getActiveRouteName(state: NavigationState | undefined): string | undefined {
-  if (!state) return undefined;
+  if (!state || state.index === undefined) return undefined;
 
   const route = state.routes[state.index];
+  if (!route) return undefined;
+
   if (route.state) {
     // 중첩 네비게이터가 있으면 재귀적으로 탐색
     return getActiveRouteName(route.state as NavigationState);
@@ -220,7 +215,7 @@ function AppContent({
   useEffect(() => {
     // AppSize 초기화
     AppSize.init(insets);
-    console.log('AppSize 초기화', AppSize);
+    AppLogger.log('AppSize 초기화', AppSize);
 
     // 앱 종료 시 정리
     return () => {
@@ -236,7 +231,7 @@ function AppContent({
 
     const clarityProjectId = process.env['EXPO_PUBLIC_CLARITY_PROJECT_ID'];
     if (!clarityProjectId) {
-      console.warn('[Clarity] 프로젝트 ID가 설정되지 않음');
+      ClarityLogger.warn('프로젝트 ID가 설정되지 않음');
       return;
     }
 
@@ -245,7 +240,7 @@ function AppContent({
         logLevel: Clarity.LogLevel.None,
       });
     } catch (error) {
-      console.error('[Clarity] 초기화 실패:', error);
+      ClarityLogger.error('초기화 실패:', error);
     }
   }, []);
 

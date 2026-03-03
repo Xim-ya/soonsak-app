@@ -1,5 +1,8 @@
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { getAuthUser } from '@/shared/api/authUtils';
+import { Logger } from '@/shared/utils/logger';
+
+const RecommendationsLogger = Logger.create('Recommendations');
 import type { ContentType } from '@/shared/types/content/contentType.enum';
 import type { CurationVideoModel } from '@/features/content/types';
 import type {
@@ -89,7 +92,7 @@ export const recommendationsApi = {
     });
 
     if (error) {
-      console.error('장르 선호도 조회 실패:', error);
+      RecommendationsLogger.error('장르 선호도 조회 실패:', error);
       throw new Error(`Failed to fetch genre preferences: ${error.message}`);
     }
 
@@ -130,7 +133,7 @@ export const recommendationsApi = {
     });
 
     if (error) {
-      console.error('개인화 추천 조회 실패:', error);
+      RecommendationsLogger.error('개인화 추천 조회 실패:', error);
       throw new Error(`Failed to fetch personalized recommendations: ${error.message}`);
     }
 
@@ -182,7 +185,7 @@ export const recommendationsApi = {
     });
 
     if (error) {
-      console.error('개인화 큐레이션 비디오 조회 실패:', error);
+      RecommendationsLogger.error('개인화 큐레이션 비디오 조회 실패:', error);
       throw new Error(`Failed to fetch personalized curation videos: ${error.message}`);
     }
 

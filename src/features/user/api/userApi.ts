@@ -10,6 +10,7 @@ import * as Application from 'expo-application';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { AUTH_DATABASE } from '@/shared/config/dbConfig';
+import { UserLogger } from '@/shared/utils/logger';
 import type { ProfileDto } from '@/features/auth/types';
 import type { ProfileUpdateDto } from '../types';
 
@@ -34,7 +35,7 @@ export const userApi = {
       .maybeSingle();
 
     if (error) {
-      console.error('프로필 조회 실패:', error);
+      UserLogger.error('프로필 조회 실패:', error);
       return null;
     }
 
@@ -66,7 +67,7 @@ export const userApi = {
     const { data, error } = await query.maybeSingle();
 
     if (error) {
-      console.error('닉네임 중복 체크 실패:', error);
+      UserLogger.error('닉네임 중복 체크 실패:', error);
       throw error;
     }
 
@@ -101,7 +102,7 @@ export const userApi = {
       });
 
     if (uploadError) {
-      console.error('이미지 업로드 실패:', uploadError);
+      UserLogger.error('이미지 업로드 실패:', uploadError);
       throw uploadError;
     }
 
@@ -136,7 +137,7 @@ export const userApi = {
       .upsert(upsertData, { onConflict: AUTH_DATABASE.COLUMNS.ID });
 
     if (error) {
-      console.error('프로필 업데이트 실패:', error);
+      UserLogger.error('프로필 업데이트 실패:', error);
       throw error;
     }
   },
@@ -158,7 +159,7 @@ export const userApi = {
       .maybeSingle(); // .single() 대신 .maybeSingle() 사용 (0개 행 허용)
 
     if (error) {
-      console.error('온보딩 상태 확인 실패:', error);
+      UserLogger.error('온보딩 상태 확인 실패:', error);
       return false; // 에러 시 미완료로 처리
     }
 
@@ -178,8 +179,8 @@ export const userApi = {
    * @param userId 사용자 ID
    */
   incrementEntryCount: async (userId: string): Promise<void> => {
-    console.log('[EntryCount] 로그인 유저 진입 카운트 +1');
-    console.log('[EntryCount] User ID:', userId);
+    UserLogger.log('로그인 유저 진입 카운트 +1');
+    UserLogger.log('User ID:', userId);
 
     try {
       const { error } = await supabaseClient.rpc(AUTH_DATABASE.RPC.INCREMENT_PROFILE_ENTRY_COUNT, {
@@ -188,9 +189,9 @@ export const userApi = {
 
       if (error) throw error;
 
-      console.log('[EntryCount] profiles.entry_count 증가 완료');
+      UserLogger.log('profiles.entry_count 증가 완료');
     } catch (error) {
-      console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+      UserLogger.error('진입 카운트 증가 실패:', error);
     }
   },
 
@@ -221,7 +222,7 @@ export const userApi = {
       if (error) throw error;
     } catch (error) {
       // 버전 업데이트 실패는 치명적이지 않으므로 무시
-      console.warn('[UserApi] 앱 버전 업데이트 실패:', error);
+      UserLogger.warn('앱 버전 업데이트 실패:', error);
     }
   },
 };

@@ -43,6 +43,9 @@ import {
   calcZigzagOffset,
 } from '../_hooks/useQuickExploreGrid';
 import { ContentCard } from './ContentCard';
+import { Logger } from '@/shared/utils/logger';
+
+const ContentGridLogger = Logger.create('ContentGrid');
 
 // EmptyCell 스타일 (MemoizedCellWrapper에서 사용)
 const EmptyCell = styled.View<{ cellWidth: number; cellHeight: number }>(
@@ -346,15 +349,13 @@ const ContentGrid = forwardRef<ContentGridRef, ContentGridProps>(function Conten
   const focusOnRandomContent = useCallback(() => {
     const target = getRandomContent();
     if (!target) {
-      if (__DEV__) console.log('[ContentGrid] 포커스할 콘텐츠가 없습니다');
+      ContentGridLogger.log('포커스할 콘텐츠가 없습니다');
       return;
     }
 
-    if (__DEV__) {
-      console.log(
-        `[ContentGrid] 포커스 시작: ${target.content.title} (${target.position.row}, ${target.position.col})`,
-      );
-    }
+    ContentGridLogger.log(
+      `포커스 시작: ${target.content.title} (${target.position.row}, ${target.position.col})`,
+    );
 
     // quick_explore_focus_animation_start 이벤트 로깅
     analyticsService.quickExploreFocusAnimationStart({

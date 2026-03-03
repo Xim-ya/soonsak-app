@@ -7,6 +7,7 @@
 
 import { ComponentType, ReactNode } from 'react';
 import { Platform, StyleProp, ViewStyle } from 'react-native';
+import { LiquidGlassLogger } from '@/shared/utils/logger';
 
 interface LiquidGlassViewProps {
   effect: 'regular' | 'clear';
@@ -26,11 +27,9 @@ const IOS_VERSION = Platform.OS === 'ios' ? parseFloat(Platform.Version as strin
 const IS_IOS_26_OR_LATER = IOS_VERSION >= 26;
 
 // 디버그 로그
-if (__DEV__) {
-  console.log('[LiquidGlass] Platform:', Platform.OS);
-  console.log('[LiquidGlass] iOS Version:', IOS_VERSION);
-  console.log('[LiquidGlass] IS_IOS_26_OR_LATER:', IS_IOS_26_OR_LATER);
-}
+LiquidGlassLogger.log('Platform:', Platform.OS);
+LiquidGlassLogger.log('iOS Version:', IOS_VERSION);
+LiquidGlassLogger.log('IS_IOS_26_OR_LATER:', IS_IOS_26_OR_LATER);
 
 // Liquid Glass 모듈 초기화
 let liquidGlassModule: LiquidGlassState = { isSupported: false, LiquidGlassView: null };
@@ -40,17 +39,15 @@ if (IS_IOS_26_OR_LATER) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const liquidGlass = require('@callstack/liquid-glass');
 
-    if (__DEV__) {
-      console.log('[LiquidGlass] Module loaded:', !!liquidGlass);
-      console.log(
-        '[LiquidGlass] isLiquidGlassSupported type:',
-        typeof liquidGlass.isLiquidGlassSupported,
-      );
-      console.log(
-        '[LiquidGlass] isLiquidGlassSupported value:',
-        liquidGlass.isLiquidGlassSupported,
-      );
-    }
+    LiquidGlassLogger.log('Module loaded:', !!liquidGlass);
+    LiquidGlassLogger.log(
+      'isLiquidGlassSupported type:',
+      typeof liquidGlass.isLiquidGlassSupported,
+    );
+    LiquidGlassLogger.log(
+      'isLiquidGlassSupported value:',
+      liquidGlass.isLiquidGlassSupported,
+    );
 
     // isLiquidGlassSupported가 함수일 수도 있고 boolean일 수도 있음
     const isSupported =
@@ -58,10 +55,8 @@ if (IS_IOS_26_OR_LATER) {
         ? liquidGlass.isLiquidGlassSupported()
         : Boolean(liquidGlass.isLiquidGlassSupported);
 
-    if (__DEV__) {
-      console.log('[LiquidGlass] isSupported:', isSupported);
-      console.log('[LiquidGlass] LiquidGlassView:', !!liquidGlass.LiquidGlassView);
-    }
+    LiquidGlassLogger.log('isSupported:', isSupported);
+    LiquidGlassLogger.log('LiquidGlassView:', !!liquidGlass.LiquidGlassView);
 
     liquidGlassModule = {
       isSupported,
@@ -69,9 +64,7 @@ if (IS_IOS_26_OR_LATER) {
     };
   } catch (error) {
     // 네이티브 모듈 로드 실패 시 fallback
-    if (__DEV__) {
-      console.log('[LiquidGlass] Error loading module:', error);
-    }
+    LiquidGlassLogger.log('Error loading module:', error);
   }
 }
 

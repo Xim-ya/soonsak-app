@@ -27,6 +27,7 @@ import { routePages } from '../constant/routePages';
 import { isAuthRequired } from '../constant/authRequiredScreens';
 import { pendingNavigationStore } from '@/features/push-notifications/store/pendingNavigationStore';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { AuthLogger } from '@/shared/utils/logger';
 
 /**
  * AuthGuard 컴포넌트
@@ -100,11 +101,7 @@ export function AuthGuard(): null {
         ],
       });
 
-      if (__DEV__) {
-        console.log(
-          `[AuthGuard] 인증 필요 화면 접근 감지: ${currentScreen} → 로그인으로 리다이렉트`,
-        );
-      }
+      AuthLogger.log(`인증 필요 화면 접근 감지: ${currentScreen} → 로그인으로 리다이렉트`);
     }
   }, [navigationState, isLoggedIn, isInitializing, navigation, status]);
 

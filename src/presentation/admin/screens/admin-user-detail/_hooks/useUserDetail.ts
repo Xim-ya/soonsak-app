@@ -7,6 +7,7 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDialog } from '@/presentation/components/dialog';
+import { AdminLogger } from '@/shared/utils/logger';
 import { adminUserApi, type PushData } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 import {
@@ -122,7 +123,7 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
       });
     },
     onError: async (err) => {
-      console.error('역할 변경 실패:', err);
+      AdminLogger.error('역할 변경 실패:', err);
       const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.ROLE_UPDATE_FAILED);
       await showDialog({
         title: '오류',
@@ -195,7 +196,7 @@ export function useUserDetail(userId: string): UseUserDetailReturn {
         });
         return false;
       } catch (err) {
-        console.error('푸시 발송 실패:', err);
+        AdminLogger.error('푸시 발송 실패:', err);
         const errorMessage = getUserFriendlyErrorMessage(err, ERROR_MESSAGES.PUSH_SEND_FAILED);
         await showDialog({
           title: '오류',

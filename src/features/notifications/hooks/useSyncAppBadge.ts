@@ -13,6 +13,9 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { useUnreadNotificationCount } from './useNotifications';
+import { Logger } from '@/shared/utils/logger';
+
+const BadgeLogger = Logger.create('Badge');
 
 /**
  * 앱 아이콘 배지 카운트를 읽지 않은 알림 개수와 동기화합니다.
@@ -27,16 +30,12 @@ export function useSyncAppBadge(): void {
   const unreadCount = data?.count ?? 0;
 
   useEffect(() => {
-    if (__DEV__) {
-      console.log('[useSyncAppBadge] 배지 카운트 설정:', unreadCount);
-    }
+    BadgeLogger.log('배지 카운트 설정:', unreadCount);
 
     // 배지 카운트 업데이트
     Notifications.setBadgeCountAsync(unreadCount).catch((error) => {
       // 배지 설정 실패는 치명적이지 않으므로 경고만 출력
-      if (__DEV__) {
-        console.warn('[useSyncAppBadge] 배지 카운트 설정 실패:', error);
-      }
+      BadgeLogger.warn('배지 카운트 설정 실패:', error);
     });
   }, [unreadCount]);
 }
@@ -49,8 +48,6 @@ export async function clearAppBadge(): Promise<void> {
   try {
     await Notifications.setBadgeCountAsync(0);
   } catch (error) {
-    if (__DEV__) {
-      console.warn('[clearAppBadge] 배지 초기화 실패:', error);
-    }
+    BadgeLogger.warn('배지 초기화 실패:', error);
   }
 }

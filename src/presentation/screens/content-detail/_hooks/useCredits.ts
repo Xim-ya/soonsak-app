@@ -3,6 +3,9 @@ import { CreditPersonModel } from '../_types/creditModel.cd';
 import { ContentType } from '@/shared/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { TVCreditsResponse, MovieCreditsResponse } from '@/features/tmdb/types/creditDto';
+import { Logger } from '@/shared/utils/logger';
+
+const CreditsLogger = Logger.create('Credits');
 
 /**
  * useCredits - 콘텐츠 크레딧 정보를 관리하는 훅
@@ -42,7 +45,7 @@ export function useCredits(contentId: number, contentType: ContentType) {
         const credits = CreditPersonModel.fromDto(rawData, contentType);
         return credits.slice(0, 12);
       } catch (error) {
-        console.error('[useCredits] 크레딧 정보 조회 실패:', {
+        CreditsLogger.error('크레딧 정보 조회 실패:', {
           contentId,
           contentType,
           error,

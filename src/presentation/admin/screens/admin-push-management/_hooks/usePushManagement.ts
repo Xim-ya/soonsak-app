@@ -5,6 +5,7 @@
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
+import { PushLogger } from '@/shared/utils/logger';
 import { adminPushApi, type PushScheduleStatus } from '@/features/admin/api/adminPushApi';
 import type { PushData } from '@/features/admin/types/pushAction';
 import type {
@@ -140,7 +141,7 @@ export function usePushManagement() {
       queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
     },
     onError: (error) => {
-      console.error('스케줄 상태 변경 실패:', error);
+      PushLogger.error('스케줄 상태 변경 실패:', error);
       Alert.alert('오류', '스케줄 상태 변경에 실패했어요');
     },
   });
@@ -153,7 +154,7 @@ export function usePushManagement() {
       queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
     },
     onError: (error) => {
-      console.error('템플릿 삭제 실패:', error);
+      PushLogger.error('템플릿 삭제 실패:', error);
       Alert.alert('오류', '템플릿 삭제에 실패했어요');
     },
   });
@@ -245,7 +246,7 @@ export function usePushManagement() {
         queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.templates });
         queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
       } catch (error) {
-        console.error('활성 상태 변경 실패:', error);
+        PushLogger.error('활성 상태 변경 실패:', error);
         Alert.alert('오류', '활성 상태 변경에 실패했어요');
       }
     },
@@ -283,7 +284,7 @@ export function usePushManagement() {
           return false;
         }
       } catch (error) {
-        console.error('전체 푸시 발송 실패:', error);
+        PushLogger.error('전체 푸시 발송 실패:', error);
         Alert.alert('오류', '전체 푸시 발송에 실패했어요');
         return false;
       } finally {

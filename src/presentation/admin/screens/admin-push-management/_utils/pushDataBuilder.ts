@@ -5,6 +5,7 @@
  */
 
 import type { PushData, ActionTypeOption } from '@/features/admin';
+import { PushLogger } from '@/shared/utils/logger';
 import { isValidNonNegativeInt, type ActionParams } from './actionValidators';
 
 // ============================================================================
@@ -114,7 +115,7 @@ export function buildPushData(
 
     // 알 수 없는 화면에 대한 빌더가 없으면 빠르게 실패
     if (!paramsBuilder) {
-      console.error(`[buildPushData] Unknown navigation screen: ${screen}`);
+      PushLogger.error(`Unknown navigation screen: ${screen}`);
       return undefined;
     }
 

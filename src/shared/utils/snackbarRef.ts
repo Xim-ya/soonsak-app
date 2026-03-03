@@ -9,6 +9,8 @@
  * showGlobalSnackbar('에러가 발생했습니다');
  */
 
+import { SnackbarLogger } from '@/shared/utils/logger';
+
 type SnackbarRef = {
   showError: (message: string) => void;
   showSuccess: (message: string) => void;
@@ -35,7 +37,7 @@ export const setSnackbarRef = (ref: SnackbarRef) => {
  */
 export const showGlobalSnackbar = (message: string) => {
   if (!snackbarRef) {
-    console.warn('[Snackbar] Ref가 설정되지 않았습니다:', message);
+    SnackbarLogger.warn('Ref가 설정되지 않았습니다:', message);
     return;
   }
   snackbarRef.showError(message);
@@ -48,7 +50,7 @@ export const showGlobalSnackbar = (message: string) => {
  */
 export const showGlobalSuccess = (message: string) => {
   if (!snackbarRef) {
-    console.warn('[Snackbar] Ref가 설정되지 않았습니다:', message);
+    SnackbarLogger.warn('Ref가 설정되지 않았습니다:', message);
     return;
   }
   snackbarRef.showSuccess(message);
@@ -61,7 +63,7 @@ export const showGlobalSuccess = (message: string) => {
  */
 export const showGlobalInfo = (message: string) => {
   if (!snackbarRef) {
-    console.warn('[Snackbar] Ref가 설정되지 않았습니다:', message);
+    SnackbarLogger.warn('Ref가 설정되지 않았습니다:', message);
     return;
   }
   snackbarRef.showInfo(message);

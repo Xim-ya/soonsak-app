@@ -11,6 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { PUSH_DATABASE } from '@/shared/config/dbConfig';
 import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
+import { PushLogger } from '@/shared/utils/logger';
 
 /** AsyncStorage 키: 로컬에 저장된 푸시 토큰 */
 const PUSH_TOKEN_STORAGE_KEY = '@soonsak/expo_push_token';
@@ -161,11 +162,11 @@ export const pushTokenApi = {
         .eq('user_id', userId);
 
       if (error) {
-        console.warn('[PushToken] 알림 클릭 추적 실패:', error);
+        PushLogger.warn('알림 클릭 추적 실패:', error);
       }
     } catch (err) {
       // 클릭 추적 실패는 치명적이지 않으므로 무시
-      console.warn('[PushToken] 알림 클릭 추적 에러:', err);
+      PushLogger.warn('알림 클릭 추적 에러:', err);
     }
   },
 
@@ -189,11 +190,11 @@ export const pushTokenApi = {
         .is('read_at', null); // 이미 읽은 건 업데이트하지 않음
 
       if (error) {
-        console.warn('[PushToken] 알림 읽음 추적 실패:', error);
+        PushLogger.warn('알림 읽음 추적 실패:', error);
       }
     } catch (err) {
       // 읽음 추적 실패는 치명적이지 않으므로 무시
-      console.warn('[PushToken] 알림 읽음 추적 에러:', err);
+      PushLogger.warn('알림 읽음 추적 에러:', err);
     }
   },
 };

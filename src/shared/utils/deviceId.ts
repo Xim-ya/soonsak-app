@@ -16,6 +16,7 @@ import * as Crypto from 'expo-crypto';
 import { Platform } from 'react-native';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { DEVICE_DATABASE } from '@/shared/config/dbConfig';
+import { DeviceIdLogger } from '@/shared/utils/logger';
 
 /** AsyncStorage 키: 로컬에 저장된 디바이스 ID */
 const DEVICE_ID_STORAGE_KEY = '@soonsak/device_id';
@@ -52,12 +53,10 @@ export async function getOrCreateDeviceId(): Promise<string> {
       throw error;
     }
 
-    if (__DEV__) {
-      console.log('[DeviceId] 새 디바이스 등록 완료:', newDeviceId);
-    }
+    DeviceIdLogger.log('새 디바이스 등록 완료:', newDeviceId);
   } catch (error) {
     // 원격 저장 실패해도 로컬 ID는 유지 (다음 시도에서 재등록)
-    console.error('[DeviceId] 원격 저장 실패:', error);
+    DeviceIdLogger.error('원격 저장 실패:', error);
   }
 
   return newDeviceId;
@@ -73,9 +72,7 @@ export async function getOrCreateDeviceId(): Promise<string> {
 export async function linkDeviceToUser(userId: string): Promise<void> {
   const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
   if (!deviceId) {
-    if (__DEV__) {
-      console.warn('[DeviceId] 연결할 디바이스 ID가 없음');
-    }
+    DeviceIdLogger.warn('연결할 디바이스 ID가 없음');
     return;
   }
 
@@ -96,12 +93,10 @@ export async function linkDeviceToUser(userId: string): Promise<void> {
     // 비로그인 시 누적된 entry_count를 profiles로 이전
     await transferEntryCountToUser(userId);
 
-    if (__DEV__) {
-      console.log('[DeviceId] 유저 연결 완료:', { deviceId, userId });
-    }
+    DeviceIdLogger.log('유저 연결 완료:', { deviceId, userId });
   } catch (error) {
     // 연결 실패는 치명적이지 않음
-    console.error('[DeviceId] 유저 연결 실패:', error);
+    DeviceIdLogger.error('유저 연결 실패:', error);
   }
 }
 
@@ -122,12 +117,12 @@ export async function getStoredDeviceId(): Promise<string | null> {
 export async function incrementDeviceEntryCount(): Promise<void> {
   const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
   if (!deviceId) {
-    console.log('[EntryCount] 디바이스 ID 없음, 카운트 스킵');
+    DeviceIdLogger.log('디바이스 ID 없음, 카운트 스킵');
     return;
   }
 
-  console.log('[EntryCount] 비로그인 유저 진입 카운트 +1');
-  console.log('[EntryCount] Device ID:', deviceId);
+  DeviceIdLogger.log('비로그인 유저 진입 카운트 +1');
+  DeviceIdLogger.log('Device ID:', deviceId);
 
   try {
     const { error } = await supabaseClient.rpc(DEVICE_DATABASE.RPC.INCREMENT_DEVICE_ENTRY_COUNT, {
@@ -136,9 +131,9 @@ export async function incrementDeviceEntryCount(): Promise<void> {
 
     if (error) throw error;
 
-    console.log('[EntryCount] devices.entry_count 증가 완료');
+    DeviceIdLogger.log('devices.entry_count 증가 완료');
   } catch (error) {
-    console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+    DeviceIdLogger.error('진입 카운트 증가 실패:', error);
   }
 }
 
@@ -154,9 +149,9 @@ export async function transferEntryCountToUser(userId: string): Promise<void> {
   const deviceId = await AsyncStorage.getItem(DEVICE_ID_STORAGE_KEY);
   if (!deviceId) return;
 
-  console.log('[EntryCount] 비로그인 → 로그인 카운트 이전 시작');
-  console.log('[EntryCount] Device ID:', deviceId);
-  console.log('[EntryCount] User ID:', userId);
+  DeviceIdLogger.log('비로그인 → 로그인 카운트 이전 시작');
+  DeviceIdLogger.log('Device ID:', deviceId);
+  DeviceIdLogger.log('User ID:', userId);
 
   try {
     const { error } = await supabaseClient.rpc(DEVICE_DATABASE.RPC.TRANSFER_DEVICE_ENTRY_COUNT, {
@@ -166,8 +161,8 @@ export async function transferEntryCountToUser(userId: string): Promise<void> {
 
     if (error) throw error;
 
-    console.log('[EntryCount] devices → profiles 카운트 이전 완료');
+    DeviceIdLogger.log('devices → profiles 카운트 이전 완료');
   } catch (error) {
-    console.error('[EntryCount] 카운트 이전 실패:', error);
+    DeviceIdLogger.error('카운트 이전 실패:', error);
   }
 }

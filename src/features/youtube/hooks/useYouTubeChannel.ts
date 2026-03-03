@@ -4,6 +4,7 @@
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { YouTubeChannelDto, YouTubeApiError } from '../types';
+import { ChannelLogger } from '@/shared/utils/logger';
 import { channelScraper } from '../api/scrapers/channelScraper';
 import { youtubeKeys } from './youtubeQueryKeys';
 
@@ -33,7 +34,7 @@ export const useYouTubeChannel = (
     queryKey: youtubeKeys.channel(channelId ?? ''),
     queryFn: async (): Promise<YouTubeChannelDto> => {
       try {
-        console.log('🔍 채널 정보 조회 시작:', channelId);
+        ChannelLogger.log('채널 정보 조회 시작:', channelId);
 
         // 채널 페이지 스크래핑 (UC로 시작하면 실제 채널 ID, @로 시작하면 handle ID)
         const scrapedData = await channelScraper.scrapeChannelPage(channelId!);
@@ -54,10 +55,10 @@ export const useYouTubeChannel = (
           },
         };
 
-        console.log('✅ 채널 정보 조회 완료:', channelData.name);
+        ChannelLogger.log('채널 정보 조회 완료:', channelData.name);
         return channelData;
       } catch (error) {
-        console.error('❌ 채널 정보 조회 실패:', error);
+        ChannelLogger.error('채널 정보 조회 실패:', error);
         throw error;
       }
     },

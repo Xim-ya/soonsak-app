@@ -9,6 +9,7 @@ import {
 } from '@/features/auth/constants/authErrors';
 import type { SocialProvider, AuthErrorDto } from '@/features/auth/types';
 import { analyticsService, type LoginReferrerType } from '@/shared/analytics';
+import { AuthLogger } from '@/shared/utils/logger';
 
 /** AuthErrorDto 타입 가드 */
 function isAuthError(error: unknown): error is AuthErrorDto {
@@ -113,9 +114,7 @@ export function useSocialLogin(referrerScreen: LoginReferrerType | string) {
         // 네비게이션 변경도 자동 처리됨
         onSuccess?.();
       } catch (error) {
-        if (__DEV__) {
-          console.error('[useSocialLogin] Login error:', error);
-        }
+        AuthLogger.error('[useSocialLogin] Login error:', error);
 
         // 에러 타입에 따라 이벤트 로깅
         if (isAuthError(error)) {

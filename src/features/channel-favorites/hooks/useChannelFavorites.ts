@@ -5,12 +5,15 @@
 import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { showGlobalInfo } from '@/shared/utils/snackbarRef';
+import { Logger } from '@/shared/utils/logger';
 import { channelFavoritesApi } from '../api/channelFavoritesApi';
 import type { ToggleChannelFavoriteParams } from '../types';
 import {
   ChannelFavoriteStatusModel,
   fromChannelFavoriteStatusDto,
 } from '../types/channelFavoriteModel';
+
+const ChannelFavoritesLogger = Logger.create('ChannelFavorites');
 
 /** 캐시 시간 상수 */
 const FIVE_MINUTES = 5 * 60 * 1000;
@@ -109,7 +112,7 @@ export const useToggleChannelFavorite = () => {
       if (context?.previousStatus) {
         queryClient.setQueryData(context.queryKey, context.previousStatus);
       }
-      console.error('채널 찜 토글 실패:', _error);
+      ChannelFavoritesLogger.error('채널 찜 토글 실패:', _error);
     },
 
     onSettled: (_data, _error, params) => {

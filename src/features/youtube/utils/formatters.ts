@@ -2,6 +2,8 @@
  * YouTube 데이터 포맷팅 유틸리티
  */
 
+import { YouTubeLogger } from '@/shared/utils/logger';
+
 /**
  * YouTube ISO 8601 duration을 MM:SS 또는 HH:MM:SS 형식으로 변환
  * @param isoDuration ISO 8601 형식 (예: PT10M30S)
@@ -23,7 +25,7 @@ export const formatYouTubeDuration = (isoDuration: string): string => {
     }
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   } catch (error) {
-    console.error('Duration 파싱 실패:', error);
+    YouTubeLogger.error('Duration 파싱 실패:', error);
     return '0:00';
   }
 };
@@ -158,7 +160,7 @@ export const formatRelativeTime = (dateString: string): string => {
     }
     return '방금 전';
   } catch (error) {
-    console.error('날짜 파싱 실패:', error);
+    YouTubeLogger.error('날짜 파싱 실패:', error);
     return '';
   }
 };

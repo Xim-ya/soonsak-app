@@ -8,6 +8,7 @@ import { useCallback, useState, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/shared/providers/AuthProvider';
 import { useDialog } from '@/presentation/components/dialog';
+import { AdminLogger } from '@/shared/utils/logger';
 import {
   AdminContentAction,
   ADMIN_CONTENT_ACTIONS,
@@ -166,7 +167,7 @@ export function useAdminContentActions({
         });
         setSelectedAction(null);
       } catch (error) {
-        console.error('Backdrop 변경 실패:', error);
+        AdminLogger.error('Backdrop 변경 실패:', error);
         await showDialog({
           title: '오류',
           description: '이미지를 변경하지 못했어요. 다시 시도해주세요.',
@@ -200,7 +201,7 @@ export function useAdminContentActions({
         });
         setSelectedAction(null);
       } catch (error) {
-        console.error('비디오 상태 변경 실패:', error);
+        AdminLogger.error('비디오 상태 변경 실패:', error);
         await showDialog({
           title: '오류',
           description: '상태를 변경하지 못했어요. 다시 시도해주세요.',
@@ -235,7 +236,7 @@ export function useAdminContentActions({
         });
         setSelectedAction(null);
       } catch (error) {
-        console.error('결말포함 여부 변경 실패:', error);
+        AdminLogger.error('결말포함 여부 변경 실패:', error);
         await showDialog({
           title: '오류',
           description: '변경하지 못했어요. 다시 시도해주세요.',

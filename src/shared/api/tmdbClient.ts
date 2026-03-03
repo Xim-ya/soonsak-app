@@ -1,6 +1,9 @@
 import { TMDB_API_KEY, TMDB_BASE_URL } from '@/features/tmdb/config';
 import axios, { AxiosError, AxiosResponse } from 'axios';
 import { snakeToCamel } from '@/shared/utils/caseConverter';
+import { Logger } from '@/shared/utils/logger';
+
+const TMDBLogger = Logger.create('TMDB');
 
 /**
  * TMDB Axios 기본 클라이언트
@@ -37,7 +40,7 @@ tmdbClient.interceptors.response.use(
         );
       }
     }
-    console.error('TMDB API 요청 실패:', error);
+    TMDBLogger.error('API 요청 실패:', error);
     throw error;
   },
 );

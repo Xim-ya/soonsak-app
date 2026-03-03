@@ -1,6 +1,7 @@
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { CHANNEL_DATABASE } from '@/shared/config/dbConfig';
+import { ChannelLogger } from '@/shared/utils/logger';
 import { ChannelDto } from '../types';
 
 export const channelApi = {
@@ -20,7 +21,7 @@ export const channelApi = {
       .limit(limit);
 
     if (error) {
-      console.error('채널 목록 조회 실패:', error);
+      ChannelLogger.error('채널 목록 조회 실패:', error);
       throw new Error(`Failed to fetch channels: ${error.message}`);
     }
 
@@ -54,7 +55,7 @@ export const channelApi = {
       .range(offset, offset + limit - 1);
 
     if (error) {
-      console.error('채널 목록 페이지네이션 조회 실패:', error);
+      ChannelLogger.error('채널 목록 페이지네이션 조회 실패:', error);
       throw new Error(`Failed to fetch channels: ${error.message}`);
     }
 
@@ -77,7 +78,7 @@ export const channelApi = {
     );
 
     if (error) {
-      console.error('랜덤 채널 목록 조회 실패:', error);
+      ChannelLogger.error('랜덤 채널 목록 조회 실패:', error);
       throw new Error(`Failed to fetch random channels: ${error.message}`);
     }
 

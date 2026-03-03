@@ -14,6 +14,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BasePage } from '@/presentation/components/page';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
+import { AdminLogger } from '@/shared/utils/logger';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -90,7 +91,7 @@ export default function AdminPrimaryVideoSelectScreen() {
           buttonText: '확인',
         });
       } catch (error) {
-        console.error('대표 비디오 변경 실패:', error);
+        AdminLogger.error('대표 비디오 변경 실패:', error);
         await showDialog({
           title: '오류',
           description: '대표 비디오를 변경하지 못했어요. 다시 시도해주세요.',

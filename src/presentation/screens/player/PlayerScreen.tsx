@@ -19,6 +19,7 @@ import {
 } from './_hooks';
 import { useDialog } from '@/presentation/components/dialog';
 import { analyticsService } from '@/shared/analytics';
+import { PlayerLogger } from '@/shared/utils/logger';
 
 type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.player>;
 
@@ -120,7 +121,7 @@ export const PlayerScreen = () => {
 
   // 재생 상태 변경 이벤트
   useYouTubeEvent(player, 'stateChange', (state) => {
-    console.log('재생 상태 변경:', state);
+    PlayerLogger.log('재생 상태 변경:', state);
 
     const stateValue = typeof state === 'number' ? state : (state as { state: number }).state;
 
@@ -135,11 +136,11 @@ export const PlayerScreen = () => {
 
   // 재생율 변경 이벤트
   const onPlaybackRateChange = useCallback((rate: number) => {
-    console.log('재생율 변경됨:', rate);
+    PlayerLogger.log('재생율 변경됨:', rate);
     setCurrentPlaybackRate(rate);
 
     if (rate !== 1) {
-      console.log(`재생 속도가 ${rate}배로 변경되었습니다`);
+      PlayerLogger.log(`재생 속도가 ${rate}배로 변경되었습니다`);
     }
   }, []);
 
@@ -150,7 +151,7 @@ export const PlayerScreen = () => {
 
   useEffect(() => {
     if (progress) {
-      console.log('재생 진행:', {
+      PlayerLogger.log('재생 진행:', {
         currentTime: progress.currentTime,
         duration: progress.duration,
         percentage: (progress.currentTime / progress.duration) * 100,
@@ -168,7 +169,7 @@ export const PlayerScreen = () => {
 
   // 자동 재생 차단 감지
   useYouTubeEvent(player, 'autoplayBlocked', async () => {
-    console.log('자동 재생이 차단되었습니다');
+    PlayerLogger.log('자동 재생이 차단되었습니다');
     if (Platform.OS === 'ios') {
       const result = await showDialog({
         title: '자동 재생 차단됨',
