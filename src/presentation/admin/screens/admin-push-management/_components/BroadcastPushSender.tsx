@@ -1,8 +1,7 @@
 /**
- * PushNotificationSender - 푸시 알림 발송 모달
+ * BroadcastPushSender - 전체 푸시 발송 컴포넌트
  *
- * 개인 푸시 알림을 발송할 수 있는 UI를 제공합니다.
- * 딥링크 데이터 설정을 지원합니다.
+ * 모든 활성 토큰에 푸시를 발송할 수 있는 UI를 제공합니다.
  */
 
 import { memo, useCallback, useState, useMemo, useEffect } from 'react';
@@ -14,6 +13,7 @@ import {
   TextInput,
   ActivityIndicator,
   ScrollView,
+  Alert,
   DeviceEventEmitter,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
@@ -29,6 +29,7 @@ import {
   USER_CONTENT_TAB_OPTIONS,
   CONTENT_TYPE_OPTIONS,
 } from '@/features/admin';
+import { adminPushApi } from '@/features/admin/api/adminPushApi';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import {
@@ -66,9 +67,6 @@ const SEARCH_ICON_SVG = `
 // Validation Helpers
 // ============================================================================
 
-/**
- * URL 유효성 검증 (http/https만 허용)
- */
 function isValidUrl(url: string): boolean {
   try {
     const parsed = new URL(url);
@@ -78,18 +76,12 @@ function isValidUrl(url: string): boolean {
   }
 }
 
-/**
- * 양의 정수 문자열 검증
- */
 function isValidPositiveInt(value: string | undefined): boolean {
   if (!value?.trim()) return false;
   const num = Number(value);
   return Number.isFinite(num) && num > 0 && Number.isInteger(num);
 }
 
-/**
- * 음이 아닌 정수 문자열 검증 (0 허용)
- */
 function isValidNonNegativeInt(value: string | undefined): boolean {
   if (!value?.trim()) return false;
   const num = Number(value);
@@ -100,33 +92,30 @@ function isValidNonNegativeInt(value: string | undefined): boolean {
 // Types
 // ============================================================================
 
-interface PushNotificationSenderProps {
-  /** 현재 보고 있는 유저 ID (콘텐츠 검색용) */
-  readonly userId: string;
-  readonly hasActiveTokens: boolean;
+interface BroadcastPushSenderProps {
+  readonly activePushTokens: number;
   readonly isLoading: boolean;
-  readonly onSend: (title: string, body: string, data?: PushData) => Promise<boolean>;
+  readonly onSend: (
+    title: string,
+    body: string,
+    data?: PushData,
+    appVersion?: string | null,
+  ) => Promise<boolean>;
 }
 
 interface ActionParams {
-  // ContentDetail
   contentId?: string;
   contentTitle?: string;
   contentType?: 'movie' | 'tv';
-  // Player
   videoId?: string;
   videoTitle?: string;
   playerContentId?: string;
   playerContentType?: 'movie' | 'tv';
   startSeconds?: string;
-  // ChannelDetail
   channelId?: string;
   channelName?: string;
-  // UserContentList
   initialTab?: 0 | 1 | 2;
-  // OPEN_URL
   url?: string;
-  // REFRESH_DATA
   refreshTarget?: string;
 }
 
@@ -136,28 +125,31 @@ interface ActionParams {
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
-export const PushNotificationSender = memo(function PushNotificationSender({
-  userId,
-  hasActiveTokens,
+export const BroadcastPushSender = memo(function BroadcastPushSender({
+  activePushTokens,
   isLoading,
   onSend,
-}: PushNotificationSenderProps) {
+}: BroadcastPushSenderProps) {
   const navigation = useNavigation<NavigationProp>();
 
-  // 기본 상태
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
-
-  // 액션 타입 상태
   const [selectedActionKey, setSelectedActionKey] = useState<string>('none');
   const [isActionPickerVisible, setIsActionPickerVisible] = useState(false);
-
-  // 콘텐츠 검색 대기 상태 ('content' | 'player' | null)
-  const [pendingSearchMode, setPendingSearchMode] = useState<'content' | 'player' | null>(null);
-
-  // 액션 파라미터 상태
   const [actionParams, setActionParams] = useState<ActionParams>({});
+
+  // 앱 버전 입력 (빈 문자열 = 전체, 값 있으면 해당 버전 필터)
+  const [versionInput, setVersionInput] = useState('');
+  // 검증된 버전 정보 (확인 버튼 클릭 후 설정)
+  const [verifiedVersion, setVerifiedVersion] = useState<{
+    version: string | undefined;
+    label: string;
+    count: number;
+  } | null>(null);
+
+  // 콘텐츠 검색 대기 상태
+  const [pendingSearchMode, setPendingSearchMode] = useState<'content' | null>(null);
 
   // 콘텐츠 선택 이벤트 리스너
   useEffect(() => {
@@ -171,21 +163,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             contentTitle: result.contentTitle,
             contentType: result.contentType,
           }));
-        } else if (pendingSearchMode === 'player' && result.videoId && result.videoTitle) {
-          // 타입 가드가 콜백 내부에서 적용되지 않으므로 로컬 변수로 추출
-          const videoId = result.videoId;
-          const videoTitle = result.videoTitle;
-          // 시청기록에서 선택한 경우 startSeconds도 전달됨
-          const startSeconds = result.startSeconds;
-          setActionParams((prev) => ({
-            ...prev,
-            playerContentId: String(result.contentId),
-            playerContentType: result.contentType,
-            videoId,
-            videoTitle,
-            // 시청기록에서 선택한 경우 이어보기 시작 위치 자동 입력
-            ...(startSeconds !== undefined && { startSeconds: String(startSeconds) }),
-          }));
         }
         setPendingSearchMode(null);
         // 콘텐츠 선택 후 모달 다시 열기
@@ -196,34 +173,28 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     return () => subscription.remove();
   }, [pendingSearchMode]);
 
-  // 선택된 액션 옵션 (항상 존재함을 보장)
   const selectedAction: ActionTypeOption = useMemo(
     () =>
       ACTION_TYPE_OPTIONS.find((opt) => opt.key === selectedActionKey) ?? ACTION_TYPE_OPTIONS[0]!,
     [selectedActionKey],
   );
 
-  // 입력값 검증 (title은 선택적, body는 필수)
   const trimmedTitle = title.trim();
   const trimmedBody = body.trim();
   const isBodyValid = trimmedBody.length >= MIN_BODY_LENGTH;
 
-  // 액션 파라미터 유효성 검증
   const isActionParamsValid = useMemo(() => {
     if (selectedAction.type === 'none') return true;
 
     if (selectedAction.type === 'navigation') {
       switch (selectedAction.screen) {
         case 'ContentDetail':
-          // contentId는 양의 정수여야 함
           return isValidPositiveInt(actionParams.contentId) && !!actionParams.contentType;
         case 'Player':
-          // playerContentId는 양의 정수, startSeconds는 음이 아닌 정수(선택적)
           return !!(
             actionParams.videoId &&
             isValidPositiveInt(actionParams.playerContentId) &&
             actionParams.playerContentType &&
-            // startSeconds가 입력된 경우에만 검증
             (actionParams.startSeconds === undefined ||
               actionParams.startSeconds === '' ||
               isValidNonNegativeInt(actionParams.startSeconds))
@@ -245,7 +216,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
       switch (selectedAction.action) {
         case 'OPEN_URL': {
           const url = actionParams.url?.trim() ?? '';
-          // URL이 비어있거나 유효하지 않으면 false
           return url.length > 0 && isValidUrl(url);
         }
         case 'REFRESH_DATA':
@@ -263,28 +233,31 @@ export const PushNotificationSender = memo(function PushNotificationSender({
 
   const isValid = isBodyValid && isActionParamsValid;
 
-  // 모달 열기
   const handleOpenModal = useCallback(() => {
+    if (activePushTokens === 0) {
+      Alert.alert('발송 불가', '활성 푸시 토큰이 없어요');
+      return;
+    }
+
     setTitle('');
     setBody('');
     setSelectedActionKey('none');
     setActionParams({});
+    setVersionInput('');
+    setVerifiedVersion({ version: undefined, label: '전체', count: activePushTokens }); // 기본값: 전체
     setIsModalVisible(true);
-  }, []);
+  }, [activePushTokens]);
 
-  // 모달 닫기
   const handleCloseModal = useCallback(() => {
     setIsModalVisible(false);
   }, []);
 
-  // 액션 타입 변경
   const handleActionChange = useCallback((option: ActionTypeOption) => {
     setSelectedActionKey(option.key);
     setActionParams({});
     setIsActionPickerVisible(false);
   }, []);
 
-  // 파라미터 업데이트
   const updateParam = useCallback(
     <K extends keyof ActionParams>(key: K, value: ActionParams[K]) => {
       setActionParams((prev) => ({ ...prev, [key]: value }));
@@ -293,17 +266,14 @@ export const PushNotificationSender = memo(function PushNotificationSender({
   );
 
   // 콘텐츠 검색 페이지로 이동
-  const handleOpenContentSearch = useCallback(
-    (mode: 'content' | 'player') => {
-      // 모달을 먼저 닫고 검색 페이지로 이동 (모달 위에 화면이 겹치는 문제 방지)
-      setIsModalVisible(false);
-      setPendingSearchMode(mode);
-      navigation.navigate(routePages.adminPushContentSelect, { userId, mode });
-    },
-    [navigation, userId],
-  );
+  const handleOpenContentSearch = useCallback(() => {
+    // 모달을 먼저 닫고 검색 페이지로 이동 (모달 위에 화면이 겹치는 문제 방지)
+    setIsModalVisible(false);
+    setPendingSearchMode('content');
+    // userId 없이 전체 콘텐츠 검색 모드
+    navigation.navigate(routePages.adminPushContentSelect, { userId: undefined, mode: 'content' });
+  }, [navigation]);
 
-  // PushData 빌드
   const buildPushData = useCallback((): PushData | undefined => {
     if (selectedAction.type === 'none') return undefined;
 
@@ -320,7 +290,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
           };
           break;
         case 'Player': {
-          // startSeconds 검증 및 파싱
           const startSecondsValue = actionParams.startSeconds?.trim();
           const startSeconds =
             startSecondsValue && isValidNonNegativeInt(startSecondsValue)
@@ -398,18 +367,97 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     return undefined;
   }, [selectedAction, actionParams]);
 
-  // 발송
+  // 버전 확인 로딩 상태
+  const [isVerifying, setIsVerifying] = useState(false);
+
+  // 버전 확인 핸들러 - API 직접 호출
+  const handleVerifyVersion = useCallback(async () => {
+    let trimmed = versionInput.trim();
+
+    if (!trimmed) {
+      // 전체
+      setVerifiedVersion({
+        version: undefined,
+        label: '전체',
+        count: activePushTokens,
+      });
+      return;
+    }
+
+    // "v" 접두사 제거 (v1.0.0 -> 1.0.0)
+    if (trimmed.toLowerCase().startsWith('v')) {
+      trimmed = trimmed.slice(1);
+    }
+
+    setIsVerifying(true);
+    try {
+      // API에서 최신 버전 목록 조회
+      const versions = await adminPushApi.getAvailableAppVersions();
+      const versionInfo = versions.find((v) => v.version === trimmed);
+
+      setVerifiedVersion({
+        version: trimmed,
+        label: `v${trimmed}`,
+        count: versionInfo?.count ?? 0,
+      });
+    } catch (error) {
+      console.error('[handleVerifyVersion] 버전 조회 실패:', error);
+      setVerifiedVersion({
+        version: trimmed,
+        label: `v${trimmed}`,
+        count: 0,
+      });
+    } finally {
+      setIsVerifying(false);
+    }
+  }, [versionInput, activePushTokens]);
+
+  // 버전 입력이 변경되면 검증 상태 초기화
+  const handleVersionInputChange = useCallback((text: string) => {
+    setVersionInput(text);
+    setVerifiedVersion(null);
+  }, []);
+
   const handleSend = useCallback(async () => {
     if (isLoading || !isValid) return;
 
-    const pushData = buildPushData();
-    const success = await onSend(trimmedTitle, trimmedBody, pushData);
-    if (success) {
-      setIsModalVisible(false);
+    // 버전 검증이 안 되었으면 경고
+    if (!verifiedVersion) {
+      Alert.alert('버전 확인 필요', '대상 앱 버전을 확인해주세요');
+      return;
     }
-  }, [isLoading, isValid, trimmedTitle, trimmedBody, buildPushData, onSend]);
 
-  // 파라미터 입력 필드 렌더링
+    // 버전 필터가 있는데 해당 버전의 토큰이 없으면 경고
+    if (verifiedVersion.version && verifiedVersion.count === 0) {
+      Alert.alert('발송 불가', `${verifiedVersion.label} 버전의 활성 토큰이 없어요`);
+      return;
+    }
+
+    Alert.alert(
+      '푸시 발송',
+      `${verifiedVersion.label} (${verifiedVersion.count}개 토큰)에 푸시를 발송합니다.\n정말 발송할까요?`,
+      [
+        { text: '취소', style: 'cancel' },
+        {
+          text: '발송',
+          style: 'destructive',
+          onPress: async () => {
+            const pushData = buildPushData();
+            const success = await onSend(
+              trimmedTitle,
+              trimmedBody,
+              pushData,
+              verifiedVersion.version,
+            );
+            if (success) {
+              setIsModalVisible(false);
+            }
+          },
+        },
+      ],
+    );
+  }, [isLoading, isValid, verifiedVersion, trimmedTitle, trimmedBody, buildPushData, onSend]);
+
   const renderParamFields = () => {
     if (selectedAction.type === 'none') return null;
 
@@ -427,7 +475,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                     placeholderTextColor={colors.gray03}
                     keyboardType="numeric"
                   />
-                  <SearchButton onPress={() => handleOpenContentSearch('content')}>
+                  <SearchButton onPress={handleOpenContentSearch}>
                     <SvgXml xml={SEARCH_ICON_SVG} width={16} height={16} />
                   </SearchButton>
                 </ParamInputRow>
@@ -460,52 +508,23 @@ export const PushNotificationSender = memo(function PushNotificationSender({
             </ParamsContainer>
           );
 
-        case 'Player':
+        case 'UserContentList':
           return (
             <ParamsContainer>
-              <ParamRow>
-                <ParamInputRow>
-                  <ParamInputFlex
-                    value={actionParams.videoId ?? ''}
-                    onChangeText={(v) => updateParam('videoId', v)}
-                    placeholder="콘텐츠 검색으로 비디오 선택"
-                    placeholderTextColor={colors.gray03}
-                    editable={false}
-                  />
-                  <SearchButton onPress={() => handleOpenContentSearch('player')}>
-                    <SvgXml xml={SEARCH_ICON_SVG} width={16} height={16} />
-                  </SearchButton>
-                </ParamInputRow>
-              </ParamRow>
-              {actionParams.videoId && (
-                <>
-                  <ParamRow>
-                    <ParamDisplayRow>
-                      <ParamDisplayLabel>비디오:</ParamDisplayLabel>
-                      <ParamDisplayValue numberOfLines={1}>
-                        {actionParams.videoTitle || actionParams.videoId}
-                      </ParamDisplayValue>
-                    </ParamDisplayRow>
-                  </ParamRow>
-                  <ParamRow>
-                    <ParamDisplayRow>
-                      <ParamDisplayLabel>콘텐츠:</ParamDisplayLabel>
-                      <ParamDisplayValue numberOfLines={1}>
-                        {actionParams.playerContentId} ({actionParams.playerContentType})
-                      </ParamDisplayValue>
-                    </ParamDisplayRow>
-                  </ParamRow>
-                  <ParamRow>
-                    <ParamInput
-                      value={actionParams.startSeconds ?? ''}
-                      onChangeText={(v) => updateParam('startSeconds', v)}
-                      placeholder="시작 위치 (초, 선택)"
-                      placeholderTextColor={colors.gray03}
-                      keyboardType="numeric"
-                    />
-                  </ParamRow>
-                </>
-              )}
+              <ParamLabel>이동할 탭</ParamLabel>
+              <SegmentContainer>
+                {USER_CONTENT_TAB_OPTIONS.map((opt) => (
+                  <SegmentButton
+                    key={opt.value}
+                    isSelected={actionParams.initialTab === opt.value}
+                    onPress={() => updateParam('initialTab', opt.value)}
+                  >
+                    <SegmentText isSelected={actionParams.initialTab === opt.value}>
+                      {opt.label}
+                    </SegmentText>
+                  </SegmentButton>
+                ))}
+              </SegmentContainer>
             </ParamsContainer>
           );
 
@@ -528,26 +547,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   placeholderTextColor={colors.gray03}
                 />
               </ParamRow>
-            </ParamsContainer>
-          );
-
-        case 'UserContentList':
-          return (
-            <ParamsContainer>
-              <ParamLabel>이동할 탭</ParamLabel>
-              <SegmentContainer>
-                {USER_CONTENT_TAB_OPTIONS.map((opt) => (
-                  <SegmentButton
-                    key={opt.value}
-                    isSelected={actionParams.initialTab === opt.value}
-                    onPress={() => updateParam('initialTab', opt.value)}
-                  >
-                    <SegmentText isSelected={actionParams.initialTab === opt.value}>
-                      {opt.label}
-                    </SegmentText>
-                  </SegmentButton>
-                ))}
-              </SegmentContainer>
             </ParamsContainer>
           );
 
@@ -619,10 +618,11 @@ export const PushNotificationSender = memo(function PushNotificationSender({
     return null;
   };
 
+  const hasActiveTokens = activePushTokens > 0;
+
   return (
     <>
       <Container>
-        <SectionTitle>푸시 알림 발송</SectionTitle>
         <SendButton
           onPress={handleOpenModal}
           activeOpacity={0.7}
@@ -634,11 +634,11 @@ export const PushNotificationSender = memo(function PushNotificationSender({
           ) : (
             <>
               <SvgXml xml={SEND_ICON_SVG} width={20} height={20} />
-              <SendButtonText>개인 푸시 보내기</SendButtonText>
+              <SendButtonText>전체 푸시 보내기</SendButtonText>
             </>
           )}
         </SendButton>
-        {!hasActiveTokens && <DisabledHint>활성 푸시 토큰이 없어서 발송할 수 없어요</DisabledHint>}
+        <TokenCountText>활성 토큰: {activePushTokens}개</TokenCountText>
       </Container>
 
       <Modal
@@ -649,7 +649,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
       >
         <ModalOverlay onPress={handleCloseModal}>
           <ModalContent onPress={(e) => e.stopPropagation()}>
-            {/* 액션 Picker 뷰 */}
             {isActionPickerVisible ? (
               <PickerContainer>
                 <PickerHeader>
@@ -664,11 +663,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   <PickerTitle>딥링크 액션 선택</PickerTitle>
                   <PickerHeaderSpacer />
                 </PickerHeader>
-                <PickerScrollView
-                  showsVerticalScrollIndicator
-                  nestedScrollEnabled
-                  contentContainerStyle={{ paddingBottom: 20 }}
-                >
+                <PickerScrollView showsVerticalScrollIndicator nestedScrollEnabled>
                   {ACTION_TYPE_OPTIONS.map((option) => (
                     <PickerItem
                       key={option.key}
@@ -683,11 +678,16 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                 </PickerScrollView>
               </PickerContainer>
             ) : (
-              /* 메인 푸시 작성 뷰 */
               <ModalScrollView showsVerticalScrollIndicator={false}>
-                <ModalTitle>푸시 알림 작성</ModalTitle>
+                <ModalTitle>푸시 발송</ModalTitle>
+                <WarningBadge>
+                  <WarningText>
+                    {verifiedVersion
+                      ? `${verifiedVersion.label} (${verifiedVersion.count}개 토큰)`
+                      : '버전 미확인'}
+                  </WarningText>
+                </WarningBadge>
 
-                {/* 제목 (선택) */}
                 <InputContainer>
                   <InputLabelRow>
                     <InputLabel>제목 (선택)</InputLabel>
@@ -705,7 +705,6 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   />
                 </InputContainer>
 
-                {/* 내용 */}
                 <InputContainer>
                   <InputLabelRow>
                     <InputLabel>내용</InputLabel>
@@ -725,7 +724,34 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   />
                 </InputContainer>
 
-                {/* 액션 타입 선택 */}
+                <InputContainer>
+                  <InputLabel>대상 앱 버전</InputLabel>
+                  <VersionInputContainer>
+                    <VersionInput
+                      value={versionInput}
+                      onChangeText={handleVersionInputChange}
+                      placeholder="비워두면 전체 (예: 1.0.4)"
+                      placeholderTextColor={colors.gray03}
+                      autoCapitalize="none"
+                      autoCorrect={false}
+                    />
+                    <VerifyButton onPress={handleVerifyVersion} disabled={isVerifying}>
+                      {isVerifying ? (
+                        <ActivityIndicator size="small" color={colors.white} />
+                      ) : (
+                        <VerifyButtonText>확인</VerifyButtonText>
+                      )}
+                    </VerifyButton>
+                  </VersionInputContainer>
+                  {verifiedVersion && (
+                    <VersionResultContainer isValid={verifiedVersion.count > 0}>
+                      <VersionResultText isValid={verifiedVersion.count > 0}>
+                        {verifiedVersion.label}: {verifiedVersion.count}개 토큰
+                      </VersionResultText>
+                    </VersionResultContainer>
+                  )}
+                </InputContainer>
+
                 <InputContainer>
                   <InputLabel>딥링크 액션 (선택)</InputLabel>
                   <ActionSelector onPress={() => setIsActionPickerVisible(true)}>
@@ -736,10 +762,8 @@ export const PushNotificationSender = memo(function PushNotificationSender({
                   </ActionSelector>
                 </InputContainer>
 
-                {/* 액션 파라미터 */}
                 {renderParamFields()}
 
-                {/* 버튼 */}
                 <ButtonRow>
                   <CancelButton onPress={handleCloseModal} activeOpacity={0.7}>
                     <CancelButtonText>취소</CancelButtonText>
@@ -772,16 +796,8 @@ export const PushNotificationSender = memo(function PushNotificationSender({
 
 const Container = styled(View)({
   paddingHorizontal: 16,
-  paddingVertical: 16,
+  paddingVertical: 12,
   backgroundColor: colors.black,
-  borderTopWidth: 1,
-  borderTopColor: colors.gray05,
-});
-
-const SectionTitle = styled.Text({
-  ...textStyles.title3,
-  color: colors.white,
-  marginBottom: 12,
 });
 
 interface SendButtonProps {
@@ -804,7 +820,7 @@ const SendButtonText = styled.Text({
   fontWeight: '600',
 });
 
-const DisabledHint = styled.Text({
+const TokenCountText = styled.Text({
   ...textStyles.alert2,
   color: colors.gray03,
   textAlign: 'center',
@@ -835,8 +851,23 @@ const ModalScrollView = styled(ScrollView)({
 const ModalTitle = styled.Text({
   ...textStyles.title2,
   color: colors.white,
-  marginBottom: 20,
+  marginBottom: 8,
   textAlign: 'center',
+});
+
+const WarningBadge = styled(View)({
+  backgroundColor: colors.yellow,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 12,
+  alignSelf: 'center',
+  marginBottom: 20,
+});
+
+const WarningText = styled.Text({
+  ...textStyles.alert2,
+  color: colors.black,
+  fontWeight: '600',
 });
 
 const InputContainer = styled(View)({
@@ -874,6 +905,56 @@ const StyledTextInput = styled(TextInput)({
   minHeight: 44,
 });
 
+const VersionInputContainer = styled(View)({
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: colors.gray05,
+  borderRadius: 10,
+  marginTop: 8,
+});
+
+const VersionInput = styled(TextInput)({
+  ...textStyles.body2,
+  color: colors.white,
+  flex: 1,
+  paddingHorizontal: 14,
+  paddingVertical: 12,
+  minHeight: 44,
+});
+
+const VerifyButton = styled(TouchableOpacity)({
+  backgroundColor: colors.gray04,
+  paddingHorizontal: 16,
+  paddingVertical: 10,
+  borderRadius: 8,
+  marginRight: 8,
+});
+
+const VerifyButtonText = styled.Text({
+  ...textStyles.body2,
+  color: colors.white,
+  fontWeight: '600',
+});
+
+interface VersionResultProps {
+  isValid: boolean;
+}
+
+const VersionResultContainer = styled(View)<VersionResultProps>(({ isValid }) => ({
+  marginTop: 8,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  backgroundColor: isValid ? `${colors.primary}20` : `${colors.red}20`,
+  borderRadius: 6,
+  alignSelf: 'flex-start',
+}));
+
+const VersionResultText = styled.Text<VersionResultProps>(({ isValid }) => ({
+  ...textStyles.alert2,
+  color: isValid ? colors.primary : colors.red,
+  fontWeight: '600',
+}));
+
 const ActionSelector = styled(TouchableOpacity)({
   flexDirection: 'row',
   alignItems: 'center',
@@ -910,15 +991,6 @@ const ParamInputRow = styled(View)({
   gap: 8,
 });
 
-const ParamInput = styled(TextInput)({
-  ...textStyles.body2,
-  color: colors.white,
-  backgroundColor: colors.gray04,
-  borderRadius: 8,
-  paddingHorizontal: 12,
-  paddingVertical: 10,
-});
-
 const ParamInputFlex = styled(TextInput)({
   ...textStyles.body2,
   color: colors.white,
@@ -937,25 +1009,13 @@ const SearchButton = styled(TouchableOpacity)({
   alignItems: 'center',
 });
 
-const ParamDisplayRow = styled(View)({
-  flexDirection: 'row',
-  alignItems: 'center',
+const ParamInput = styled(TextInput)({
+  ...textStyles.body2,
+  color: colors.white,
   backgroundColor: colors.gray04,
   borderRadius: 8,
   paddingHorizontal: 12,
   paddingVertical: 10,
-  gap: 8,
-});
-
-const ParamDisplayLabel = styled.Text({
-  ...textStyles.alert2,
-  color: colors.gray02,
-});
-
-const ParamDisplayValue = styled.Text({
-  ...textStyles.body2,
-  color: colors.white,
-  flex: 1,
 });
 
 const ParamLabel = styled.Text({
@@ -1030,7 +1090,6 @@ const ConfirmButtonText = styled.Text({
   fontWeight: '600',
 });
 
-// Picker Styles (메인 모달 내부 뷰)
 const PickerContainer = styled(View)({
   flexGrow: 1,
   flexShrink: 1,

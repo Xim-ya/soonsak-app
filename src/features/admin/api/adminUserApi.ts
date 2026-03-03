@@ -41,6 +41,8 @@ export interface UserDetailItem extends UserManagementItem {
   watchHistoryCount: number;
   favoritesCount: number;
   ratingsCount: number;
+  /** 마지막 사용 앱 버전 */
+  lastUsedVersion: string | null;
 }
 
 /** 유저 통계 (대시보드용) */
@@ -75,6 +77,8 @@ export interface UserListParams {
   limit: number;
   /** 가입일 필터 (이 날짜 이후 가입자만 조회) */
   signupDateFrom?: string | null;
+  /** 리뷰 퍼널 미발송 유저만 필터링 */
+  reviewFunnelNotSent?: boolean;
 }
 
 /** 유저 목록 조회 결과 */
@@ -82,6 +86,28 @@ export interface UserListResult {
   users: UserManagementItem[];
   hasMore: boolean;
   nextCursor: string | null;
+}
+
+/** 리뷰 퍼널 발송 기록 아이템 */
+export interface ReviewFunnelNotificationItem {
+  id: string;
+  title: string;
+  body: string;
+  createdAt: string;
+}
+
+/** 리뷰 퍼널 세션 정보 */
+export interface ReviewFunnelSessionInfo {
+  hasReviewed: boolean | null;
+  reviewType: 'rating_only' | 'write_review' | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** 리뷰 퍼널 발송 기록 결과 */
+export interface ReviewFunnelHistoryResult {
+  notifications: ReviewFunnelNotificationItem[];
+  session: ReviewFunnelSessionInfo | null;
 }
 
 /** 유저 콘텐츠 아이템 (시청기록/찜/평가) */
@@ -152,9 +178,21 @@ export const adminUserApi = {
    * 유저 목록 조회 (무한스크롤, 필터, 검색, 정렬)
    */
   getUsers: async (params: UserListParams): Promise<UserListResult> => {
-    const { role, searchQuery, searchField, sortBy, cursor, signupDateFrom } = params;
+    const { role, searchQuery, searchField, sortBy, cursor, signupDateFrom, reviewFunnelNotSent } =
+      params;
     const limit = normalizeLimit(params.limit);
     const sanitizedSearchQuery = sanitizeSearchQuery(searchQuery);
+
+    // 리뷰 퍼널 미발송 필터: 먼저 발송한 유저 ID 목록 조회
+    let sentUserIds: string[] = [];
+    if (reviewFunnelNotSent) {
+      const { data: sentUsers } = await supabaseClient
+        .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATIONS)
+        .select('user_id')
+        .eq('action_type', 'nav_review_funnel');
+
+      sentUserIds = [...new Set((sentUsers ?? []).map((u) => u.user_id).filter(Boolean))];
+    }
 
     let query = supabaseClient
       .from(AUTH_DATABASE.TABLES.PROFILES)
@@ -170,6 +208,11 @@ export const adminUserApi = {
     // 가입일 필터 (오늘 가입자 등)
     if (signupDateFrom) {
       query = query.gte('created_at', signupDateFrom);
+    }
+
+    // 리뷰 퍼널 미발송 필터 적용
+    if (reviewFunnelNotSent && sentUserIds.length > 0) {
+      query = query.not('id', 'in', `(${sentUserIds.join(',')})`);
     }
 
     // 검색 필터 (정규화된 검색어 사용)
@@ -359,7 +402,7 @@ export const adminUserApi = {
     const { data: user, error: userError } = await supabaseClient
       .from(AUTH_DATABASE.TABLES.PROFILES)
       .select(
-        'id, email, display_name, avatar_url, role, entry_count, created_at, last_login_at, providers',
+        'id, email, display_name, avatar_url, role, entry_count, created_at, last_login_at, providers, last_used_version',
       )
       .eq('id', userId)
       .single();
@@ -428,6 +471,7 @@ export const adminUserApi = {
       watchHistoryCount: watchHistoryResult.count ?? 0,
       favoritesCount: favoritesResult.count ?? 0,
       ratingsCount: ratingsResult.count ?? 0,
+      lastUsedVersion: user.last_used_version ?? null,
     };
   },
 
@@ -522,6 +566,7 @@ export const adminUserApi = {
       Search: 'nav_search',
       Settings: 'nav_settings',
       UserContentList: 'nav_userlist',
+      ReviewFunnel: 'nav_review_funnel',
     };
 
     // Action → action_type enum 매핑
@@ -808,5 +853,59 @@ export const adminUserApi = {
         rating: item.rating as number,
       };
     });
+  },
+
+  /**
+   * 유저의 리뷰 퍼널 발송 기록 조회
+   *
+   * @param userId - 조회할 유저 ID
+   * @returns 발송 기록 목록 및 세션 정보
+   */
+  getReviewFunnelHistory: async (userId: string): Promise<ReviewFunnelHistoryResult> => {
+    if (!userId || !isValidUUID(userId)) {
+      throw new Error('Invalid user ID format');
+    }
+
+    // 1. push_notifications에서 action_type = 'nav_review_funnel'인 것 조회
+    const { data: notifications, error: notificationError } = await supabaseClient
+      .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATIONS)
+      .select('id, title, body, created_at')
+      .eq('user_id', userId)
+      .eq('action_type', 'nav_review_funnel')
+      .order('created_at', { ascending: false });
+
+    if (notificationError) {
+      console.error('리뷰 퍼널 발송 기록 조회 실패:', notificationError);
+      throw new Error(`Failed to fetch review funnel history: ${notificationError.message}`);
+    }
+
+    // 2. review_funnel_sessions 테이블에서 세션 정보 조회
+    const { data: session, error: sessionError } = await supabaseClient
+      .from('review_funnel_sessions')
+      .select('has_reviewed, review_type, created_at, updated_at')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+    if (sessionError) {
+      console.error('리뷰 퍼널 세션 조회 실패:', sessionError);
+      // 세션 조회 실패는 치명적이지 않으므로 null로 처리
+    }
+
+    return {
+      notifications: (notifications ?? []).map((n) => ({
+        id: n.id,
+        title: n.title,
+        body: n.body,
+        createdAt: n.created_at,
+      })),
+      session: session
+        ? {
+            hasReviewed: session.has_reviewed,
+            reviewType: session.review_type as 'rating_only' | 'write_review' | null,
+            createdAt: session.created_at,
+            updatedAt: session.updated_at,
+          }
+        : null,
+    };
   },
 };

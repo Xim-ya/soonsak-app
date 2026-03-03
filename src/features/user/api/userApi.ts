@@ -6,6 +6,7 @@
  */
 
 import { File as ExpoFile } from 'expo-file-system';
+import Constants from 'expo-constants';
 import { supabaseClient } from '@/shared/api/supabaseClient';
 import { mapWithField } from '@/shared/utils/fieldMapper';
 import { AUTH_DATABASE } from '@/shared/config/dbConfig';
@@ -190,6 +191,36 @@ export const userApi = {
       console.log('[EntryCount] profiles.entry_count 증가 완료');
     } catch (error) {
       console.error('[EntryCount] 진입 카운트 증가 실패:', error);
+    }
+  },
+
+  /**
+   * 마지막 사용 앱 버전 업데이트
+   *
+   * 앱 실행 시 현재 앱 버전을 profiles.last_used_version에 저장합니다.
+   *
+   * @param userId 사용자 ID
+   */
+  updateLastUsedVersion: async (userId: string): Promise<void> => {
+    const appVersion = Constants.expoConfig?.version ?? null;
+
+    if (!appVersion) {
+      return;
+    }
+
+    try {
+      const { error } = await supabaseClient
+        .from(AUTH_DATABASE.TABLES.PROFILES)
+        .update({
+          last_used_version: appVersion,
+          [AUTH_DATABASE.COLUMNS.UPDATED_AT]: new Date().toISOString(),
+        })
+        .eq(AUTH_DATABASE.COLUMNS.ID, userId);
+
+      if (error) throw error;
+    } catch (error) {
+      // 버전 업데이트 실패는 치명적이지 않으므로 무시
+      console.warn('[UserApi] 앱 버전 업데이트 실패:', error);
     }
   },
 };

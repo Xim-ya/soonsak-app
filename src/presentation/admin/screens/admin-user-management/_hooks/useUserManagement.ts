@@ -38,6 +38,7 @@ const QUERY_KEYS = {
       params.searchField,
       params.sortBy,
       params.signupDateFrom,
+      params.reviewFunnelNotSent,
     ] as const,
 } as const;
 
@@ -75,6 +76,7 @@ interface UserListQueryParams {
   searchField: UserSearchField;
   sortBy: UserSortBy;
   signupDateFrom: string | null;
+  reviewFunnelNotSent: boolean;
 }
 
 interface UseUserManagementReturn {
@@ -106,6 +108,10 @@ interface UseUserManagementReturn {
   readonly showTodaySignupsOnly: boolean;
   /** 오늘 가입 필터 토글 */
   readonly onTodaySignupPress: () => void;
+  /** 리뷰 퍼널 미발송 필터 활성화 여부 */
+  readonly showReviewFunnelNotSent: boolean;
+  /** 리뷰 퍼널 미발송 필터 토글 */
+  readonly onReviewFunnelNotSentPress: () => void;
   /** 로딩 중 여부 */
   readonly isLoading: boolean;
   /** 통계 로딩 중 여부 */
@@ -136,6 +142,7 @@ export function useUserManagement(): UseUserManagementReturn {
   const [searchField, setSearchField] = useState<UserSearchField>('email');
   const [sortBy, setSortBy] = useState<UserSortBy>('lastLoginAt');
   const [showTodaySignupsOnly, setShowTodaySignupsOnly] = useState(false);
+  const [showReviewFunnelNotSent, setShowReviewFunnelNotSent] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // 현재 쿼리 파라미터
@@ -146,8 +153,9 @@ export function useUserManagement(): UseUserManagementReturn {
       searchField,
       sortBy: showTodaySignupsOnly ? 'createdAt' : sortBy,
       signupDateFrom: showTodaySignupsOnly ? getTodayStartIso() : null,
+      reviewFunnelNotSent: showReviewFunnelNotSent,
     }),
-    [selectedRole, appliedSearchQuery, searchField, sortBy, showTodaySignupsOnly],
+    [selectedRole, appliedSearchQuery, searchField, sortBy, showTodaySignupsOnly, showReviewFunnelNotSent],
   );
 
   // 대시보드 통계 조회
@@ -181,6 +189,7 @@ export function useUserManagement(): UseUserManagementReturn {
         searchField: queryParams.searchField,
         sortBy: queryParams.sortBy,
         signupDateFrom: queryParams.signupDateFrom,
+        reviewFunnelNotSent: queryParams.reviewFunnelNotSent,
         cursor: pageParam,
         limit: PAGE_SIZE,
       }),
@@ -233,6 +242,11 @@ export function useUserManagement(): UseUserManagementReturn {
     setShowTodaySignupsOnly((prev) => !prev);
   }, []);
 
+  // 리뷰 퍼널 미발송 필터 토글
+  const onReviewFunnelNotSentPress = useCallback(() => {
+    setShowReviewFunnelNotSent((prev) => !prev);
+  }, []);
+
   // 다음 페이지 로드
   const fetchNextPage = useCallback(() => {
     const canFetchMore = hasNextPage && !isFetchingNextPage;
@@ -279,6 +293,8 @@ export function useUserManagement(): UseUserManagementReturn {
     onSortChange,
     showTodaySignupsOnly,
     onTodaySignupPress,
+    showReviewFunnelNotSent,
+    onReviewFunnelNotSentPress,
     isLoading,
     isStatisticsLoading,
     isFetchingNextPage,

@@ -2,7 +2,9 @@
  * NotificationItemView - 알림 아이템 컴포넌트
  *
  * 개별 알림을 표시하는 컴포넌트입니다.
- * 읽음/안읽음 상태에 따라 시각적 차이를 둡니다.
+ * 확인/미확인(클릭 여부) 상태에 따라 시각적 차이를 둡니다.
+ *
+ * 참고: 뱃지 카운트는 read_at 기준, 개별 알림 표시는 clicked_at 기준
  *
  * 최적화 적용:
  * - 규칙 5.2: useCallback으로 핸들러 메모이제이션
@@ -51,7 +53,8 @@ interface NotificationItemViewProps {
 
 function NotificationItemView({ item, onPress }: NotificationItemViewProps) {
   // 규칙 8.1: 복잡한 조건을 변수로 추출
-  const isUnread = !item.readAt;
+  // 미확인 = 클릭하지 않은 알림 (clicked_at이 null)
+  const isUnread = !item.clickedAt;
   const timeAgo = formatter.getDateDifferenceFromNow(item.createdAt);
   const iconColor = isUnread ? colors.main : colors.gray03;
 
@@ -91,7 +94,7 @@ const MemoizedNotificationItemView = React.memo(NotificationItemView, (prevProps
 
   return (
     prevItem.id === nextItem.id &&
-    prevItem.readAt === nextItem.readAt &&
+    prevItem.clickedAt === nextItem.clickedAt &&
     prevItem.title === nextItem.title &&
     prevItem.body === nextItem.body &&
     prevItem.createdAt === nextItem.createdAt &&

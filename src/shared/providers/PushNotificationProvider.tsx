@@ -52,6 +52,8 @@ interface PushNotificationContextValue {
   notification: Notifications.Notification | null;
   /** 권한 상태 */
   permissionStatus: Notifications.PermissionStatus | null;
+  /** 푸시 토큰 재획득 (권한 허용 후 토큰이 없을 때 사용) */
+  refreshToken: () => Promise<string | null>;
   /** 에러 메시지 */
   error: string | null;
 }
@@ -64,7 +66,8 @@ interface PushNotificationProviderProps {
 
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
   const { status, user, signOut } = useAuth();
-  const { expoPushToken, notification, permissionStatus, error } = usePushNotifications();
+  const { expoPushToken, notification, permissionStatus, refreshToken, error } =
+    usePushNotifications();
   const lastSyncedRef = useRef<{ userId: string; token: string } | null>(null);
 
   // Killed 상태에서 시작 시 사용할 signOut 캡처
@@ -110,8 +113,11 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     const incrementEntryCount = async () => {
       try {
         if (status === 'authenticated' && user) {
-          // 로그인 유저: profiles.entry_count 증가
-          await userApi.incrementEntryCount(user.id);
+          // 로그인 유저: profiles.entry_count 증가 + 앱 버전 업데이트
+          await Promise.all([
+            userApi.incrementEntryCount(user.id),
+            userApi.updateLastUsedVersion(user.id),
+          ]);
         } else {
           // 비로그인 유저: devices.entry_count 증가
           await incrementDeviceEntryCount();
@@ -275,6 +281,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     expoPushToken,
     notification,
     permissionStatus,
+    refreshToken,
     error,
   };
 

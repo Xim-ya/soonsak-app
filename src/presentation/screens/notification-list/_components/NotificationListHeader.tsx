@@ -4,17 +4,11 @@
  * BackButtonAppBar를 활용한 헤더 컴포넌트입니다.
  */
 
-import React, { useMemo } from 'react';
-import { TouchableOpacity } from 'react-native';
-import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import React from 'react';
 import { BackButtonAppBar } from '@/presentation/components/app-bar';
 
 interface NotificationListHeaderProps {
   onGoBack: () => void;
-  onMarkAllAsRead: () => void;
-  hasUnread: boolean;
 }
 
 /**
@@ -22,45 +16,10 @@ interface NotificationListHeaderProps {
  * React.memo 적용 - props 변경 시에만 리렌더링
  */
 const NotificationListHeader = React.memo(
-  function NotificationListHeader({
-    onGoBack,
-    onMarkAllAsRead,
-    hasUnread,
-  }: NotificationListHeaderProps) {
-    const actions = useMemo(
-      () => [
-        <MarkAllButton key="mark-all" onPress={onMarkAllAsRead} activeOpacity={0.7}>
-          <MarkAllButtonText>모두 읽음</MarkAllButtonText>
-        </MarkAllButton>,
-      ],
-      [onMarkAllAsRead],
-    );
-
-    return (
-      <BackButtonAppBar title="알림" onBackPress={onGoBack} actions={hasUnread ? actions : []} />
-    );
+  function NotificationListHeader({ onGoBack }: NotificationListHeaderProps) {
+    return <BackButtonAppBar title="알림" onBackPress={onGoBack} />;
   },
-  (prevProps, nextProps) => {
-    return (
-      prevProps.hasUnread === nextProps.hasUnread &&
-      prevProps.onGoBack === nextProps.onGoBack &&
-      prevProps.onMarkAllAsRead === nextProps.onMarkAllAsRead
-    );
-  },
+  (prevProps, nextProps) => prevProps.onGoBack === nextProps.onGoBack,
 );
-
-/* Styled Components */
-
-const MarkAllButton = styled(TouchableOpacity)({
-  paddingHorizontal: 12,
-  paddingVertical: 6,
-  borderRadius: 16,
-  backgroundColor: colors.gray05,
-});
-
-const MarkAllButtonText = styled.Text({
-  ...textStyles.alert2,
-  color: colors.white,
-});
 
 export { NotificationListHeader };

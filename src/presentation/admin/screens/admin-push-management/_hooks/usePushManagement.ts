@@ -6,6 +6,7 @@ import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
 import { adminPushApi, type PushScheduleStatus } from '@/features/admin/api/adminPushApi';
+import type { PushData } from '@/features/admin/types/pushAction';
 import type {
   PushTemplateModel,
   PushStatisticsModel,
@@ -74,6 +75,7 @@ export function usePushManagement() {
   const [activeTab, setActiveTab] = useState<PushManagementTab>('receipts');
   const [searchQuery, setSearchQuery] = useState('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
 
   // 템플릿 목록 조회
   const {
@@ -98,6 +100,7 @@ export function usePushManagement() {
     queryKey: PUSH_QUERY_KEYS.statistics,
     queryFn: adminPushApi.getStatistics,
   });
+
 
   // 발송 내역 조회 (무한스크롤)
   const {
@@ -249,6 +252,42 @@ export function usePushManagement() {
     [queryClient],
   );
 
+  // 전체 푸시 발송
+  const handleSendBroadcast = useCallback(
+    async (
+      title: string,
+      body: string,
+      data?: PushData,
+      appVersion?: string | null,
+    ): Promise<boolean> => {
+      setIsSendingBroadcast(true);
+      try {
+        const result = await adminPushApi.sendBroadcastPush(title, body, data, appVersion);
+        if (result.success) {
+          const versionText = appVersion === undefined ? '전체' : appVersion ?? '버전 미지정';
+          Alert.alert(
+            '발송 완료',
+            `푸시 발송이 완료되었어요.\n\n대상 버전: ${versionText}\n성공: ${result.sentCount}건\n실패: ${result.failedCount}건\n총 토큰: ${result.totalTokens}개`,
+          );
+          // 발송 내역 새로고침
+          queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.receipts(searchQuery) });
+          queryClient.invalidateQueries({ queryKey: PUSH_QUERY_KEYS.statistics });
+          return true;
+        } else {
+          Alert.alert('발송 실패', '해당 조건의 활성 푸시 토큰이 없어요');
+          return false;
+        }
+      } catch (error) {
+        console.error('전체 푸시 발송 실패:', error);
+        Alert.alert('오류', '전체 푸시 발송에 실패했어요');
+        return false;
+      } finally {
+        setIsSendingBroadcast(false);
+      }
+    },
+    [queryClient, searchQuery],
+  );
+
   return {
     // Tab
     activeTab,
@@ -276,5 +315,9 @@ export function usePushManagement() {
     handleReactivateSchedule,
     handleDeleteTemplate,
     handleToggleActive,
+    // Broadcast
+    isSendingBroadcast,
+    handleSendBroadcast,
+    activePushTokens: statistics?.activePushTokens ?? 0,
   };
 }

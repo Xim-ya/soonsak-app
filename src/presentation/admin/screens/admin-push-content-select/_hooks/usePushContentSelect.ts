@@ -49,7 +49,7 @@ interface SelectedContent {
 type TabType = 'search' | 'history' | 'favorites' | 'ratings';
 
 interface UsePushContentSelectParams {
-  userId: string;
+  userId?: string | undefined; // 없으면 검색만 가능 (유저 콘텐츠 탭 비활성화)
   mode: 'content' | 'player';
 }
 
@@ -57,6 +57,7 @@ interface UsePushContentSelectReturn {
   // 탭 상태
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
+  hasUserId: boolean; // userId 유무 (유저 콘텐츠 탭 활성화 여부)
 
   // 검색 상태
   searchQuery: string;
@@ -88,6 +89,7 @@ export function usePushContentSelect({
 }: UsePushContentSelectParams): UsePushContentSelectReturn {
   const navigation = useNavigation();
   const needsVideoSelection = mode === 'player';
+  const hasUserId = !!userId;
 
   // 탭 상태
   const [activeTab, setActiveTab] = useState<TabType>('search');
@@ -141,9 +143,9 @@ export function usePushContentSelect({
     return () => clearTimeout(timer);
   }, [searchQuery, activeTab, handleSearch]);
 
-  // 탭 변경 시 유저 콘텐츠 로드
+  // 탭 변경 시 유저 콘텐츠 로드 (userId가 있을 때만)
   useEffect(() => {
-    if (activeTab === 'search') return;
+    if (activeTab === 'search' || !userId) return;
 
     const loadUserContents = async () => {
       setIsLoadingUserContents(true);
@@ -235,6 +237,7 @@ export function usePushContentSelect({
   return {
     activeTab,
     setActiveTab,
+    hasUserId,
     searchQuery,
     setSearchQuery,
     searchResults,

@@ -60,6 +60,8 @@ export default function AdminUserManagementScreen() {
     onSortChange,
     showTodaySignupsOnly,
     onTodaySignupPress,
+    showReviewFunnelNotSent,
+    onReviewFunnelNotSentPress,
     isLoading,
     isStatisticsLoading,
     isFetchingNextPage,
@@ -131,8 +133,19 @@ export default function AdminUserManagementScreen() {
           onSearch={onSearch}
         />
 
-        {/* 정렬 선택 */}
-        <UserSortSelector sortBy={sortBy} onSortChange={onSortChange} />
+        {/* 정렬 선택 + 필터 칩 */}
+        <SortAndFilterContainer>
+          <UserSortSelector sortBy={sortBy} onSortChange={onSortChange} />
+          <FilterChip
+            onPress={onReviewFunnelNotSentPress}
+            activeOpacity={0.7}
+            isActive={showReviewFunnelNotSent}
+          >
+            <FilterChipText isActive={showReviewFunnelNotSent}>
+              리뷰 유도 미발송
+            </FilterChipText>
+          </FilterChip>
+        </SortAndFilterContainer>
       </>
     ),
     [
@@ -147,6 +160,8 @@ export default function AdminUserManagementScreen() {
       onSearch,
       sortBy,
       onSortChange,
+      showReviewFunnelNotSent,
+      onReviewFunnelNotSentPress,
     ],
   );
 
@@ -161,14 +176,18 @@ export default function AdminUserManagementScreen() {
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
+    let emptyMessage = '유저가 없어요';
+    if (showTodaySignupsOnly) {
+      emptyMessage = '오늘 가입한 유저가 없어요';
+    } else if (showReviewFunnelNotSent) {
+      emptyMessage = '리뷰 유도 미발송 유저가 없어요';
+    }
     return (
       <EmptyContainer>
-        <EmptyText>
-          {showTodaySignupsOnly ? '오늘 가입한 유저가 없어요' : '유저가 없어요'}
-        </EmptyText>
+        <EmptyText>{emptyMessage}</EmptyText>
       </EmptyContainer>
     );
-  }, [isLoading, showTodaySignupsOnly]);
+  }, [isLoading, showTodaySignupsOnly, showReviewFunnelNotSent]);
 
   return (
     <BasePage useSafeArea={false}>
@@ -269,3 +288,29 @@ const Separator = styled.View({
   backgroundColor: colors.gray05,
   marginHorizontal: 16,
 });
+
+const SortAndFilterContainer = styled.View({
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  paddingRight: 16,
+});
+
+interface FilterChipProps {
+  isActive: boolean;
+}
+
+const FilterChip = styled(TouchableOpacity)<FilterChipProps>(({ isActive }) => ({
+  backgroundColor: isActive ? colors.primary : colors.gray06,
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 16,
+  borderWidth: 1,
+  borderColor: isActive ? colors.primary : colors.gray05,
+}));
+
+const FilterChipText = styled.Text<FilterChipProps>(({ isActive }) => ({
+  ...textStyles.alert2,
+  color: isActive ? colors.white : colors.gray02,
+  fontWeight: isActive ? '600' : '400',
+}));

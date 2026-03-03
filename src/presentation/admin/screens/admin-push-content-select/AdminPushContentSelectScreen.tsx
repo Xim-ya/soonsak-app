@@ -66,6 +66,7 @@ export default function AdminPushContentSelectScreen() {
   const {
     activeTab,
     setActiveTab,
+    hasUserId,
     searchQuery,
     setSearchQuery,
     searchResults,
@@ -81,6 +82,9 @@ export default function AdminPushContentSelectScreen() {
     handleSelectVideo,
     handleBackFromVideos,
   } = usePushContentSelect({ userId, mode });
+
+  // userId가 없으면 검색 탭만 표시
+  const visibleTabs = hasUserId ? TABS : TABS.filter((tab) => tab.key === 'search');
 
   // 검색 결과 아이템 렌더링
   const renderSearchItem = useCallback(
@@ -218,18 +222,20 @@ export default function AdminPushContentSelectScreen() {
         <HeaderSpacer />
       </Header>
 
-      {/* 탭 */}
-      <TabContainer>
-        {TABS.map((tab) => (
-          <TabButton
-            key={tab.key}
-            isActive={activeTab === tab.key}
-            onPress={() => setActiveTab(tab.key)}
-          >
-            <TabText isActive={activeTab === tab.key}>{tab.label}</TabText>
-          </TabButton>
-        ))}
-      </TabContainer>
+      {/* 탭 (userId가 없으면 검색 탭만 표시) */}
+      {visibleTabs.length > 1 && (
+        <TabContainer>
+          {visibleTabs.map((tab) => (
+            <TabButton
+              key={tab.key}
+              isActive={activeTab === tab.key}
+              onPress={() => setActiveTab(tab.key)}
+            >
+              <TabText isActive={activeTab === tab.key}>{tab.label}</TabText>
+            </TabButton>
+          ))}
+        </TabContainer>
+      )}
 
       {/* 검색 입력 (전체 검색 탭일 때만) */}
       {activeTab === 'search' && (

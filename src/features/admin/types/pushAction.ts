@@ -16,7 +16,8 @@ export type PushNavigationScreen =
   | 'ChannelDetail'
   | 'Search'
   | 'Settings'
-  | 'UserContentList';
+  | 'UserContentList'
+  | 'ReviewFunnel';
 
 /** 콘텐츠 상세 파라미터 */
 export interface ContentDetailParams {
@@ -51,6 +52,9 @@ export interface UserContentListParams {
   initialTab: 0 | 1 | 2; // 0: 찜, 1: 평가, 2: 시청기록
 }
 
+/** 리뷰 퍼널 파라미터 (빈 객체) */
+export type ReviewFunnelParams = Record<string, never>;
+
 /** 화면별 파라미터 매핑 */
 export interface ScreenParamsMap {
   ContentDetail: ContentDetailParams;
@@ -59,6 +63,7 @@ export interface ScreenParamsMap {
   Search: SearchParams;
   Settings: SettingsParams;
   UserContentList: UserContentListParams;
+  ReviewFunnel: ReviewFunnelParams;
 }
 
 // ============================================================================
@@ -136,6 +141,12 @@ export const ACTION_TYPE_OPTIONS: readonly ActionTypeOption[] = [
   { key: 'nav_search', label: '검색 화면', type: 'navigation', screen: 'Search' },
   { key: 'nav_settings', label: '설정 화면', type: 'navigation', screen: 'Settings' },
   { key: 'nav_userlist', label: '내 콘텐츠 목록', type: 'navigation', screen: 'UserContentList' },
+  {
+    key: 'nav_review_funnel',
+    label: '앱 리뷰 적극 유도',
+    type: 'navigation',
+    screen: 'ReviewFunnel',
+  },
   // ACTION
   { key: 'action_review', label: '앱 리뷰 요청', type: 'action', action: 'REQUEST_REVIEW' },
   { key: 'action_url', label: '외부 URL 열기', type: 'action', action: 'OPEN_URL' },
