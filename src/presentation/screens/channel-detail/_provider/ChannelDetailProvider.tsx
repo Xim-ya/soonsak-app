@@ -1,6 +1,16 @@
-import { createContext, useContext, useState, useCallback, ReactNode, useMemo } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useCallback,
+  ReactNode,
+  useMemo,
+  useEffect,
+  useRef,
+} from 'react';
 import type { SortType } from '@/shared/types/sort';
 import type { ViewMode } from '@/presentation/components/view-mode';
+import { analyticsService } from '@/shared/analytics';
 import { useChannelInfo } from '../_hooks/useChannelInfo';
 import { useChannelContents } from '../_hooks/useChannelContents';
 import { ChannelVideoModel } from '../_types';
@@ -43,6 +53,8 @@ interface ChannelDetailProviderProps {
   readonly channelName?: string | undefined;
   readonly channelLogoUrl?: string | undefined;
   readonly subscriberCount?: number | undefined;
+  /** 채널 상세 진입 경로 (GA 로깅용) */
+  readonly source?: string | undefined;
 }
 
 /**
@@ -67,6 +79,7 @@ export function ChannelDetailProvider({
   channelName,
   channelLogoUrl,
   subscriberCount,
+  source = 'direct',
 }: ChannelDetailProviderProps) {
   // 정렬 상태 (기본값: 최신순)
   const [sortType, setSortType] = useState<SortType>('latest');
@@ -81,6 +94,19 @@ export function ChannelDetailProvider({
       channelLogoUrl,
       subscriberCount,
     });
+
+  // GA4 channel_view 이벤트 로깅 (화면 진입 시 1회만)
+  const hasLoggedViewRef = useRef(false);
+  useEffect(() => {
+    if (!hasLoggedViewRef.current && displayName) {
+      analyticsService.channelView({
+        channel_id: channelId,
+        channel_name: displayName,
+        source,
+      });
+      hasLoggedViewRef.current = true;
+    }
+  }, [channelId, displayName, source]);
 
   // 채널 콘텐츠 관리 (정렬 타입 전달)
   const { videos, isLoading, fetchNextPage, hasNextPage, totalCount } = useChannelContents(

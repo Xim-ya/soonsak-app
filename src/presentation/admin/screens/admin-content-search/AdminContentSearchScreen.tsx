@@ -6,13 +6,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect, memo } from 'react';
-import {
-  TextInput,
-  FlatList,
-  TouchableOpacity,
-  Keyboard,
-  ActivityIndicator,
-} from 'react-native';
+import { TextInput, FlatList, TouchableOpacity, Keyboard, ActivityIndicator } from 'react-native';
 import { useDialog } from '@/presentation/components/dialog';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';

@@ -9,6 +9,7 @@ import {
   CARD_SLIDER,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
+import { ContentSource } from '@/shared/analytics';
 import { useContentCollections } from '../_hooks/useContentCollections';
 import {
   ContentCollectionModel,
@@ -24,7 +25,7 @@ interface ContentCollectionSectionViewProps {
  * 컬렉션 콘텐츠 아이템 컴포넌트
  */
 const CollectionContentItem = React.memo(({ item }: { item: CollectionContentModel }) => (
-  <ContentCardImage item={item} />
+  <ContentCardImage item={item} source={ContentSource.HOME_COLLECTION} />
 ));
 CollectionContentItem.displayName = 'CollectionContentItem';
 

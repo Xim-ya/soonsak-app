@@ -6,12 +6,14 @@
  * 필터 버튼을 누르면 장르/국가/연도/평점 필터 바텀시트가 표시됩니다.
  */
 
+import { useCallback } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import CloseIcon from '@assets/icons/close.svg';
 import { QuickExploreProvider, useQuickExplore } from './_provider/QuickExploreProvider';
@@ -49,6 +51,11 @@ function QuickExploreContent() {
   // 바텀시트에 전달할 필터 (pendingFilter가 있으면 해당 값 사용)
   const bottomSheetFilter = pendingFilter ?? filter;
 
+  // 필터 초기화 핸들러 (quick_explore_filter_reset 이벤트 로깅)
+  const handleFilterReset = useCallback(() => {
+    analyticsService.quickExploreFilterReset();
+  }, []);
+
   return (
     <BasePage useSafeArea={false} touchableWithoutFeedback={false}>
       <GestureHandlerRootView style={{ flex: 1 }}>
@@ -73,6 +80,7 @@ function QuickExploreContent() {
           onClose={handleFilterClose}
           onRequestChannelSelection={handleRequestChannelSelection}
           preserveScrollPosition={pendingFilter !== null}
+          onReset={handleFilterReset}
         />
       </GestureHandlerRootView>
     </BasePage>

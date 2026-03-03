@@ -35,6 +35,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -64,6 +65,8 @@ interface ContentFilterBottomSheetProps {
   readonly onRequestChannelSelection?: (tempFilter: ContentFilter) => void;
   /** 열릴 때 스크롤 위치를 복원할지 여부 (채널 선택 복귀 시 사용) */
   readonly preserveScrollPosition?: boolean;
+  /** 필터 초기화 콜백 (초기화 버튼 클릭 시 호출) */
+  readonly onReset?: () => void;
 }
 
 const SHEET_HEIGHT = AppSize.screenHeight * 0.85;
@@ -79,6 +82,7 @@ function ContentFilterBottomSheet({
   onClose,
   onRequestChannelSelection,
   preserveScrollPosition = false,
+  onReset,
 }: ContentFilterBottomSheetProps): React.ReactElement {
   // 임시 필터 상태 (적용 전까지만 유지)
   const [tempFilter, setTempFilter] = useState<ContentFilter>(currentFilter);
@@ -98,6 +102,8 @@ function ContentFilterBottomSheet({
   const isTabScrollingRef = useRef(false);
   // 현재 스크롤 위치 저장 (채널 선택 복귀 시 복원용)
   const scrollYRef = useRef(0);
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
 
   // 표시할 탭 필터링 (tabs 변경 시에만 재계산)
   const visibleTabs = useMemo(
@@ -108,6 +114,14 @@ function ContentFilterBottomSheet({
   // 바텀시트 열릴 때 현재 필터로 초기화
   useEffect(() => {
     if (visible) {
+      actionTakenRef.current = false;
+      // 채널 선택 복귀 시에는 GA 로깅 스킵 (preserveScrollPosition이 true)
+      if (!preserveScrollPosition) {
+        analyticsService.bottomSheetOpen({
+          sheet_type: 'content_filter',
+          screen_name: 'explore',
+        });
+      }
       setTempFilter(currentFilter);
 
       if (preserveScrollPosition) {
@@ -131,6 +145,11 @@ function ContentFilterBottomSheet({
 
   // 닫기 애니메이션
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'content_filter',
+      screen_name: 'explore',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       SHEET_HEIGHT,
@@ -194,10 +213,12 @@ function ContentFilterBottomSheet({
   // 초기화 핸들러
   const handleReset = useCallback(() => {
     setTempFilter(DEFAULT_CONTENT_FILTER);
-  }, []);
+    onReset?.();
+  }, [onReset]);
 
   // 적용 핸들러
   const handleApply = useCallback(() => {
+    actionTakenRef.current = true;
     onApply(tempFilter);
     handleClose();
   }, [tempFilter, onApply, handleClose]);

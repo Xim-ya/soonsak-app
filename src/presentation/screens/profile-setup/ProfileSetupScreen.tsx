@@ -123,8 +123,8 @@ function ProfileSetupContent(): React.ReactElement {
         visible={isSettingsErrorDialogVisible}
         title="설정을 열 수 없어요"
         description="알 수 없는 오류가 발생했어요. 직접 설정 앱에서 사진 접근을 허용해 주세요."
-        rightButtonText="확인"
-        onRightButtonPress={closeSettingsErrorDialog}
+        buttonText="확인"
+        onButtonPress={closeSettingsErrorDialog}
         onBackdropPress={closeSettingsErrorDialog}
       />
     </>

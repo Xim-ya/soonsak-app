@@ -24,7 +24,7 @@ import { SvgXml } from 'react-native-svg';
 import { BasePage } from '@/presentation/components/page';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
-import type { PushTemplateModel, PushReceiptModel, PushManagementTab } from './_types';
+import type { PushTemplateModel, PushReceiptModel } from './_types';
 import { PushStatisticsCards, PushTemplateItem, PushReceiptListItem } from './_components';
 import { usePushManagement } from './_hooks';
 
@@ -120,10 +120,7 @@ export default function AdminPushManagementScreen() {
 
         {/* 탭 바 */}
         <TabBar>
-          <TabButton
-            active={activeTab === 'receipts'}
-            onPress={() => handleTabChange('receipts')}
-          >
+          <TabButton active={activeTab === 'receipts'} onPress={() => handleTabChange('receipts')}>
             <TabText active={activeTab === 'receipts'}>발송 내역</TabText>
           </TabButton>
           <TabButton
@@ -151,9 +148,7 @@ export default function AdminPushManagementScreen() {
           </SearchContainer>
         )}
 
-        <SectionTitle>
-          {activeTab === 'receipts' ? '발송 내역' : '템플릿 목록'}
-        </SectionTitle>
+        <SectionTitle>{activeTab === 'receipts' ? '발송 내역' : '템플릿 목록'}</SectionTitle>
       </>
     ),
     [

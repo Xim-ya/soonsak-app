@@ -23,6 +23,7 @@ interface BaseCast extends BasePerson {
 }
 
 // TV Cast (cast_id 없음)
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TVCast extends BaseCast {}
 
 // Movie Cast (cast_id 있음)

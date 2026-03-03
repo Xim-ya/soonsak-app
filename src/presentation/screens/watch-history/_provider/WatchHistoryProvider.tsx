@@ -13,11 +13,21 @@
  * </WatchHistoryProvider>
  */
 
-import { createContext, useContext, useState, useMemo, useCallback, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useMemo,
+  useCallback,
+  useEffect,
+  useRef,
+  ReactNode,
+} from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/shared/analytics';
 import {
   useWatchHistoryByDate,
   useInfiniteUniqueWatchHistory,
@@ -107,6 +117,18 @@ export function WatchHistoryProvider({ children, date }: WatchHistoryProviderPro
     infiniteQuery.hasNextPage,
   ]);
 
+  // 시청 기록 화면 진입 이벤트 로깅 (최초 1회만)
+  const hasLoggedViewRef = useRef(false);
+  useEffect(() => {
+    if (!isInitialLoading && !hasLoggedViewRef.current) {
+      hasLoggedViewRef.current = true;
+      analyticsService.watchHistoryView({
+        date_filter: date ?? null,
+        total_count: items.length,
+      });
+    }
+  }, [isInitialLoading, items.length, date]);
+
   // 다음 페이지 로드
   const fetchNextPage = infiniteQuery.fetchNextPage;
   const handleEndReached = useCallback(() => {
@@ -119,10 +141,23 @@ export function WatchHistoryProvider({ children, date }: WatchHistoryProviderPro
   // initialData로 이미지 경로와 진행률을 전달하여 API 응답 전에 즉시 표시
   const handleItemPress = useCallback(
     (item: WatchHistoryModelType) => {
+      // 시청 기록 콘텐츠 클릭 이벤트 로깅
+      const watchProgress =
+        item.durationSeconds > 0
+          ? Math.round((item.progressSeconds / item.durationSeconds) * 100)
+          : 0;
+
+      analyticsService.watchHistoryContentClick({
+        content_id: item.contentId,
+        content_type: item.contentType,
+        watch_progress: watchProgress,
+      });
+
       navigation.navigate(routePages.contentDetail, {
         id: item.contentId,
         type: item.contentType,
         title: item.contentTitle,
+        source: ContentSource.WATCH_HISTORY,
         initialData: {
           backdropPath: item.contentBackdropPath,
           posterPath: item.contentPosterPath,

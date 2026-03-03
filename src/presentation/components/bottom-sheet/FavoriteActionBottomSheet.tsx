@@ -5,7 +5,7 @@
  * Flutter Plotz 프로젝트의 EpisodeBottomSheet 디자인 참고
  */
 
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { Modal } from 'react-native';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -19,6 +19,7 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { SvgXml } from 'react-native-svg';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -55,6 +56,8 @@ interface FavoriteActionBottomSheetProps {
   readonly onToggleFavorite: () => void;
   /** 닫기 콜백 */
   readonly onClose: () => void;
+  /** 화면 이름 (GA 로깅용) */
+  readonly screenName?: string | undefined;
 }
 
 function FavoriteActionBottomSheet({
@@ -63,6 +66,7 @@ function FavoriteActionBottomSheet({
   disabled = false,
   onToggleFavorite,
   onClose,
+  screenName,
 }: FavoriteActionBottomSheetProps) {
   // 시트 높이 계산
   const sheetHeight =
@@ -73,9 +77,17 @@ function FavoriteActionBottomSheet({
   const overlayOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(sheetHeight);
 
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
+
   // visible 상태에 따른 애니메이션
   useEffect(() => {
     if (visible) {
+      actionTakenRef.current = false;
+      analyticsService.bottomSheetOpen({
+        sheet_type: 'favorite_action',
+        screen_name: screenName ?? 'unknown',
+      });
       overlayOpacity.value = withTiming(1, { duration: 200 });
       sheetTranslateY.value = withTiming(0, {
         duration: 300,
@@ -86,10 +98,15 @@ function FavoriteActionBottomSheet({
       overlayOpacity.value = 0;
       sheetTranslateY.value = sheetHeight;
     }
-  }, [visible, overlayOpacity, sheetTranslateY, sheetHeight]);
+  }, [visible, overlayOpacity, sheetTranslateY, sheetHeight, screenName]);
 
   // 닫기 애니메이션
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'favorite_action',
+      screen_name: screenName ?? 'unknown',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       sheetHeight,
@@ -98,11 +115,12 @@ function FavoriteActionBottomSheet({
         runOnJS(onClose)();
       },
     );
-  }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight]);
+  }, [onClose, overlayOpacity, sheetTranslateY, sheetHeight, screenName]);
 
   // 찜 토글 핸들러
   const handleToggleFavorite = useCallback(() => {
     if (disabled) return;
+    actionTakenRef.current = true;
     onToggleFavorite();
     handleClose();
   }, [onToggleFavorite, handleClose, disabled]);

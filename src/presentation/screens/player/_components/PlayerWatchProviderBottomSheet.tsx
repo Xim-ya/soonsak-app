@@ -1,4 +1,4 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef } from 'react';
 import { Modal, Image, ScrollView } from 'react-native';
 import styled from '@emotion/native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
@@ -11,6 +11,7 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
+import { analyticsService } from '@/shared/analytics';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import { AppSize } from '@/shared/utils/appSize';
@@ -37,7 +38,15 @@ function PlayerWatchProviderBottomSheet({
   const overlayOpacity = useSharedValue(0);
   const sheetTranslateY = useSharedValue(SHEET_HEIGHT);
 
+  // 액션 수행 여부 추적 (닫기 시 actionTaken 판단용)
+  const actionTakenRef = useRef(false);
+
   const handleClose = useCallback(() => {
+    analyticsService.bottomSheetClose({
+      sheet_type: 'watch_provider',
+      screen_name: 'player',
+      action_taken: actionTakenRef.current,
+    });
     overlayOpacity.value = withTiming(0, { duration: 200 });
     sheetTranslateY.value = withTiming(
       SHEET_HEIGHT,
@@ -50,6 +59,11 @@ function PlayerWatchProviderBottomSheet({
 
   useEffect(() => {
     if (visible) {
+      actionTakenRef.current = false;
+      analyticsService.bottomSheetOpen({
+        sheet_type: 'watch_provider',
+        screen_name: 'player',
+      });
       overlayOpacity.value = withTiming(1, { duration: 200 });
       sheetTranslateY.value = withTiming(0, { duration: 300, easing: Easing.out(Easing.ease) });
     }
@@ -88,6 +102,7 @@ function PlayerWatchProviderBottomSheet({
   }));
 
   const handleProviderPress = useCallback((providerId: number) => {
+    actionTakenRef.current = true;
     openOttApp(providerId);
   }, []);
 

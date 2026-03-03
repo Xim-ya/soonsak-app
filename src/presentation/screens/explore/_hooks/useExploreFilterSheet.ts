@@ -14,6 +14,8 @@ import type { ContentFilter } from '@/shared/types/filter/contentFilter';
 import { useContentFilter } from '@/shared/context/ContentFilterContext';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { analyticsService } from '@/shared/analytics';
+import type { ExploreContentType } from '@/shared/analytics/types/events';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -125,6 +127,19 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
 
   const applyFilter = useCallback(
     (newFilter: ContentFilter) => {
+      // explore_filter_apply 이벤트 로깅
+      // contentType이 null이면 'all', 'unknown'은 'all'로 처리
+      const rawContentType = newFilter.contentType;
+      const contentType: ExploreContentType =
+        rawContentType === null || rawContentType === 'unknown' ? 'all' : rawContentType;
+      analyticsService.exploreFilterApply({
+        genres: newFilter.genreIds.map(String),
+        channels: newFilter.channelIds,
+        content_type: contentType,
+        include_ending: newFilter.includeEnding,
+        exclude_watched: newFilter.excludeWatched,
+      });
+
       setFilter(newFilter);
       setPendingFilter(null);
       setIsVisible(false);
@@ -134,6 +149,12 @@ export function useExploreFilterSheet(): UseExploreFilterSheetReturn {
 
   const requestChannelSelection = useCallback(
     (tempFilter: ContentFilter) => {
+      // GA4 channel_selection_open 이벤트 로깅
+      analyticsService.channelSelectionOpen({
+        current_channel_count: tempFilter.channelIds.length,
+        source: 'explore_filter',
+      });
+
       setPendingFilter(tempFilter);
       setIsVisible(false);
       navigation.navigate(routePages.channelSelection, {

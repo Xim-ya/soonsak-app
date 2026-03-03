@@ -11,9 +11,14 @@ import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
 import { RelatedContentModel } from '../_types/relatedContentModel.cd';
+import { analyticsService } from '@/shared/analytics';
 
 interface RelatedContentGridItemProps {
   content: RelatedContentModel;
+  /** 현재 보고 있는 콘텐츠 ID (GA 로깅용) */
+  sourceContentId: number;
+  /** 리스트 내 위치 (0-indexed, GA 로깅용) */
+  position: number;
 }
 
 // 태블릿 레이아웃 상수
@@ -42,9 +47,13 @@ export const GRID_COLUMN_GAP = 9;
  * 포스터 이미지와 제목을 표시하며, 클릭 시 해당 콘텐츠 상세 페이지로 이동합니다.
  *
  * @example
- * <RelatedContentGridItem content={relatedContent} />
+ * <RelatedContentGridItem content={relatedContent} sourceContentId={123} position={0} />
  */
-function RelatedContentGridItem({ content }: RelatedContentGridItemProps) {
+function RelatedContentGridItem({
+  content,
+  sourceContentId,
+  position,
+}: RelatedContentGridItemProps) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath, {
@@ -52,12 +61,20 @@ function RelatedContentGridItem({ content }: RelatedContentGridItemProps) {
   });
 
   const handlePress = useCallback(() => {
+    // GA4 content_detail_related_content_click 이벤트 로깅
+    analyticsService.contentDetailRelatedContentClick({
+      content_id: sourceContentId,
+      related_content_id: content.id,
+      related_content_type: content.contentType,
+      position,
+    });
+
     navigation.push(routePages.contentDetail, {
       id: content.id,
       title: content.title,
       type: content.contentType,
     });
-  }, [navigation, content.id, content.title, content.contentType]);
+  }, [navigation, content.id, content.title, content.contentType, sourceContentId, position]);
 
   return (
     <Container>

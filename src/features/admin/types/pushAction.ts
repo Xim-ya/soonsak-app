@@ -41,14 +41,10 @@ export interface ChannelDetailParams {
 }
 
 /** 검색 파라미터 (빈 객체) */
-export interface SearchParams {
-  // 빈 객체
-}
+export type SearchParams = Record<string, never>;
 
 /** 설정 파라미터 (빈 객체) */
-export interface SettingsParams {
-  // 빈 객체
-}
+export type SettingsParams = Record<string, never>;
 
 /** 유저 콘텐츠 목록 파라미터 */
 export interface UserContentListParams {

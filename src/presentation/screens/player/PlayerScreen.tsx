@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import styled from '@emotion/native';
 import { useRoute, RouteProp, useNavigation } from '@react-navigation/native';
 import { ActivityIndicator, Platform } from 'react-native';
@@ -11,8 +11,14 @@ import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { useWatchProgressSync } from '@/features/watch-history';
 import { PlayerWatchProviderView } from './_components/PlayerWatchProviderView';
-import { usePlayerReady, useResumePlayback, useFallbackPlayer, useScreenOrientation } from './_hooks';
+import {
+  usePlayerReady,
+  useResumePlayback,
+  useFallbackPlayer,
+  useScreenOrientation,
+} from './_hooks';
 import { useDialog } from '@/presentation/components/dialog';
+import { analyticsService } from '@/shared/analytics';
 
 type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.player>;
 
@@ -27,6 +33,12 @@ export const PlayerScreen = () => {
   const { videoId, title, contentId, contentType, startSeconds } = route.params;
   const [currentPlaybackRate, setCurrentPlaybackRate] = useState(1);
   const { showDialog, showConfirmDialog } = useDialog();
+
+  // GA4 Analytics 상태 추적
+  const hasLoggedPlayStart = useRef(false);
+  const playStartTimeRef = useRef<number>(0);
+  const totalDurationRef = useRef<number>(0);
+  const currentTimeRef = useRef<number>(0);
 
   // 화면 방향 및 크기 관리
   const { playerWidth, playerHeight, isAndroid } = useScreenOrientation();
@@ -68,11 +80,54 @@ export const PlayerScreen = () => {
   // 플레이어 준비 완료 이벤트
   useYouTubeEvent(player, 'ready', handleReady);
 
+  // GA4 content_play_start 이벤트 로깅
+  const logPlayStart = useCallback(() => {
+    if (!hasLoggedPlayStart.current) {
+      hasLoggedPlayStart.current = true;
+      const isResume = (startSeconds ?? 0) > 0;
+      playStartTimeRef.current = startSeconds ?? 0;
+
+      analyticsService.contentPlayStart({
+        content_id: contentId,
+        content_type: contentType,
+        video_id: videoId,
+        is_resume: isResume,
+        start_seconds: startSeconds ?? 0,
+      });
+    }
+  }, [contentId, contentType, videoId, startSeconds]);
+
+  // GA4 content_play_end 이벤트 로깅 (언마운트 시)
+  useEffect(() => {
+    return () => {
+      // 재생을 시작한 적이 있고, duration 정보가 있을 때만 로깅
+      if (hasLoggedPlayStart.current && totalDurationRef.current > 0) {
+        const watchDuration = currentTimeRef.current;
+        const totalDuration = totalDurationRef.current;
+        const completionRate = totalDuration > 0 ? (watchDuration / totalDuration) * 100 : 0;
+
+        analyticsService.contentPlayEnd({
+          content_id: contentId,
+          content_type: contentType,
+          video_id: videoId,
+          watch_duration: Math.floor(watchDuration),
+          total_duration: Math.floor(totalDuration),
+          completion_rate: Math.round(completionRate * 10) / 10, // 소수점 1자리
+        });
+      }
+    };
+  }, [contentId, contentType, videoId]);
+
   // 재생 상태 변경 이벤트
   useYouTubeEvent(player, 'stateChange', (state) => {
     console.log('재생 상태 변경:', state);
 
     const stateValue = typeof state === 'number' ? state : (state as { state: number }).state;
+
+    // YouTube PlayerState: 1 = PLAYING
+    if (stateValue === 1) {
+      logPlayStart();
+    }
 
     handleResumeOnStateChange(stateValue);
     handleStateChange(stateValue);
@@ -101,6 +156,11 @@ export const PlayerScreen = () => {
         percentage: (progress.currentTime / progress.duration) * 100,
       });
       updateProgress(progress.currentTime, progress.duration);
+
+      // GA4 로깅용 총 재생 시간 저장
+      if (progress.duration > 0) {
+        totalDurationRef.current = progress.duration;
+      }
     }
   }, [progress, updateProgress]);
 

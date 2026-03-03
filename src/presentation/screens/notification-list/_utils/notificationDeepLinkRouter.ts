@@ -13,6 +13,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
 import { ContentType, contentTypeConfigs } from '@/shared/types/content/contentType.enum';
+import { ContentSource } from '@/shared/analytics';
 import type { NotificationItem } from '@/features/notifications';
 
 // ============================================================================
@@ -76,6 +77,7 @@ const navigateToContentDetail: RouteHandler = (navigation, params) => {
     id,
     type,
     title: typeof params?.['title'] === 'string' ? params['title'] : null,
+    source: ContentSource.NOTIFICATION,
   });
   return true;
 };
@@ -240,4 +242,16 @@ export function handleNotificationDeepLink(
 ): boolean {
   const deepLinkInfo = parseNotificationDeepLink(item);
   return navigateByDeepLink(navigation, deepLinkInfo);
+}
+
+/**
+ * 알림 아이템에서 딥링크 화면 이름을 추출합니다.
+ * (GA4 분석용)
+ *
+ * @param item 알림 아이템
+ * @returns 화면 이름 (없으면 undefined)
+ */
+export function extractDeepLinkScreen(item: NotificationItem): string | undefined {
+  const deepLinkInfo = parseNotificationDeepLink(item);
+  return deepLinkInfo.screen ?? undefined;
 }

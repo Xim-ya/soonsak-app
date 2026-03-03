@@ -42,8 +42,14 @@ if (IS_IOS_26_OR_LATER) {
 
     if (__DEV__) {
       console.log('[LiquidGlass] Module loaded:', !!liquidGlass);
-      console.log('[LiquidGlass] isLiquidGlassSupported type:', typeof liquidGlass.isLiquidGlassSupported);
-      console.log('[LiquidGlass] isLiquidGlassSupported value:', liquidGlass.isLiquidGlassSupported);
+      console.log(
+        '[LiquidGlass] isLiquidGlassSupported type:',
+        typeof liquidGlass.isLiquidGlassSupported,
+      );
+      console.log(
+        '[LiquidGlass] isLiquidGlassSupported value:',
+        liquidGlass.isLiquidGlassSupported,
+      );
     }
 
     // isLiquidGlassSupported가 함수일 수도 있고 boolean일 수도 있음

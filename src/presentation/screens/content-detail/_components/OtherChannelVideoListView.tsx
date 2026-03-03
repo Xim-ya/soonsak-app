@@ -21,6 +21,7 @@ import PlayButtonSvg from '@assets/icons/play_button.svg';
 import { OtherChannelVideoModel } from '../_types/otherChannelVideoModel.cd';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '../_hooks/useContentDetail';
+import { analyticsService } from '@/shared/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 
@@ -41,6 +42,13 @@ function VideoItemView({ item, contentTitle }: VideoItemViewProps) {
 
   const handlePlayPress = useCallback(() => {
     if (!item.contentType) return;
+
+    // GA4 content_detail_other_video_click 이벤트 로깅
+    analyticsService.contentDetailOtherVideoClick({
+      video_id: item.id,
+      content_id: item.contentId,
+      content_type: item.contentType,
+    });
 
     navigation.navigate(routePages.player, {
       videoId: item.id,
