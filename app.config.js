@@ -13,7 +13,16 @@ const GOOGLE_ANDROID_URL_SCHEME = GOOGLE_OAUTH_ANDROID_CLIENT_ID
   ? GOOGLE_OAUTH_ANDROID_CLIENT_ID.replace('.apps.googleusercontent.com', '')
   : null;
 const EAS_PROJECT_ID = process.env.EAS_PROJECT_ID;
-const APP_VARIANT = process.env.APP_VARIANT || 'development';
+
+// EAS 빌드 시 APP_VARIANT가 설정되지 않으면 EAS_BUILD_PROFILE에서 파생
+const APP_VARIANT =
+  process.env.APP_VARIANT ||
+  (process.env.EAS_BUILD_PROFILE === 'production' ? 'production' : 'development');
+
+// EAS_PROJECT_ID가 없으면 경고 출력
+if (!EAS_PROJECT_ID) {
+  console.warn('[app.config.js] EAS_PROJECT_ID is not set. Expo Updates (OTA) will be disabled.');
+}
 const KOTLIN_VERSION = '2.0.21';
 
 module.exports = {
@@ -31,13 +40,25 @@ module.exports = {
     icon: './assets/icon.png',
     userInterfaceStyle: 'dark',
     newArchEnabled: true,
+    // EAS_PROJECT_ID가 있을 때만 OTA 업데이트 활성화
+    ...(EAS_PROJECT_ID && {
+      updates: {
+        enabled: true,
+        url: `https://u.expo.dev/${EAS_PROJECT_ID}`,
+        fallbackToCacheTimeout: 0,
+        checkAutomatically: 'ON_LOAD',
+      },
+    }),
+    runtimeVersion: {
+      policy: 'appVersion',
+    },
     splash: {
       image: './assets/splash-icon.png',
       resizeMode: 'contain',
       backgroundColor: '#000000',
     },
     ios: {
-      supportsTablet: true,
+      supportsTablet: false,
       bundleIdentifier: 'com.soonsak.app',
       usesAppleSignIn: true,
       googleServicesFile: './GoogleService-Info.plist',
@@ -47,7 +68,9 @@ module.exports = {
       infoPlist: {
         CFBundleName: '순삭',
         CFBundleDisplayName: '순삭',
-        FIRDebugEnabled: true,
+        CFBundleDevelopmentRegion: 'ko',
+        NSUserNotificationsUsageDescription: '숨은 명작 작품을 추천해 드릴게요',
+        ...(APP_VARIANT !== 'production' && { FIRDebugEnabled: true }),
       },
     },
     android: {

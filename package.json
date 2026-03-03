@@ -76,6 +76,7 @@
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
     "expo-store-review": "~9.0.9",
+    "expo-updates": "~29.0.16",
     "expo-web-browser": "~15.0.10",
     "lottie-react-native": "~7.3.1",
     "path-browserify": "^1.0.1",
