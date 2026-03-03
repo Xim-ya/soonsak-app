@@ -116,6 +116,11 @@ export default function SettingsScreen() {
                 label="푸시 관리"
                 onPress={() => navigateToAdmin(routePages.adminPushManagement)}
               />
+              <Divider />
+              <SettingsItem
+                label="앱 버전 관리"
+                onPress={() => navigateToAdmin(routePages.adminVersionManagement)}
+              />
             </SettingsSection>
           </AdminOnly>
         </ScrollView>

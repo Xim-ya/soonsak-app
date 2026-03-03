@@ -146,6 +146,7 @@ export type RootStackParamList = {
     channelName: string; // 채널명 (헤더 표시용)
   }; // 어드민 채널 상세 - channelId, channelName 필수
   [routePages.adminPushManagement]: undefined; // 어드민 푸시 관리 - 파라미터 없음
+  [routePages.adminVersionManagement]: undefined; // 어드민 앱 버전 관리 - 파라미터 없음
   [routePages.reviewFunnel]: undefined; // 리뷰 퍼널 - 편지 + 리뷰 유도 화면
 };
 
