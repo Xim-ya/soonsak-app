@@ -25,7 +25,12 @@ import { BasePage } from '@/presentation/components/page';
 import colors from '@/shared/styles/colors';
 import textStyles from '@/shared/styles/textStyles';
 import type { PushTemplateModel, PushReceiptModel } from './_types';
-import { PushStatisticsCards, PushTemplateItem, PushReceiptListItem } from './_components';
+import {
+  PushStatisticsCards,
+  PushTemplateItem,
+  PushReceiptListItem,
+  BroadcastPushSender,
+} from './_components';
 import { usePushManagement } from './_hooks';
 
 // 뒤로가기 아이콘 SVG
@@ -78,6 +83,10 @@ export default function AdminPushManagementScreen() {
     handleCancelSchedule,
     handleDeleteTemplate,
     handleToggleActive,
+    // Broadcast
+    isSendingBroadcast,
+    handleSendBroadcast,
+    activePushTokens,
   } = usePushManagement();
 
   const handleGoBack = useCallback(() => {
@@ -118,6 +127,13 @@ export default function AdminPushManagementScreen() {
         {/* 통계 카드 */}
         <PushStatisticsCards statistics={statistics} isLoading={isStatisticsLoading} />
 
+        {/* 전체 푸시 발송 */}
+        <BroadcastPushSender
+          activePushTokens={activePushTokens}
+          isLoading={isSendingBroadcast}
+          onSend={handleSendBroadcast}
+        />
+
         {/* 탭 바 */}
         <TabBar>
           <TabButton active={activeTab === 'receipts'} onPress={() => handleTabChange('receipts')}>
@@ -154,6 +170,9 @@ export default function AdminPushManagementScreen() {
     [
       statistics,
       isStatisticsLoading,
+      activePushTokens,
+      isSendingBroadcast,
+      handleSendBroadcast,
       activeTab,
       handleTabChange,
       searchQuery,

@@ -44,13 +44,9 @@ export default function NotificationListScreen() {
     isFetchingNextPage,
     handleNotificationPress,
     handleGoBack,
-    handleMarkAllAsRead,
     handleRefresh,
     handleLoadMore,
   } = useNotificationList();
-
-  // 읽지 않은 알림이 있는지 확인
-  const hasUnread = useMemo(() => items.some((item) => !item.readAt), [items]);
 
   // 아이템 렌더링
   const renderItem: ListRenderItem<NotificationItem> = useCallback(
@@ -112,11 +108,7 @@ export default function NotificationListScreen() {
   return (
     <BasePage touchableWithoutFeedback={false}>
       <Container>
-        <NotificationListHeader
-          onGoBack={handleGoBack}
-          onMarkAllAsRead={handleMarkAllAsRead}
-          hasUnread={hasUnread}
-        />
+        <NotificationListHeader onGoBack={handleGoBack} />
         <FlatList
           data={items}
           renderItem={renderItem}

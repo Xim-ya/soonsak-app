@@ -7,9 +7,10 @@ import HomeScreen from '../../../presentation/screens/home/HomeScreen';
 import ExploreScreen from '../../../presentation/screens/explore/ExploreScreen';
 import ChannelScreen from '../../../presentation/screens/channel/ChannelScreen';
 import MyScreen from '../../../presentation/screens/my/MyScreen';
-import { TabConfig, TabRoutes } from '../constant/tabConfigs';
+import { TabConfig, TabRoutes, getChannelIcon } from '../constant/tabConfigs';
 import { TabParamList } from '../types';
 import colors from '@/shared/styles/colors';
+import { appConfigManager } from '@/features/app-config/AppConfigManager';
 
 // iOS 버전 체크
 const IOS_VERSION = Platform.OS === 'ios' ? parseFloat(Platform.Version as string) : 0;
@@ -27,7 +28,15 @@ const TAB_ICONS: Record<TabRoutes, ImageSourcePropType> = {
   [TabRoutes.Channel]: require('@assets/icons/tab/channel_tab.png'),
   [TabRoutes.My]: require('@assets/icons/tab/my_tab.png'),
 };
+
+// 심사 버전용 채널 탭 아이콘 (돋보기)
+const REVIEW_CHANNEL_ICON: ImageSourcePropType = require('@assets/icons/tab/search_tab.png');
 /* eslint-enable @typescript-eslint/no-require-imports */
+
+/** 심사 버전 여부에 따른 채널 탭 아이콘 반환 */
+function getChannelTabIcon(): ImageSourcePropType {
+  return appConfigManager.isReviewVersion() ? REVIEW_CHANNEL_ICON : TAB_ICONS[TabRoutes.Channel];
+}
 
 // 탭 라벨
 const TAB_LABELS: Record<TabRoutes, string> = {
@@ -86,7 +95,7 @@ function NativeTabNavigator() {
         component={ChannelScreen}
         options={{
           title: TAB_LABELS[TabRoutes.Channel],
-          tabBarIcon: () => TAB_ICONS[TabRoutes.Channel],
+          tabBarIcon: () => getChannelTabIcon(),
         }}
       />
       <NativeTab.Screen
@@ -118,7 +127,11 @@ function LegacyTabNavigator() {
           <Text style={{ color, fontSize: 10 }}>{TabConfig[route.name as TabRoutes].label}</Text>
         ),
         tabBarIcon: ({ color, size }) => {
-          const Icon = TabConfig[route.name as TabRoutes].icon;
+          // 채널 탭은 심사 버전 여부에 따라 동적으로 아이콘 결정
+          const Icon =
+            route.name === TabRoutes.Channel
+              ? getChannelIcon()
+              : TabConfig[route.name as TabRoutes].icon;
           const iconSize = route.name === TabRoutes.Channel ? size - 2 : size;
           return <Icon width={iconSize} height={iconSize} color={color} fill={color} />;
         },

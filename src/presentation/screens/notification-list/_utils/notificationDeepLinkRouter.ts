@@ -33,7 +33,8 @@ type DeepLinkScreen =
   | 'ChannelDetail'
   | 'Search'
   | 'Settings'
-  | 'UserContentList';
+  | 'UserContentList'
+  | 'ReviewFunnel';
 
 /** 네비게이션 타입 */
 type Navigation = NativeStackNavigationProp<RootStackParamList>;
@@ -150,6 +151,14 @@ const navigateToUserContentList: RouteHandler = (navigation, params) => {
   return true;
 };
 
+/**
+ * 리뷰 퍼널 화면 네비게이션
+ */
+const navigateToReviewFunnel: RouteHandler = (navigation) => {
+  navigation.navigate(routePages.reviewFunnel);
+  return true;
+};
+
 // ============================================================================
 // Route Map (화면별 핸들러 매핑)
 // ============================================================================
@@ -168,6 +177,7 @@ const DEEP_LINK_ROUTE_MAP: Record<DeepLinkScreen, RouteHandler> = {
   Search: navigateToSearch,
   Settings: navigateToSettings,
   UserContentList: navigateToUserContentList,
+  ReviewFunnel: navigateToReviewFunnel,
 };
 
 // ============================================================================

@@ -21,9 +21,11 @@
 import { createContext, useContext, useEffect, useRef, type ReactNode } from 'react';
 import * as Device from 'expo-device';
 import * as Notifications from 'expo-notifications';
+import { useQueryClient } from '@tanstack/react-query';
 import { usePushNotifications } from '@/shared/hooks/usePushNotifications';
 import { pushTokenApi, handleNotification } from '@/features/push-notifications';
 import { navigationRef } from '@/shared/navigation/utils/navigationRef';
+import { notificationKeys } from '@/features/notifications/hooks/notificationQueryKeys';
 import { useAuth } from './AuthProvider';
 
 /** 시뮬레이터 여부 확인 */
@@ -52,6 +54,8 @@ interface PushNotificationContextValue {
   notification: Notifications.Notification | null;
   /** 권한 상태 */
   permissionStatus: Notifications.PermissionStatus | null;
+  /** 푸시 토큰 재획득 (권한 허용 후 토큰이 없을 때 사용) */
+  refreshToken: () => Promise<string | null>;
   /** 에러 메시지 */
   error: string | null;
 }
@@ -64,7 +68,9 @@ interface PushNotificationProviderProps {
 
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
   const { status, user, signOut } = useAuth();
-  const { expoPushToken, notification, permissionStatus, error } = usePushNotifications();
+  const queryClient = useQueryClient();
+  const { expoPushToken, notification, permissionStatus, refreshToken, error } =
+    usePushNotifications();
   const lastSyncedRef = useRef<{ userId: string; token: string } | null>(null);
 
   // Killed 상태에서 시작 시 사용할 signOut 캡처
@@ -74,6 +80,10 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // 최신 user 상태 참조 (이벤트 리스너에서 사용)
   const userRef = useRef(user);
   userRef.current = user;
+
+  // 최신 expoPushToken 참조 (이벤트 리스너에서 사용)
+  const expoPushTokenRef = useRef(expoPushToken);
+  expoPushTokenRef.current = expoPushToken;
 
   // 이미 처리한 알림 응답 ID 추적 (중복 처리 방지)
   // Set을 사용하여 연속 알림(A → B → A) 시나리오도 처리
@@ -96,6 +106,23 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     registerDevice();
   }, []); // 마운트 시 한 번만 실행
 
+  // 푸시 알림 수신 시 읽지 않은 알림 개수 캐시 무효화 (벨 뱃지 & 앱 뱃지 갱신)
+  useEffect(() => {
+    if (notification && user) {
+      if (__DEV__) {
+        console.log('[PushNotificationProvider] 알림 수신 - 캐시 무효화');
+      }
+      // 읽지 않은 알림 개수 캐시 무효화
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.unreadCount(user.id, expoPushToken),
+      });
+      // 알림 목록 캐시도 무효화 (새 알림 표시)
+      queryClient.invalidateQueries({
+        queryKey: notificationKeys.list(user.id, expoPushToken),
+      });
+    }
+  }, [notification, user, expoPushToken, queryClient]);
+
   // 앱 진입 카운트 증가 (status 확정 후 한 번만 실행)
   const hasCountedRef = useRef(false);
   useEffect(() => {
@@ -110,8 +137,11 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     const incrementEntryCount = async () => {
       try {
         if (status === 'authenticated' && user) {
-          // 로그인 유저: profiles.entry_count 증가
-          await userApi.incrementEntryCount(user.id);
+          // 로그인 유저: profiles.entry_count 증가 + 앱 버전 업데이트
+          await Promise.all([
+            userApi.incrementEntryCount(user.id),
+            userApi.updateLastUsedVersion(user.id),
+          ]);
         } else {
           // 비로그인 유저: devices.entry_count 증가
           await incrementDeviceEntryCount();
@@ -158,8 +188,14 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
         // 푸시 클릭 추적 (비동기, 실패해도 무시)
         const dbNotificationId = extractNotificationId(data);
-        if (dbNotificationId && user?.id) {
-          pushTokenApi.trackNotificationClick(dbNotificationId, user.id);
+        const currentUser = userRef.current;
+        const currentToken = expoPushTokenRef.current;
+        if (dbNotificationId && currentUser?.id) {
+          pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+          // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
+          queryClient.invalidateQueries({
+            queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
+          });
         }
 
         handleNotification(data, {
@@ -187,7 +223,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     }, 100);
 
     return () => clearInterval(checkReady);
-  }, [status]); // status가 idle에서 변경될 때 실행
+  }, [status, queryClient]); // status가 idle에서 변경될 때 실행
 
   // 앱이 실행 중일 때 푸시 알림 탭 처리
   // ref 패턴으로 최신 상태 참조 (구독 재등록 방지)
@@ -225,6 +261,10 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
       const dbNotificationId = extractNotificationId(data);
       if (dbNotificationId && userRef.current?.id) {
         pushTokenApi.trackNotificationClick(dbNotificationId, userRef.current.id);
+        // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
+        queryClient.invalidateQueries({
+          queryKey: notificationKeys.unreadCount(userRef.current.id, expoPushTokenRef.current),
+        });
       }
 
       handleNotification(data, {
@@ -234,7 +274,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     });
 
     return () => subscription.remove();
-  }, []); // 마운트 시 한 번만 등록
+  }, [queryClient]); // queryClient는 변경되지 않음
 
   // 로그인 상태 + 토큰 변경 시 서버 동기화
   useEffect(() => {
@@ -275,6 +315,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     expoPushToken,
     notification,
     permissionStatus,
+    refreshToken,
     error,
   };
 

@@ -7,11 +7,13 @@
  * const { isWithdrawing, handleLogoutPress, handleWithdrawPress } = useSettingsAuth();
  */
 
-import { useCallback, useState, useEffect, useRef } from 'react';
-import { Linking } from 'react-native';
+import { useCallback, useState, useEffect, useRef, useEffect } from 'react';
+import { Linking, Platform, AppState } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import * as Notifications from 'expo-notifications';
 import { useAuth } from '@/shared/providers/AuthProvider';
+import { usePushNotification } from '@/shared/providers/PushNotificationProvider';
 import { authApi } from '@/features/auth/api/authApi';
 import { RootStackParamList } from '@/shared/navigation/types';
 import { routePages } from '@/shared/navigation/constant/routePages';
@@ -54,10 +56,44 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
   const { signOut, status } = useAuth();
   const isLoggedIn = status === 'authenticated';
   const { showDialog, showConfirmDialog } = useDialog();
+  const { refreshToken } = usePushNotification();
 
   // 상태
-  const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+  const [isNotificationEnabled, setIsNotificationEnabled] = useState(false);
   const [isWithdrawing, setIsWithdrawing] = useState(false);
+
+  // 시스템 알림 권한 상태 체크
+  const checkNotificationPermission = useCallback(async () => {
+    const { status } = await Notifications.getPermissionsAsync();
+    setIsNotificationEnabled(status === 'granted');
+    return status === 'granted';
+  }, []);
+
+  // 초기 권한 상태 로드 및 앱 복귀 시 권한 재체크
+  useEffect(() => {
+    checkNotificationPermission();
+
+    const subscription = AppState.addEventListener('change', async (nextAppState) => {
+      if (nextAppState === 'active') {
+        const granted = await checkNotificationPermission();
+        // 권한이 granted로 변경되었으면 푸시 토큰 재획득
+        if (granted) {
+          await refreshToken();
+        }
+      }
+    });
+
+    return () => subscription.remove();
+  }, [checkNotificationPermission, refreshToken]);
+
+  // 시스템 설정 화면 열기
+  const openSystemSettings = useCallback(async () => {
+    if (Platform.OS === 'ios') {
+      await Linking.openURL('app-settings:');
+    } else {
+      await Linking.openSettings();
+    }
+  }, []);
 
   // 서버 스토어 URL 참조
   const storeUrlRef = useRef<string | null>(null);
@@ -77,16 +113,18 @@ export function useSettingsAuth(): UseSettingsAuthReturn {
     });
   }, [navigation]);
 
-  // 알림 설정 변경 핸들러
-  const handleNotificationToggle = useCallback((value: boolean) => {
-    // 알림 토글 이벤트 로깅
-    analyticsService.settingsNotificationToggle({
-      enabled: value,
-    });
+  // 알림 설정 변경 핸들러 - 시스템 설정으로 이동
+  const handleNotificationToggle = useCallback(
+    (value: boolean) => {
+      // 알림 토글 이벤트 로깅
+      analyticsService.settingsNotificationToggle({
+        enabled: value,
+      });
 
-    setIsNotificationEnabled(value);
-    // TODO: 알림 설정 저장 로직 구현
-  }, []);
+      openSystemSettings();
+    },
+    [openSystemSettings],
+  );
 
   // 외부 URL 열기 공통 핸들러
   const openExternalUrl = useCallback(

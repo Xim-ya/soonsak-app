@@ -232,6 +232,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
           return !!actionParams.channelId?.trim();
         case 'Search':
         case 'Settings':
+        case 'ReviewFunnel':
           return true;
         case 'UserContentList':
           return actionParams.initialTab !== undefined;
@@ -342,6 +343,7 @@ export const PushNotificationSender = memo(function PushNotificationSender({
           break;
         case 'Search':
         case 'Settings':
+        case 'ReviewFunnel':
           params = {};
           break;
         case 'UserContentList':
@@ -554,6 +556,13 @@ export const PushNotificationSender = memo(function PushNotificationSender({
           return (
             <ParamsContainer>
               <ParamHint>추가 파라미터 없음</ParamHint>
+            </ParamsContainer>
+          );
+
+        case 'ReviewFunnel':
+          return (
+            <ParamsContainer>
+              <ParamHint>앱 리뷰 적극 유도 퍼널로 이동</ParamHint>
             </ParamsContainer>
           );
 

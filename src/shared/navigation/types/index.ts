@@ -131,7 +131,7 @@ export type RootStackParamList = {
     displayName?: string | null; // 유저 닉네임 (UI 표시용)
   }; // 어드민 유저 상세 - userId 필수, displayName 선택
   [routePages.adminPushContentSelect]: {
-    userId: string; // 대상 유저 ID (시청기록/찜/평가 조회용)
+    userId?: string | undefined; // 대상 유저 ID (시청기록/찜/평가 조회용, 없으면 검색만 가능)
     mode: 'content' | 'player'; // content: 콘텐츠만 선택, player: 콘텐츠+비디오 선택
   }; // 어드민 푸시 콘텐츠 선택 - 푸시 알림 딥링크용 콘텐츠/비디오 선택
   [routePages.adminUserContentList]: {
@@ -146,6 +146,7 @@ export type RootStackParamList = {
     channelName: string; // 채널명 (헤더 표시용)
   }; // 어드민 채널 상세 - channelId, channelName 필수
   [routePages.adminPushManagement]: undefined; // 어드민 푸시 관리 - 파라미터 없음
+  [routePages.adminVersionManagement]: undefined; // 어드민 앱 버전 관리 - 파라미터 없음
   [routePages.reviewFunnel]: undefined; // 리뷰 퍼널 - 편지 + 리뷰 유도 화면
 };
 
