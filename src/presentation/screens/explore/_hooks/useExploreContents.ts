@@ -75,11 +75,12 @@ export function useExploreContents(
   const { enabled = true, exploreSeed } = options ?? {};
   const filterKey = serializeFilter(filter);
 
-  // 탐색 시드: 화면 진입/앱 복귀 시마다 새로 생성된 시드 사용, 없으면 세션 시드 fallback
-  const seed = exploreSeed ?? getSessionSeed();
+  // 탐색 시드: 'all' 정렬에서만 사용 (다른 정렬에서는 캐시 무효화 방지)
+  const seed = sortType === 'all' ? (exploreSeed ?? getSessionSeed()) : undefined;
 
   const queryResult = useInfiniteQuery({
-    queryKey: ['exploreContents', sortType, filterKey, seed],
+    // seed는 sortType === 'all'일 때만 queryKey에 포함 (불필요한 캐시 무효화 방지)
+    queryKey: ['exploreContents', sortType, filterKey, ...(seed ? [seed] : [])],
     queryFn: async ({ pageParam = 0 }): Promise<ExploreContentsResponse> => {
       return contentApi.getExploreContents(
         sortType,

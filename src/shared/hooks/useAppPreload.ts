@@ -12,6 +12,9 @@ const BANNER_PRELOAD_COUNT = 5;
 /** Lottie 스플래시 애니메이션 시간 (ms) - 2.5초 */
 const LOTTIE_SPLASH_DURATION_MS = 2500;
 
+/** 프리로드 최대 대기 시간 (ms) - 10초, 이후 강제 완료 */
+const PRELOAD_GUARD_TIMEOUT_MS = 10000;
+
 // 네이티브 스플래시 화면 자동 숨김 방지
 SplashScreen.preventAutoHideAsync().catch(() => {
   // 이미 숨겨진 경우 무시
@@ -104,11 +107,21 @@ export function useAppPreload() {
       checkAndFinish();
     }, LOTTIE_SPLASH_DURATION_MS);
 
+    // 프리로드 guard timeout (무한 대기 방지)
+    const guardTimer = setTimeout(() => {
+      if (!preloadCompleteRef.current) {
+        console.warn('[Preload] 프리로드 타임아웃 - 강제 완료 처리');
+        preloadCompleteRef.current = true;
+        checkAndFinish();
+      }
+    }, PRELOAD_GUARD_TIMEOUT_MS);
+
     // 프리로드 시작
     preloadResources();
 
     return () => {
       clearTimeout(lottieTimer);
+      clearTimeout(guardTimer);
     };
   }, []);
 

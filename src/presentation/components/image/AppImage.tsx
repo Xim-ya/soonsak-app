@@ -256,7 +256,13 @@ function AppImageComponent({
           recyclingKey={source}
           onLoad={handleLoad}
           onError={handleError}
-          {...(placeholder?.blurhash ? { placeholder: placeholder.blurhash } : {})}
+          {...(placeholder?.blurhash || placeholder?.thumbhash
+            ? {
+                placeholder: placeholder.thumbhash
+                  ? { thumbhash: placeholder.thumbhash }
+                  : placeholder.blurhash,
+              }
+            : {})}
         />
       )}
     </Container>

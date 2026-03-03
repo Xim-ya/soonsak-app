@@ -335,9 +335,9 @@ export default function App() {
     );
   }
 
-  // 버전 체크 미완료 시 대기 (스플래시 유지)
+  // 버전 체크 미완료 시 대기 (검은 배경 유지, 빈 화면 방지)
   if (!isVersionChecked) {
-    return null;
+    return <LottieSplash />;
   }
 
   return (

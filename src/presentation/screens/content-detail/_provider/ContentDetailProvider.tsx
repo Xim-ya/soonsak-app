@@ -1,4 +1,13 @@
-import { createContext, useContext, useState, useEffect, useMemo, useRef, ReactNode } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+  ReactNode,
+} from 'react';
 import { VideoDto } from '@/features/content/types';
 import { contentApi } from '@/features/content/api/contentApi';
 import { ContentType } from '@/shared/types/content/contentType.enum';
@@ -81,37 +90,40 @@ export function ContentDetailProvider({
   // 스크롤 ref 관리
   const scrollRefCallback = useRef<{ scrollToTop: () => void } | null>(null);
 
-  const refetch = () => {
-    const fetchVideos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const videosData = await contentApi.getVideosByContent(contentId, contentType);
+  // race condition 방지를 위한 요청 ID
+  const requestIdRef = useRef(0);
+
+  // 비디오 데이터 fetch 함수 (중복 제거 및 race condition 방지)
+  const fetchVideos = useCallback(async () => {
+    const currentRequestId = ++requestIdRef.current;
+
+    try {
+      setIsLoading(true);
+      setError(null);
+      const videosData = await contentApi.getVideosByContent(contentId, contentType);
+
+      // 최신 요청만 상태 업데이트 (race condition 방지)
+      if (currentRequestId === requestIdRef.current) {
         setVideos(videosData);
-      } catch (err) {
+      }
+    } catch (err) {
+      if (currentRequestId === requestIdRef.current) {
         setError(err instanceof Error ? err.message : '비디오 조회 중 오류가 발생했습니다.');
-      } finally {
+      }
+    } finally {
+      if (currentRequestId === requestIdRef.current) {
         setIsLoading(false);
       }
-    };
+    }
+  }, [contentId, contentType]);
+
+  const refetch = useCallback(() => {
     fetchVideos();
-  };
+  }, [fetchVideos]);
 
   useEffect(() => {
-    const fetchVideos = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        const videosData = await contentApi.getVideosByContent(contentId, contentType);
-        setVideos(videosData);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : '비디오 조회 중 오류가 발생했습니다.');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     fetchVideos();
-  }, [contentId, contentType]);
+  }, [fetchVideos]);
 
   // 조회수 증가 (페이지 진입 시 1회만 실행)
   const hasIncrementedViewCount = useRef(false);

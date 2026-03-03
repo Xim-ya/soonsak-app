@@ -6,13 +6,13 @@ import Gap from '@/presentation/components/view/Gap';
 /**
  * CommentSkeletonView - 댓글 로딩 스켈레톤 컴포넌트
  *
- * CommentItemView (maxLines=3)와 동일한 높이를 유지합니다.
+ * CommentItemView (maxLines=2)와 동일한 높이를 유지합니다.
  * - HeaderRow: 18px (alert1 lineHeight)
  * - Gap: 4px
- * - CommentText 3줄: 60px (body3 lineHeight 20 × 3)
+ * - CommentText 2줄: 40px (body3 lineHeight 20 × 2)
  * - Gap: 8px
  * - MetricsRow: 18px (alert2 lineHeight)
- * 총: 108px
+ * 총: 88px
  *
  * @example
  * <CommentSkeletonView />
@@ -20,9 +20,6 @@ import Gap from '@/presentation/components/view/Gap';
 
 // CommentItemView 높이 상수
 const HEADER_HEIGHT = 18; // alert1 lineHeight
-const TEXT_LINE_HEIGHT = 20; // body3 lineHeight
-const TEXT_LINES = 2;
-const TEXT_AREA_HEIGHT = TEXT_LINE_HEIGHT * TEXT_LINES; // 40px
 const METRICS_HEIGHT = 18; // alert2 lineHeight
 
 function CommentSkeletonView(): React.ReactElement {

@@ -82,14 +82,22 @@ export const HeaderBackground = React.memo(({ scrollY }: HeaderBackgroundProps) 
   const youtubeOpacity = useRef(new RNAnimated.Value(0)).current;
 
   useEffect(() => {
-    // 전환된 썸네일이 있거나 YouTube 썸네일이 로드되면 opacity 1로
-    if (switchedThumbnailUrl || (!youtubeLoading && videoInfo?.thumbnails?.high)) {
+    // 전환된 썸네일이 있는 경우: opacity 리셋 후 fade-in (1→1 방지)
+    if (switchedThumbnailUrl) {
+      youtubeOpacity.setValue(0);
       RNAnimated.timing(youtubeOpacity, {
         toValue: 1,
-        duration: switchedThumbnailUrl ? 300 : 600,
+        duration: 300,
         useNativeDriver: true,
       }).start();
-    } else if (youtubeLoading && !switchedThumbnailUrl) {
+    } else if (!youtubeLoading && videoInfo?.thumbnails?.high) {
+      // YouTube 썸네일 로드 완료 시 fade-in
+      RNAnimated.timing(youtubeOpacity, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }).start();
+    } else if (youtubeLoading) {
       youtubeOpacity.setValue(0);
     }
   }, [youtubeLoading, videoInfo?.thumbnails?.high, youtubeOpacity, switchedThumbnailUrl]);

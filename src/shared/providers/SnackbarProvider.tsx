@@ -115,7 +115,8 @@ const SnackbarContainer = styled(Animated.View)({
   position: 'absolute',
   bottom: Platform.select({
     ios: AppSize.bottomInset + 12,
-    android: ANDROID_NAV_BAR_HEIGHT + 12,
+    // Android: 실제 inset 사용, 없으면 기본 네비게이션 바 높이로 fallback
+    android: Math.max(AppSize.bottomInset, ANDROID_NAV_BAR_HEIGHT) + 12,
   }),
   left: AppSize.ratioWidth(16),
   right: AppSize.ratioWidth(16),

@@ -50,10 +50,6 @@ function LoadableImageViewComponent({
     }
   }
 
-  const handleImageLoad = useCallback(() => {
-    // expo-image가 로딩 상태와 트랜지션을 네이티브에서 처리
-  }, []);
-
   const handleImageError = useCallback(() => {
     setHasError(true);
   }, []);
@@ -87,7 +83,6 @@ function LoadableImageViewComponent({
           contentFit="cover"
           transition={300}
           recyclingKey={source}
-          onLoad={handleImageLoad}
           onError={handleImageError}
         />
       )}

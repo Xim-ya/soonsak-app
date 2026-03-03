@@ -37,6 +37,9 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
   const borderRadius = AppSize.ratioWidth(40);
   const padding = AppSize.ratioWidth(16);
 
+  // 영화/시리즈 여부 (타입 칩 색상 결정에 사용)
+  const isFilmOrSeries = content.type === 'movie' || content.type === 'tv';
+
   const posterUrl = formatter.prefixTmdbImgUrl(content.posterPath ?? '', {
     size: TmdbImageSize.w780,
   });
@@ -80,8 +83,8 @@ function ContentCardComponent({ content, onPress, isFocused = false }: ContentCa
         {/* 콘텐츠 정보 */}
         <ContentInfo padding={padding}>
           {/* 콘텐츠 타입 칩 - 영화/시리즈는 파란색(흰 텍스트), 나머지는 초록색(검정 텍스트) */}
-          <TypeChip chipColor={content.type === 'movie' || content.type === 'tv' ? colors.primary : colors.green}>
-            <TypeChipText textColor={content.type === 'movie' || content.type === 'tv' ? colors.white : colors.black}>
+          <TypeChip chipColor={isFilmOrSeries ? colors.primary : colors.green}>
+            <TypeChipText textColor={isFilmOrSeries ? colors.white : colors.black}>
               {contentTypeConfigs[content.type].label}
             </TypeChipText>
           </TypeChip>

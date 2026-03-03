@@ -78,7 +78,8 @@ function InteractiveStarRating({
   // 터치 위치로 별점 계산
   const calculateRatingFromPosition = useCallback(
     (absoluteX: number): number => {
-      if (containerLayout.width === 0) return 0;
+      // 레이아웃 미측정 시 최소값 반환 (도메인 밖 값 방지)
+      if (containerLayout.width === 0) return step === 0.5 ? 0.5 : 1;
 
       const relativeX = absoluteX - containerLayout.x;
       const starWidth = size + gap;
