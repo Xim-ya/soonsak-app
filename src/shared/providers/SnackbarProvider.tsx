@@ -108,9 +108,15 @@ export function SnackbarProvider({ children }: { children: React.ReactNode }) {
 
 /* Styled Components */
 
+// 안드로이드 네비게이션 바 높이 (일반적으로 48dp)
+const ANDROID_NAV_BAR_HEIGHT = 48;
+
 const SnackbarContainer = styled(Animated.View)({
   position: 'absolute',
-  bottom: AppSize.bottomInset + 12,
+  bottom: Platform.select({
+    ios: AppSize.bottomInset + 12,
+    android: ANDROID_NAV_BAR_HEIGHT + 12,
+  }),
   left: AppSize.ratioWidth(16),
   right: AppSize.ratioWidth(16),
   zIndex: 9999,

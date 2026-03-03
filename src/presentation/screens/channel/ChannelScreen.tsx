@@ -203,6 +203,18 @@ function ChannelContent() {
     [navigation],
   );
 
+  // 비디오 카드 내 채널 로고 클릭 핸들러 -> 채널 상세 페이지로 이동
+  const handleVideoChannelPress = useCallback(
+    (video: ChannelVideoModel) => {
+      navigation.navigate(routePages.channelDetail, {
+        channelId: video.channelId,
+        channelName: video.channelName,
+        channelLogoUrl: video.channelLogoUrl,
+      });
+    },
+    [navigation],
+  );
+
   // 무한 스크롤 핸들러
   const handleEndReached = useCallback(() => {
     if (hasNextPage && !isFetchingNextPage) {
@@ -218,14 +230,25 @@ function ChannelContent() {
         const isLeftColumn = index % GRID_COLUMNS === 0;
         return (
           <View style={{ marginLeft: isLeftColumn ? 0 : GRID_COLUMN_GAP }}>
-            <TabletVideoCard video={item} onPress={handleVideoPress} cardWidth={tabletCardWidth} />
+            <TabletVideoCard
+              video={item}
+              onPress={handleVideoPress}
+              onChannelPress={handleVideoChannelPress}
+              cardWidth={tabletCardWidth}
+            />
           </View>
         );
       }
       // 폰: 전체 너비 카드
-      return <ChannelVideoCard video={item} onPress={handleVideoPress} />;
+      return (
+        <ChannelVideoCard
+          video={item}
+          onPress={handleVideoPress}
+          onChannelPress={handleVideoChannelPress}
+        />
+      );
     },
-    [handleVideoPress, isLargeScreen, tabletCardWidth],
+    [handleVideoPress, handleVideoChannelPress, isLargeScreen, tabletCardWidth],
   );
 
   // 아이템 키 추출

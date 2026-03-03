@@ -28,6 +28,7 @@ import type { ChannelVideoModel } from '../_types';
 interface ChannelVideoCardProps {
   readonly video: ChannelVideoModel;
   readonly onPress: (video: ChannelVideoModel) => void;
+  readonly onChannelPress?: (video: ChannelVideoModel) => void;
 }
 
 // 정보 영역 패딩
@@ -59,6 +60,7 @@ const DOT_SEPARATOR = ' · ';
 const ChannelVideoCard = React.memo(function ChannelVideoCard({
   video,
   onPress,
+  onChannelPress,
 }: ChannelVideoCardProps) {
   // 반응형 화면 너비 (폴드/회전 대응)
   const { width: screenWidth } = useWindowDimensions();
@@ -70,6 +72,10 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
   const handlePress = useCallback(() => {
     onPress(video);
   }, [video, onPress]);
+
+  const handleChannelPress = useCallback(() => {
+    onChannelPress?.(video);
+  }, [video, onChannelPress]);
 
   // TMDB backdrop 이미지 URL
   const backdropUrl = video.backdropPath ? `${TMDB_IMAGE_BASE}${video.backdropPath}` : '';
@@ -117,7 +123,9 @@ const ChannelVideoCard = React.memo(function ChannelVideoCard({
 
       {/* 정보 영역: 채널 아바타 + 비디오 제목 + 메타정보 */}
       <InfoSection>
-        <ChannelLogoImage source={video.channelLogoUrl} size={AVATAR_SIZE} />
+        <TouchableOpacity onPress={handleChannelPress} activeOpacity={0.7}>
+          <ChannelLogoImage source={video.channelLogoUrl} size={AVATAR_SIZE} />
+        </TouchableOpacity>
         <Gap size={10} />
         <InfoColumn>
           <VideoTitle numberOfLines={VIDEO_TITLE_MAX_LINES}>{video.videoTitle}</VideoTitle>

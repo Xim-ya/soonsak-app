@@ -27,6 +27,7 @@ import type { ChannelVideoModel } from '../_types';
 interface TabletVideoCardProps {
   readonly video: ChannelVideoModel;
   readonly onPress: (video: ChannelVideoModel) => void;
+  readonly onChannelPress?: (video: ChannelVideoModel) => void;
   readonly cardWidth: number;
 }
 
@@ -55,11 +56,16 @@ export function getTabletCardHeight(cardWidth: number): number {
 const TabletVideoCard = React.memo(function TabletVideoCard({
   video,
   onPress,
+  onChannelPress,
   cardWidth,
 }: TabletVideoCardProps) {
   const handlePress = useCallback(() => {
     onPress(video);
   }, [video, onPress]);
+
+  const handleChannelPress = useCallback(() => {
+    onChannelPress?.(video);
+  }, [video, onChannelPress]);
 
   // 썸네일 높이 (16:9 비율)
   const thumbnailHeight = cardWidth * (9 / 16);
@@ -103,7 +109,9 @@ const TabletVideoCard = React.memo(function TabletVideoCard({
 
       {/* 정보 영역: 채널 아바타 + 비디오 제목 + 메타정보 */}
       <InfoSection>
-        <ChannelLogoImage source={video.channelLogoUrl} size={AVATAR_SIZE} />
+        <TouchableOpacity onPress={handleChannelPress} activeOpacity={0.7}>
+          <ChannelLogoImage source={video.channelLogoUrl} size={AVATAR_SIZE} />
+        </TouchableOpacity>
         <Gap size={10} />
         <InfoColumn>
           <VideoTitle numberOfLines={VIDEO_TITLE_MAX_LINES}>{video.videoTitle}</VideoTitle>
