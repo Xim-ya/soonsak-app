@@ -24,6 +24,7 @@ import { configureGoogleSignin } from '@/features/auth/api/authApi';
 import { useAppPreload } from '@/shared/hooks/useAppPreload';
 import { useAppVersionCheck } from '@/features/app-config';
 import { AppDialog } from '@/presentation/components/dialog/AppDialog';
+import { LottieSplash } from '@/presentation/components/splash/LottieSplash';
 import * as Clarity from '@microsoft/react-native-clarity';
 import * as Sentry from '@sentry/react-native';
 
@@ -241,7 +242,7 @@ export default function App() {
   });
   /* eslint-enable @typescript-eslint/no-require-imports */
 
-  const { isReady: isPreloadReady, hideSplash } = useAppPreload();
+  const { isReady: isPreloadReady, showLottieSplash } = useAppPreload();
 
   // 앱 버전 체크 (스플래시 상태에서 실행)
   const {
@@ -254,19 +255,12 @@ export default function App() {
     dismissDialog,
   } = useAppVersionCheck();
 
-  // 스플래시 숨김 조건:
-  // 1. 폰트 로드 완료
-  // 2. 프리로드 완료
-  // 3. 버전 체크 완료
-  // 4. 강제 업데이트가 아닌 경우 (강제 업데이트 시 스플래시 유지)
-  useEffect(() => {
-    const shouldHideSplash = fontsLoaded && isPreloadReady && isVersionChecked && !isForceUpdate;
-    if (shouldHideSplash) {
-      hideSplash();
-    }
-  }, [fontsLoaded, isPreloadReady, isVersionChecked, isForceUpdate, hideSplash]);
+  // Lottie 스플래시 표시 중
+  if (showLottieSplash) {
+    return <LottieSplash />;
+  }
 
-  // 폰트 또는 프리로드 미완료 시 스플래시 유지
+  // 폰트 또는 프리로드 미완료 시 대기
   if (!fontsLoaded || !isPreloadReady) {
     return null;
   }
@@ -291,7 +285,7 @@ export default function App() {
   }
 
   return (
-    <SafeAreaProvider>
+    <SafeAreaProvider style={{ backgroundColor: colors.black }}>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.black }}>
         <QueryClientProvider client={queryClient}>
           <SnackbarProvider>

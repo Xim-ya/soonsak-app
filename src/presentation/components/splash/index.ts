@@ -1,0 +1,1 @@
+export { LottieSplash } from './LottieSplash';
