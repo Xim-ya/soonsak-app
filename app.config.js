@@ -23,7 +23,8 @@ const APP_VARIANT =
 if (!EAS_PROJECT_ID) {
   console.warn('[app.config.js] EAS_PROJECT_ID is not set. Expo Updates (OTA) will be disabled.');
 }
-const KOTLIN_VERSION = '2.0.21';
+const KOTLIN_VERSION = '2.1.20';
+const KSP_VERSION = '2.1.20-1.0.29';
 
 module.exports = {
   expo: {
@@ -95,6 +96,7 @@ module.exports = {
         {
           android: {
             kotlinVersion: KOTLIN_VERSION,
+            kspVersion: KSP_VERSION,
           },
         },
       ],
