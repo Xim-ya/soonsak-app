@@ -6,7 +6,7 @@
  */
 
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import type { CurationVideoModel } from '../_types/exploreTypes';
 
 const CURATION_LIMIT = 10;

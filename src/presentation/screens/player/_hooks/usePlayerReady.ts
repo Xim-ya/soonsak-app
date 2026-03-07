@@ -11,7 +11,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Platform } from 'react-native';
 import type { useYouTubePlayer } from 'react-native-youtube-bridge';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { useAddWatchHistory } from '@/features/watch-history';
 import { useAuth } from '@/features/auth';
 import type { ContentType } from '@/core/types/content/contentType.enum';

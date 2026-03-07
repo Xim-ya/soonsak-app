@@ -5,7 +5,7 @@
  */
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { ContentDto } from '@/features/content/types';
 import type { ContentFilter } from '@/core/types/filter/contentFilter';
 import { getSessionSeed } from '@/core/utils/sessionSeed';

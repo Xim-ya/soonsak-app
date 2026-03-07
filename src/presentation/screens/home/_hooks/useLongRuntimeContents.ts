@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { LongRuntimeContentModel } from '../_types/longRuntimeContentModel.home';
 
 const QUERY_KEY = 'longRuntimeContents';

@@ -15,80 +15,42 @@ import {
   VideoStatusModal,
   IncludesEndingModal,
 } from '@/presentation/admin/components';
-import { ContentStatus } from '@/features/content/types';
-import { ContentType } from '@/core/types/content/contentType.enum';
-
-interface AdminActionConfig {
-  readonly action: AdminContentAction;
-  readonly label: string;
-  readonly icon?: string;
-  readonly disabled?: boolean | undefined;
-}
+import type { UseAdminContentActionsReturn } from '@/presentation/admin/hooks/useAdminContentActions';
 
 interface AdminActionModalsProps {
-  /** 액션 시트 표시 여부 */
-  readonly isActionSheetVisible: boolean;
-  /** 선택된 액션 */
-  readonly selectedAction: AdminContentAction | null;
-  /** 사용 가능한 액션 목록 */
-  readonly actions: readonly AdminActionConfig[];
-  /** 콘텐츠 ID */
-  readonly contentId: number;
-  /** 콘텐츠 타입 */
-  readonly contentType: ContentType;
-  /** 현재 비디오 ID */
-  readonly currentVideoId: string | undefined;
-  /** 현재 비디오 제목 */
-  readonly currentVideoTitle: string | undefined;
-  /** 현재 비디오 상태 */
-  readonly currentVideoStatus: ContentStatus | undefined;
-  /** 현재 결말 포함 여부 (undefined면 false로 처리) */
-  readonly currentIncludesEnding: boolean | undefined;
-  /** 현재 백드롭 경로 */
-  readonly currentBackdropPath: string | undefined;
-  /** 저장 중 여부 */
-  readonly isSaving: boolean;
-  /** 액션 선택 핸들러 */
-  readonly onSelectAction: (action: AdminContentAction) => void;
-  /** 액션 시트 닫기 핸들러 */
-  readonly onCloseActionSheet: () => void;
-  /** 모달 닫기 핸들러 */
-  readonly onCloseActionModal: () => void;
-  /** 백드롭 선택 핸들러 */
-  readonly onBackdropSelect: (backdropPath: string) => Promise<void>;
-  /** 비디오 상태 변경 핸들러 */
-  readonly onVideoStatusChange: (status: ContentStatus) => Promise<void>;
-  /** 결말 포함 변경 핸들러 */
-  readonly onIncludesEndingChange: (includesEnding: boolean) => Promise<void>;
+  /** useAdminContentActions 훅의 반환값 전체 */
+  readonly adminAction: UseAdminContentActionsReturn;
 }
 
-function AdminActionModals({
-  isActionSheetVisible,
-  selectedAction,
-  actions,
-  contentId,
-  contentType,
-  currentVideoId,
-  currentVideoTitle,
-  currentVideoStatus,
-  currentIncludesEnding,
-  currentBackdropPath,
-  isSaving,
-  onSelectAction,
-  onCloseActionSheet,
-  onCloseActionModal,
-  onBackdropSelect,
-  onVideoStatusChange,
-  onIncludesEndingChange,
-}: AdminActionModalsProps) {
+function AdminActionModals({ adminAction }: AdminActionModalsProps) {
+  const {
+    isActionSheetVisible,
+    selectedAction,
+    actions,
+    contentId,
+    contentType,
+    currentVideoId,
+    currentVideoTitle,
+    currentVideoStatus,
+    currentIncludesEnding,
+    currentBackdropPath,
+    isSaving,
+    handleSelectAction,
+    handleCloseActionSheet,
+    handleCloseActionModal,
+    handleBackdropSelect,
+    handleVideoStatusChange,
+    handleIncludesEndingChange,
+  } = adminAction;
+
   return (
     <>
       {/* 어드민 액션 바텀시트 */}
       <AdminActionBottomSheet
         visible={isActionSheetVisible}
         actions={[...actions]}
-        onSelectAction={onSelectAction}
-        onClose={onCloseActionSheet}
+        onSelectAction={handleSelectAction}
+        onClose={handleCloseActionSheet}
         contentId={contentId}
         contentType={contentType}
         videoId={currentVideoId}
@@ -101,8 +63,8 @@ function AdminActionModals({
         contentId={contentId}
         contentType={contentType}
         currentBackdropPath={currentBackdropPath}
-        onSelect={onBackdropSelect}
-        onClose={onCloseActionModal}
+        onSelect={handleBackdropSelect}
+        onClose={handleCloseActionModal}
         isSaving={isSaving}
       />
 
@@ -113,8 +75,8 @@ function AdminActionModals({
           videoId={currentVideoId}
           videoTitle={currentVideoTitle}
           currentStatus={currentVideoStatus}
-          onChangeStatus={onVideoStatusChange}
-          onClose={onCloseActionModal}
+          onChangeStatus={handleVideoStatusChange}
+          onClose={handleCloseActionModal}
           isSaving={isSaving}
         />
       )}
@@ -126,8 +88,8 @@ function AdminActionModals({
           videoId={currentVideoId}
           videoTitle={currentVideoTitle}
           currentIncludesEnding={currentIncludesEnding ?? false}
-          onChangeIncludesEnding={onIncludesEndingChange}
-          onClose={onCloseActionModal}
+          onChangeIncludesEnding={handleIncludesEndingChange}
+          onClose={handleCloseActionModal}
           isSaving={isSaving}
         />
       )}

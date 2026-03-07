@@ -19,7 +19,7 @@ import { SvgXml } from 'react-native-svg';
 import { AdminLogger } from '@/core/utils';
 import colors from '@/presentation/styles/colors';
 import textStyles from '@/presentation/styles/textStyles';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import {
   contentSearchFromDto,

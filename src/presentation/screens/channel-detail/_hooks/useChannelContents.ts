@@ -1,5 +1,5 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { VideoWithContentDto } from '@/features/content/types';
 import { getSessionSeed } from '@/core/utils/sessionSeed';
 import type { SortType } from '@/core/types/sort';

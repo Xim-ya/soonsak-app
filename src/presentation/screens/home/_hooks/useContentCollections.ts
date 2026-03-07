@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { ContentCollectionModel } from '../_types/contentCollectionModel.home';
 
 const QUERY_KEY = 'contentCollections_v2';

@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { BaseContentModel } from '@/core/types/content/baseContentModel';
 import { AppSize } from '@/presentation/utils/appSize';
 import type { ContentFilter } from '@/core/types/filter/contentFilter';

@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { Image } from 'react-native';
 import * as SplashScreen from 'expo-splash-screen';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { formatter } from '@/core/utils/formatter';
 import { ContentDto } from '@/features/content/types';
 import { appConfigManager } from '@/features/app-config';

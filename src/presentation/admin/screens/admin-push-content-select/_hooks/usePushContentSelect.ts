@@ -17,7 +17,7 @@ import { useCallback, useState, useEffect } from 'react';
 import { DeviceEventEmitter } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { PushLogger } from '@/core/utils';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import {
   type PushContentModel,

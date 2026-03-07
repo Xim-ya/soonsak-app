@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from 'react';
 import { VideoDto } from '@/features/content/types';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { ContentType } from '@/core/types/content/contentType.enum';
 import { usePrefetchCommentToken } from '@/features/youtube';
 import { useContentProgress } from '@/features/watch-history';

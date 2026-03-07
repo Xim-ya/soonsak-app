@@ -5,7 +5,7 @@
  */
 
 import { useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { getSessionSeed } from '@/core/utils/sessionSeed';
 import { TMDB_GENRE_MAP } from '@/features/content/constants/genreConstants';
 import type { ContentFilter } from '@/core/types/filter/contentFilter';

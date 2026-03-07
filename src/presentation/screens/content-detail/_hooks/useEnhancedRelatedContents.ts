@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { ContentType } from '@/core/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { RelatedContentModel } from '../_types/relatedContentModel.cd';
 
 /** 캐시 유지 시간 (5분) */

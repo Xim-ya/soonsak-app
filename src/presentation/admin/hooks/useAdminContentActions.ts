@@ -75,6 +75,9 @@ interface UseAdminContentActionsReturn {
   readonly handleIncludesEndingChange: (includesEnding: boolean) => Promise<void>;
 }
 
+/** 어드민 콘텐츠 액션 훅의 반환 타입 */
+export type { UseAdminContentActionsReturn };
+
 /**
  * 어드민 콘텐츠 액션 훅
  *

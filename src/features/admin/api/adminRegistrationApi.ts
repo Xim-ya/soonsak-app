@@ -5,7 +5,7 @@
  * NestJS 백엔드 (Railway)를 직접 호출합니다.
  */
 
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { RegistrationLogger } from '@/core/utils';
 import type { ContentType } from '@/core/types/content/contentType.enum';
 
