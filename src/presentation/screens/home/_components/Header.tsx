@@ -1,18 +1,18 @@
 import { Text, Pressable, View } from 'react-native';
 import styled from '@emotion/native';
-import { formatter } from '@/shared/utils/formatter';
+import { formatter } from '@/core/utils/formatter';
 import { FadeInImage } from '@/presentation/components/image/FadeInImage';
 import Carousel, { Pagination } from 'react-native-reanimated-carousel';
 import { useCallback, useMemo, useState } from 'react';
 import { DotStyle } from 'react-native-reanimated-carousel/lib/typescript/components/Pagination/Basic/PaginationItem';
 import { EmptyView } from '@/presentation/components/view/EmptyView';
-import textStyle from '@/shared/styles/textStyles';
+import textStyle from '@/presentation/styles/textStyles';
 import Gap from '@/presentation/components/view/Gap';
 import {
   DarkedLinearShadow,
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import Animated, {
   SharedValue,
   useAnimatedStyle,
@@ -24,12 +24,12 @@ import { useTopBannerContents } from '../_hooks/useTopBannerContents';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
 import { TopContentModel } from '../_types/TopContentModel';
 import { AppImage, ContentFit } from '@/presentation/components/image/AppImage';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 import { LinearGradient } from 'expo-linear-gradient';
 
 /** 로고 사이즈 */

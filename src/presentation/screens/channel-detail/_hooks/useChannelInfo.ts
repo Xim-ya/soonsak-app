@@ -1,5 +1,5 @@
 import { useYouTubeChannel } from '@/features/youtube';
-import { formatter } from '@/shared/utils/formatter';
+import { formatter } from '@/core/utils/formatter';
 
 interface UseChannelInfoParams {
   channelId: string;

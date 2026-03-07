@@ -19,9 +19,9 @@ import {
 } from '@/presentation/components/shadow/DarkedLinearShadow';
 import DarkChip from '@/presentation/components/chip/DarkChip';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { formatter } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { formatter } from '@/core/utils/formatter';
 import type { ChannelVideoModel } from '../_types';
 
 interface TabletVideoCardProps {

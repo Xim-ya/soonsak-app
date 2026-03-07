@@ -11,10 +11,10 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import type { UserDetailModel } from '../_types/userDetailModel';
 
 // SVG 아이콘 상수 (컴포넌트 외부로 최적화)

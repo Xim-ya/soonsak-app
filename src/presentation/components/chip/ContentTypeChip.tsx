@@ -1,6 +1,6 @@
-import { ContentType, contentTypeConfigs } from '@/shared/types/content/contentType.enum';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { ContentType, contentTypeConfigs } from '@/core/types/content/contentType.enum';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import styled from '@emotion/native';
 
 function ContentTypeChip({ contentType }: { contentType: ContentType }) {

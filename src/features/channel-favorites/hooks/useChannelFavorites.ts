@@ -3,10 +3,10 @@
  */
 
 import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { showGlobalInfo } from '@/shared/utils/snackbarRef';
-import { Logger } from '@/shared/utils/logger';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
+import { useAuth } from '@/features/auth';
+import { showGlobalInfo } from '@/presentation/utils/snackbarRef';
+import { Logger } from '@/core/utils';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
 import { channelFavoritesApi } from '../api/channelFavoritesApi';
 import type { ToggleChannelFavoriteParams } from '../types';
 import {

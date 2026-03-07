@@ -24,8 +24,8 @@
 import React, { ReactNode } from 'react';
 import styled from '@emotion/native';
 import { Platform } from 'react-native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 interface GlassMenuItemProps {
   /** 아이콘 (SVG, 이미지, 이모지 등) */

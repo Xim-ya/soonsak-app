@@ -21,7 +21,7 @@
  */
 
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 interface SkeletonViewProps {
   width?: number;

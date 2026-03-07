@@ -1,15 +1,15 @@
 import React from 'react';
 import { FlatList } from 'react-native';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
 import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
 import { useCredits } from '../_hooks/useCredits';
 import { CreditPersonModel } from '../_types/creditModel.cd';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
 
 const TABLET_CONTENT_MAX_WIDTH = 800;
 

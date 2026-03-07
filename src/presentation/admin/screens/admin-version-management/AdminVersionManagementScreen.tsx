@@ -21,9 +21,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { BasePage } from '@/presentation/components/page';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { supabaseClient } from '@/shared/api/supabaseClient';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { supabaseClient } from '@/core/api';
 
 // 뒤로가기 아이콘 SVG
 const BACK_ICON_SVG = `

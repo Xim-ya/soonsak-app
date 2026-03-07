@@ -14,11 +14,11 @@ import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { WatchProgressBar, shouldShowProgressBar } from '@/presentation/components/progress';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { contentTypeConfigs } from '@/core/types/content/contentType.enum';
 import { WatchHistoryModel } from '@/features/watch-history';
 import { useWatchHistoryContext } from '../_provider';
 

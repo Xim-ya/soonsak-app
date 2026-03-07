@@ -1,6 +1,6 @@
 import { useRoute } from '@react-navigation/native';
-import { ScreenRouteProp } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { ScreenRouteProp } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 
 /**
  * useContentDetailRoute - ContentDetail 페이지의 route params를 가져오는 훅

@@ -12,16 +12,16 @@ import { Linking, Platform, AppState } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as Notifications from 'expo-notifications';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { usePushNotification } from '@/shared/providers/PushNotificationProvider';
+import { useAuth } from '@/features/auth';
+import { usePushNotification } from '@/features/push-notifications';
 import { authApi } from '@/features/auth/api/authApi';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { useDialog } from '@/presentation/components/dialog';
-import { analyticsService } from '@/shared/analytics';
-import { openStoreUrl } from '@/shared/utils/storeUtils';
+import { analyticsService } from '@/core/services/analytics';
+import { openStoreUrl } from '@/core/utils/storeUtils';
 import { appConfigApi } from '@/features/app-config/api/appConfigApi';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
 
 // 외부 URL 상수
 const FEEDBACK_URL = 'https://soonsak.featurebase.app/en/p/pideubaegi-pilyohaeyo';

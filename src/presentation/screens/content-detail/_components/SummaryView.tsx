@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from '@emotion/native';
 import { ExpandableTextView } from '@/presentation/components/text/ExpandableTextView';
-import textStyle from '@/shared/styles/textStyles';
+import textStyle from '@/presentation/styles/textStyles';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '@/features/tmdb/hooks/useContentDetail';
 

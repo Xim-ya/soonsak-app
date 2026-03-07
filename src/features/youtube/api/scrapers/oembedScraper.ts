@@ -3,7 +3,7 @@
  */
 
 import { OEmbedDto, YouTubeApiError, YouTubeErrorCode } from '../../types';
-import { ScraperLogger } from '@/shared/utils/logger';
+import { ScraperLogger } from '@/core/utils';
 
 /**
  * oEmbed API를 통해 YouTube 비디오 기본 정보 가져오기

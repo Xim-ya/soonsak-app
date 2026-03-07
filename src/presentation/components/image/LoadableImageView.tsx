@@ -18,7 +18,7 @@ import React, { useState, useCallback, useMemo, useRef, memo } from 'react';
 import styled from '@emotion/native';
 import { ViewStyle } from 'react-native';
 import { Image as ExpoImage } from 'expo-image';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 
 interface LoadableImageViewProps {

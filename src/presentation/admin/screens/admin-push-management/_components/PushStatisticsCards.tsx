@@ -4,8 +4,8 @@
 
 import { ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { PushStatisticsModel } from '../_types';
 
 interface PushStatisticsCardsProps {

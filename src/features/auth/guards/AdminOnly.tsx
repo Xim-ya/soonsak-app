@@ -17,7 +17,7 @@
  */
 
 import { type ReactNode } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 
 interface AdminOnlyProps {
   /** 어드민일 때 렌더링할 컨텐츠 */

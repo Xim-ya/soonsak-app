@@ -10,9 +10,9 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import type { ChannelManagementItem as ChannelManagementItemType } from '@/features/admin';
 import { formatCompactNumber } from '@/features/admin';
 

@@ -11,8 +11,8 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { analyticsService } from '@/shared/analytics';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { analyticsService } from '@/core/services/analytics';
 import {
   useInfiniteNotifications,
   useMarkNotificationAsClicked,

@@ -9,12 +9,12 @@ import {
   ReactNode,
 } from 'react';
 import { VideoDto } from '@/features/content/types';
-import { contentApi } from '@/features/content/api/contentApi';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { contentApi } from '@/features/content/api';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { usePrefetchCommentToken } from '@/features/youtube';
 import { useContentProgress } from '@/features/watch-history';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import type { ContentDetailInitialData } from '@/shared/navigation/types';
+import { useAuth } from '@/features/auth';
+import type { ContentDetailInitialData } from '@/presentation/navigation/types';
 
 /** 시청 진행률 데이터 */
 interface WatchProgressData {

@@ -16,10 +16,10 @@
 import { createContext, useContext, useState, useCallback, useMemo, type ReactNode } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { ContentSource, analyticsService } from '@/shared/analytics';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { useAuth } from '@/features/auth';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
 import {
   useWatchHistoryCalendar,
   useFullyWatchedCount,

@@ -1,7 +1,7 @@
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
-import { formatter } from '@/shared/utils/formatter';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import { formatter } from '@/core/utils/formatter';
 import EyeSvg from '@assets/icons/eye.svg';
 import ThumbSvg from '@assets/icons/thumb.svg';
 import SmallDateSvg from '@assets/icons/small_date.svg';

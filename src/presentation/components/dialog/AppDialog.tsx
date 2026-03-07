@@ -37,8 +37,8 @@
 import React, { memo, useCallback } from 'react';
 import { Modal, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 /** 다이얼로그 레이아웃 상수 */
 const DIALOG_RADIUS = 12;

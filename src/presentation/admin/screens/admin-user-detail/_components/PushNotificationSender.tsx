@@ -20,8 +20,8 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import {
   type PushData,
   type ActionTypeOption,
@@ -29,8 +29,8 @@ import {
   USER_CONTENT_TAB_OPTIONS,
   CONTENT_TYPE_OPTIONS,
 } from '@/features/admin';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import type { RootStackParamList } from '@/presentation/navigation/types';
 import {
   PUSH_CONTENT_SELECTED_EVENT,
   type PushContentSelectResult,

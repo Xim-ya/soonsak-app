@@ -1,5 +1,5 @@
-import { ContentType } from '@/shared/types/content/contentType.enum';
-import type { SortType, SortOption } from '@/shared/types/sort';
+import { ContentType } from '@/core/types/content/contentType.enum';
+import type { SortType, SortOption } from '@/core/types/sort';
 
 /**
  * 채널 페이지 정렬 타입 (공통 SortType의 별칭)

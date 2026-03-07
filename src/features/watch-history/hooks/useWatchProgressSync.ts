@@ -12,11 +12,11 @@
 import { useRef, useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { AppState, type AppStateStatus } from 'react-native';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { Logger } from '@/shared/utils/logger';
+import { useAuth } from '@/features/auth';
+import { Logger } from '@/core/utils';
 import { watchHistoryApi } from '../api/watchHistoryApi';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 
 const WatchProgressLogger = Logger.create('WatchProgress');
 

@@ -7,7 +7,7 @@ import {
   CardSkeletonBox,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
-import { ContentSource } from '@/shared/analytics';
+import { ContentSource } from '@/core/services/analytics';
 import { useLongRuntimeContents } from '../_hooks/useLongRuntimeContents';
 import { LongRuntimeContentModel } from '../_types/longRuntimeContentModel.home';
 

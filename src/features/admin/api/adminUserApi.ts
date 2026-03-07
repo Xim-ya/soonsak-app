@@ -4,11 +4,11 @@
  * 어드민 전용 유저 관리 API
  */
 
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { AUTH_DATABASE, PUSH_DATABASE } from '@/shared/config/dbConfig';
+import { supabaseClient } from '@/core/api';
+import { AUTH_DATABASE, PUSH_DATABASE } from '@/core/config';
 import type { UserRole } from '@/features/auth/types';
 import type { PushData } from '../types/pushAction';
-import { AdminLogger } from '@/shared/utils/logger';
+import { AdminLogger } from '@/core/utils';
 
 // ============================================================================
 // Types

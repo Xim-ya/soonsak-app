@@ -23,10 +23,10 @@ import React, { useCallback, useMemo, useState, useEffect, useRef } from 'react'
 import { ActivityIndicator, ListRenderItem, Platform, useWindowDimensions } from 'react-native';
 import styled from '@emotion/native';
 import { Tabs, useFocusedTab } from 'react-native-collapsible-tab-view';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { ShimmerSkeleton } from '@/presentation/components/image';
-import type { ExploreTabName } from '@/shared/analytics/types/events';
+import type { ExploreTabName } from '@/core/services/analytics/types/events';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreContents } from '../_hooks/useExploreContents';
 import { useExplore } from '../_provider/ExploreProvider';

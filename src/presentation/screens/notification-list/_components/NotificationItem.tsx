@@ -15,9 +15,9 @@
 import React, { useCallback } from 'react';
 import { Pressable } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { formatter } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { formatter } from '@/core/utils/formatter';
 import type { NotificationItem } from '@/features/notifications';
 import type { PushNotificationType } from '@/features/admin/api/adminPushApi';
 

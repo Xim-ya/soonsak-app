@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { TrendingContentModel } from '../_types/trendingContentModel';
 
 const TOP_FIFTEEN_LIMIT = 15;

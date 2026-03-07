@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { WatchProviderModel } from '../types/watchProviderModel';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { tmdbApi } from '../api/tmdbApi';
 import { tmdbKeys } from './tmdbQueryKeys';
 

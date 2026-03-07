@@ -9,8 +9,8 @@ import { View, ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { useQuery } from '@tanstack/react-query';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { adminUserApi } from '@/features/admin/api/adminUserApi';
 
 // 별 아이콘 SVG

@@ -1,4 +1,4 @@
-import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
+import type { BaseContentRefModel } from '@/core/types/content/baseContentRefModel';
 import type { RatingStatusResponse, RatingWithContentDto } from './index';
 
 /**

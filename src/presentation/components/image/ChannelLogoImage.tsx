@@ -19,7 +19,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import { ImageErrorPlaceholder } from './ImageErrorPlaceholder';
 import { ShimmerSkeleton } from './ShimmerSkeleton';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 // 캐싱 판단 기준 시간 (ms)
 // 이 시간 내에 로드되면 캐싱된 이미지로 판단하여 애니메이션 생략

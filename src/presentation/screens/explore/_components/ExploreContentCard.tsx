@@ -13,9 +13,9 @@ import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { BackdropImage } from '@/presentation/components/image';
 import ContentTypeChip from '@/presentation/components/chip/ContentTypeChip';
-import colors from '@/shared/styles/colors';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import type { ExploreContentModel } from '../_types/exploreTypes';
 
 /** 그리드 레이아웃 상수 */

@@ -1,6 +1,6 @@
 import styled from '@emotion/native';
 import { TouchableOpacity, ActivityIndicator } from 'react-native';
-import textStyles from '@/shared/styles/textStyles';
+import textStyles from '@/presentation/styles/textStyles';
 import type { SocialProvider } from '@/features/auth/types';
 import { SOCIAL_LOGIN_CONFIG } from '@/features/auth/constants/authConstants';
 

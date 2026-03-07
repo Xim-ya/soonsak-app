@@ -5,10 +5,10 @@
  */
 
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { ContentDto } from '@/features/content/types';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import { getSessionSeed } from '@/shared/utils/sessionSeed';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
+import { getSessionSeed } from '@/core/utils/sessionSeed';
 import type { ExploreSortType, ExploreContentModel } from '../_types/exploreTypes';
 
 const PAGE_SIZE = 20;

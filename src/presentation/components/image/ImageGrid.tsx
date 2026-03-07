@@ -3,7 +3,7 @@ import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { TmdbImageItemDto } from '@/features/tmdb/types/imageDto';
 import { LoadableImageView } from './LoadableImageView';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 
 interface ImageGridProps {
   /** 표시할 이미지 목록 */

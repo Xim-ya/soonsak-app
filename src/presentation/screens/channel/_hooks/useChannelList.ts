@@ -9,7 +9,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
 import { useFavoriteChannelIds } from '@/features/channel-favorites';
-import { sortByFavorites } from '@/shared/utils/sortByFavorites';
+import { sortByFavorites } from '@/core/utils/sortByFavorites';
 import type { ChannelItemModel } from '../_types';
 
 const STALE_TIME = 10 * 60 * 1000; // 10분

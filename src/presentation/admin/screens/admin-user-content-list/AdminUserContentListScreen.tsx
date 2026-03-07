@@ -22,11 +22,11 @@ import { useRoute } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { BasePage } from '@/presentation/components/page';
-import { ScreenRouteProp } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { ScreenRouteProp } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import type { UserContentItem } from '@/features/admin';
 import {
   MemoizedAdminContentGridItem,

@@ -8,10 +8,10 @@ import React, { useCallback } from 'react';
 import { TouchableOpacity, View } from 'react-native';
 import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { ChannelContentItem } from '@/features/admin/api/adminChannelApi';
 
 // ============================================================================

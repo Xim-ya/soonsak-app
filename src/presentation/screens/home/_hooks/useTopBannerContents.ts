@@ -4,10 +4,10 @@ import { useQuery } from '@tanstack/react-query';
 import { useSharedValue, withTiming } from 'react-native-reanimated';
 import { ICarouselInstance } from 'react-native-reanimated-carousel';
 import { TopContentModel, fromContentDto, isValidTopContent } from '../_types/TopContentModel';
-import { contentApi } from '@/features/content/api/contentApi';
-import { getPreloadedBannerContents } from '@/shared/hooks/useAppPreload';
-import { formatter } from '@/shared/utils/formatter';
-import { analyticsService, type BannerSwipeType } from '@/shared/analytics';
+import { contentApi } from '@/features/content/api';
+import { getPreloadedBannerContents } from '@/presentation/hooks/useAppPreload';
+import { formatter } from '@/core/utils/formatter';
+import { analyticsService, type BannerSwipeType } from '@/core/services/analytics';
 
 /** 배너에 표시할 콘텐츠 수 */
 const BANNER_CONTENT_LIMIT = 5;

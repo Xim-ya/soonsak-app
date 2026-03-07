@@ -9,8 +9,8 @@
 
 import React from 'react';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 
 interface FilterSectionHeaderProps {

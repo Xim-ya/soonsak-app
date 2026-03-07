@@ -19,9 +19,9 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import type { AdminActionConfig, AdminContentAction } from '@/features/admin/types';
 import { AdminContentAction as AdminContentActionEnum } from '@/features/admin/types';
 import { ContentStatusLabel, type ContentStatus } from '@/features/content/types';

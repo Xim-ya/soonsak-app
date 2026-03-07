@@ -8,7 +8,7 @@
 
 import { memo } from 'react';
 import { View, StyleSheet, ViewStyle } from 'react-native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 /* Types */
 

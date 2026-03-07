@@ -13,10 +13,10 @@
  */
 
 import { useCallback, useState, useMemo } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { useFavoriteStatus, useToggleFavorite } from '@/features/favorites';
 import { useRatingStatus, useSetRating } from '@/features/ratings';
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 
 interface UseContentInfoActionsParams {
   readonly contentId: number;
@@ -132,7 +132,7 @@ export function useContentInfoActions({
       };
     }
     return undefined;
-  }, [pendingAction, contentId, contentType, toggleFavorite]);
+  }, [pendingAction, contentId, contentType, toggleFavorite, displayName, contentTitle]);
 
   return {
     isFavorited,

@@ -8,8 +8,8 @@ import {
   isValidAuthErrorCode,
 } from '@/features/auth/constants/authErrors';
 import type { SocialProvider, AuthErrorDto } from '@/features/auth/types';
-import { analyticsService, type LoginReferrerType } from '@/shared/analytics';
-import { AuthLogger } from '@/shared/utils/logger';
+import { analyticsService, type LoginReferrerType } from '@/core/services/analytics';
+import { AuthLogger } from '@/core/utils';
 
 /** AuthErrorDto 타입 가드 */
 function isAuthError(error: unknown): error is AuthErrorDto {

@@ -5,7 +5,7 @@
  */
 
 import { Platform } from 'react-native';
-import { supabaseClient } from '@/shared/api/supabaseClient';
+import { supabaseClient } from '@/core/api';
 import type {
   AppPlatform,
   AppVersionPolicy,
@@ -13,7 +13,7 @@ import type {
   MaintenanceMode,
   MaintenanceModeDto,
 } from '../types';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 
 const AppConfigLogger = Logger.create('AppConfig');
 

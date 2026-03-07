@@ -9,8 +9,8 @@ import {
   useInfiniteQuery,
   UseQueryResult,
 } from '@tanstack/react-query';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { Logger } from '@/shared/utils/logger';
+import { useAuth } from '@/features/auth';
+import { Logger } from '@/core/utils';
 import { watchHistoryApi } from '../api/watchHistoryApi';
 import type { CreateWatchHistoryParams } from '../types';
 import { WatchHistoryModel, WatchHistoryCalendarModel } from '../types/watchHistoryModel';

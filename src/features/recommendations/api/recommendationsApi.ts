@@ -1,9 +1,8 @@
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { getAuthUser } from '@/shared/api/authUtils';
-import { Logger } from '@/shared/utils/logger';
+import { supabaseClient, getAuthUser } from '@/core/api';
+import { Logger } from '@/core/utils';
 
 const RecommendationsLogger = Logger.create('Recommendations');
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 import type { CurationVideoModel } from '@/features/content/types';
 import type {
   GenrePreferenceDto,

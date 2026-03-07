@@ -25,8 +25,8 @@ import Animated, {
 } from 'react-native-reanimated';
 import styled from '@emotion/native';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { ChannelItemModel } from '../_types';
 import {
   SkeletonModel,

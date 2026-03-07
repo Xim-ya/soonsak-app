@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react';
 import { ListRenderItemInfo, View } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 import {
   HorizontalCardSlider,
@@ -9,7 +9,7 @@ import {
   CARD_SLIDER,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
-import { ContentSource } from '@/shared/analytics';
+import { ContentSource } from '@/core/services/analytics';
 import { useContentCollections } from '../_hooks/useContentCollections';
 import {
   ContentCollectionModel,

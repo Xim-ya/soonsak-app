@@ -28,15 +28,15 @@ import Animated, {
 } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import FilterIcon from '@assets/icons/filter.svg';
-import textStyles from '@/shared/styles/textStyles';
+import textStyles from '@/presentation/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import { ContentFilterBottomSheet } from '@/presentation/components/filter/ContentFilterBottomSheet';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 import { CHANNEL_SORT_OPTIONS, type ChannelVideoModel, type ChannelItemModel } from './_types';
 import { useChannelList } from './_hooks/useChannelList';
 import { useChannelVideos } from './_hooks/useChannelVideos';
@@ -50,7 +50,7 @@ import { ChannelVideoCard, calculateCardHeight } from './_components/ChannelVide
 import { TabletVideoCard } from './_components/TabletVideoCard';
 import { SortSelector } from '@/presentation/components/sort';
 import { ChannelProvider, useChannel } from './_provider/ChannelProvider';
-import { ContentSource } from '@/shared/analytics';
+import { ContentSource } from '@/core/services/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

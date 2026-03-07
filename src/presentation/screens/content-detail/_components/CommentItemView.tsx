@@ -2,8 +2,8 @@ import React, { memo } from 'react';
 import styled from '@emotion/native';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { CommentModel } from '../_types/commentModel.cd';
 import ThumbFilledIcon from '@assets/icons/thumb_filled.svg';
 

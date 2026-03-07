@@ -7,8 +7,8 @@
 import { memo } from 'react';
 import { View, ActivityIndicator, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { UserStatistics } from '@/features/admin';
 import { formatCompactNumber } from '@/features/admin';
 

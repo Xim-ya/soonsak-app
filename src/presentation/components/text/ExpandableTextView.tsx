@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { LayoutChangeEvent, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 import Gap from '../view/Gap';
 
 interface ExpandableTextViewProps {

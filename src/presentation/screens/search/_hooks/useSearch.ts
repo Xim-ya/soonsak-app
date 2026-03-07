@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { SearchResultModel } from '../_types/searchResultModel';
 
 /** 캐시 유지 시간 (5분) */

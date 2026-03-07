@@ -10,9 +10,9 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import colors from '@/shared/styles/colors';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import colors from '@/presentation/styles/colors';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import SearchIcon from '@assets/icons/search_tab.svg';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports

@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { View } from 'react-native';
 import styled from '@emotion/native';
 import type { SharedValue } from 'react-native-reanimated';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 
 import { useTabScrollListener } from '../_hooks/useTabScrollListener';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
@@ -16,8 +16,8 @@ import {
   GRID_COLUMN_GAP,
 } from './RelatedContentGridItem';
 import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 /** 태블릿 콘텐츠 레이아웃 상수 */
 const TABLET_CONTENT_MAX_WIDTH = 800;

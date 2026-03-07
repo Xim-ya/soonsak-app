@@ -5,14 +5,14 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
 import { CARD_SLIDER } from '@/presentation/components/slider/HorizontalCardSlider';
-import type { ContentSourceType } from '@/shared/analytics';
+import type { ContentSourceType } from '@/core/services/analytics';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

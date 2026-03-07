@@ -33,17 +33,17 @@ import Animated, {
   Easing,
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { AppSize } from '@/shared/utils/appSize';
-import { analyticsService } from '@/shared/analytics';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
+import { AppSize } from '@/presentation/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
 import {
   useQuickExploreGrid,
   ZIGZAG_OFFSET,
   calcZigzagOffset,
 } from '../_hooks/useQuickExploreGrid';
 import { ContentCard } from './ContentCard';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 
 const ContentGridLogger = Logger.create('ContentGrid');
 

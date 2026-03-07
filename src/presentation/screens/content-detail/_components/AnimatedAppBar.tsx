@@ -1,7 +1,7 @@
 import { BackButtonAppBar } from '@/presentation/components/app-bar';
 import { MoreOptionsButton } from '@/presentation/components/button/MoreOptionsButton';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import Animated, {

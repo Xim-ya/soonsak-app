@@ -8,8 +8,8 @@ import { TmdbApiError } from '../types/common';
 import { MovieDto } from '../types/movieDto';
 import { TvSeriesDto } from '../types/tvDto';
 import { tmdbApi } from '../api/tmdbApi';
-import { ContentType } from '@/shared/types/content/contentType.enum';
-import { Logger } from '@/shared/utils/logger';
+import { ContentType } from '@/core/types/content/contentType.enum';
+import { Logger } from '@/core/utils';
 import { tmdbKeys } from './tmdbQueryKeys';
 
 const TMDBLogger = Logger.create('TMDB');

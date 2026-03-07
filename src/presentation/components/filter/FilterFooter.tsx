@@ -14,8 +14,8 @@
 import React from 'react';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 
 interface FilterFooterProps {
   /** 초기화 버튼 콜백 */

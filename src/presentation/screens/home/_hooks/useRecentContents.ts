@@ -6,9 +6,9 @@
 
 import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { ContentDto } from '@/features/content/types';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
 
 const PAGE_SIZE = 12;
 

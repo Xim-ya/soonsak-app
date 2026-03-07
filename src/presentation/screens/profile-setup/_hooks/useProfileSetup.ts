@@ -22,15 +22,15 @@ import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import * as ImagePicker from 'expo-image-picker';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { useNicknameValidation } from '@/features/user/hooks/useNicknameValidation';
 import { userApi } from '@/features/user/api/userApi';
 import { generateRandomNickname } from '@/features/user/constants/randomNickname';
 import type { ProfileSetupMode } from '@/features/user/types';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { analyticsService } from '@/shared/analytics';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
-import { Logger } from '@/shared/utils/logger';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { analyticsService } from '@/core/services/analytics';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
+import { Logger } from '@/core/utils';
 
 const ProfileSetupLogger = Logger.create('ProfileSetup');
 

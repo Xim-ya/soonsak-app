@@ -16,14 +16,14 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { onboardingStorage } from '@/features/auth/utils/onboardingStorage';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { handlePendingNavigation, pendingNavigationStore } from '@/features/push-notifications';
-import { navigationRef } from '@/shared/navigation/utils/navigationRef';
+import { navigationRef } from '@/presentation/navigation/utils/navigationRef';
 import type { AuthState } from '@/features/auth/types';
-import { analyticsService, LoginReferrer } from '@/shared/analytics';
+import { analyticsService, LoginReferrer } from '@/core/services/analytics';
 import { useSocialLogin } from './useSocialLogin';
 
 type LoginNavigationProp = NativeStackNavigationProp<RootStackParamList, typeof routePages.login>;
@@ -70,6 +70,7 @@ export function useLoginNavigation(): UseLoginNavigationReturn {
       referrer_screen: referrerScreen,
       can_go_back: canGoBack,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- 마운트 시 1회만 실행
   }, []);
 
   // 메인 화면으로 이동 (온보딩 완료 표시 후)

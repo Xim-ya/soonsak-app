@@ -5,7 +5,7 @@
  */
 
 import type { UserRole } from '@/features/auth/types';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 // ============================================================================
 // Role Utilities

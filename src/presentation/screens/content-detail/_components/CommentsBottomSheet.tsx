@@ -12,10 +12,10 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import Gap from '@/presentation/components/view/Gap';
-import { analyticsService } from '@/shared/analytics';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import { useYouTubeComments } from '@/features/youtube';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { CommentModel } from '../_types/commentModel.cd';

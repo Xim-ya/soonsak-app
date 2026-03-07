@@ -10,9 +10,9 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { contentApi } from '@/features/content/api/contentApi';
+import { contentApi } from '@/features/content/api';
 import { TMDB_IMAGE_BASE_URL } from '@/features/tmdb/config';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
 
 // 상수
 const FETCH_LIMIT = 10;

@@ -4,17 +4,17 @@ import styled from '@emotion/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentDetail } from '../_hooks/useContentDetail';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { ImageGrid } from '@/presentation/components/image/ImageGrid';
-import { analyticsService } from '@/shared/analytics';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
-import textStyles from '@/shared/styles/textStyles';
+import { analyticsService } from '@/core/services/analytics';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
+import textStyles from '@/presentation/styles/textStyles';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

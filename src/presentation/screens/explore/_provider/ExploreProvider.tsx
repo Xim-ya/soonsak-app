@@ -23,11 +23,11 @@ import { AppState, AppStateStatus } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SharedValue, useSharedValue } from 'react-native-reanimated';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
-import type { ExploreTabName } from '@/shared/analytics/types/events';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
+import type { ExploreTabName } from '@/core/services/analytics/types/events';
 import type { ExploreContentModel } from '../_types/exploreTypes';
 import { useExploreFilterSheet } from '../_hooks/useExploreFilterSheet';
 

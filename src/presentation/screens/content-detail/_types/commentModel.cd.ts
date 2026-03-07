@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-namespace */
 import { CommentDto } from '@/features/youtube/types';
-import { formatter } from '@/shared/utils/formatter';
+import { formatter } from '@/core/utils/formatter';
 
 /**
  * CommentModel - YouTube 댓글 모델

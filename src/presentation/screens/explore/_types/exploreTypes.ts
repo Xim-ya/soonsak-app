@@ -2,7 +2,7 @@
  * Explore 화면 전용 타입 정의
  */
 
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import type { LogoLanguage, CurationVideoModel } from '@/features/content/types';
 
 /** 정렬 타입 */

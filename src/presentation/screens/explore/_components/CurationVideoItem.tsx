@@ -20,10 +20,10 @@ import {
 } from '@/presentation/components/shadow/DarkedLinearShadow';
 import DarkChip from '@/presentation/components/chip/DarkChip';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter } from '@/core/utils/formatter';
 import { TMDB_GENRE_MAP } from '@/features/content/constants/genreConstants';
 import type { CurationVideoModel } from '../_types/exploreTypes';
 

@@ -1,7 +1,6 @@
-import type { User } from '@supabase/supabase-js';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { Logger } from '@/shared/utils/logger';
+import { supabaseClient, getAuthUser, requireAuth } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { Logger } from '@/core/utils';
 
 const FavoritesLogger = Logger.create('Favorites');
 import type {
@@ -12,30 +11,6 @@ import type {
 } from '../types';
 
 const TABLE_NAME = 'favorites';
-
-/**
- * 인증된 사용자 정보 반환
- * @returns 미인증 시 null
- */
-async function getAuthUser(): Promise<User | null> {
-  const { data, error } = await supabaseClient.auth.getUser();
-  if (error) {
-    return null;
-  }
-  return data.user ?? null;
-}
-
-/**
- * 인증된 사용자 정보 반환
- * @throws 미인증 시 에러
- */
-async function requireAuth(): Promise<User> {
-  const user = await getAuthUser();
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-  return user;
-}
 
 /**
  * 찜하기 API

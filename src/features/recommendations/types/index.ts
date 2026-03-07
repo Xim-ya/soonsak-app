@@ -1,5 +1,5 @@
-import type { ContentType } from '@/shared/types/content/contentType.enum';
-import type { ISOTimestamp } from '@/shared/types/common/timestamp';
+import type { ContentType } from '@/core/types/content/contentType.enum';
+import type { ISOTimestamp } from '@/core/types/common/timestamp';
 
 /**
  * 장르 선호도 DTO

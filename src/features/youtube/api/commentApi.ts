@@ -8,7 +8,7 @@
  */
 
 import { CommentsResponseDto } from '../types';
-import { CommentLogger } from '@/shared/utils/logger';
+import { CommentLogger } from '@/core/utils';
 
 /** Edge Function URL */
 const EDGE_FUNCTION_URL = 'https://hhgnrkejmkprfypwjhmz.supabase.co/functions/v1/youtube-comments';

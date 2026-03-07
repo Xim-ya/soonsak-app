@@ -1,8 +1,8 @@
 import styled from '@emotion/native';
 import LottieView from 'lottie-react-native';
 import { StatusBar } from 'expo-status-bar';
-import colors from '@/shared/styles/colors';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import { AppSize } from '@/presentation/utils/appSize';
 
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const splashLottie = require('@assets/lottie/splash_logo.json');

@@ -12,12 +12,12 @@ import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { SvgXml } from 'react-native-svg';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { UserContentItem } from '@/features/admin';
 
 // ============================================================================

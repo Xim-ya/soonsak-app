@@ -4,7 +4,7 @@
 
 import { useQuery, UseQueryResult } from '@tanstack/react-query';
 import { YouTubeChannelDto, YouTubeApiError } from '../types';
-import { ChannelLogger } from '@/shared/utils/logger';
+import { ChannelLogger } from '@/core/utils';
 import { channelScraper } from '../api/scrapers/channelScraper';
 import { youtubeKeys } from './youtubeQueryKeys';
 

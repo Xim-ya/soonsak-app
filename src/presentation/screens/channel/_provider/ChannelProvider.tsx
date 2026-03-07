@@ -18,7 +18,7 @@
  */
 
 import { createContext, useContext, useState, useCallback, useMemo, ReactNode } from 'react';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
 import { useChannelFilterSheet } from '../_hooks/useChannelFilterSheet';
 import type { ChannelSortType } from '../_types';
 

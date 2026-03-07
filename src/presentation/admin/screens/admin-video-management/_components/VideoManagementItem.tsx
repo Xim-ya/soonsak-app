@@ -10,10 +10,10 @@ import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import { ContentStatus, ContentStatusLabel } from '@/features/content/types';
 import type { VideoManagementModel } from '../_types';
 

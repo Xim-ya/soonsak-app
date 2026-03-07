@@ -7,11 +7,11 @@
 
 import React, { useCallback } from 'react';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { getGenresByContentType } from '@/features/content/constants/genreConstants';
-import { toggleArrayItem } from '@/shared/utils/arrayUtils';
+import { toggleArrayItem } from '@/core/utils';
 import { FilterChip } from '../FilterChip';
 import { FilterChipGrid } from '../FilterChipGrid';
 import { FilterSectionHeader } from '../FilterSectionHeader';

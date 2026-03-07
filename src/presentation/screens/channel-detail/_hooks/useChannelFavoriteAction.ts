@@ -9,9 +9,9 @@
  */
 
 import { useCallback, useState, useRef } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { useChannelFavoriteStatus, useToggleChannelFavorite } from '@/features/channel-favorites';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 
 interface UseChannelFavoriteActionParams {
   readonly channelId: string;

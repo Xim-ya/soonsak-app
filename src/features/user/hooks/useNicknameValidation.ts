@@ -16,7 +16,7 @@
 import { useCallback } from 'react';
 import { validateNicknameSync, NICKNAME_ERRORS } from '../constants/nicknameValidation';
 import { userApi } from '../api/userApi';
-import { UserLogger } from '@/shared/utils/logger';
+import { UserLogger } from '@/core/utils';
 import type { NicknameValidationError } from '../types';
 
 interface UseNicknameValidationReturn {

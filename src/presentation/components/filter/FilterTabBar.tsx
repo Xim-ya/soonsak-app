@@ -15,9 +15,9 @@
 import React, { useRef, useCallback } from 'react';
 import { ScrollView } from 'react-native';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
-import type { FilterTabConfig, FilterTabKey } from '@/shared/types/filter/contentFilter';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import type { FilterTabConfig, FilterTabKey } from '@/core/types/filter/contentFilter';
 
 interface FilterTabBarProps {
   /** 탭 목록 */

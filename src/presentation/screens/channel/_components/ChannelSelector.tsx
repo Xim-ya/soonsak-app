@@ -18,7 +18,7 @@ import { FlatList, TouchableOpacity, ListRenderItemInfo } from 'react-native';
 import styled from '@emotion/native';
 import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import type { ChannelItemModel } from '../_types';
 import {
   SkeletonModel,

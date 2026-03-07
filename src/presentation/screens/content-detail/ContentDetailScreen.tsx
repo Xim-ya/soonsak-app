@@ -7,8 +7,8 @@ import { Platform } from 'react-native';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { BasePage } from '../../components/page';
 import { Header, AdminActionModals, UserActionModals } from './_components';
-import colors from '@/shared/styles/colors';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import { AppSize } from '@/presentation/utils/appSize';
 import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedLinearShadow';
 import { useSharedValue, useAnimatedStyle } from 'react-native-reanimated';
 import Animated from 'react-native-reanimated';
@@ -17,15 +17,15 @@ import { TabBar } from './_components/TabBar';
 import { ContentTabView } from './_components/VideoTabView';
 import { RelatedContentTabView } from './_components/OriginContentTabView';
 import { AnimatedAppBar } from './_components/AnimatedAppBar';
-import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { ScreenRouteProp, RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { ContentDetailProvider, useContentVideos } from './_provider/ContentDetailProvider';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { useFavoriteAction } from './_hooks/useFavoriteAction';
 import { useAdminContentActions, AdminContentAction } from '@/features/admin';
 import { useContentDetail } from './_hooks/useContentDetail';
-import { analyticsService, ContentSource } from '@/shared/analytics';
-import type { ContentSourceType } from '@/shared/analytics';
+import { analyticsService, ContentSource } from '@/core/services/analytics';
+import type { ContentSourceType } from '@/core/services/analytics';
 
 // 모듈 레벨 상수 (매 렌더마다 새 객체 생성 방지)
 const PAGER_PROPS = { scrollEnabled: false };
@@ -114,12 +114,15 @@ function ContentDetailContent({
   });
   /* eslint-enable indent */
 
-  // CHANGE_CONTENT 액션 선택 시 콘텐츠 검색 화면으로 이동
+  // 어드민 액션 선택 시 네비게이션 처리
+  const { selectedAction, currentVideoId, currentVideoTitle, handleCloseActionModal } = adminAction;
+
   useEffect(() => {
+    // CHANGE_CONTENT 액션: 콘텐츠 검색 화면으로 이동
     if (
-      adminAction.selectedAction === AdminContentAction.CHANGE_CONTENT &&
-      adminAction.currentVideoId &&
-      adminAction.currentVideoTitle &&
+      selectedAction === AdminContentAction.CHANGE_CONTENT &&
+      currentVideoId &&
+      currentVideoTitle &&
       contentDetail
     ) {
       const releaseYear = contentDetail.releaseDate
@@ -127,41 +130,31 @@ function ContentDetailContent({
         : null;
 
       navigation.navigate(routePages.adminContentSearch, {
-        videoId: adminAction.currentVideoId,
-        videoTitle: adminAction.currentVideoTitle,
+        videoId: currentVideoId,
+        videoTitle: currentVideoTitle,
         currentContentId: contentId,
         currentContentType: contentType,
         currentContentTitle: contentDetail.title,
         currentContentReleaseYear: releaseYear,
       });
-      // 네비게이션 후 선택 상태 초기화
-      adminAction.handleCloseActionModal();
+      handleCloseActionModal();
+      return;
     }
-  }, [
-    adminAction.selectedAction,
-    adminAction.currentVideoId,
-    adminAction.currentVideoTitle,
-    adminAction.handleCloseActionModal,
-    contentId,
-    contentType,
-    contentDetail,
-    navigation,
-  ]);
 
-  // CHANGE_PRIMARY_VIDEO 액션 선택 시 대표 비디오 선택 화면으로 이동
-  useEffect(() => {
-    if (adminAction.selectedAction === AdminContentAction.CHANGE_PRIMARY_VIDEO && contentDetail) {
+    // CHANGE_PRIMARY_VIDEO 액션: 대표 비디오 선택 화면으로 이동
+    if (selectedAction === AdminContentAction.CHANGE_PRIMARY_VIDEO && contentDetail) {
       navigation.navigate(routePages.adminPrimaryVideoSelect, {
         contentId,
         contentType,
         contentTitle: contentDetail.title,
       });
-      // 네비게이션 후 선택 상태 초기화
-      adminAction.handleCloseActionModal();
+      handleCloseActionModal();
     }
   }, [
-    adminAction.selectedAction,
-    adminAction.handleCloseActionModal,
+    selectedAction,
+    currentVideoId,
+    currentVideoTitle,
+    handleCloseActionModal,
     contentId,
     contentType,
     contentDetail,
@@ -189,7 +182,11 @@ function ContentDetailContent({
     handleToggleFavorite,
     handleCloseActionSheet,
     handleCloseDialog,
-  } = useFavoriteAction({ contentId, contentType, contentTitle: title });
+  } = useFavoriteAction({
+    contentId,
+    contentType,
+    ...(title !== undefined && { contentTitle: title }),
+  });
   void _handleMorePress; // lint 무시 (어드민 액션에서 별도 처리)
 
   return (
@@ -241,25 +238,7 @@ function ContentDetailContent({
       </BasePage>
 
       {/* 어드민 액션 모달 */}
-      <AdminActionModals
-        isActionSheetVisible={adminAction.isActionSheetVisible}
-        selectedAction={adminAction.selectedAction}
-        actions={adminAction.actions}
-        contentId={adminAction.contentId}
-        contentType={adminAction.contentType}
-        currentVideoId={adminAction.currentVideoId}
-        currentVideoTitle={adminAction.currentVideoTitle}
-        currentVideoStatus={adminAction.currentVideoStatus}
-        currentIncludesEnding={adminAction.currentIncludesEnding}
-        currentBackdropPath={adminAction.currentBackdropPath}
-        isSaving={adminAction.isSaving}
-        onSelectAction={adminAction.handleSelectAction}
-        onCloseActionSheet={adminAction.handleCloseActionSheet}
-        onCloseActionModal={adminAction.handleCloseActionModal}
-        onBackdropSelect={adminAction.handleBackdropSelect}
-        onVideoStatusChange={adminAction.handleVideoStatusChange}
-        onIncludesEndingChange={adminAction.handleIncludesEndingChange}
-      />
+      <AdminActionModals adminAction={adminAction} />
 
       {/* 사용자 액션 모달 */}
       <UserActionModals

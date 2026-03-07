@@ -16,8 +16,8 @@
  */
 
 import { useEffect, useRef } from 'react';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { YouTubeLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { YouTubeLogger } from '@/core/utils';
 
 interface SyncVideoMetricsParams {
   /** YouTube 비디오 ID */

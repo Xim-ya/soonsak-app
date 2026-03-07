@@ -9,7 +9,7 @@ import React from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 // 상수 정의
 const ICON_SIZE = 24;

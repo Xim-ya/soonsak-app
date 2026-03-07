@@ -17,12 +17,12 @@ import { memo } from 'react';
 import styled from '@emotion/native';
 import { TouchableOpacity, Platform } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
-import { contentTypeConfigs } from '@/shared/types/content/contentType.enum';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
+import { contentTypeConfigs } from '@/core/types/content/contentType.enum';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 
 interface ContentCardProps {

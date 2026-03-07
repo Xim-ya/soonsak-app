@@ -1,7 +1,6 @@
-import type { User } from '@supabase/supabase-js';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { Logger } from '@/shared/utils/logger';
+import { supabaseClient, requireAuth } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { Logger } from '@/core/utils';
 
 const ReviewFunnelLogger = Logger.create('ReviewFunnel');
 import type {
@@ -12,18 +11,6 @@ import type {
 } from '../types';
 
 const TABLE_NAME = 'review_funnel_sessions';
-
-/**
- * 인증된 사용자 정보 반환
- * @throws 미인증 시 에러
- */
-async function requireAuth(): Promise<User> {
-  const { data, error } = await supabaseClient.auth.getUser();
-  if (error || !data.user) {
-    throw new Error('User not authenticated');
-  }
-  return data.user;
-}
 
 /**
  * 리뷰 퍼널 API

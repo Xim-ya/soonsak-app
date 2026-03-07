@@ -10,7 +10,7 @@
 
 import { ScrapedChannelDto, YouTubeApiError, YouTubeErrorCode } from '../../types';
 import { parseAbbreviatedNumber } from '../../utils';
-import { ScraperLogger } from '@/shared/utils/logger';
+import { ScraperLogger } from '@/core/utils';
 
 /**
  * 작업 분할 유틸리티 - UI 블로킹 방지

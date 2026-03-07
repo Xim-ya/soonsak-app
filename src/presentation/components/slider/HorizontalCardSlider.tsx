@@ -2,8 +2,8 @@ import React, { ReactElement, useCallback } from 'react';
 import { FlatList, ListRenderItemInfo } from 'react-native';
 import styled from '@emotion/native';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 /** 홈 가로 카드 슬라이더 공통 상수 */
 export const CARD_SLIDER = {

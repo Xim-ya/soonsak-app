@@ -25,12 +25,12 @@ import {
 } from 'react-native-collapsible-tab-view';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { analyticsService } from '@/shared/analytics';
-import type { ExploreTabName } from '@/shared/analytics/types/events';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { analyticsService } from '@/core/services/analytics';
+import type { ExploreTabName } from '@/core/services/analytics/types/events';
 import { EXPLORE_SORT_TABS } from '../_types/exploreTypes';
 import { useExplore } from '../_provider/ExploreProvider';
 

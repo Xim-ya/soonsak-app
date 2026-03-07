@@ -9,9 +9,9 @@
  */
 
 import { useCallback, useState, useRef } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { useFavoriteStatus, useToggleFavorite } from '@/features/favorites';
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 
 interface UseFavoriteActionParams {
   readonly contentId: number;
@@ -85,7 +85,12 @@ export function useFavoriteAction({
     lastCallTimeRef.current = now;
     isProcessingRef.current = true;
     toggleFavorite(
-      { contentId, contentType, nickname: displayName, videoTitle: contentTitle },
+      {
+        contentId,
+        contentType,
+        nickname: displayName,
+        ...(contentTitle && { videoTitle: contentTitle }),
+      },
       {
         onSettled: () => {
           isProcessingRef.current = false;

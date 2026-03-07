@@ -3,12 +3,12 @@ import { Text } from 'react-native';
 import { useNavigation, CompositeNavigationProp } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
 import { SectionContentListView } from './SectionContentListView';
-import { RootStackParamList, TabParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
-import { TabRoutes } from '@/shared/navigation/constant/tabConfigs';
+import { RootStackParamList, TabParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
+import { TabRoutes } from '@/presentation/navigation/constant/tabConfigs';
 import { useRecentContents } from '../_hooks/useRecentContents';
 
 /** 홈 화면에서 사용하는 복합 네비게이션 타입 (스택 + 탭) */

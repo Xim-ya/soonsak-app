@@ -21,10 +21,10 @@ import {
 } from '@/presentation/components/shadow/DarkedLinearShadow';
 import { WatchProgressBar } from '@/presentation/components/progress';
 import DarkChip from '@/presentation/components/chip/DarkChip';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
 import { WatchHistoryModel } from '@/features/watch-history';
 
 /* Types */

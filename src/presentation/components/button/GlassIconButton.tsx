@@ -18,7 +18,7 @@
 import { ReactNode } from 'react';
 import styled from '@emotion/native';
 import { TouchableOpacity, ViewStyle } from 'react-native';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 
 interface GlassIconButtonProps {
   children: ReactNode;

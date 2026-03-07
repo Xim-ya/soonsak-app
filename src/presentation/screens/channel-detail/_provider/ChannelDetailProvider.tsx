@@ -8,9 +8,9 @@ import {
   useEffect,
   useRef,
 } from 'react';
-import type { SortType } from '@/shared/types/sort';
+import type { SortType } from '@/core/types/sort';
 import type { ViewMode } from '@/presentation/components/view-mode';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 import { useChannelInfo } from '../_hooks/useChannelInfo';
 import { useChannelContents } from '../_hooks/useChannelContents';
 import { ChannelVideoModel } from '../_types';

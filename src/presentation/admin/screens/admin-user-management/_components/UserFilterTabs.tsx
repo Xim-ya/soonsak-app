@@ -7,9 +7,9 @@
 import { memo, useCallback, useMemo } from 'react';
 import { ScrollView, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import type { UserRoleCounts, UserRoleFilter } from '@/features/admin';
 
 interface FilterTab {

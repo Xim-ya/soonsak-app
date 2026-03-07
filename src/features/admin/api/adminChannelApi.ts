@@ -4,9 +4,9 @@
  * 어드민 전용 채널 관리 API
  */
 
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { CONTENT_DATABASE, CHANNEL_DATABASE } from '@/shared/config/dbConfig';
-import { ChannelLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { CONTENT_DATABASE, CHANNEL_DATABASE } from '@/core/config';
+import { ChannelLogger } from '@/core/utils';
 
 // ============================================================================
 // Types

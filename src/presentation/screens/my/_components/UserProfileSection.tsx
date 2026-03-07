@@ -10,9 +10,9 @@
 import React, { memo } from 'react';
 import styled from '@emotion/native';
 import { TouchableOpacity } from 'react-native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import { RoundedAvatorView } from '@/presentation/components/image/RoundedAvatarView';
 import { useMyScreen } from '../_provider';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';

@@ -7,10 +7,10 @@
 
 import { File as ExpoFile } from 'expo-file-system';
 import * as Application from 'expo-application';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { AUTH_DATABASE } from '@/shared/config/dbConfig';
-import { UserLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { AUTH_DATABASE } from '@/core/config';
+import { UserLogger } from '@/core/utils';
 import type { ProfileDto } from '@/features/auth/types';
 import type { ProfileUpdateDto } from '../types';
 

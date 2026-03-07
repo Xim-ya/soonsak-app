@@ -1,7 +1,6 @@
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { getAuthUser, requireAuth } from '@/shared/api/authUtils';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { Logger } from '@/shared/utils/logger';
+import { supabaseClient, getAuthUser, requireAuth } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { Logger } from '@/core/utils';
 
 const ChannelFavoritesLogger = Logger.create('ChannelFavorites');
 import type {
