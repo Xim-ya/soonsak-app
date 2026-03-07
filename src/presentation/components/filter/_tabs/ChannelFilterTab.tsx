@@ -16,8 +16,8 @@
 import React, { useCallback, useMemo, useRef } from 'react';
 import styled from '@emotion/native';
 import { useQuery } from '@tanstack/react-query';
-import { AppSize } from '@/shared/utils/appSize';
-import { toggleArrayItem } from '@/shared/utils/arrayUtils';
+import { AppSize } from '@/presentation/utils/appSize';
+import { toggleArrayItem } from '@/core/utils';
 import { channelApi } from '@/features/channel/api/channelApi';
 import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
 import { FilterSectionHeader } from '../FilterSectionHeader';

@@ -5,7 +5,7 @@
  */
 
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { ratingsApi, ratingKeys } from '@/features/ratings';
 
 /** 캐시 시간 상수 */

@@ -8,14 +8,14 @@
 import { useState, useRef, useCallback, useMemo } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import { useContentFilter } from '@/shared/context/ContentFilterContext';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
+import { useContentFilter } from '@/presentation/providers';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { analyticsService } from '@/shared/analytics';
-import type { ExploreContentType } from '@/shared/analytics/types/events';
+import { useAuth } from '@/features/auth';
+import { analyticsService } from '@/core/services/analytics';
+import type { ExploreContentType } from '@/core/services/analytics/types/events';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

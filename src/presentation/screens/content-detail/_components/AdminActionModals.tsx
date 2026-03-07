@@ -16,7 +16,7 @@ import {
   IncludesEndingModal,
 } from '@/presentation/admin/components';
 import { ContentStatus } from '@/features/content/types';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 
 interface AdminActionConfig {
   readonly action: AdminContentAction;

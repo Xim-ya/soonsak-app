@@ -1,4 +1,4 @@
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 
 /** 평점 DTO (DB 스키마) */
 export interface RatingDto {

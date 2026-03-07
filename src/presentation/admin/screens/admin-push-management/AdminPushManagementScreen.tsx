@@ -22,8 +22,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { BasePage } from '@/presentation/components/page';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { PushTemplateModel, PushReceiptModel } from './_types';
 import {
   PushStatisticsCards,

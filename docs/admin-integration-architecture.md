@@ -168,7 +168,7 @@ export const PermissionChecker = {
 // shared/hooks/usePermission.ts
 
 import { useMemo } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 import { PermissionChecker } from '@/features/auth/permissions/permissionChecker';
 import type { Permission } from '@/features/auth/permissions/permissionTypes';
 
@@ -209,7 +209,7 @@ export function usePermission(): UsePermissionReturn {
 // features/auth/guards/AdminOnly.tsx
 
 import { type ReactNode } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 
 interface AdminOnlyProps {
   children: ReactNode;
@@ -284,7 +284,7 @@ export function PermissionGate({
 // features/admin/hooks/useAdminContentActions.ts
 
 import { useCallback, useState } from 'react';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { useAuth } from '@/features/auth';
 
 interface UseAdminContentActionsParams {
   contentId: number;

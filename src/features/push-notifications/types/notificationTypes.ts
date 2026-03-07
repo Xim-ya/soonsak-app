@@ -7,16 +7,16 @@
  * 딥링크 지원 화면은 routeRegistry에서 관리됩니다.
  * 새 딥링크 화면 추가 시 routeRegistry.ts만 수정하세요.
  *
- * @see src/shared/navigation/config/routeRegistry.ts
+ * @see src/presentation/navigation/config/routeRegistry.ts
  * @see docs/push-notification-deep-link-spec.md
  */
 
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { RootStackParamList } from '@/presentation/navigation/types';
 import {
   DEEP_LINK_SCREENS as DEEP_LINK_SCREENS_SOURCE,
   isDeepLinkScreen,
   type DeepLinkScreen as DeepLinkScreenType,
-} from '@/shared/navigation/config/routeRegistry';
+} from '@/presentation/navigation/config/routeRegistry';
 
 /** Notification Action 타입 */
 export type NotificationActionType = 'NAVIGATION' | 'ACTION';

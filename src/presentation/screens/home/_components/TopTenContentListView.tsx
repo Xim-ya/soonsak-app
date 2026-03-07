@@ -1,16 +1,16 @@
 import React, { useCallback } from 'react';
 import { ListRenderItemInfo } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { formatter } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { formatter } from '@/core/utils/formatter';
 import {
   HorizontalCardSlider,
   CARD_SLIDER,
   CardSkeletonBox,
 } from '@/presentation/components/slider/HorizontalCardSlider';
 import { ContentCardImage } from '@/presentation/components/card/ContentCardImage';
-import { ContentSource } from '@/shared/analytics';
+import { ContentSource } from '@/core/services/analytics';
 import { useWeeklyTopTen } from '../_hooks/useWeeklyTopTen';
 import { TopTenContentModel } from '../_types/topTenContentModel.home';
 

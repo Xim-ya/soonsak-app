@@ -3,10 +3,10 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Application from 'expo-application';
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import * as KakaoLogin from '@react-native-seoul/kakao-login';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { AUTH_DATABASE } from '@/shared/config/dbConfig';
-import { AuthLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { AUTH_DATABASE } from '@/core/config';
+import { AuthLogger } from '@/core/utils';
 import {
   AUTH_ERROR_CODES,
   AUTH_ERROR_MESSAGES,

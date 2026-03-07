@@ -14,7 +14,7 @@ import { createContext, useContext, useMemo, useEffect, type ReactNode } from 'r
 import { useProfileSetup } from '../_hooks/useProfileSetup';
 import type { ProfileSetupMode } from '@/features/user/types';
 import type { ButtonState } from '@/presentation/components/button';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 
 /** Context 타입 정의 */
 interface ProfileSetupContextType {

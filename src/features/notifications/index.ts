@@ -33,6 +33,3 @@ export {
   useMarkAllNotificationsAsRead,
 } from './hooks/useNotifications';
 export { useSyncAppBadge, clearAppBadge } from './hooks/useSyncAppBadge';
-
-// Components
-export { NotificationBellButton } from './components/NotificationBellButton';

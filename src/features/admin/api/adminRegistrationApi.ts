@@ -6,8 +6,8 @@
  */
 
 import { contentApi } from '@/features/content/api/contentApi';
-import { RegistrationLogger } from '@/shared/utils/logger';
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import { RegistrationLogger } from '@/core/utils';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 
 // ============================================================================
 // Types

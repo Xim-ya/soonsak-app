@@ -7,8 +7,8 @@
 import { View } from 'react-native';
 import styled from '@emotion/native';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { formatDate, formatCompactNumber } from '@/features/admin';
 import type { ChannelDetailItem } from '@/features/admin/api/adminChannelApi';
 

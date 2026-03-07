@@ -26,11 +26,11 @@
 import React, { useCallback, useState, useRef } from 'react';
 import { TouchableOpacity, Modal, Pressable, View } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import DownArrowIcon from '@assets/icons/chevron_down.svg';
-import type { SortType, SortOption } from '@/shared/types/sort';
-import { DEFAULT_SORT_OPTIONS } from '@/shared/types/sort';
+import type { SortType, SortOption } from '@/core/types/sort';
+import { DEFAULT_SORT_OPTIONS } from '@/core/types/sort';
 
 /** 버튼과 드롭다운 사이 간격 */
 const DROPDOWN_GAP = 8;

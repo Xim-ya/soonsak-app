@@ -7,8 +7,8 @@
 import { memo, useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { RegistrationTab } from '../_hooks/useContentRegistration';
 
 interface RegistrationTabBarProps {

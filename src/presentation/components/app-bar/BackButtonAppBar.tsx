@@ -3,8 +3,8 @@ import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import textStyle from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyle from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 
 // 상수 정의
 const APPBAR_HEIGHT = 48;

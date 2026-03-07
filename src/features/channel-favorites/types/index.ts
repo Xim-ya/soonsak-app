@@ -1,4 +1,4 @@
-import type { ISOTimestamp } from '@/shared/types/common/timestamp';
+import type { ISOTimestamp } from '@/core/types/common/timestamp';
 
 /**
  * 채널 찜 DTO

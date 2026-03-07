@@ -1,6 +1,6 @@
 import { ContentWithVideoDto } from '@/features/content/types';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
-import { formatter } from '@/shared/utils/formatter';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
+import { formatter } from '@/core/utils/formatter';
 
 /**
  * 러닝타임이 긴 콘텐츠 모델

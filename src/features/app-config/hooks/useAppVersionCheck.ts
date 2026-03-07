@@ -13,7 +13,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
 import type { UpdateStatus, AppVersionPolicy, VersionCheckResult } from '../types';
-import { VersionLogger } from '@/shared/utils/logger';
+import { VersionLogger } from '@/core/utils';
 
 /** AsyncStorage 키 */
 const DISMISSED_VERSION_KEY = '@app_config/dismissed_soft_update_version';

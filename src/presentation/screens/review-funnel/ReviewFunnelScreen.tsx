@@ -2,7 +2,7 @@ import { StatusBar, ActivityIndicator } from 'react-native';
 import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { useReviewFunnel } from '@/features/review-funnel/hooks/useReviewFunnel';
 import { FUNNEL_BACKGROUND_COLORS } from '@/features/review-funnel/constants';
 import { LetterStep } from './_components/LetterStep';

@@ -10,8 +10,8 @@ import { Modal, ActivityIndicator, TouchableWithoutFeedback } from 'react-native
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDialog } from '@/presentation/components/dialog';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { ContentStatus, ContentStatusLabel } from '@/features/content/types';
 
 interface VideoStatusModalProps {

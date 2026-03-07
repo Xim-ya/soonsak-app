@@ -11,15 +11,15 @@ import {
   DarkedLinearShadow,
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import PlayButtonSvg from '@assets/icons/play_button.svg';
 import DarkChip from '@/presentation/components/chip/DarkChip';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { useContentDetail } from '../../_hooks/useContentDetail';
 import { useContentVideos } from '../../_provider/ContentDetailProvider';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 import { useImageTransition } from '../../_hooks/useImageTransition';
 import {
   useYouTubeVideo,

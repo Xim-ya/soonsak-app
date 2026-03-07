@@ -1,6 +1,6 @@
-import type { BaseContentRefModel } from '@/shared/types/content/baseContentRefModel';
+import type { BaseContentRefModel } from '@/core/types/content/baseContentRefModel';
 import type { WatchHistoryWithContentDto, WatchHistoryCalendarItemDto } from './index';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 
 /**
  * WatchHistoryModel - 시청 기록 UI 모델

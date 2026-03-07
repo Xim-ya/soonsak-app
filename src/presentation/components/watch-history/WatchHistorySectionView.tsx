@@ -32,12 +32,12 @@ import {
   NativeSyntheticEvent,
 } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { ShimmerSkeleton } from '@/presentation/components/image';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import {
   useWatchHistoryPreview,
   WatchHistoryModel,

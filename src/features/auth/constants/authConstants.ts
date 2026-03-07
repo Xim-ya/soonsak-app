@@ -1,5 +1,5 @@
 import { Platform } from 'react-native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import type { SocialProvider } from '../types';
 
 /** 앱 URL 스킴 (OAuth 딥링크용) */

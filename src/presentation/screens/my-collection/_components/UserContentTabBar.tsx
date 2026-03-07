@@ -3,9 +3,9 @@ import { TouchableOpacity, Dimensions } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { type TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { analyticsService, type MyCollectionTab } from '@/shared/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { analyticsService, type MyCollectionTab } from '@/core/services/analytics';
 
 const { width: screenWidth } = Dimensions.get('window');
 

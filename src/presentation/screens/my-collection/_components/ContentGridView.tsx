@@ -2,9 +2,9 @@ import React, { useMemo, useCallback } from 'react';
 import { Tabs } from 'react-native-collapsible-tab-view';
 import styled from '@emotion/native';
 import { SkeletonView } from '@/presentation/components/loading/SkeletonView';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 import type { UserContentItem } from '../_types';
 import {
   MemoizedContentGridItem,

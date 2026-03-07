@@ -11,11 +11,11 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { analyticsService } from '@/shared/analytics';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import { analyticsService } from '@/core/services/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import { WatchProviderModel } from '@/features/tmdb/types/watchProviderModel';
 import { openOttApp } from '@/features/tmdb/config/ottDeepLinks';
 import CloseIcon from '@assets/icons/back_arrow.svg';

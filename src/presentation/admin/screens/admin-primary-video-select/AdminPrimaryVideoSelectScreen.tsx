@@ -14,12 +14,12 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BasePage } from '@/presentation/components/page';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
-import { AdminLogger } from '@/shared/utils/logger';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { ScreenRouteProp } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { AdminLogger } from '@/core/utils';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { ScreenRouteProp } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { adminContentApi, type ContentVideoItem } from '@/features/admin';
 import { useDialog } from '@/presentation/components/dialog';
 

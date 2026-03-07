@@ -6,8 +6,8 @@
  *
  * @see docs/push-notification-deep-link-spec.md (섹션 13)
  */
-import type { AuthRequiredScreen } from '@/shared/navigation/config/routeRegistry';
-import type { RootStackParamList } from '@/shared/navigation/types';
+import type { AuthRequiredScreen } from '@/presentation/navigation/config/routeRegistry';
+import type { RootStackParamList } from '@/presentation/navigation/types';
 
 interface PendingNavigation<T extends AuthRequiredScreen = AuthRequiredScreen> {
   screen: T;

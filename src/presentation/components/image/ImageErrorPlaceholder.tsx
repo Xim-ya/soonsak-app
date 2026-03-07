@@ -10,7 +10,7 @@
 
 import { memo } from 'react';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import LogoPlaceholderIcon from '@assets/icons/logo_placeholder.svg';
 import { ERROR_PLACEHOLDER, IMAGE_DEFAULTS } from './imageConstants';
 

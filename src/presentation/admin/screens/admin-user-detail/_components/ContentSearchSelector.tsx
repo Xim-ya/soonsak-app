@@ -16,9 +16,9 @@ import {
 } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import { AdminLogger } from '@/shared/utils/logger';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { AdminLogger } from '@/core/utils';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { contentApi } from '@/features/content/api/contentApi';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import {

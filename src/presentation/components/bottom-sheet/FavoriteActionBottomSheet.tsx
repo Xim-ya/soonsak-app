@@ -19,10 +19,10 @@ import Animated, {
   Extrapolation,
 } from 'react-native-reanimated';
 import { SvgXml } from 'react-native-svg';
-import { analyticsService } from '@/shared/analytics';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
 
 // 상수 정의
 const OPTION_HEIGHT = 56;

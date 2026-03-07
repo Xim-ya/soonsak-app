@@ -10,13 +10,13 @@
  * 푸시 알림은 PushNotificationProvider에서 별도로 처리합니다.
  * (인증 필요 화면 체크를 위해 미들웨어 방식 사용)
  *
- * @see src/shared/navigation/config/routeRegistry.ts
+ * @see src/presentation/navigation/config/routeRegistry.ts
  * @see docs/push-notification-deep-link-spec.md (섹션 6)
  */
 import type { LinkingOptions, PathConfigMap } from '@react-navigation/native';
 import * as Linking from 'expo-linking';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { getDeepLinkConfig } from '@/shared/navigation/config/routeRegistry';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { getDeepLinkConfig } from '@/presentation/navigation/config/routeRegistry';
 
 /** URL 스킴 */
 const SCHEME = 'quickExplore';

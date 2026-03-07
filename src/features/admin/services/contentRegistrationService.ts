@@ -13,8 +13,8 @@ import {
 import {
   sendContentRegistrationCompleteNotification,
   sendChannelRegistrationCompleteNotification,
-} from '@/shared/utils/localNotification';
-import { RegistrationLogger } from '@/shared/utils/logger';
+} from '@/features/push-notifications/utils/localNotification';
+import { RegistrationLogger } from '@/core/utils';
 
 // ============================================================================
 // Types

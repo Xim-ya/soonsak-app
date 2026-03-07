@@ -5,13 +5,13 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgXml } from 'react-native-svg';
 import Gallery from 'react-native-awesome-gallery';
-import { ScreenRouteProp } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { ScreenRouteProp } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { useContentImages } from '@/features/tmdb/hooks/useContentImages';
-import { analyticsService } from '@/shared/analytics';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { analyticsService } from '@/core/services/analytics';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 type ImageDetailRouteProp = ScreenRouteProp<typeof routePages.imageDetail>;
 

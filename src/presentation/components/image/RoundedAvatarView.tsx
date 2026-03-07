@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import styled from '@emotion/native';
 import { Animated } from 'react-native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import LogoPlaceholderIcon from '@assets/icons/logo_placeholder.svg';
 
 interface RoundedAvatorViewProps {

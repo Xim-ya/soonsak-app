@@ -4,14 +4,14 @@ import { Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import { RelatedContentModel } from '../_types/relatedContentModel.cd';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 
 interface RelatedContentGridItemProps {
   content: RelatedContentModel;

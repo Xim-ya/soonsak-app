@@ -8,8 +8,8 @@ import React, { useCallback, useState } from 'react';
 import { Modal, ActivityIndicator, TouchableWithoutFeedback } from 'react-native';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 interface IncludesEndingModalProps {
   /** 모달 표시 여부 */

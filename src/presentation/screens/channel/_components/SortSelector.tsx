@@ -14,8 +14,8 @@
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity, Modal, Pressable } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import DownArrowIcon from '@assets/icons/chevron_down.svg';
 import type { ChannelSortType } from '../_types';
 

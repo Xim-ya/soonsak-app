@@ -6,9 +6,9 @@
 
 import { useInfiniteQuery, keepPreviousData } from '@tanstack/react-query';
 import { contentApi } from '@/features/content/api/contentApi';
-import { getSessionSeed } from '@/shared/utils/sessionSeed';
+import { getSessionSeed } from '@/core/utils/sessionSeed';
 import { TMDB_GENRE_MAP } from '@/features/content/constants/genreConstants';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
 import type { ChannelSortType, ChannelVideoModel } from '../_types';
 
 const PAGE_SIZE = 20;

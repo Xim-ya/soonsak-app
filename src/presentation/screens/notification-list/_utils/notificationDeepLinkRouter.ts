@@ -10,10 +10,10 @@
  */
 
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentType, contentTypeConfigs } from '@/shared/types/content/contentType.enum';
-import { ContentSource } from '@/shared/analytics';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentType, contentTypeConfigs } from '@/core/types/content/contentType.enum';
+import { ContentSource } from '@/core/services/analytics';
 import type { NotificationItem } from '@/features/notifications';
 
 // ============================================================================

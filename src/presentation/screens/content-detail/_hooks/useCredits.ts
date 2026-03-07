@@ -1,9 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
 import { CreditPersonModel } from '../_types/creditModel.cd';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { TVCreditsResponse, MovieCreditsResponse } from '@/features/tmdb/types/creditDto';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 
 const CreditsLogger = Logger.create('Credits');
 

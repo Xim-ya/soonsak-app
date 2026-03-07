@@ -6,10 +6,10 @@
 
 import React from 'react';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
 import { YearQuickSelect } from '../YearQuickSelect';
-import type { YearRange } from '@/shared/types/filter/contentFilter';
+import type { YearRange } from '@/core/types/filter/contentFilter';
 
 interface ReleaseYearFilterTabProps {
   /** 현재 선택된 연도 범위 */

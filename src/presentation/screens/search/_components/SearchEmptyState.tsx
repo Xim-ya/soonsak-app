@@ -1,8 +1,8 @@
 import React from 'react';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import Gap from '@/presentation/components/view/Gap';
 
 const ICON_SIZE = 48;

@@ -7,8 +7,8 @@ import React, {
   useEffect,
   useRef,
 } from 'react';
-import { useDebounce } from '@/shared/hooks/useDebounce';
-import { analyticsService } from '@/shared/analytics';
+import { useDebounce } from '@/presentation/hooks/useDebounce';
+import { analyticsService } from '@/core/services/analytics';
 import { useSearch } from '../_hooks/useSearch';
 import { SearchResultModel } from '../_types/searchResultModel';
 

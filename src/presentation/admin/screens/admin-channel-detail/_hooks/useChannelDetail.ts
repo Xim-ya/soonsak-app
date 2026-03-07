@@ -8,7 +8,7 @@ import { useCallback } from 'react';
 import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigation } from '@react-navigation/native';
 import { useDialog } from '@/presentation/components/dialog';
-import { ChannelLogger } from '@/shared/utils/logger';
+import { ChannelLogger } from '@/core/utils';
 import {
   adminChannelApi,
   type ChannelDetailItem,

@@ -3,10 +3,10 @@ import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 import * as StoreReview from 'expo-store-review';
 import { useNavigation } from '@react-navigation/native';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { openStoreReviewPage } from '@/shared/utils/storeUtils';
+import { useAuth } from '@/features/auth';
+import { openStoreReviewPage } from '@/core/utils/storeUtils';
 import { appConfigApi } from '@/features/app-config/api/appConfigApi';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 import { reviewFunnelApi } from '../api/reviewFunnelApi';
 import type { ReviewFunnelSessionDto, ReviewType, RecommendedContent } from '../types';
 

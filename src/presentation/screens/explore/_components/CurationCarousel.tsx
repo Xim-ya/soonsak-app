@@ -14,11 +14,11 @@ import { FlatList } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource } from '@/shared/analytics';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource } from '@/core/services/analytics';
 import { usePersonalizedCurationVideos } from '@/features/recommendations';
 import { useCurationVideos } from '../_hooks/useCurationVideos';
 import {

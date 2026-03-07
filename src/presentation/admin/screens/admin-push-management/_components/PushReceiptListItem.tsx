@@ -5,8 +5,8 @@
 import { memo } from 'react';
 import { Image } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { PushReceiptModel } from '../_types';
 
 interface PushReceiptListItemProps {

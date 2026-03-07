@@ -8,10 +8,10 @@
  */
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { PUSH_DATABASE } from '@/shared/config/dbConfig';
-import { getOrCreateDeviceId } from '@/shared/utils/deviceId';
-import { PushLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { PUSH_DATABASE } from '@/core/config';
+import { getOrCreateDeviceId } from '@/core/utils/deviceId';
+import { PushLogger } from '@/core/utils';
 
 /** AsyncStorage 키: 로컬에 저장된 푸시 토큰 */
 const PUSH_TOKEN_STORAGE_KEY = '@soonsak/expo_push_token';

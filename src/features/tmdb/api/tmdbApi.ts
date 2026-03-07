@@ -10,7 +10,7 @@ import {
   TrendingItemDto,
   SearchMultiItemDto,
 } from '../types/common';
-import { tmdbClient } from '@/shared/api/tmdbClient';
+import { tmdbClient } from './tmdbClient';
 
 export const tmdbApi = {
   /**

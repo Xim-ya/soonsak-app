@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { HeaderBackground } from './HeaderBackground';
 import { ContentInfo } from './ContentInfo';
 import { useCurrentTabScrollY } from 'react-native-collapsible-tab-view';

@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 interface BasePageProps {
   children: React.ReactNode;

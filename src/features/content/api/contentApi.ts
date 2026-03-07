@@ -1,6 +1,6 @@
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { ContentLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { ContentLogger } from '@/core/utils';
 import {
   ContentDto,
   ContentWithVideoDto,
@@ -10,9 +10,9 @@ import {
   ContentCollectionWithContentsDto,
   ContentIdItem,
 } from '../types';
-import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
-import { ContentType } from '@/shared/types/content/contentType.enum';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
+import { CONTENT_DATABASE } from '@/core/config';
+import { ContentType } from '@/core/types/content/contentType.enum';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
 import type { CurationVideoModel } from '../types';
 
 /** excludeIds 최대 허용 수 */

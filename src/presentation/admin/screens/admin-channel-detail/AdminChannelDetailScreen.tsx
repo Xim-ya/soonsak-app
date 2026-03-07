@@ -12,10 +12,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
 import { BasePage } from '@/presentation/components/page';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import type { RootStackParamList, ScreenRouteProp } from '@/shared/navigation/types';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import type { RootStackParamList, ScreenRouteProp } from '@/presentation/navigation/types';
 import type { ChannelContentItem } from '@/features/admin/api/adminChannelApi';
 import {
   ChannelInfoSection,

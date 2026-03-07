@@ -8,8 +8,8 @@
 import { memo } from 'react';
 import { ScrollView } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { PrimaryButton } from '@/presentation/components/button/PrimaryButton';
 import type { BatchRegistrationResult } from '@/features/admin';
 import { RegistrationResultItem } from './RegistrationResultItem';

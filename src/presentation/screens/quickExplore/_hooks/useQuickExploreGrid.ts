@@ -8,11 +8,11 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { contentApi } from '@/features/content/api/contentApi';
-import { BaseContentModel } from '@/shared/types/content/baseContentModel';
-import { AppSize } from '@/shared/utils/appSize';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import { isFilterActive } from '@/shared/types/filter/contentFilter';
-import { Logger } from '@/shared/utils/logger';
+import { BaseContentModel } from '@/core/types/content/baseContentModel';
+import { AppSize } from '@/presentation/utils/appSize';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
+import { isFilterActive } from '@/core/types/filter/contentFilter';
+import { Logger } from '@/core/utils';
 
 const QuickExploreLogger = Logger.create('QuickExplore');
 

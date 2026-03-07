@@ -3,11 +3,11 @@
  */
 
 import { useQuery, useMutation, useQueryClient, UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import { showGlobalInfo } from '@/shared/utils/snackbarRef';
-import { analyticsService } from '@/shared/analytics';
-import { Logger } from '@/shared/utils/logger';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
+import { useAuth } from '@/features/auth';
+import { showGlobalInfo } from '@/presentation/utils/snackbarRef';
+import { analyticsService } from '@/core/services/analytics';
+import { Logger } from '@/core/utils';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
 import { favoritesApi } from '../api/favoritesApi';
 import type { ToggleFavoriteParams } from '../types';
 import { FavoriteModel, FavoriteStatusModel } from '../types/favoriteModel';

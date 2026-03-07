@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import styled from '@emotion/native';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
 import { Pressable } from 'react-native';
@@ -11,9 +11,9 @@ import { useYouTubeChannel } from '@/features/youtube';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 import { useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { analyticsService } from '@/shared/analytics';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { analyticsService } from '@/core/services/analytics';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 
 /**

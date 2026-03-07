@@ -1,12 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { ContentDetailModel } from '../_types/contentDetailModel.cd';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { MovieDto } from '@/features/tmdb/types/movieDto';
 import { TvSeriesDto } from '@/features/tmdb/types/tvDto';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { CONTENT_DATABASE } from '@/shared/config/dbConfig';
-import { ContentLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { CONTENT_DATABASE } from '@/core/config';
+import { ContentLogger } from '@/core/utils';
 
 /**
  * Supabase에서 커스텀 backdrop_path 조회

@@ -21,9 +21,9 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
+import textStyles from '@/presentation/styles/textStyles';
 import { BasePage } from '@/presentation/components/page/BasePage';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import type { NotificationItem } from '@/features/notifications';
 import { useNotificationList } from './_hooks/useNotificationList';
 import {

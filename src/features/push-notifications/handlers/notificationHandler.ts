@@ -9,8 +9,8 @@
 import { Linking, Platform } from 'react-native';
 import type { NavigationContainerRef } from '@react-navigation/native';
 import Constants from 'expo-constants';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import {
   type NotificationPayload,
   type NavigationAction,
@@ -20,7 +20,7 @@ import {
   isValidNotificationPayload,
 } from '../types/notificationTypes';
 import { pendingNavigationStore } from '../store/pendingNavigationStore';
-import { PushLogger } from '@/shared/utils/logger';
+import { PushLogger } from '@/core/utils';
 
 type NavigationRef = NavigationContainerRef<RootStackParamList>;
 

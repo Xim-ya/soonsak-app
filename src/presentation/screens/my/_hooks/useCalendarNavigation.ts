@@ -5,7 +5,7 @@
  */
 
 import { useState, useCallback, useMemo } from 'react';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 
 interface UseCalendarNavigationReturn {
   selectedYear: number;

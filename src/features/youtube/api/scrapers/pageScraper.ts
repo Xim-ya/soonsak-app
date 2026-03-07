@@ -10,7 +10,7 @@
 
 import { ScrapedVideoDto, YouTubeApiError, YouTubeErrorCode } from '../../types';
 import { parseAbbreviatedNumber, formatYouTubeDuration } from '../../utils';
-import { ScraperLogger } from '@/shared/utils/logger';
+import { ScraperLogger } from '@/core/utils';
 
 // 스키마 기반 데이터 추출 타입
 interface InteractionStatistic {

@@ -10,13 +10,13 @@ import { DarkedLinearShadow, LinearAlign } from '../../components/shadow/DarkedL
 import { SortSelector } from '../../components/sort';
 import { ViewModeToggle } from '../../components/view-mode';
 import { LoginPromptDialog } from '../../components/dialog/LoginPromptDialog';
-import { ScreenRouteProp } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { ScreenRouteProp } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { ChannelLogoImage } from '../../components/image/ChannelLogoImage';
 import Gap from '../../components/view/Gap';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 import { CHANNEL_SORT_OPTIONS } from '../channel/_types';
 import { useScrollAnimation } from './_hooks/useScrollAnimation';
 import { useChannelFavoriteAction } from './_hooks/useChannelFavoriteAction';

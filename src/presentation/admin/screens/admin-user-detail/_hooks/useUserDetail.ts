@@ -7,7 +7,7 @@
 import { useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useDialog } from '@/presentation/components/dialog';
-import { AdminLogger } from '@/shared/utils/logger';
+import { AdminLogger } from '@/core/utils';
 import { adminUserApi, type PushData } from '@/features/admin';
 import type { UserRole } from '@/features/auth/types';
 import {

@@ -13,10 +13,10 @@
 import { useCallback } from 'react';
 import styled from '@emotion/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { analyticsService } from '@/shared/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
 import { GlassIconButton } from '@/presentation/components/button/GlassIconButton';
 import FilterIcon from '@assets/icons/filter.svg';
 import DiceIcon from '@assets/icons/dice.svg';

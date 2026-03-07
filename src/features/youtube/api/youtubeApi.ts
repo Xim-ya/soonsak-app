@@ -13,7 +13,7 @@ import {
 import { extractVideoId, buildThumbnailUrl } from '../utils';
 import { oembedScraper } from './scrapers/oembedScraper';
 import { pageScraper } from './scrapers/pageScraper';
-import { YouTubeLogger } from '@/shared/utils/logger';
+import { YouTubeLogger } from '@/core/utils';
 
 /**
  * 백그라운드 작업 실행기 - UI 블로킹 방지

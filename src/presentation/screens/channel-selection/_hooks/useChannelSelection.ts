@@ -8,7 +8,7 @@
 import { useState, useCallback, useMemo, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 import type { ChannelSelectionModel } from '../_types/channelSelectionModel';
 import { channelSelectionFromDtos } from '../_types/channelSelectionModel';
 

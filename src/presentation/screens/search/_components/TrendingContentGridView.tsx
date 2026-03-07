@@ -6,12 +6,12 @@ import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import { useTrendingTopFifteen } from '../_hooks/useTrendingTopFifteen';
 import { TrendingContentModel } from '../_types/trendingContentModel';
 

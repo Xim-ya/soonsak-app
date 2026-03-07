@@ -5,7 +5,7 @@
 import { useCallback, useState } from 'react';
 import { Alert } from 'react-native';
 import { useQuery, useMutation, useQueryClient, useInfiniteQuery } from '@tanstack/react-query';
-import { PushLogger } from '@/shared/utils/logger';
+import { PushLogger } from '@/core/utils';
 import { adminPushApi, type PushScheduleStatus } from '@/features/admin/api/adminPushApi';
 import type { PushData } from '@/features/admin/types/pushAction';
 import type {

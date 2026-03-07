@@ -4,11 +4,11 @@ import styled from '@emotion/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { AppSize } from '@/shared/utils/appSize';
-import { analyticsService } from '@/shared/analytics';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { AppSize } from '@/presentation/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
 import type { UserContentItem } from '../_types';
 import { RatingOverlay } from './RatingOverlay';
 

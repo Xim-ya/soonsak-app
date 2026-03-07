@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { channelApi } from '@/features/channel/api/channelApi';
 import { useFavoriteChannelIds } from '@/features/channel-favorites';
-import { sortByFavorites } from '@/shared/utils/sortByFavorites';
+import { sortByFavorites } from '@/core/utils/sortByFavorites';
 import type { ChannelItemModel } from '@/presentation/screens/channel/_types';
 
 const PAGE_SIZE = 20;

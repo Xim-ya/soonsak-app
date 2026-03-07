@@ -3,10 +3,10 @@ import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { analyticsService } from '@/shared/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { analyticsService } from '@/core/services/analytics';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 
 interface TabItemProps {

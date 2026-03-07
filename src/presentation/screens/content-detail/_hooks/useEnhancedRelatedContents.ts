@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { contentApi } from '@/features/content/api/contentApi';
 import { RelatedContentModel } from '../_types/relatedContentModel.cd';

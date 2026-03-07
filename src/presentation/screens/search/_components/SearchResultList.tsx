@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { FlatList, ActivityIndicator, Keyboard, ScrollView } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { useSearchContext } from '../_provider/SearchProvider';
 import { SearchResultModel } from '../_types/searchResultModel';
 import { SearchResultItem } from './SearchResultItem';

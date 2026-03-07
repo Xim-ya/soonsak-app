@@ -21,11 +21,11 @@ import { useCallback } from 'react';
 import { Linking } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { appConfigManager } from '@/features/app-config';
-import { ContentType } from '@/shared/types/content/contentType.enum';
-import { PlayerLogger } from '@/shared/utils/logger';
+import { ContentType } from '@/core/types/content/contentType.enum';
+import { PlayerLogger } from '@/core/utils';
 import { buildYouTubeUrl } from '../utils/urlParser';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;

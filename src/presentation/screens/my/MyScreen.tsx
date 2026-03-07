@@ -12,8 +12,8 @@ import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import { AppSize } from '@/shared/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import { AppSize } from '@/presentation/utils/appSize';
 import { WatchHistorySectionView } from '@/features/watch-history';
 import { MyScreenProvider, useMyScreen } from './_provider';
 import {

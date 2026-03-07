@@ -1,8 +1,8 @@
 import { TouchableOpacity, StatusBar } from 'react-native';
 import styled from '@emotion/native';
-import { AppSize } from '@/shared/utils/appSize';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { LoginBackground } from './_components/LoginBackground';
 import { LoginIntroText } from './_components/LoginIntroText';
 import { SocialLoginButtonGroup } from './_components/SocialLoginButtonGroup';

@@ -34,9 +34,9 @@
 
 import React, { memo } from 'react';
 import styled from '@emotion/native';
-import textStyles from '@/shared/styles/textStyles';
-import colors from '@/shared/styles/colors';
-import { formatter } from '@/shared/utils/formatter';
+import textStyles from '@/presentation/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import { formatter } from '@/core/utils/formatter';
 import { ChannelLogoImage } from '@/presentation/components/image/ChannelLogoImage';
 import { ChannelAvatarWrapper } from './ChannelAvatarWrapper';
 

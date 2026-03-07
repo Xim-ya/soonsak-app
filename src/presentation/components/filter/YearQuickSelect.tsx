@@ -16,7 +16,7 @@ import { FilterChip } from './FilterChip';
 import { FilterChipGrid } from './FilterChipGrid';
 import { YEAR_PRESETS } from '@/features/content/constants/yearConstants';
 import type { YearPreset } from '@/features/content/constants/yearConstants';
-import type { YearRange } from '@/shared/types/filter/contentFilter';
+import type { YearRange } from '@/core/types/filter/contentFilter';
 
 interface YearQuickSelectProps {
   /** 현재 선택된 연도 범위 */

@@ -13,7 +13,7 @@
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
 import { useUnreadNotificationCount } from './useNotifications';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 
 const BadgeLogger = Logger.create('Badge');
 

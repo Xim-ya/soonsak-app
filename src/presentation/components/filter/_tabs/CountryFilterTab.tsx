@@ -6,8 +6,8 @@
  */
 
 import React, { useCallback } from 'react';
-import { COUNTRY_OPTIONS } from '@/shared/constants/countryConstants';
-import { toggleArrayItem } from '@/shared/utils/arrayUtils';
+import { COUNTRY_OPTIONS } from '@/core/constants/countryConstants';
+import { toggleArrayItem } from '@/core/utils';
 import { FilterChip } from '../FilterChip';
 import { FilterChipGrid } from '../FilterChipGrid';
 import { FilterSectionHeader } from '../FilterSectionHeader';

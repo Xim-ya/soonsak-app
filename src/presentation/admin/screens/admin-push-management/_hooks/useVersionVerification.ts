@@ -6,7 +6,7 @@
  */
 
 import { useState, useCallback, useEffect } from 'react';
-import { VersionLogger } from '@/shared/utils/logger';
+import { VersionLogger } from '@/core/utils';
 import { adminPushApi } from '@/features/admin/api/adminPushApi';
 
 // ============================================================================

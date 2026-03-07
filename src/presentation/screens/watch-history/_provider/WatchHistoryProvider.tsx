@@ -25,9 +25,9 @@ import {
 } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
 import {
   useWatchHistoryByDate,
   useInfiniteUniqueWatchHistory,

@@ -14,7 +14,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Platform, StatusBar, Dimensions, ScaledSize } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ScreenOrientation from 'expo-screen-orientation';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 
 interface UseScreenOrientationReturn {
   /** 현재 화면 크기 */

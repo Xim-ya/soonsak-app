@@ -3,8 +3,8 @@ import styled from '@emotion/native';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { EdgeInsets } from 'react-native-safe-area-context';
 import LottieView from 'lottie-react-native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { FUNNEL_BACKGROUND_COLORS, HIT_SLOP } from '@/features/review-funnel/constants';
 import CloseIcon from '@assets/icons/close.svg';
 

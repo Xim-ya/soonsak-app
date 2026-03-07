@@ -13,7 +13,7 @@
 
 import React, { memo } from 'react';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 interface ChannelAvatarWrapperProps {
   isSelected: boolean;

@@ -21,7 +21,7 @@ import * as Application from 'expo-application';
 import { appConfigApi } from './api/appConfigApi';
 import { isVersionLowerThan } from './utils/versionUtils';
 import type { AppVersionPolicy, MaintenanceMode } from './types';
-import { Logger } from '@/shared/utils/logger';
+import { Logger } from '@/core/utils';
 
 const AppConfigLogger = Logger.create('AppConfig');
 

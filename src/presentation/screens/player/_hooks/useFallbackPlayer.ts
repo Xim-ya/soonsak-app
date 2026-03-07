@@ -17,9 +17,9 @@ import {
   isVideoNeedsReviewError,
 } from '@/features/youtube';
 import { useDialog } from '@/presentation/components/dialog';
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { analyticsService } from '@/shared/analytics';
-import { PlayerLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { analyticsService } from '@/core/services/analytics';
+import { PlayerLogger } from '@/core/utils';
 
 interface UseFallbackPlayerParams {
   readonly videoId: string;

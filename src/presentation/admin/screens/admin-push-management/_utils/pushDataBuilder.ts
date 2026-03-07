@@ -5,7 +5,7 @@
  */
 
 import type { PushData, ActionTypeOption } from '@/features/admin';
-import { PushLogger } from '@/shared/utils/logger';
+import { PushLogger } from '@/core/utils';
 import { isValidNonNegativeInt, type ActionParams } from './actionValidators';
 
 // ============================================================================

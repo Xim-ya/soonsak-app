@@ -1,7 +1,7 @@
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { mapWithField } from '@/shared/utils/fieldMapper';
-import { CHANNEL_DATABASE } from '@/shared/config/dbConfig';
-import { ChannelLogger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { mapWithField } from '@/core/utils';
+import { CHANNEL_DATABASE } from '@/core/config';
+import { ChannelLogger } from '@/core/utils';
 import { ChannelDto } from '../types';
 
 export const channelApi = {

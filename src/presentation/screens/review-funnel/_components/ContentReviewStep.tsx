@@ -8,8 +8,8 @@ import Animated, {
   Layout,
 } from 'react-native-reanimated';
 import type { EdgeInsets } from 'react-native-safe-area-context';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import type { RecommendedContent } from '@/features/review-funnel/types';
 import {
   FUNNEL_BACKGROUND_COLORS,

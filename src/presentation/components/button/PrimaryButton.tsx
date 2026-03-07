@@ -28,8 +28,8 @@
 import { memo, useMemo } from 'react';
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 /** 버튼 상태 */
 type ButtonState = 'enabled' | 'disabled' | 'loading';

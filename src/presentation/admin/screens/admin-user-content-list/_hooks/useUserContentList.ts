@@ -16,8 +16,8 @@ import { useState, useCallback, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useDialog } from '@/presentation/components/dialog';
-import { AdminLogger } from '@/shared/utils/logger';
-import { RootStackParamList } from '@/shared/navigation/types';
+import { AdminLogger } from '@/core/utils';
+import { RootStackParamList } from '@/presentation/navigation/types';
 import { adminUserApi, type UserContentItem } from '@/features/admin';
 import type { PushData } from '@/features/admin/types/pushAction';
 

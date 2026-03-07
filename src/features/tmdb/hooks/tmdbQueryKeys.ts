@@ -12,7 +12,7 @@
  * queryClient.invalidateQueries({ queryKey: tmdbKeys.all })
  */
 
-import { ContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType } from '@/core/types/content/contentType.enum';
 
 export const tmdbKeys = {
   /** TMDB 루트 키 */

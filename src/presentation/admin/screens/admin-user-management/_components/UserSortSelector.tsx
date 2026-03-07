@@ -8,8 +8,8 @@ import { memo, useCallback, useState } from 'react';
 import { TouchableOpacity, Modal, Pressable } from 'react-native';
 import styled from '@emotion/native';
 import { SvgXml } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import { type UserSortBy, UserSortByLabel } from '@/features/admin';
 
 // SVG 아이콘 상수 (컴포넌트 외부로 최적화)

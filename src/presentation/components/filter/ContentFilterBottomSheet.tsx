@@ -35,12 +35,12 @@ import Animated, {
   interpolate,
   Extrapolation,
 } from 'react-native-reanimated';
-import { analyticsService } from '@/shared/analytics';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import type { ContentFilter, FilterTabKey } from '@/shared/types/filter/contentFilter';
-import { FILTER_TABS, DEFAULT_CONTENT_FILTER } from '@/shared/types/filter/contentFilter';
+import { analyticsService } from '@/core/services/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import type { ContentFilter, FilterTabKey } from '@/core/types/filter/contentFilter';
+import { FILTER_TABS, DEFAULT_CONTENT_FILTER } from '@/core/types/filter/contentFilter';
 import { FilterTabBar } from './FilterTabBar';
 import { FilterFooter } from './FilterFooter';
 import { RecommendFilterTab } from './_tabs/RecommendFilterTab';

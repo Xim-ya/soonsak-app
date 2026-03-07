@@ -21,12 +21,12 @@ import { Modal, TouchableOpacity, TouchableWithoutFeedback } from 'react-native'
 import styled from '@emotion/native';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import type { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { useSocialLogin } from '@/presentation/screens/login/_hooks/useSocialLogin';
-import { analyticsService } from '@/shared/analytics';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import { analyticsService } from '@/core/services/analytics';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 import KakaoLogo from '@assets/icons/kakao_logo.svg';
 import PopcornIllustration from '@assets/icons/popcorn_illustration.svg';
 

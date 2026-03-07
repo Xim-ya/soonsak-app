@@ -1,8 +1,8 @@
 import { memo } from 'react';
 import styled from '@emotion/native';
 import Svg, { Path } from 'react-native-svg';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
 
 interface RatingOverlayProps {
   rating: number;

@@ -4,10 +4,10 @@
  * 어드민 전용 푸시 알림 템플릿/스케줄 관리 API
  */
 
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { PUSH_DATABASE } from '@/shared/config/dbConfig';
+import { supabaseClient } from '@/core/api';
+import { PUSH_DATABASE } from '@/core/config';
 import type { PushData } from '../types/pushAction';
-import { PushLogger } from '@/shared/utils/logger';
+import { PushLogger } from '@/core/utils';
 
 // ============================================================================
 // Types
@@ -644,9 +644,7 @@ export const adminPushApi = {
    *
    * @returns 버전별 토큰 수 배열
    */
-  getAvailableAppVersions: async (): Promise<
-    Array<{ version: string | null; count: number }>
-  > => {
+  getAvailableAppVersions: async (): Promise<Array<{ version: string | null; count: number }>> => {
     // 1. 활성 푸시 토큰과 user_id 조회
     const { data: tokenData, error: tokenError } = await supabaseClient
       .from(PUSH_DATABASE.TABLES.PUSH_TOKENS)
@@ -885,7 +883,11 @@ export const adminPushApi = {
         }
 
         const result = await response.json();
-        const resultData = Array.isArray(result.data) ? result.data : result.data ? [result.data] : [];
+        const resultData = Array.isArray(result.data)
+          ? result.data
+          : result.data
+            ? [result.data]
+            : [];
 
         // push_notification_receipts 테이블에 수신 기록 생성
         if (notificationId) {

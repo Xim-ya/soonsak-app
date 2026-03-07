@@ -4,7 +4,7 @@
  * 콘텐츠 필터에서 공개연도 범위를 빠르게 선택할 수 있는 프리셋 목록입니다.
  */
 
-import type { YearRange } from '@/shared/types/filter/contentFilter';
+import type { YearRange } from '@/core/types/filter/contentFilter';
 
 interface YearPreset {
   readonly label: string;

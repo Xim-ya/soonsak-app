@@ -1,5 +1,5 @@
 import LoginIntroTextSvg from '@assets/icons/login_intro_text.svg';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 
 /** SVG 크기 상수 */
 const SVG_WIDTH = AppSize.ratioWidth(320);

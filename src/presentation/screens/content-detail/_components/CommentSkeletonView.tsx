@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import Gap from '@/presentation/components/view/Gap';
 
 /**

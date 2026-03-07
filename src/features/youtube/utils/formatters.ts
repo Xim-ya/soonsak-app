@@ -2,7 +2,7 @@
  * YouTube 데이터 포맷팅 유틸리티
  */
 
-import { YouTubeLogger } from '@/shared/utils/logger';
+import { YouTubeLogger } from '@/core/utils';
 
 /**
  * YouTube ISO 8601 duration을 MM:SS 또는 HH:MM:SS 형식으로 변환

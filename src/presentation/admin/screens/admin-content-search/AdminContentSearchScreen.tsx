@@ -17,18 +17,18 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { BasePage } from '@/presentation/components/page';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import Gap from '@/presentation/components/view/Gap';
-import colors from '@/shared/styles/colors';
-import textStyles from '@/shared/styles/textStyles';
-import { AppSize } from '@/shared/utils/appSize';
-import { formatter, TmdbImageSize } from '@/shared/utils/formatter';
-import { ScreenRouteProp, RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import colors from '@/presentation/styles/colors';
+import textStyles from '@/presentation/styles/textStyles';
+import { AppSize } from '@/presentation/utils/appSize';
+import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { ScreenRouteProp, RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { tmdbApi } from '@/features/tmdb/api/tmdbApi';
 import { adminContentApi } from '@/features/admin/api';
-import { AdminLogger } from '@/shared/utils/logger';
+import { AdminLogger } from '@/core/utils';
 import type { SearchMultiItemDto } from '@/features/tmdb/types/common';
-import { contentTypeConfigs, ContentType } from '@/shared/types/content/contentType.enum';
-import { useDebounce } from '@/shared/hooks/useDebounce';
+import { contentTypeConfigs, ContentType } from '@/core/types/content/contentType.enum';
+import { useDebounce } from '@/presentation/hooks/useDebounce';
 
 type NavigationProp = NativeStackNavigationProp<RootStackParamList>;
 

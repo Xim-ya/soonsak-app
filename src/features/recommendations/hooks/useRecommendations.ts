@@ -3,8 +3,8 @@
  */
 
 import { useQuery, useInfiniteQuery, UseQueryResult } from '@tanstack/react-query';
-import { useAuth } from '@/shared/providers/AuthProvider';
-import type { ContentType } from '@/shared/types/content/contentType.enum';
+import { useAuth } from '@/features/auth';
+import type { ContentType } from '@/core/types/content/contentType.enum';
 import type { CurationVideoModel } from '@/features/content/types';
 import { recommendationsApi } from '../api/recommendationsApi';
 import { GenrePreferenceModel, RecommendedContentModel } from '../types/recommendationModel';

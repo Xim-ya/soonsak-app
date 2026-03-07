@@ -13,7 +13,7 @@ import styled from '@emotion/native';
 import { BasePage } from '@/presentation/components/page';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { useDialog } from '@/presentation/components/dialog';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { RegistrationTabBar, VideoRegistrationTab, ChannelRegistrationTab } from './_components';
 import { useContentRegistration } from './_hooks/useContentRegistration';
 

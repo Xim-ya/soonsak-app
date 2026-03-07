@@ -7,9 +7,9 @@
  * - 알림 읽음 처리
  */
 
-import { supabaseClient } from '@/shared/api/supabaseClient';
-import { PUSH_DATABASE } from '@/shared/config/dbConfig';
-import { Logger } from '@/shared/utils/logger';
+import { supabaseClient } from '@/core/api';
+import { PUSH_DATABASE } from '@/core/config';
+import { Logger } from '@/core/utils';
 
 const NotificationLogger = Logger.create('Notification');
 import type {

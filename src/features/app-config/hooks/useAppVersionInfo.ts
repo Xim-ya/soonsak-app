@@ -8,8 +8,8 @@ import { useEffect, useState, useCallback } from 'react';
 import * as Application from 'expo-application';
 import { appConfigApi } from '../api/appConfigApi';
 import { isVersionLowerThan } from '../utils/versionUtils';
-import { openStoreUrl } from '@/shared/utils/storeUtils';
-import { VersionLogger } from '@/shared/utils/logger';
+import { openStoreUrl } from '@/core/utils/storeUtils';
+import { VersionLogger } from '@/core/utils';
 
 /**
  * 현재 앱 버전 가져오기

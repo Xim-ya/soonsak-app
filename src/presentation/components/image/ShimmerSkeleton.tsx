@@ -7,7 +7,7 @@
 import { useEffect, memo } from 'react';
 import styled from '@emotion/native';
 import Animated from 'react-native-reanimated';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 import { useShimmerAnimation } from './hooks/useShimmerAnimation';
 import { IMAGE_DEFAULTS } from './imageConstants';
 

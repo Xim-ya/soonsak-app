@@ -22,14 +22,14 @@ import {
 } from 'react';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useContentFilter } from '@/shared/context/ContentFilterContext';
+import { useContentFilter } from '@/presentation/providers';
 import { channelSelectionBridge } from '@/features/channel/utils/channelSelectionBridge';
-import { routePages } from '@/shared/navigation/constant/routePages';
-import { ContentSource, analyticsService } from '@/shared/analytics';
+import { routePages } from '@/presentation/navigation/constant/routePages';
+import { ContentSource, analyticsService } from '@/core/services/analytics';
 // ExploreContentType은 현재 미사용 (향후 분석 시 활용 예정)
-import type { RootStackParamList } from '@/shared/navigation/types';
-import type { ContentFilter } from '@/shared/types/filter/contentFilter';
-import type { BaseContentModel } from '@/shared/types/content/baseContentModel';
+import type { RootStackParamList } from '@/presentation/navigation/types';
+import type { ContentFilter } from '@/core/types/filter/contentFilter';
+import type { BaseContentModel } from '@/core/types/content/baseContentModel';
 
 /** ContentGrid에서 외부로 노출하는 메서드 */
 interface ContentGridRef {

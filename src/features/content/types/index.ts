@@ -1,4 +1,4 @@
-import { ContentType, KnownContentType } from '@/shared/types/content/contentType.enum';
+import { ContentType, KnownContentType } from '@/core/types/content/contentType.enum';
 
 /**
  * ISO 8601 형식의 타임스탬프 문자열 타입

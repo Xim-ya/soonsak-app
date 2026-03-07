@@ -1,4 +1,4 @@
-import textStyles from '@/shared/styles/textStyles';
+import textStyles from '@/presentation/styles/textStyles';
 import styled from '@emotion/native';
 import { View, Text, Platform } from 'react-native';
 

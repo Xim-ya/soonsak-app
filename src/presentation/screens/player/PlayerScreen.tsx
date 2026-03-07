@@ -5,9 +5,9 @@ import { ActivityIndicator, Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { YoutubeView, useYouTubePlayer, useYouTubeEvent } from 'react-native-youtube-bridge';
 import WebView from 'react-native-webview';
-import colors from '@/shared/styles/colors';
-import { RootStackParamList } from '@/shared/navigation/types';
-import { routePages } from '@/shared/navigation/constant/routePages';
+import colors from '@/presentation/styles/colors';
+import { RootStackParamList } from '@/presentation/navigation/types';
+import { routePages } from '@/presentation/navigation/constant/routePages';
 import { BasePage } from '@/presentation/components/page/BasePage';
 import { BackButtonAppBar } from '@/presentation/components/app-bar/BackButtonAppBar';
 import { useWatchProgressSync } from '@/features/watch-history';
@@ -19,10 +19,10 @@ import {
   useScreenOrientation,
 } from './_hooks';
 import { useDialog } from '@/presentation/components/dialog';
-import { analyticsService } from '@/shared/analytics';
-import { PlayerLogger } from '@/shared/utils/logger';
-import { wowPointWebhook } from '@/shared/services/wowPointWebhook';
-import { useAuth } from '@/shared/providers/AuthProvider';
+import { analyticsService } from '@/core/services/analytics';
+import { PlayerLogger } from '@/core/utils';
+import { wowPointWebhook } from '@/core/services/wowPointWebhook';
+import { useAuth } from '@/features/auth';
 
 type PlayerScreenRouteProp = RouteProp<RootStackParamList, typeof routePages.player>;
 

@@ -9,7 +9,7 @@
 import { memo, useCallback } from 'react';
 import { TouchableOpacity } from 'react-native';
 import styled from '@emotion/native';
-import colors from '@/shared/styles/colors';
+import colors from '@/presentation/styles/colors';
 
 export type ViewMode = 'card' | 'list';
 

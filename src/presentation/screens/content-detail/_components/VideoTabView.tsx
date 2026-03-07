@@ -2,7 +2,7 @@ import { Tabs } from 'react-native-collapsible-tab-view';
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import type { SharedValue } from 'react-native-reanimated';
-import { AppSize } from '@/shared/utils/appSize';
+import { AppSize } from '@/presentation/utils/appSize';
 import { useTabScrollListener } from '../_hooks/useTabScrollListener';
 import { VideoMetricsView } from './VideoMetricsView';
 import { SummaryView } from './SummaryView';
@@ -12,7 +12,7 @@ import { OtherChannelVideoListView } from './OtherChannelVideoListView';
 import { ChannelInfoView } from './ChannelInfoView';
 import { FeaturedCommentView } from './FeaturedCommentView';
 import { CommentsBottomSheet } from './CommentsBottomSheet';
-import { analyticsService } from '@/shared/analytics';
+import { analyticsService } from '@/core/services/analytics';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
 import { useContentVideos } from '../_provider/ContentDetailProvider';
 
