@@ -152,6 +152,16 @@ function InteractiveStarRating({
       runOnJS(handleDragEndCallback)(event.absoluteX);
     });
 
+  // 탭 제스처 (클릭 시에도 평점 등록)
+  const tapGesture = Gesture.Tap().onEnd((event) => {
+    if (mode !== 'drag') return;
+    runOnJS(handleDragUpdate)(event.absoluteX);
+    runOnJS(handleDragEndCallback)(event.absoluteX);
+  });
+
+  // Pan과 Tap을 Race로 결합 (둘 중 하나만 인식)
+  const composedGesture = Gesture.Race(panGesture, tapGesture);
+
   // 별 렌더링
   const renderStar = (index: number) => {
     const starValue = index + 1;
@@ -177,7 +187,7 @@ function InteractiveStarRating({
   // 드래그 모드일 때 GestureDetector로 감싸기
   if (mode === 'drag') {
     return (
-      <GestureDetector gesture={panGesture}>
+      <GestureDetector gesture={composedGesture}>
         <Animated.View>
           <Container ref={containerRef} onLayout={handleLayout} gap={gap}>
             {Array.from({ length: TOTAL_STARS }, (_, index) => renderStar(index))}
