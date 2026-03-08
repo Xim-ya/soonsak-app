@@ -49,7 +49,7 @@ export default function SearchScreen() {
 
   return (
     <SearchProvider>
-      <BasePage>
+      <BasePage safeAreaBottom={false}>
         <Container>
           {/* 앱바: 뒤로가기 버튼 + 검색바 */}
           <AppBarContainer>
