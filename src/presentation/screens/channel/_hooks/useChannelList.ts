@@ -6,14 +6,10 @@
  */
 
 import { useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { channelApi } from '@/features/channel/api/channelApi';
+import { useChannelListBase } from '@/features/channel';
 import { useFavoriteChannelIds } from '@/features/channel-favorites';
 import { sortByFavorites } from '@/core/utils/sortByFavorites';
 import type { ChannelItemModel } from '../_types';
-
-const STALE_TIME = 10 * 60 * 1000; // 10분
-const GC_TIME = 30 * 60 * 1000; // 30분
 
 interface UseChannelListReturn {
   channels: ChannelItemModel[];
@@ -22,33 +18,18 @@ interface UseChannelListReturn {
 }
 
 export function useChannelList(): UseChannelListReturn {
-  // 찜한 채널 ID 목록 조회
   const { data: favoriteIds = [] } = useFavoriteChannelIds();
-
-  const { data, isLoading, error } = useQuery({
-    queryKey: ['channelList'],
-    queryFn: async () => {
-      const channels = await channelApi.getActiveChannels(50); // 최대 50개 채널
-      return channels.map((ch) => ({
-        id: ch.id,
-        name: ch.name ?? '',
-        logoUrl: ch.logoUrl ?? '',
-        subscriberCount: ch.subscriberCount ?? undefined,
-      }));
-    },
-    staleTime: STALE_TIME,
-    gcTime: GC_TIME,
-  });
+  const { channels, isLoading, error } = useChannelListBase();
 
   // 찜한 채널을 앞으로 정렬
   const sortedChannels = useMemo(
-    () => sortByFavorites(data ?? [], favoriteIds, (ch) => ch.id),
-    [data, favoriteIds],
+    () => sortByFavorites(channels, favoriteIds, (ch) => ch.id),
+    [channels, favoriteIds],
   );
 
   return {
     channels: sortedChannels,
     isLoading,
-    error: error as Error | null,
+    error,
   };
 }

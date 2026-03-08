@@ -1,16 +1,15 @@
 /**
  * useChannelSelection - 채널 선택 상태 관리 훅
  *
- * 전체 채널 목록을 조회하고, 선택/해제/초기화 기능을 제공합니다.
- * ChannelFilterTab과 동일한 queryKey를 사용하여 캐시를 공유합니다.
+ * useChannelListBase를 확장하여 선택/해제/초기화 기능을 제공합니다.
+ * 무한 스크롤 페이지네이션을 지원합니다.
  */
 
-import { useState, useCallback, useMemo, useRef } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { channelApi } from '@/features/channel/api/channelApi';
+import { useState, useCallback, useRef } from 'react';
+import { useChannelListBase, type ChannelListItem } from '@/features/channel';
 import { analyticsService } from '@/core/services/analytics';
-import type { ChannelSelectionModel } from '../_types/channelSelectionModel';
-import { channelSelectionFromDtos } from '../_types/channelSelectionModel';
+
+export type ChannelSelectionModel = ChannelListItem;
 
 interface UseChannelSelectionReturn {
   /** 전체 채널 목록 */
@@ -25,6 +24,12 @@ interface UseChannelSelectionReturn {
   readonly toggleChannel: (channelId: string) => void;
   /** 선택 초기화 */
   readonly resetSelection: () => void;
+  /** 다음 페이지 조회 */
+  readonly fetchNextPage: () => void;
+  /** 다음 페이지 존재 여부 */
+  readonly hasNextPage: boolean;
+  /** 다음 페이지 로딩 중 여부 */
+  readonly isFetchingNextPage: boolean;
 }
 
 function useChannelSelection(initialSelectedIds: string[]): UseChannelSelectionReturn {
@@ -33,14 +38,13 @@ function useChannelSelection(initialSelectedIds: string[]): UseChannelSelectionR
   // 초기 선택 ID를 ref로 저장 (변경 수 계산용)
   const initialIdsRef = useRef<string[]>(initialSelectedIds);
 
-  const { data: channelDtos = [], isLoading } = useQuery({
-    queryKey: ['activeChannels'],
-    queryFn: () => channelApi.getActiveChannels(),
-    staleTime: 5 * 60 * 1000,
-  });
-
-  // DTO를 UI 모델로 변환
-  const channels = useMemo(() => channelSelectionFromDtos(channelDtos), [channelDtos]);
+  const {
+    channels,
+    isLoading,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChannelListBase();
 
   // 채널 ID로 채널명을 찾는 헬퍼 함수
   const getChannelNameById = useCallback(
@@ -82,6 +86,9 @@ function useChannelSelection(initialSelectedIds: string[]): UseChannelSelectionR
     initialSelectedIds: initialIdsRef.current,
     toggleChannel,
     resetSelection,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
   };
 }
 

@@ -15,10 +15,9 @@
 
 import React, { useCallback, useMemo, useRef } from 'react';
 import styled from '@emotion/native';
-import { useQuery } from '@tanstack/react-query';
 import { AppSize } from '@/presentation/utils/appSize';
 import { toggleArrayItem } from '@/core/utils';
-import { channelApi } from '@/features/channel/api/channelApi';
+import { useChannelListBase } from '@/features/channel';
 import { ChannelGridItem } from '@/presentation/components/channel/ChannelGridItem';
 import { FilterSectionHeader } from '../FilterSectionHeader';
 
@@ -47,11 +46,7 @@ function ChannelFilterTab({
   onChannelIdsChange,
   onMorePress,
 }: ChannelFilterTabProps): React.ReactElement {
-  const { data: channels = [] } = useQuery({
-    queryKey: ['activeChannels'],
-    queryFn: () => channelApi.getActiveChannels(),
-    staleTime: 5 * 60 * 1000,
-  });
+  const { channels } = useChannelListBase();
 
   // 기본 프리뷰 목록 (API 순서 상위 8개, 최초 1회만 고정)
   const basePreviewRef = useRef<string[] | null>(null);
