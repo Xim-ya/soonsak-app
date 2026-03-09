@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { TouchableOpacity } from 'react-native';
+import { View, GestureResponderEvent } from 'react-native';
 import styled from '@emotion/native';
 import Animated, { useAnimatedStyle, interpolate } from 'react-native-reanimated';
 import { TabBarProps, useFocusedTab } from 'react-native-collapsible-tab-view';
@@ -8,21 +8,6 @@ import textStyles from '@/presentation/styles/textStyles';
 import { AppSize } from '@/presentation/utils/appSize';
 import { analyticsService } from '@/core/services/analytics';
 import { useContentDetailRoute } from '../_hooks/useContentDetailRoute';
-
-interface TabItemProps {
-  name: string;
-  label: string;
-  isActive: boolean;
-  onPress: () => void;
-}
-
-const TabItem = ({ name, label, isActive, onPress }: TabItemProps) => {
-  return (
-    <Tab key={name} onPress={onPress} activeOpacity={0.7}>
-      <TabText isActive={isActive}>{label}</TabText>
-    </Tab>
-  );
-};
 
 /** 태블릿 탭바 레이아웃 상수 */
 const TABLET_TAB_MAX_WIDTH = 600;
@@ -55,6 +40,7 @@ export const TabBar = <T extends string>({
 
   const handleTabPress = useCallback(
     (name: T) => {
+      console.log('[TabBar] handleTabPress called with:', name);
       // 탭 전환 시 GA4 이벤트 로깅 (같은 탭 클릭 시에는 로깅하지 않음)
       if (previousTabRef.current !== name) {
         const tabName = name === '영상' ? 'video_info' : 'related_content';
@@ -98,24 +84,88 @@ export const TabBar = <T extends string>({
 
   const getIsActive = (name: T) => activeTab === name;
 
+  // 터치 추적 (responder가 되지 않고 터치 이벤트만 추적)
+  const touchStartRef = useRef<{ x: number; y: number; time: number; tabIndex: number } | null>(
+    null,
+  );
+  const containerRef = useRef<View>(null);
+  const containerLeftRef = useRef<number>(0);
+
+  // 컨테이너 레이아웃 측정
+  const handleLayout = useCallback(() => {
+    containerRef.current?.measureInWindow((x) => {
+      containerLeftRef.current = x;
+      console.log('[TabBar] container left:', x);
+    });
+  }, []);
+
+  const handleTouchStart = useCallback(
+    (e: GestureResponderEvent) => {
+      const { pageX, pageY } = e.nativeEvent;
+      // pageX에서 컨테이너 왼쪽 위치를 빼서 상대 좌표 계산
+      const relativeX = pageX - containerLeftRef.current;
+      const tabIndex = Math.floor(relativeX / tabWidth);
+      console.log('[TabBar] onTouchStart:', { pageX, containerLeft: containerLeftRef.current, relativeX, tabWidth, tabIndex });
+      touchStartRef.current = {
+        x: pageX,
+        y: pageY,
+        time: Date.now(),
+        tabIndex: Math.min(Math.max(tabIndex, 0), tabNames.length - 1),
+      };
+    },
+    [tabWidth, tabNames.length],
+  );
+
+  const handleTouchEnd = useCallback(
+    (e: GestureResponderEvent) => {
+      if (!touchStartRef.current) return;
+
+      const { pageX, pageY } = e.nativeEvent;
+      const { x: startX, y: startY, time: startTime, tabIndex } = touchStartRef.current;
+      const elapsed = Date.now() - startTime;
+      const deltaX = Math.abs(pageX - startX);
+      const deltaY = Math.abs(pageY - startY);
+
+      // 500ms 이내, deltaX 20px 이내 = 탭으로 인식 (deltaY는 헤더 collapse로 인해 무시)
+      console.log('[TabBar] onTouchEnd:', { elapsed, deltaX, deltaY, tabIndex, tabWidth });
+      if (elapsed < 500 && deltaX < 20) {
+        const tabName = tabNames[tabIndex];
+        console.log('[TabBar] tap detected - tabIndex:', tabIndex, 'tabName:', tabName);
+        if (tabName) {
+          handleTabPress(tabName);
+        }
+      }
+
+      touchStartRef.current = null;
+    },
+    [tabNames, handleTabPress],
+  );
+
+  const handleTouchCancel = useCallback(() => {
+    touchStartRef.current = null;
+  }, []);
+
   return (
-    <TabBarContainer style={tabletContainerStyle}>
+    <TabBarContainer
+      ref={containerRef}
+      style={tabletContainerStyle}
+      pointerEvents="box-none"
+      onLayout={handleLayout}
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      onTouchCancel={handleTouchCancel}
+    >
       <TabsContainer style={tabletTabsStyle}>
         {tabNames.map((name) => {
           const tabProp = tabProps?.[name as keyof typeof tabProps];
           const label = (tabProp as { label?: string })?.label || name;
 
           return (
-            <TabItem
-              key={name}
-              name={name}
-              label={label}
-              isActive={getIsActive(name)}
-              onPress={() => handleTabPress(name)}
-            />
+            <Tab key={name}>
+              <TabText isActive={getIsActive(name)}>{label}</TabText>
+            </Tab>
           );
         })}
-        {/* 인디케이터를 TabsContainer 안에 배치하여 중앙 정렬 대응 */}
         <Indicator style={indicatorStyle} width={indicatorWidth} />
       </TabsContainer>
     </TabBarContainer>
@@ -127,7 +177,6 @@ const TabBarContainer = styled.View({
   backgroundColor: colors.black,
   borderBottomWidth: 0.75,
   borderBottomColor: colors.gray06,
-  position: 'relative',
 });
 
 const TabsContainer = styled.View({
@@ -136,7 +185,7 @@ const TabsContainer = styled.View({
   position: 'relative',
 });
 
-const Tab = styled(TouchableOpacity)({
+const Tab = styled(View)({
   flex: 1,
   justifyContent: 'center',
   alignItems: 'center',
