@@ -151,6 +151,25 @@ export const pushTokenApi = {
    */
   trackNotificationClick: async (notificationId: string, userId: string): Promise<void> => {
     try {
+      // 세션 상태 확인 (디버깅용)
+      const { data: sessionData } = await supabaseClient.auth.getSession();
+      const sessionUserId = sessionData?.session?.user?.id;
+
+      if (__DEV__) {
+        PushLogger.log('trackNotificationClick 시작:', {
+          notificationId,
+          userId,
+          sessionUserId,
+          sessionMatch: sessionUserId === userId,
+        });
+      }
+
+      // 세션이 없거나 user_id가 일치하지 않으면 세션 갱신 시도
+      if (!sessionUserId || sessionUserId !== userId) {
+        PushLogger.warn('세션 불일치 - 세션 갱신 시도');
+        await supabaseClient.auth.refreshSession();
+      }
+
       const now = new Date().toISOString();
       const { error, count } = await supabaseClient
         .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
@@ -162,12 +181,7 @@ export const pushTokenApi = {
         .eq('user_id', userId);
 
       if (error) {
-        PushLogger.warn('알림 클릭 추적 실패:', {
-          message: error.message,
-          code: error.code,
-          details: error.details,
-          hint: error.hint,
-        });
+        PushLogger.warn('알림 클릭 추적 실패:', JSON.stringify(error));
         throw error; // 에러를 throw하여 호출자에게 전파
       }
 
@@ -175,7 +189,7 @@ export const pushTokenApi = {
     } catch (err) {
       // 클릭 추적 실패는 치명적이지 않으므로 경고만 출력
       const errorObj = err instanceof Error ? { message: err.message, name: err.name } : err;
-      PushLogger.warn('알림 클릭 추적 에러:', errorObj);
+      PushLogger.warn('알림 클릭 추적 에러:', JSON.stringify(errorObj));
       throw err; // 에러 재전파 (호출자가 처리하도록)
     }
   },
