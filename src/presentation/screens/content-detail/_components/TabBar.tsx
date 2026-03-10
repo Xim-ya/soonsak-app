@@ -40,7 +40,6 @@ export const TabBar = <T extends string>({
 
   const handleTabPress = useCallback(
     (name: T) => {
-      console.log('[TabBar] handleTabPress called with:', name);
       // 탭 전환 시 GA4 이벤트 로깅 (같은 탭 클릭 시에는 로깅하지 않음)
       if (previousTabRef.current !== name) {
         const tabName = name === '영상' ? 'video_info' : 'related_content';
@@ -88,24 +87,27 @@ export const TabBar = <T extends string>({
   const touchStartRef = useRef<{ x: number; y: number; time: number; tabIndex: number } | null>(
     null,
   );
-  const containerRef = useRef<View>(null);
+  const tabsContainerRef = useRef<View>(null);
   const containerLeftRef = useRef<number>(0);
+  const containerMeasuredRef = useRef<boolean>(false);
 
-  // 컨테이너 레이아웃 측정
+  // 탭 컨테이너 레이아웃 측정
   const handleLayout = useCallback(() => {
-    containerRef.current?.measureInWindow((x) => {
+    tabsContainerRef.current?.measureInWindow((x) => {
       containerLeftRef.current = x;
-      console.log('[TabBar] container left:', x);
+      containerMeasuredRef.current = true;
     });
   }, []);
 
   const handleTouchStart = useCallback(
     (e: GestureResponderEvent) => {
+      // 레이아웃 측정 전이면 터치 무시
+      if (!containerMeasuredRef.current) return;
+
       const { pageX, pageY } = e.nativeEvent;
       // pageX에서 컨테이너 왼쪽 위치를 빼서 상대 좌표 계산
       const relativeX = pageX - containerLeftRef.current;
       const tabIndex = Math.floor(relativeX / tabWidth);
-      console.log('[TabBar] onTouchStart:', { pageX, containerLeft: containerLeftRef.current, relativeX, tabWidth, tabIndex });
       touchStartRef.current = {
         x: pageX,
         y: pageY,
@@ -124,13 +126,10 @@ export const TabBar = <T extends string>({
       const { x: startX, y: startY, time: startTime, tabIndex } = touchStartRef.current;
       const elapsed = Date.now() - startTime;
       const deltaX = Math.abs(pageX - startX);
-      const deltaY = Math.abs(pageY - startY);
 
       // 500ms 이내, deltaX 20px 이내 = 탭으로 인식 (deltaY는 헤더 collapse로 인해 무시)
-      console.log('[TabBar] onTouchEnd:', { elapsed, deltaX, deltaY, tabIndex, tabWidth });
       if (elapsed < 500 && deltaX < 20) {
         const tabName = tabNames[tabIndex];
-        console.log('[TabBar] tap detected - tabIndex:', tabIndex, 'tabName:', tabName);
         if (tabName) {
           handleTabPress(tabName);
         }
@@ -146,16 +145,15 @@ export const TabBar = <T extends string>({
   }, []);
 
   return (
-    <TabBarContainer
-      ref={containerRef}
-      style={tabletContainerStyle}
-      pointerEvents="box-none"
-      onLayout={handleLayout}
-      onTouchStart={handleTouchStart}
-      onTouchEnd={handleTouchEnd}
-      onTouchCancel={handleTouchCancel}
-    >
-      <TabsContainer style={tabletTabsStyle}>
+    <TabBarContainer style={tabletContainerStyle} pointerEvents="box-none">
+      <TabsContainer
+        ref={tabsContainerRef}
+        style={tabletTabsStyle}
+        onLayout={handleLayout}
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
+      >
         {tabNames.map((name) => {
           const tabProp = tabProps?.[name as keyof typeof tabProps];
           const label = (tabProp as { label?: string })?.label || name;

@@ -43,6 +43,27 @@ export const channelApi = {
   },
 
   /**
+   * 특정 ID 목록에 해당하는 채널 조회
+   * @param ids 조회할 채널 ID 목록
+   * @returns 채널 목록 (없는 ID는 결과에서 제외)
+   */
+  getChannelsByIds: async (ids: string[]): Promise<ChannelDto[]> => {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabaseClient
+      .from(CHANNEL_DATABASE.TABLES.CHANNELS)
+      .select('*')
+      .in('id', ids);
+
+    if (error) {
+      ChannelLogger.error('채널 ID 목록 조회 실패:', error);
+      throw new Error(`Failed to fetch channels by ids: ${error.message}`);
+    }
+
+    return mapWithField<ChannelDto[]>(data ?? []);
+  },
+
+  /**
    * 랜덤 활성화된 채널 목록 조회 (RPC)
    * @param limit 조회할 채널 수 (기본값: 12)
    */

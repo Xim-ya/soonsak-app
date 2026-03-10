@@ -70,7 +70,11 @@ export default function ChannelSelectionScreen(): React.ReactElement {
   // 하단 로딩 인디케이터
   const renderListFooter = useCallback(() => {
     if (!isFetchingNextPage) return null;
-    return <FooterLoading><ActivityIndicator color={colors.gray02} /></FooterLoading>;
+    return (
+      <FooterLoading>
+        <ActivityIndicator color={colors.gray02} />
+      </FooterLoading>
+    );
   }, [isFetchingNextPage]);
 
   // 적용 버튼 핸들러

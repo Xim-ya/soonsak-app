@@ -14,15 +14,8 @@ export type ChannelItemModel = ChannelListItem;
 export function useChannelListUp() {
   const { data: favoriteIds = [] } = useFavoriteChannelIds();
 
-  const {
-    channels,
-    isLoading,
-    error,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    totalCount,
-  } = useChannelListBase();
+  const { channels, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage, totalCount } =
+    useChannelListBase();
 
   // 찜한 채널을 앞으로 정렬
   const sortedChannels = useMemo(

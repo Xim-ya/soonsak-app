@@ -38,13 +38,8 @@ function useChannelSelection(initialSelectedIds: string[]): UseChannelSelectionR
   // 초기 선택 ID를 ref로 저장 (변경 수 계산용)
   const initialIdsRef = useRef<string[]>(initialSelectedIds);
 
-  const {
-    channels,
-    isLoading,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-  } = useChannelListBase();
+  const { channels, isLoading, fetchNextPage, hasNextPage, isFetchingNextPage } =
+    useChannelListBase();
 
   // 채널 ID로 채널명을 찾는 헬퍼 함수
   const getChannelNameById = useCallback(
