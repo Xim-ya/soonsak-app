@@ -92,6 +92,14 @@ module.exports = {
       'expo-web-browser',
       'expo-apple-authentication',
       [
+        'expo-image-picker',
+        {
+          photosPermission: '앨범에서 프로필 사진을 선택할 수 있어요',
+          cameraPermission: false,
+          microphonePermission: false,
+        },
+      ],
+      [
         'expo-build-properties',
         {
           android: {
