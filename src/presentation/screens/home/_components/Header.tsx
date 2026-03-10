@@ -187,6 +187,10 @@ export function Header({ scrollY }: HeaderProps) {
         type: item.type,
         title: item.title,
         source: ContentSource.HOME_BANNER,
+        initialData: {
+          backdropPath: item.backdropPath,
+          posterPath: item.posterPath,
+        },
       });
     },
     [navigation],

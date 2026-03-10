@@ -135,6 +135,10 @@ export function ExploreProvider({ children }: ExploreProviderProps) {
         title: content.title,
         type: content.type,
         source: ContentSource.EXPLORE_GRID,
+        initialData: {
+          backdropPath: content.backdropPath,
+          posterPath: content.posterPath,
+        },
       });
     },
     [navigation],

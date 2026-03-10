@@ -64,14 +64,14 @@ async function getPushTokenIdByToken(userId: string, pushToken: string): Promise
     .select('id')
     .eq('user_id', userId)
     .eq('token', pushToken)
-    .single();
+    .maybeSingle();
 
-  if (error || !data) {
-    NotificationLogger.warn('push_token_id 조회 실패:', error?.message);
+  if (error) {
+    NotificationLogger.warn('push_token_id 조회 실패:', error.message);
     return null;
   }
 
-  return data.id;
+  return data?.id ?? null;
 }
 
 /**
@@ -85,7 +85,7 @@ async function getActivePushTokenId(userId: string): Promise<string | null> {
     .eq('is_active', true)
     .order('created_at', { ascending: false })
     .limit(1)
-    .single();
+    .maybeSingle();
 
   if (error || !data) {
     return null;

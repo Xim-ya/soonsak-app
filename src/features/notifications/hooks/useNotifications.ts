@@ -16,8 +16,8 @@ import {
   UseQueryResult,
   InfiniteData,
 } from '@tanstack/react-query';
-import { useAuth } from '@/features/auth';
-import { usePushNotification } from '@/features/push-notifications';
+import { useAuth } from '@/features/auth/providers';
+import { usePushNotification } from '@/features/push-notifications/providers/PushNotificationProvider';
 import { notificationApi } from '../api/notificationApi';
 import { notificationKeys } from './notificationQueryKeys';
 import type {

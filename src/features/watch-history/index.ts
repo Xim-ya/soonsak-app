@@ -10,8 +10,8 @@
 // API
 export { watchHistoryApi } from './api/watchHistoryApi';
 
-// Components (presentation layer에서 re-export)
-export { WatchHistoryCard, WatchHistorySectionView } from '@/presentation/components/watch-history';
+// Components는 순환 참조 방지를 위해 직접 import 필요:
+// import { WatchHistoryCard, WatchHistorySectionView } from '@/presentation/components/watch-history';
 
 // Hooks
 export {

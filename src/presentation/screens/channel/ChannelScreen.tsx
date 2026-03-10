@@ -191,6 +191,9 @@ function ChannelContent() {
         title: video.contentTitle,
         videoId: video.videoId,
         source: ContentSource.CHANNEL_TAB,
+        initialData: {
+          backdropPath: video.backdropPath,
+        },
       });
     },
     [navigation],

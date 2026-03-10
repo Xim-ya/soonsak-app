@@ -6,29 +6,6 @@ import { ChannelDto } from '../types';
 
 export const channelApi = {
   /**
-   * 활성화된 채널 목록 조회
-   * Flutter: loadChannelSortedByContentCount() 참고
-   * @param limit 조회할 채널 수 (기본값: 20)
-   */
-  getActiveChannels: async (
-    limit: number = CHANNEL_DATABASE.LIMITS.MAX_CHANNELS,
-  ): Promise<ChannelDto[]> => {
-    const { data, error } = await supabaseClient
-      .from(CHANNEL_DATABASE.TABLES.CHANNELS)
-      .select('*')
-      .eq(CHANNEL_DATABASE.COLUMNS.IS_ACTIVE, true)
-      .order('subscriber_count', { ascending: false, nullsFirst: false })
-      .limit(limit);
-
-    if (error) {
-      ChannelLogger.error('채널 목록 조회 실패:', error);
-      throw new Error(`Failed to fetch channels: ${error.message}`);
-    }
-
-    return mapWithField<ChannelDto[]>(data ?? []);
-  },
-
-  /**
    * 활성화된 채널 목록 페이지네이션 조회
    * @param offset 시작 위치
    * @param limit 조회할 채널 수
@@ -63,6 +40,27 @@ export const channelApi = {
     const hasMore = offset + channels.length < totalCount;
 
     return { channels, totalCount, hasMore };
+  },
+
+  /**
+   * 특정 ID 목록에 해당하는 채널 조회
+   * @param ids 조회할 채널 ID 목록
+   * @returns 채널 목록 (없는 ID는 결과에서 제외)
+   */
+  getChannelsByIds: async (ids: string[]): Promise<ChannelDto[]> => {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await supabaseClient
+      .from(CHANNEL_DATABASE.TABLES.CHANNELS)
+      .select('*')
+      .in('id', ids);
+
+    if (error) {
+      ChannelLogger.error('채널 ID 목록 조회 실패:', error);
+      throw new Error(`Failed to fetch channels by ids: ${error.message}`);
+    }
+
+    return mapWithField<ChannelDto[]>(data ?? []);
   },
 
   /**
