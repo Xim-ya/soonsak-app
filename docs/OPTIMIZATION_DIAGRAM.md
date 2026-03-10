@@ -4,7 +4,7 @@
 
 ### Before: 순차 실행 (Sequential Waterfall)
 
-```
+```text
 시간축 (Timeline) →
 0ms    300ms   800ms   1200ms  1500ms  2500ms  4000ms
 │      │       │       │       │       │       │
@@ -46,7 +46,7 @@
 
 ### After: 병렬 실행 (Parallel Execution)
 
-```
+```text
 시간축 (Timeline) →
 0ms    300ms   500ms   700ms   2500ms  2900ms
 │      │       │       │       │       │
@@ -85,7 +85,7 @@
 
 ### Before: 6단계 중첩 (Nested Providers)
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │ SafeAreaProvider                            │
 │ ┌─────────────────────────────────────────┐ │
@@ -124,7 +124,7 @@
 
 ### After: 컴포지션 패턴 (Composition Pattern)
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │ SafeAreaProvider                            │
 │ ┌─────────────────────────────────────────┐ │
@@ -168,7 +168,7 @@
 
 ### Before: 중복 호출 (Duplicate Calls)
 
-```
+```text
 App Initialization
 │
 ├─ useAppPreload
@@ -192,7 +192,7 @@ App Initialization
 
 ### After: 캐시 활용 (Cache Reuse)
 
-```
+```text
 App Initialization
 │
 ├─ useAppPreload
@@ -224,7 +224,7 @@ App Initialization
 
 ### Before: 순차 로딩
 
-```
+```text
 Resource Loading Timeline
 ────────────────────────────────────────────────
 
@@ -254,7 +254,7 @@ Total: ~4.0초
 
 ### After: 병렬 로딩
 
-```
+```text
 Resource Loading Timeline
 ────────────────────────────────────────────────
 
@@ -290,7 +290,10 @@ Total: ~2.9초 (27% 단축)
 
 ### Component Re-render Flow
 
-```
+> **Note:** `memo`는 props가 변경되지 않았을 때만 리렌더를 방지합니다.
+> 아래 다이어그램은 props가 동일할 때의 동작을 보여줍니다.
+
+```text
 Before: 불필요한 리렌더
 
 App (state change)
@@ -304,18 +307,18 @@ App (state change)
 3개 불필요한 리렌더 발생
 ```
 
-```
-After: memo로 보호
+```text
+After: memo로 보호 (props 동일 시)
 
 App (state change)
 │
 ├─→ SafeAreaProvider ────→ re-render
 │   └─→ GestureHandler ───→ re-render
-│       └─→ AppContent ───→ skip (memo) ✅
-│           └─→ Navigation ─→ skip (memo) ✅
+│       └─→ AppContent ───→ skip (memo, props 동일) ✅
+│           └─→ Navigation ─→ skip (memo, props 동일) ✅
 │               └─→ StackNav ─→ skip ✅
 
-리렌더 차단 성공
+리렌더 차단 성공 (props가 변경되지 않았을 때)
 ```
 
 ---
@@ -324,7 +327,7 @@ App (state change)
 
 ### Promise.all 동작 원리
 
-```
+```text
 Promise.all([promise1, promise2])
 
 Time: 0ms
@@ -356,7 +359,7 @@ Time: 500ms
 
 ### Promise.allSettled 동작 원리
 
-```
+```text
 Promise.allSettled([...10개 이미지])
 
 Time: 0ms
@@ -398,7 +401,7 @@ Time: 200ms
 
 ### 초기화 시간 비교
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │ App Initialization Time                       │
 ├──────────────────────────────────────────────┤
@@ -415,7 +418,7 @@ Time: 200ms
 
 ### API 호출 비교
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │ API Call Count                                │
 ├──────────────────────────────────────────────┤
@@ -432,7 +435,7 @@ Time: 200ms
 
 ### 프리로드 시간 비교
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │ Preload Time (Config + Banner + Images)      │
 ├──────────────────────────────────────────────┤
@@ -451,7 +454,7 @@ Time: 200ms
 
 ## 🎉 최종 결과
 
-```
+```text
 ╔═══════════════════════════════════════════════╗
 ║         성능 최적화 최종 결과                  ║
 ╠═══════════════════════════════════════════════╣

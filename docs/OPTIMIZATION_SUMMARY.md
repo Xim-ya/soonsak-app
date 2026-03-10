@@ -179,7 +179,7 @@ const AppContent = memo(function AppContent({ ... }) {
 ## 🎨 아키텍처 개선
 
 ### Before: 순차 실행 구조
-```
+```text
 ┌─────────────────────────────────────┐
 │ Lottie Splash (2.5s)                │
 ├─────────────────────────────────────┤
@@ -196,7 +196,7 @@ Total: ~4.0초
 ```
 
 ### After: 병렬 실행 구조
-```
+```text
 ┌─────────────────────────────────────┐
 │ Lottie Splash (2.5s)                │
 ├─────────────────────────────────────┤
@@ -333,8 +333,8 @@ const count = isSlowNetwork() ? 3 : 5;
 ## 📚 관련 문서
 
 - [상세 최적화 가이드](./PERFORMANCE_OPTIMIZATION.md)
-- [React Native 베스트 프랙티스](/CLAUDE.md)
-- [프로젝트 가이드](/README.md)
+- [React Native 베스트 프랙티스](../CLAUDE.md)
+- [프로젝트 가이드](../README.md)
 
 ---
 

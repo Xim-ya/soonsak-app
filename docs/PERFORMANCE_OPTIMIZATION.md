@@ -3,7 +3,7 @@
 ## 📊 최적화 전/후 비교
 
 ### Before (순차 실행)
-```
+```text
 ├─ Lottie Splash (2.5초)
 │  ├─ appConfigManager.initialize() → API 호출 (~300ms)
 │  └─ contentApi.getRandomBannerContents() → API 호출 (~500ms)
@@ -26,7 +26,7 @@
 ```
 
 ### After (병렬 실행)
-```
+```text
 ├─ Lottie Splash (2.5초)
 │  ├─ Promise.all([
 │  │    appConfigManager.initialize(),    (~300ms)
@@ -39,7 +39,7 @@
 │
 └─ Provider 마운트 (최적화)
    └─ AppProviders (단일 컴포넌트)
-      └─ 모든 Provider 병렬 마운트
+      └─ memo로 불필요한 리렌더 방지
 
 총 초기화 시간: ~2.9초 (27% 단축)
 ```
@@ -159,8 +159,12 @@ const AppProviders = memo(function AppProviders({ children }) {
 
 **성능 향상:**
 - Provider 마운트 오버헤드 감소
-- memo로 불필요한 리렌더 방지
+- memo로 불필요한 리렌더 방지 (props가 변경되지 않았을 때)
 - 코드 가독성 향상
+
+> **Note:** `memo`는 전달받는 props가 참조적으로 동일할 때만 리렌더를 방지합니다.
+> children prop을 전달하는 경우, 인라인 JSX 대신 사전에 생성된 요소를 전달하거나
+> useMemo로 감싸서 참조 안정성을 확보해야 memo의 효과를 볼 수 있습니다.
 
 ---
 
@@ -361,7 +365,7 @@ const count = isSlowNetwork() ? 3 : 5;
 - [React Native Performance Guide](https://reactnative.dev/docs/performance)
 - [Vercel React Best Practices](https://nextjs.org/docs/basic-features/performance)
 - [Frontend Code Quality Guide](https://github.com/toss/frontend-fundamentals)
-- [프로젝트 베스트 프랙티스](/CLAUDE.md)
+- [프로젝트 베스트 프랙티스](../CLAUDE.md)
 
 ---
 

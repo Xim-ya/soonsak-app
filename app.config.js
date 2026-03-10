@@ -70,7 +70,8 @@ module.exports = {
         CFBundleName: '순삭',
         CFBundleDisplayName: '순삭',
         CFBundleDevelopmentRegion: 'ko',
-        NSUserNotificationsUsageDescription: '취향에 딱 맞는 작품이 올라오면 가장 먼저 알려드릴게요',
+        NSUserNotificationsUsageDescription:
+          '취향에 딱 맞는 작품이 올라오면 가장 먼저 알려드릴게요',
         ITSAppUsesNonExemptEncryption: false,
         ...(APP_VARIANT !== 'production' && { FIRDebugEnabled: true }),
       },
