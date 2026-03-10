@@ -152,7 +152,7 @@ export const pushTokenApi = {
   trackNotificationClick: async (notificationId: string, userId: string): Promise<void> => {
     try {
       const now = new Date().toISOString();
-      const { error } = await supabaseClient
+      const { error, count } = await supabaseClient
         .from(PUSH_DATABASE.TABLES.PUSH_NOTIFICATION_RECEIPTS)
         .update({
           clicked_at: now,
@@ -162,11 +162,21 @@ export const pushTokenApi = {
         .eq('user_id', userId);
 
       if (error) {
-        PushLogger.warn('알림 클릭 추적 실패:', error);
+        PushLogger.warn('알림 클릭 추적 실패:', {
+          message: error.message,
+          code: error.code,
+          details: error.details,
+          hint: error.hint,
+        });
+        throw error; // 에러를 throw하여 호출자에게 전파
       }
+
+      PushLogger.log('알림 클릭 추적 완료:', { notificationId, count });
     } catch (err) {
-      // 클릭 추적 실패는 치명적이지 않으므로 무시
-      PushLogger.warn('알림 클릭 추적 에러:', err);
+      // 클릭 추적 실패는 치명적이지 않으므로 경고만 출력
+      const errorObj = err instanceof Error ? { message: err.message, name: err.name } : err;
+      PushLogger.warn('알림 클릭 추적 에러:', errorObj);
+      throw err; // 에러 재전파 (호출자가 처리하도록)
     }
   },
 

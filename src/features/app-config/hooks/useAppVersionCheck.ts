@@ -177,7 +177,22 @@ export function useAppVersionCheck(
 
         // ⚡️ 최적화: appConfigManager에서 캐시된 버전 정책 조회 (중복 API 호출 제거)
         // useAppPreload에서 이미 appConfigManager.initialize() 호출함
-        const policy = appConfigManager.getVersionPolicy();
+        // 초기화가 완료되지 않은 경우 짧은 대기 후 재시도
+        let policy = appConfigManager.getVersionPolicy();
+
+        if (!policy && !appConfigManager.isInitialized()) {
+          VersionLogger.log('appConfigManager 초기화 대기 중...');
+          const MAX_RETRIES = 10;
+          const RETRY_DELAY = 100; // 100ms
+
+          for (let i = 0; i < MAX_RETRIES && !policy; i++) {
+            await new Promise((resolve) => setTimeout(resolve, RETRY_DELAY));
+            if (appConfigManager.isInitialized()) {
+              policy = appConfigManager.getVersionPolicy();
+              break;
+            }
+          }
+        }
 
         if (!policy) {
           VersionLogger.log('버전 정책 없음, 체크 스킵');

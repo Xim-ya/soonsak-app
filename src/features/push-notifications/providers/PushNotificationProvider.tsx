@@ -113,8 +113,11 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
   // ⚡️ 최적화: 최초 로그인 시 Push 초기화 (앱 시작 시 대신 로그인 시점에 실행)
   // 이렇게 하면 앱 초기화 속도가 향상되고, 비로그인 유저에게 불필요한 권한 요청을 피함
   useEffect(() => {
-    // 로그인 상태가 아니면 스킵
-    if (status !== 'authenticated') return;
+    // 로그아웃 시 초기화 플래그 리셋 (재로그인 시 다시 초기화 가능하도록)
+    if (status !== 'authenticated') {
+      hasInitializedPushRef.current = false;
+      return;
+    }
     // 이미 초기화했으면 스킵
     if (hasInitializedPushRef.current) return;
 
@@ -221,14 +224,23 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
         const data = response.notification.request.content.data;
 
-        // 푸시 클릭 추적 (비동기, 실패해도 무시)
+        // 푸시 클릭 추적 및 캐시 무효화
         const dbNotificationId = extractNotificationId(data);
         const currentUser = userRef.current;
         const currentToken = expoPushTokenRef.current;
-        if (dbNotificationId && currentUser?.id) {
-          pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
-          // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
-          queryClient.invalidateQueries({
+
+        if (currentUser?.id) {
+          // 읽음 처리 완료 후 캐시 refetch (순서 중요)
+          if (dbNotificationId) {
+            try {
+              await pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+            } catch {
+              // 읽음 처리 실패해도 계속 진행
+            }
+          }
+          // 읽음 처리 완료 후 즉시 refetch (뱃지 카운트 갱신)
+          // invalidateQueries 대신 refetchQueries로 즉시 데이터 갱신 보장
+          await queryClient.refetchQueries({
             queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
           });
         }
@@ -290,23 +302,32 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
       const currentUser = userRef.current;
       const currentToken = expoPushTokenRef.current;
 
-      // 디버깅: 푸시 클릭 시 받은 data 확인
-      console.log('[PushClick] data:', JSON.stringify(data, null, 2));
-
-      // 디버깅: Supabase 세션 상태 확인
-      const { data: sessionData } = await supabaseClient.auth.getSession();
-      console.log('[PushClick] Supabase session:', sessionData?.session?.user?.id ?? 'NO SESSION');
-
-      // 푸시 클릭 추적 (비동기, 실패해도 무시)
+      // 푸시 클릭 추적 및 캐시 무효화
       const dbNotificationId = extractNotificationId(data);
-      console.log('[PushClick] extracted _notificationId:', dbNotificationId);
-      if (dbNotificationId && currentUser?.id) {
-        pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+
+      if (__DEV__) {
+        // 디버깅: 푸시 클릭 시 받은 data 확인
+        console.log('[PushClick] data:', JSON.stringify(data, null, 2));
+
+        // 디버깅: Supabase 세션 상태 확인
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        console.log('[PushClick] Supabase session:', sessionData?.session?.user?.id ?? 'NO SESSION');
+        console.log('[PushClick] extracted _notificationId:', dbNotificationId);
       }
 
-      // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신) - notificationId 유무와 관계없이 실행
       if (currentUser?.id) {
-        queryClient.invalidateQueries({
+        // 읽음 처리 완료 후 캐시 refetch (순서 중요: await로 읽음 처리 완료 대기)
+        if (dbNotificationId) {
+          try {
+            await pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+          } catch {
+            // 읽음 처리 실패해도 계속 진행
+          }
+        }
+
+        // 읽음 처리 완료 후 즉시 refetch (뱃지 카운트 갱신)
+        // invalidateQueries 대신 refetchQueries로 즉시 데이터 갱신 보장
+        await queryClient.refetchQueries({
           queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
         });
       }

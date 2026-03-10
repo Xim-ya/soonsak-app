@@ -160,9 +160,15 @@ export function usePushNotifications(): UsePushNotificationsResult {
   // ⚡️ 최적화: 명시적 초기화 함수 (로그인 시점에 호출)
   // 앱 시작 시 자동 초기화 대신, 로그인 시점에 호출하여 초기화 속도 향상
   const initialize = useCallback(async (): Promise<string | null> => {
-    // 중복 초기화 방지
-    if (initializingRef.current || isInitialized) {
-      PushLogger.log('Push 이미 초기화됨 또는 초기화 중');
+    // 이미 초기화 완료된 경우 (토큰 획득 성공한 경우만)
+    if (isInitialized) {
+      PushLogger.log('Push 이미 초기화됨');
+      return expoPushToken;
+    }
+
+    // 동시 호출 방지 (initializingRef만 체크하여 재시도 허용)
+    if (initializingRef.current) {
+      PushLogger.log('Push 초기화 진행 중');
       return expoPushToken;
     }
 
@@ -173,14 +179,15 @@ export function usePushNotifications(): UsePushNotificationsResult {
       // 1. 권한 확인 및 요청
       const granted = await requestPermissions();
       if (!granted) {
-        PushLogger.log('Push 권한 거부됨');
-        setIsInitialized(true);
+        PushLogger.log('Push 권한 거부됨 - 나중에 재시도 가능');
+        // 권한 거부 시 isInitialized를 설정하지 않아 재시도 가능
         return null;
       }
 
       // 2. 토큰 획득 (시뮬레이터에서는 스킵)
       if (isSimulator) {
         PushLogger.log('시뮬레이터: 권한 획득 완료, 토큰 스킵');
+        // 시뮬레이터에서는 성공으로 간주
         setIsInitialized(true);
         return null;
       }
@@ -189,9 +196,13 @@ export function usePushNotifications(): UsePushNotificationsResult {
       if (token) {
         setExpoPushToken(token);
         PushLogger.log('Expo Push Token:', token);
+        // 토큰 획득 성공 시에만 초기화 완료로 표시
+        setIsInitialized(true);
+      } else {
+        PushLogger.log('토큰 획득 실패 - 나중에 재시도 가능');
+        // 토큰 획득 실패 시 isInitialized를 설정하지 않아 재시도 가능
       }
 
-      setIsInitialized(true);
       return token;
     } finally {
       initializingRef.current = false;

@@ -6,7 +6,7 @@ import StackNavigator from '@/presentation/navigation/navigator/StackNavigator';
 import '@/core/extensions/arrayExtension';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useEffect, useRef, useCallback, memo, type ReactNode } from 'react';
+import { useEffect, useRef, useCallback, memo, type ReactNode, type RefObject } from 'react';
 import { AppSize } from '@/presentation/utils/appSize';
 import colors from '@/presentation/styles/colors';
 import { enableScreens } from 'react-native-screens';
@@ -211,7 +211,7 @@ function getActiveRouteName(state: NavigationState | undefined): string | undefi
 
 // ⚡️ 최적화: 네비게이션 컴포넌트 분리 (리렌더 최소화)
 interface NavigationWrapperProps {
-  routeNameRef: React.MutableRefObject<string | undefined>;
+  routeNameRef: RefObject<string | undefined>;
   onNavigationStateChange: () => void;
 }
 
