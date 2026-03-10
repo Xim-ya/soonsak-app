@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { Linking, Platform } from 'react-native';
 import * as Application from 'expo-application';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { appConfigApi } from '../api/appConfigApi';
+import { appConfigManager } from '../AppConfigManager';
 import { isVersionLowerThan } from '../utils/versionUtils';
 import type { UpdateStatus, AppVersionPolicy, VersionCheckResult } from '../types';
 import { VersionLogger } from '@/core/utils';
@@ -175,8 +175,9 @@ export function useAppVersionCheck(
 
         VersionLogger.log('현재 버전:', currentVersion);
 
-        // 서버에서 버전 정책 조회
-        const policy = await appConfigApi.getVersionPolicy();
+        // ⚡️ 최적화: appConfigManager에서 캐시된 버전 정책 조회 (중복 API 호출 제거)
+        // useAppPreload에서 이미 appConfigManager.initialize() 호출함
+        const policy = appConfigManager.getVersionPolicy();
 
         if (!policy) {
           VersionLogger.log('버전 정책 없음, 체크 스킵');

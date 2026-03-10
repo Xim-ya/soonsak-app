@@ -6,7 +6,7 @@ import StackNavigator from '@/presentation/navigation/navigator/StackNavigator';
 import '@/core/extensions/arrayExtension';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, memo, type ReactNode } from 'react';
 import { AppSize } from '@/presentation/utils/appSize';
 import colors from '@/presentation/styles/colors';
 import { enableScreens } from 'react-native-screens';
@@ -161,10 +161,37 @@ const navigationTheme = {
  * 앱 아이콘 배지 동기화 컴포넌트
  * AuthProvider, PushNotificationProvider 내부에서 배지 카운트를 동기화합니다.
  */
-function AppBadgeSyncer() {
+const AppBadgeSyncer = memo(function AppBadgeSyncer() {
   useSyncAppBadge();
   return null;
+});
+
+/**
+ * ⚡️ 최적화: Provider 컴포지션
+ * 6개의 Provider를 하나로 묶어서 마운트 오버헤드 최소화
+ */
+interface AppProvidersProps {
+  children: ReactNode;
 }
+
+const AppProviders = memo(function AppProviders({ children }: AppProvidersProps) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SnackbarProvider>
+        <DialogProvider>
+          <ContentFilterProvider>
+            <AuthProvider>
+              <PushNotificationProvider>
+                <AppBadgeSyncer />
+                {children}
+              </PushNotificationProvider>
+            </AuthProvider>
+          </ContentFilterProvider>
+        </DialogProvider>
+      </SnackbarProvider>
+    </QueryClientProvider>
+  );
+});
 
 /**
  * 현재 네비게이션 상태에서 활성 화면 이름을 가져옴
@@ -182,8 +209,35 @@ function getActiveRouteName(state: NavigationState | undefined): string | undefi
   return route.name;
 }
 
+// ⚡️ 최적화: 네비게이션 컴포넌트 분리 (리렌더 최소화)
+interface NavigationWrapperProps {
+  routeNameRef: React.MutableRefObject<string | undefined>;
+  onNavigationStateChange: () => void;
+}
+
+const NavigationWrapper = memo(function NavigationWrapper({
+  routeNameRef,
+  onNavigationStateChange,
+}: NavigationWrapperProps) {
+  const onReady = useCallback(() => {
+    routeNameRef.current = getActiveRouteName(navigationRef.current?.getState());
+  }, [routeNameRef]);
+
+  return (
+    <NavigationContainer
+      ref={navigationRef}
+      theme={navigationTheme}
+      linking={linkingConfig}
+      onReady={onReady}
+      onStateChange={onNavigationStateChange}
+    >
+      <StackNavigator />
+    </NavigationContainer>
+  );
+});
+
 // AppSize 초기화를 위한 내부 컴포넌트
-function AppContent({
+const AppContent = memo(function AppContent({
   showUpdateDialog,
   updateTitle,
   updateMessage,
@@ -246,22 +300,12 @@ function AppContent({
   return (
     <>
       <StatusBar style="light" />
-      <AuthProvider>
-        <PushNotificationProvider>
-          <AppBadgeSyncer />
-          <NavigationContainer
-            ref={navigationRef}
-            theme={navigationTheme}
-            linking={linkingConfig}
-            onReady={() => {
-              routeNameRef.current = getActiveRouteName(navigationRef.current?.getState());
-            }}
-            onStateChange={onNavigationStateChange}
-          >
-            <StackNavigator />
-          </NavigationContainer>
-        </PushNotificationProvider>
-      </AuthProvider>
+      <AppProviders>
+        <NavigationWrapper
+          routeNameRef={routeNameRef}
+          onNavigationStateChange={onNavigationStateChange}
+        />
+      </AppProviders>
 
       {/* 권장 업데이트 다이얼로그 (앱 진입 후 표시) */}
       <AppDialog
@@ -278,7 +322,7 @@ function AppContent({
       />
     </>
   );
-}
+});
 
 export default function App() {
   /* eslint-disable @typescript-eslint/no-require-imports */
@@ -334,24 +378,17 @@ export default function App() {
     return <LottieSplash />;
   }
 
+  // ⚡️ 최적화: Provider 중첩 제거 (AppProviders에 포함됨)
   return (
     <SafeAreaProvider style={{ backgroundColor: colors.black }}>
       <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.black }}>
-        <QueryClientProvider client={queryClient}>
-          <SnackbarProvider>
-            <DialogProvider>
-              <ContentFilterProvider>
-                <AppContent
-                  showUpdateDialog={showUpdateDialog && !isForceUpdate}
-                  updateTitle={updateTitle}
-                  updateMessage={updateMessage}
-                  openStore={openStore}
-                  dismissDialog={dismissDialog}
-                />
-              </ContentFilterProvider>
-            </DialogProvider>
-          </SnackbarProvider>
-        </QueryClientProvider>
+        <AppContent
+          showUpdateDialog={showUpdateDialog && !isForceUpdate}
+          updateTitle={updateTitle}
+          updateMessage={updateMessage}
+          openStore={openStore}
+          dismissDialog={dismissDialog}
+        />
       </GestureHandlerRootView>
     </SafeAreaProvider>
   );

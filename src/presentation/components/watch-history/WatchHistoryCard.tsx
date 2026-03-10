@@ -25,7 +25,7 @@ import colors from '@/presentation/styles/colors';
 import textStyles from '@/presentation/styles/textStyles';
 import { formatter, TmdbImageSize } from '@/core/utils/formatter';
 import { AppSize } from '@/presentation/utils/appSize';
-import { WatchHistoryModel } from '@/features/watch-history';
+import { WatchHistoryModel } from '@/features/watch-history/types/watchHistoryModel';
 
 /* Types */
 

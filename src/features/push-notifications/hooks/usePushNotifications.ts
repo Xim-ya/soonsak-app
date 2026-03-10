@@ -47,10 +47,14 @@ export interface UsePushNotificationsResult {
   notification: Notifications.Notification | null;
   /** 권한 상태 */
   permissionStatus: Notifications.PermissionStatus | null;
+  /** 푸시 알림 초기화 (권한 요청 + 토큰 획득) - 로그인 시 호출 */
+  initialize: () => Promise<string | null>;
   /** 푸시 알림 권한 요청 */
   requestPermissions: () => Promise<boolean>;
   /** 푸시 토큰 재획득 (권한 허용 후 토큰이 없을 때 사용) */
   refreshToken: () => Promise<string | null>;
+  /** 초기화 완료 여부 */
+  isInitialized: boolean;
   /** 에러 메시지 */
   error: string | null;
 }
@@ -102,9 +106,11 @@ export function usePushNotifications(): UsePushNotificationsResult {
   const [permissionStatus, setPermissionStatus] = useState<Notifications.PermissionStatus | null>(
     null,
   );
+  const [isInitialized, setIsInitialized] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const notificationListener = useRef<Notifications.EventSubscription>(undefined);
+  const initializingRef = useRef(false);
   // 알림 탭 응답은 PushNotificationProvider에서 처리 (중복 방지)
 
   // 권한 요청 함수
@@ -151,31 +157,52 @@ export function usePushNotifications(): UsePushNotificationsResult {
     return token;
   }, [expoPushToken]);
 
-  useEffect(() => {
-    let mounted = true;
+  // ⚡️ 최적화: 명시적 초기화 함수 (로그인 시점에 호출)
+  // 앱 시작 시 자동 초기화 대신, 로그인 시점에 호출하여 초기화 속도 향상
+  const initialize = useCallback(async (): Promise<string | null> => {
+    // 중복 초기화 방지
+    if (initializingRef.current || isInitialized) {
+      PushLogger.log('Push 이미 초기화됨 또는 초기화 중');
+      return expoPushToken;
+    }
 
-    PushLogger.log('훅 초기화, isSimulator:', isSimulator);
+    initializingRef.current = true;
+    PushLogger.log('Push 초기화 시작');
 
-    // 초기화 함수
-    const initialize = async () => {
-      // 1. 권한 확인 및 요청 (시뮬레이터에서도 배지를 위해 필요)
+    try {
+      // 1. 권한 확인 및 요청
       const granted = await requestPermissions();
-      if (!granted || !mounted) return;
+      if (!granted) {
+        PushLogger.log('Push 권한 거부됨');
+        setIsInitialized(true);
+        return null;
+      }
 
       // 2. 토큰 획득 (시뮬레이터에서는 스킵)
       if (isSimulator) {
         PushLogger.log('시뮬레이터: 권한 획득 완료, 토큰 스킵');
-        return;
+        setIsInitialized(true);
+        return null;
       }
 
       const token = await getExpoPushToken();
-      if (mounted && token) {
+      if (token) {
         setExpoPushToken(token);
         PushLogger.log('Expo Push Token:', token);
       }
-    };
 
-    initialize();
+      setIsInitialized(true);
+      return token;
+    } finally {
+      initializingRef.current = false;
+    }
+  }, [requestPermissions, isInitialized, expoPushToken]);
+
+  // Foreground 알림 수신 리스너만 등록 (권한 요청 없이)
+  useEffect(() => {
+    let mounted = true;
+
+    PushLogger.log('훅 초기화, isSimulator:', isSimulator);
 
     // Foreground 알림 수신 리스너 (알림 표시용)
     // 시뮬레이터에서는 NativeEventEmitter 에러 방지를 위해 스킵
@@ -194,14 +221,16 @@ export function usePushNotifications(): UsePushNotificationsResult {
       mounted = false;
       notificationListener.current?.remove();
     };
-  }, [requestPermissions]);
+  }, []);
 
   return {
     expoPushToken,
     notification,
     permissionStatus,
+    initialize,
     requestPermissions,
     refreshToken,
+    isInitialized,
     error,
   };
 }

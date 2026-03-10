@@ -38,11 +38,11 @@ import { AppSize } from '@/presentation/utils/appSize';
 import { LoadableImageView } from '@/presentation/components/image/LoadableImageView';
 import { ShimmerSkeleton } from '@/presentation/components/image';
 import { formatter, TmdbImageSize } from '@/core/utils/formatter';
+import { useWatchHistoryPreview } from '@/features/watch-history/hooks/useWatchHistory';
 import {
-  useWatchHistoryPreview,
   WatchHistoryModel,
-  type WatchHistoryModelType,
-} from '@/features/watch-history';
+  type WatchHistoryModel as WatchHistoryModelType,
+} from '@/features/watch-history/types/watchHistoryModel';
 import { WatchProgressBar, shouldShowProgressBar } from '@/presentation/components/progress';
 import DarkChip from '@/presentation/components/chip/DarkChip';
 import RightArrowIcon from '@assets/icons/right_arrrow.svg';
