@@ -9,11 +9,11 @@
 
 
 <p align="center">
-  <a href="https://play.google.com/store/apps/details?id=com.soonsak.app&hl=ko">
+  <a href="https://apps.apple.com/kr/app/%EC%88%9C%EC%82%AD-%EC%98%81%ED%99%94-%EB%93%9C%EB%9D%BC%EB%A7%88-%EC%9A%94%EC%95%BD-%EB%A6%AC%EB%B7%B0-%EC%BD%98%ED%85%90%EC%B8%A0/id6758769228">
     <img src="https://velog.velcdn.com/images/ximya_hf/post/94c5604a-f8e9-4979-9578-7a8e17d72af8/image.png"
       alt="Platform" />
   </a>
-  <a href="https://apps.apple.com/kr/app/%EC%88%9C%EC%82%AD-%EC%98%81%ED%99%94-%EB%93%9C%EB%9D%BC%EB%A7%88-%EC%9A%94%EC%95%BD-%EB%A6%AC%EB%B7%B0-%EC%BD%98%ED%85%90%EC%B8%A0/id6758769228">
+  <a href="https://play.google.com/store/apps/details?id=com.soonsak.app&hl=ko">
     <img src="https://velog.velcdn.com/images/ximya_hf/post/db4639d8-2241-4a87-a393-0ee64961237d/image.png"
       alt="Pub Package"/>
   </a>
