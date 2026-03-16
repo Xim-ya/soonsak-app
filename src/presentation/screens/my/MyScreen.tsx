@@ -14,7 +14,7 @@ import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptD
 import Gap from '@/presentation/components/view/Gap';
 import colors from '@/presentation/styles/colors';
 import { AppSize } from '@/presentation/utils/appSize';
-import { WatchHistorySectionView } from '@/features/watch-history';
+import { WatchHistorySectionView } from '@/presentation/components/watch-history';
 import { MyScreenProvider, useMyScreen } from './_provider';
 import {
   MyScreenHeader,

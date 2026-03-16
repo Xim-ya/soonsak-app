@@ -27,7 +27,8 @@ import { pushTokenApi } from '../api/pushTokenApi';
 import { handleNotification } from '../handlers/notificationHandler';
 import { navigationRef } from '@/presentation/navigation/utils/navigationRef';
 import { notificationKeys } from '@/features/notifications/hooks/notificationQueryKeys';
-import { useAuth } from '@/features/auth';
+import { useAuth } from '@/features/auth/providers';
+import { supabaseClient } from '@/core/api';
 import {
   getOrCreateDeviceId,
   linkDeviceToUser,
@@ -73,9 +74,10 @@ interface PushNotificationProviderProps {
 export function PushNotificationProvider({ children }: PushNotificationProviderProps) {
   const { status, user, signOut, displayName } = useAuth();
   const queryClient = useQueryClient();
-  const { expoPushToken, notification, permissionStatus, refreshToken, error } =
+  const { expoPushToken, notification, permissionStatus, initialize, refreshToken, error } =
     usePushNotifications();
   const lastSyncedRef = useRef<{ userId: string; token: string } | null>(null);
+  const hasInitializedPushRef = useRef(false);
 
   // Killed 상태에서 시작 시 사용할 signOut 캡처
   const signOutRef = useRef(signOut);
@@ -107,6 +109,26 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
     registerDevice();
   }, []); // 마운트 시 한 번만 실행
+
+  // ⚡️ 최적화: 최초 로그인 시 Push 초기화 (앱 시작 시 대신 로그인 시점에 실행)
+  // 이렇게 하면 앱 초기화 속도가 향상되고, 비로그인 유저에게 불필요한 권한 요청을 피함
+  useEffect(() => {
+    // 로그아웃 시 초기화 플래그 리셋 (재로그인 시 다시 초기화 가능하도록)
+    if (status !== 'authenticated') {
+      hasInitializedPushRef.current = false;
+      return;
+    }
+    // 이미 초기화했으면 스킵
+    if (hasInitializedPushRef.current) return;
+
+    const initializePush = async () => {
+      PushLogger.log('로그인 감지 - Push 초기화 시작');
+      hasInitializedPushRef.current = true;
+      await initialize();
+    };
+
+    initializePush();
+  }, [status, initialize]);
 
   // 푸시 알림 수신 시 읽지 않은 알림 개수 캐시 무효화 (벨 뱃지 & 앱 뱃지 갱신)
   useEffect(() => {
@@ -202,14 +224,23 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
 
         const data = response.notification.request.content.data;
 
-        // 푸시 클릭 추적 (비동기, 실패해도 무시)
+        // 푸시 클릭 추적 및 캐시 무효화
         const dbNotificationId = extractNotificationId(data);
         const currentUser = userRef.current;
         const currentToken = expoPushTokenRef.current;
-        if (dbNotificationId && currentUser?.id) {
-          pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
-          // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
-          queryClient.invalidateQueries({
+
+        if (currentUser?.id) {
+          // 읽음 처리 완료 후 캐시 refetch (순서 중요)
+          if (dbNotificationId) {
+            try {
+              await pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+            } catch {
+              // 읽음 처리 실패해도 계속 진행
+            }
+          }
+          // 읽음 처리 완료 후 즉시 refetch (뱃지 카운트 갱신)
+          // invalidateQueries 대신 refetchQueries로 즉시 데이터 갱신 보장
+          await queryClient.refetchQueries({
             queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
           });
         }
@@ -247,7 +278,7 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
     // 시뮬레이터에서는 NativeEventEmitter 에러 방지를 위해 스킵
     if (isSimulator) return;
 
-    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+    const subscription = Notifications.addNotificationResponseReceivedListener(async (response) => {
       if (!navigationRef.isReady()) {
         PushLogger.warn('navigationRef가 준비되지 않음');
         return;
@@ -268,14 +299,36 @@ export function PushNotificationProvider({ children }: PushNotificationProviderP
       }
 
       const data = response.notification.request.content.data;
+      const currentUser = userRef.current;
+      const currentToken = expoPushTokenRef.current;
 
-      // 푸시 클릭 추적 (비동기, 실패해도 무시)
+      // 푸시 클릭 추적 및 캐시 무효화
       const dbNotificationId = extractNotificationId(data);
-      if (dbNotificationId && userRef.current?.id) {
-        pushTokenApi.trackNotificationClick(dbNotificationId, userRef.current.id);
-        // 푸시 클릭 시 알림 캐시 무효화 (뱃지 카운트 갱신)
-        queryClient.invalidateQueries({
-          queryKey: notificationKeys.unreadCount(userRef.current.id, expoPushTokenRef.current),
+
+      if (__DEV__) {
+        // 디버깅: 푸시 클릭 시 받은 data 확인
+        console.log('[PushClick] data:', JSON.stringify(data, null, 2));
+
+        // 디버깅: Supabase 세션 상태 확인
+        const { data: sessionData } = await supabaseClient.auth.getSession();
+        console.log('[PushClick] Supabase session:', sessionData?.session?.user?.id ?? 'NO SESSION');
+        console.log('[PushClick] extracted _notificationId:', dbNotificationId);
+      }
+
+      if (currentUser?.id) {
+        // 읽음 처리 완료 후 캐시 refetch (순서 중요: await로 읽음 처리 완료 대기)
+        if (dbNotificationId) {
+          try {
+            await pushTokenApi.trackNotificationClick(dbNotificationId, currentUser.id);
+          } catch {
+            // 읽음 처리 실패해도 계속 진행
+          }
+        }
+
+        // 읽음 처리 완료 후 즉시 refetch (뱃지 카운트 갱신)
+        // invalidateQueries 대신 refetchQueries로 즉시 데이터 갱신 보장
+        await queryClient.refetchQueries({
+          queryKey: notificationKeys.unreadCount(currentUser.id, currentToken),
         });
       }
 

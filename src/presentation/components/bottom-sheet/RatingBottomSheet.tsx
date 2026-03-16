@@ -190,7 +190,7 @@ function RatingBottomSheet({
                 <InteractiveStarRating
                   value={selectedRating}
                   onChange={handleRatingChange}
-                  onDragEnd={handleSubmitRating}
+                  onRatingComplete={handleSubmitRating}
                   mode="drag"
                   step={0.5}
                   size={STAR_SIZE}

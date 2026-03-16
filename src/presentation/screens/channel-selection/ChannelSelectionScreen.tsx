@@ -8,7 +8,7 @@
  */
 
 import React, { useCallback } from 'react';
-import { FlatList, ListRenderItemInfo, TouchableOpacity } from 'react-native';
+import { FlatList, ListRenderItemInfo, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import styled from '@emotion/native';
 import textStyles from '@/presentation/styles/textStyles';
@@ -25,8 +25,7 @@ import {
   DarkedLinearShadow,
   LinearAlign,
 } from '@/presentation/components/shadow/DarkedLinearShadow';
-import type { ChannelSelectionModel } from './_types/channelSelectionModel';
-import { useChannelSelection } from './_hooks/useChannelSelection';
+import { useChannelSelection, type ChannelSelectionModel } from './_hooks/useChannelSelection';
 
 /** 3열 그리드 설정 (ChannelAllPage와 동일) */
 const COLUMN_COUNT = 3;
@@ -50,8 +49,33 @@ export default function ChannelSelectionScreen(): React.ReactElement {
   const route = useRoute<ChannelSelectionRouteProp>();
   const { selectedChannelIds } = route.params;
 
-  const { channels, selectedIds, initialSelectedIds, toggleChannel, resetSelection } =
-    useChannelSelection(selectedChannelIds);
+  const {
+    channels,
+    selectedIds,
+    initialSelectedIds,
+    toggleChannel,
+    resetSelection,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useChannelSelection(selectedChannelIds);
+
+  // 무한 스크롤
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+
+  // 하단 로딩 인디케이터
+  const renderListFooter = useCallback(() => {
+    if (!isFetchingNextPage) return null;
+    return (
+      <FooterLoading>
+        <ActivityIndicator color={colors.gray02} />
+      </FooterLoading>
+    );
+  }, [isFetchingNextPage]);
 
   // 적용 버튼 핸들러
   const handleApply = useCallback(() => {
@@ -111,6 +135,9 @@ export default function ChannelSelectionScreen(): React.ReactElement {
         contentContainerStyle={GRID_CONTENT_CONTAINER_STYLE}
         columnWrapperStyle={GRID_COLUMN_WRAPPER_STYLE}
         showsVerticalScrollIndicator={false}
+        onEndReached={handleEndReached}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={renderListFooter}
       />
 
       {/* 하단 적용 버튼 영역 */}
@@ -165,4 +192,10 @@ const ApplyButton = styled.TouchableOpacity({
 const ApplyText = styled.Text({
   ...textStyles.title1,
   color: colors.white,
+});
+
+const FooterLoading = styled.View({
+  height: 60,
+  justifyContent: 'center',
+  alignItems: 'center',
 });

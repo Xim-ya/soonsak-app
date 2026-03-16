@@ -79,5 +79,5 @@ export type {
   DividedButtonResult,
 } from './types';
 
-// 기존 LoginPromptDialog도 유지
-export { LoginPromptDialog } from './LoginPromptDialog';
+// LoginPromptDialog는 순환 참조 방지를 위해 별도 경로로 import 필요
+// import { LoginPromptDialog } from '@/presentation/components/dialog/LoginPromptDialog';

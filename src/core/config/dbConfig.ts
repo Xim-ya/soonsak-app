@@ -44,7 +44,6 @@ export const CHANNEL_DATABASE = {
     GET_RANDOM_ACTIVE_CHANNELS: 'get_random_active_channels',
   },
   LIMITS: {
-    MAX_CHANNELS: 20,
     DEFAULT_RANDOM: 12,
   },
 } as const;
